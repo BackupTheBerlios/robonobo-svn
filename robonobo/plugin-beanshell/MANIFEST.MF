@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Name: com/robonobo/plugin-beanshell
+Implementation-Title: robonobo beanshell plugin
+Implementation-Vendor: robonobo project

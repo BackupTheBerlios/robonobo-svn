@@ -1,0 +1,24 @@
+<!--
+	On a server, plonk this file into
+	$tomcat_home/conf/Catalina/localhost. In eclipse, copy the contents of
+	<Context> into the equivalent element in Servers/<server
+	name>/server.xml
+-->
+
+<Context path="/sonar" 
+         crossContext="true"
+         reloadable="true"
+         debug="1"
+         >
+  <Resource name="jdbc/sonar" 
+            auth="Container"
+            type="javax.sql.DataSource"
+            driverClassName="org.postgresql.Driver"
+            url="jdbc:postgresql://localhost/robonobo_sonar"
+            username=""
+            password=""
+            maxActive="32"
+            maxIdle="8"
+            maxWait="-1"
+            />
+</Context>

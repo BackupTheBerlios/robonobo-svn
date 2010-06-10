@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="com.echostream.robonobo.hibernate.autobroadcast">
+	<class name="ConfiguredBroadcast">
+        <id name="id" type="int">
+	        <generator class="native" />
+        </id>
+        
+        <property name="channelUri"/>
+        <property name="broadcastSourceClass"/>
+
+        <map name="sourceArgs"
+            lazy="false"
+            cascade="all">
+            <key column="ID"/>    
+            <index type="string" column="map_key"/>
+            <element type="string" column="map_value"/>
+        </map>
+    </class>
+</hibernate-mapping>

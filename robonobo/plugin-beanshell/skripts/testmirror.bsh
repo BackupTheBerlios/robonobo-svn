@@ -1,0 +1,91 @@
+// Shares a file, updates a playlist with the file, and waits to make sure the file gets shared by the mirror
+// Assumes that you are logged in and have ends
+
+import java.util.*;
+import com.robonobo.core.api.model.*;
+import com.robonobo.mina.external.*;
+import java.security.SecureRandom;
+import org.doomdark.uuid.UUIDGenerator;
+
+
+if(args.length < 3) {
+	out.println("Usage: testmirror.bsh <file> <streamid> <waitsecs>");
+	return;
+}
+
+String shareFile = args[0];
+String streamId = args[1];
+int waitSecs = Integer.parseInt(args[2]);
+String playlistName = "testplaylist";
+
+// Check to make sure that there are no sources for this file to start with. 
+int numSources = 0;
+sourceListener = new FoundSourceListener() {
+	foundBroadcaster(streamId, nodeId) {
+		numSources++;
+		out.println("Found source, now have "+numSources);
+	}
+};
+	
+log.info("testmirror.bsh checking for existent sources");
+control.findSources(streamId, sourceListener);
+
+// Wait 10 secs to allow sources to come in
+Thread.sleep(10000L);
+control.stopFindingSources(streamId, sourceListener);
+if(numSources > 0) {
+	System.err.println("WARNING|Found existent sources for "+shareFile);
+	return;
+}
+
+// Start sharing, and add the share to our playlist
+log.info("testmirror.bsh sharing test file");
+Stream s = control.addShare(shareFile);
+User me = control.getMyUser();
+Playlist p;
+for(String plId : me.getPlaylistIds()) {
+	Playlist testP = control.getPlaylist(plId);
+	if(testP.getTitle().equals(playlistName)) {
+		p = testP;
+		break;
+	}
+}
+
+if(p == null) {
+	p = new Playlist();
+	p.setPlaylistId(UUIDGenerator.getInstance().generateRandomBasedUUID(new SecureRandom()).toString());
+	p.setTitle(playlistName);
+}
+
+p.getStreamIds().clear();
+p.getStreamIds().add(s.getStreamId());
+log.info("testmirror.bsh updating test playlist");
+control.addOrUpdatePlaylist(p);
+
+// Wait for the mirror to do its thang
+Thread.sleep(waitSecs * 1000L);
+
+// Now check that there are sources
+log.info("testmirror.bsh deleting test share");
+control.deleteShare(s);
+numSources = 0;
+log.info("testmirror.bsh finding mirrored sources");
+control.findSources(s.getStreamId(), sourceListener);
+// Wait 20 secs to allow sources to come in - allow for msg batching
+Thread.sleep(20000L);
+control.stopFindingSources(s.getStreamId(), sourceListener);
+if(numSources == 0) {
+        System.err.println("ERROR|Stream "+s.getStreamId()+" not mirrored");
+	log.info("testmirror.bsh result: fail");
+} else {
+	System.err.println("SUCCESS|Stream "+s.getStreamId()+" mirrored");
+	log.info("testmirror.bsh result: success");
+}
+p.getStreamIds().clear();
+log.info("testmirror.bsh cleaning test playlist");
+control.addOrUpdatePlaylist(p);
+log.info("testmirror.bsh closing down");
+control.shutdown();
+log.info("testmirror.bsh exiting");
+System.exit(0);
+
