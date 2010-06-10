@@ -1,0 +1,7 @@
+net.robonobo.core.updater.UpdateService
+net.robonobo.core.http.JettyHttpService
+net.robonobo.core.mina.MinaService
+net.robonobo.core.upnp.UPnPService
+net.robonobo.core.subscription.SubscriptionService
+net.robonobo.core.UploadMgr
+net.robonobo.core.DownloadMgr

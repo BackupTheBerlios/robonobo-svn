@@ -1,0 +1,139 @@
+body {
+	font-size:120%;
+	font-family: arial;
+	margin:0px;
+	width:100%;
+}
+a {
+	color: #666;
+	text-decoration:none;
+}
+.clr {
+	clear:both;
+}
+
+#toolbar {
+	background: transparent url(http://www.barbelith.com/art/gradient.gif) top left repeat-x;
+	padding:0.5em;
+}
+#toolbar a {
+	padding:0.2em;
+	margin-right:1em;
+	color: black;
+}
+#toolbar a:hover {
+	border:1px solid gray;
+}
+
+/* Main */
+
+#main-selector {
+	float:left;
+	width:20%;
+	background:#d1d7e2;
+}
+#main-selector-options {
+	border-top:1px dotted gray;
+}
+#main-selector-options a .count {
+	float:right;
+	background:white;
+	-moz-border-radius: 0.5em;
+	padding: 0em 0.5em 0em 0.5em;
+	font-size:80%;
+	color:#d1d7e2;
+}
+#main-selector-options a {
+	background:#d1d7e2;
+	padding:0.2em;
+	display:block;
+}
+#main-selector-options a:hover {
+	color:#eee;
+	background: transparent url(selected.gif) top left repeat-x;
+}
+#main-panel {
+	width:80%;
+	float:left;
+}
+#main-panel-content {
+	padding:0.5em;
+}
+
+
+/*  Echo */
+.echo-stream {
+	border:1px solid brown;
+	background: #eef;
+	margin-bottom:1em;
+}
+.echo-stream .title {
+	font-size:110%;
+}
+.echo-stream .description {
+	font-size:80%;
+	margin:0.5em;
+}
+.echo-stream-audio {}
+.echo-stream-video {}
+
+
+
+
+/* Forms */
+.formContainer {
+	background:#ffe;
+	border:1px solid #777;
+	width:70%;
+	padding:0em 0em 0em 0em;
+}
+			
+.form {
+	width:100%;
+	background:#ffe;
+	margin:0em;
+	padding:0em;
+}
+
+.formContainer .formContent {}
+.formContainer .formError {
+	background:#fee;
+	color: red;
+}
+.formContainer .formButtons {
+	background:#eed;
+	margin-top:1em;
+	padding:1em 1em 1em 30%;
+}
+
+.formContainer .formRow {
+	padding:1em 0em 1em 0em;
+	width:100%;
+	clear:left;
+	
+}
+.formContainer .formRow .formLabel {
+	width:25%;
+	text-align:right;
+	padding-right:1em;
+	float:left;
+}
+.formContainer .formRow input {
+	width:80%;
+}
+.formContainer .formRow input.radio {
+	width:auto;
+}
+.formContainer .formRow textarea {
+	width:80%;
+	height:10em;
+}
+.formContainer .formRow .formElement {
+	width:70%;
+	float:left;
+}
+.formContainer .formText {
+	width: 100%;
+	padding:1em 1em 0em 1em;
+}
+	
