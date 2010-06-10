@@ -1,4 +1,0 @@
-Manifest-Version: 1.0
-Name: com/robonobo/plugin/playlistmirror
-Implementation-Title: robonobo playlist mirror plugin
-Implementation-Vendor: robonobo project
