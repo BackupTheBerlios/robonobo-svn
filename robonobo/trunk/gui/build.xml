@@ -200,7 +200,7 @@
 		
 	<target name="jnlp" depends="fatjar">
 		<jw:jnlpwar tofile="${out}/robonobo-launch-${version}.war" codebase="http://robonobo.com/robonobo-launch-${version}" title="robonobo" vendor="The robonobo project" homepage="http://robonobo.com" pack200="false" signStorepass="password" signAlias="robo-jnlp">
-			<jw:application jar="${out}/robonobo-${version}.jar" mainclass="com.robonobo.gui.RobonoboFrame" />
+			<jw:application jar="${out}/robonobo-${version}.jar" mainclass="com.robonobo.Robonobo" />
 			<jw:description>robonobo is a music-sharing application</jw:description>
 			<jw:j2se minVersion="1.5" />
 		</jw:jnlpwar>
