@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Created-By: Robonobo Dev Team
+Main-Class: com.robonobo.console.RobonoboConsole
+Class-Path: 
+Name: com/robonobo/console
+Implementation-Title: Robonobo Console
+Implementation-Vendor: Robonobo

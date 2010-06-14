@@ -1,0 +1,66 @@
+<project name="plugin-playlist-mirror" default="build">
+	<property name="ant.reuse.loader" value="true"/>
+	<path id="fjepPath" location="../common/buildlib/fatjar-0.0.31.jar"/>
+    <taskdef name="fatjar.build" classname="net.sf.fjep.anttask.FJBuildTask" classpathref="fjepPath"/>
+    <typedef name="fatjar.manifest" classname="net.sf.fjep.anttask.FJManifestType" classpathref="fjepPath"/>
+    <typedef name="fatjar.exclude" classname="net.sf.fjep.anttask.FJExcludeType" classpathref="fjepPath"/>
+    <typedef name="fatjar.jarsource" classname="net.sf.fjep.anttask.FJJarSourceType" classpathref="fjepPath"/>
+    <typedef name="fatjar.filesource" classname="net.sf.fjep.anttask.FJFileSourceType" classpathref="fjepPath"/>
+
+	<property name="out" location="target/dist/" />
+
+	<target name="compile-all">
+		<ant dir="../api" inheritall="false" target="compile-all"/>
+		<ant dir="../common" inheritall="false" target="compile-all"/>
+		<ant dir="../common-hibernate" inheritall="false" target="compile-all"/>
+		<ant dir="../core" inheritall="false" target="compile-all"/>
+		<ant dir="../midas-webapp" inheritall="false" target="compile-all"/>
+
+		<mkdir dir="target/classes"/>
+		
+		<javac source="1.5" target="1.5" srcdir="src/java" destdir="target/classes" debug="on" 
+		includes="**/*.java,**/*.properties,**/*.xml">
+			<classpath>
+				<pathelement path="../api/target/classes"/>
+				<pathelement path="../common/target/classes"/>
+				<pathelement path="../common-hibernate/target/classes"/>
+				<pathelement path="../core/target/classes"/>
+				<pathelement path="../midas-model/target/classes"/>
+				<fileset dir="../common/lib">
+					<include name="**/*.jar"/>
+				</fileset>
+				<fileset dir="../common-hibernate/lib">
+					<include name="**/*.jar"/>
+				</fileset>
+				<fileset dir="../midas-model/lib">
+					<include name="**/*.jar"/>
+				</fileset>
+			</classpath>
+		</javac>
+	</target>
+	
+	<target name="build" depends="compile-all">
+		<mkdir dir="${out}" />
+		<fatjar.build output="${out}/plugin-playlist-mirror.jar">
+			<fatjar.manifest mergemanifests="false" manifestfile="./MANIFEST.MF" />
+			<fatjar.filesource path="../plugin-playlist-mirror/target/classes" relpath="." />
+			<fatjar.filesource path="../midas-model/target/classes" relpath="." />
+			
+			<fatjar.jarsource file="../common-hibernate/lib/hibernate3.3.2.jar" relpath="."/>
+			<fatjar.jarsource file="../common-hibernate/lib/dom4j-1.6.1.jar" relpath="."/>
+			<fatjar.jarsource file="../common-hibernate/lib/commons-collections-3.1.jar" relpath="."/>
+			<fatjar.jarsource file="../common-hibernate/lib/postgresql-8.3-603.jdbc3.jar" relpath="."/>
+			<fatjar.jarsource file="../common-hibernate/lib/cglib-2.2.jar" relpath="."/>
+			<fatjar.jarsource file="../common-hibernate/lib/jta-1.1.jar" relpath="."/>
+			<fatjar.jarsource file="../common-hibernate/lib/ant-antlr-1.6.5.jar" relpath="."/>
+			<fatjar.jarsource file="../common-hibernate/lib/slf4j-api-1.5.8.jar" relpath="."/>
+			<fatjar.jarsource file="../common-hibernate/lib/slf4j-log4j12-1.5.8.jar" relpath="."/>
+			<fatjar.jarsource file="../common-hibernate/lib/javassist-3.9.0.GA.jar" relpath="."/>
+		</fatjar.build>	
+	</target>
+
+	<target name="clean">
+		<delete dir="target/classes"/>
+		<delete dir="${out}"/>
+	</target>
+</project>

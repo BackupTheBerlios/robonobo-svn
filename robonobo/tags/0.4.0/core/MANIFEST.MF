@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Name: com/robonobo/core
+Implementation-Title: robonobo core
+Implementation-Vendor: robonobo project
