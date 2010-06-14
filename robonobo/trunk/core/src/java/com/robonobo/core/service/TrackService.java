@@ -112,7 +112,7 @@ public class TrackService extends AbstractRuntimeServiceProvider {
 			}
 		}
 		// Set playback status (might be already there if downloading, if necessary override it)
-		String playingSid = playback.currentStreamId();
+		String playingSid = playback.getCurrentStreamId();
 		if (playingSid != null && playingSid.equals(streamId)) {
 			switch(playback.getStatus()) {
 			case Starting:

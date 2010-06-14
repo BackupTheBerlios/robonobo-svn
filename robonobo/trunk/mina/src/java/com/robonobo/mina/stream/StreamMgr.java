@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 
+import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.core.api.StreamVelocity;
 import com.robonobo.core.api.proto.CoreApi.Node;
@@ -235,15 +236,19 @@ public class StreamMgr {
 		}
 	}
 
-	private void notifyListenersOfSource(String sourceId) {
-		FoundSourceListener[] lisArr;
+	private void notifyListenersOfSource(final String sourceId) {
+		final FoundSourceListener[] lisArr;
 		synchronized (this) {
 			lisArr = new FoundSourceListener[listeners.size()];
 			listeners.toArray(lisArr);			
 		}
-		for (FoundSourceListener listener : lisArr) {
-			listener.foundBroadcaster(streamId, sourceId);
-		}
+		mina.getExecutor().execute(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				for (FoundSourceListener listener : lisArr) {
+					listener.foundBroadcaster(streamId, sourceId);
+				}
+			}
+		});
 	}
 
 	/**
