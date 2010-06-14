@@ -355,7 +355,7 @@ public class RobonoboController {
 	}
 
 	public Stream currentPlayingStream() {
-		String sid = inst.getPlaybackService().currentStreamId();
+		String sid = inst.getPlaybackService().getCurrentStreamId();
 		if (sid == null)
 			return null;
 		return inst.getMetadataService().getStream(sid);

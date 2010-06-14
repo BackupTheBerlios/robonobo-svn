@@ -331,7 +331,7 @@ public class DownloadService extends AbstractRuntimeServiceProvider implements M
 	public void updatePriorities() {
 		mina.clearStreamPriorities();
 		// Currently playing/paused stream has priority
-		String curStreamId = playback.currentStreamId();
+		String curStreamId = playback.getCurrentStreamId();
 		// Then whatever's downloading next
 		String nextStreamId = playback.getNextStreamId();
 		synchronized (dPriority) {
