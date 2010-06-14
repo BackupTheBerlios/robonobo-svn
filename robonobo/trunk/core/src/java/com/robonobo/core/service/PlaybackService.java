@@ -389,11 +389,11 @@ public class PlaybackService extends AbstractRuntimeServiceProvider implements A
 		if (microsecs == 0)
 			return;
 		event.firePlaybackProgress(microsecs);
+		// This might be null if we are a left-over thread, just exit
+		if (currentStreamId == null)
+			return;
 		// Cue up the next track if necessary
 		Stream currentStream = robonobo.getMetadataService().getStream(currentStreamId);
-		// This might be null if we are a left-over thread, just exit
-		if (currentStream == null)
-			return;
 		long msLeft = currentStream.getDuration() - (microsecs / 1000);
 		if (msLeft < (getRobonobo().getConfig().getDownloadCacheTime() * 1000)) {
 			nextStreamId = finishListener.getNextTrack(currentStream.getStreamId());
