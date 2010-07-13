@@ -872,6 +872,9 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 					log.debug(this + " congestion avoidance, incrementing window to " + sendWindow);
 			}
 		}
+		// Log window measurements
+		if(log.isDebugEnabled())
+			log.debug(this+", WINSTATS, "+TimeUtil.now().getTime()+", "+sendWindow);
 	}
 
 	/**
@@ -1021,6 +1024,8 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 			if (log.isDebugEnabled()) {
 				sb.append(" - setting ssThresh, window to ").append(ssThresh);
 				log.debug(sb);
+				// Log window measurements
+				log.debug(this+", WINSTATS, "+TimeUtil.now().getTime()+", "+sendWindow);
 			}
 			// Stay in fast recovery state until all outstanding pkts are clear
 			SEONPacket lastSentPkt = retransQ.getLast();
@@ -1040,6 +1045,8 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 		changeParamsForLossage();
 		// Slow start again
 		sendWindow = 2;
+		if(log.isDebugEnabled())
+			log.debug(this+", WINSTATS, "+TimeUtil.now().getTime()+", "+sendWindow);
 		fastRecoveryUntil = -1;
 		// Cancel retransmission timeout, otherwise it'll fire at the same time
 		// as our hard retransmit, and bugger things up
