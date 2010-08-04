@@ -16,18 +16,19 @@
 
 	<!-- Uncomment this and point it at your launch4j installation -->
 	<!--
-	<property name="launch4j.dir" location="C:/Program Files/Launch4J" />
+	<property name="launch4j.dir" location="C:/apps/Launch4J" />
 	<taskdef name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask" classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar" />
 	-->
-
 	<property name="out" location="target/dist/" />
 
 	<tstamp>
 		<format property="timestamp" pattern="yyMMddHHmm" />
 	</tstamp>
 
-	<!-- <property name="version" value="DEV-${timestamp}" /> -->
-	<property name="version" value="0.4.0" />
+	<property name="version" value="DEV-${timestamp}" />
+	<!-- <property name="version" value="0.4.0" /> -->
+	<!-- launch4j requires the version number to be x.x.x.x -->
+	<property name="l4jVersion" value="0.4.0.0"/>
 
 	<target name="build" depends="compile-all" />
 	
@@ -210,10 +211,12 @@
 	<target name="exe" depends="fatjar">
 		<launch4j 
 			configFile="./launch4j-cfg.xml" 
-			jarPath="${out}/robonobo-${version}.jar" 
+			jar="${out}/robonobo-${version}.jar" 
 			outfile="${out}/robonobo-${version}.exe"
-			txtProductVersion="${version}"
-			txtFileVersion="${version}"
+			fileVersion="${l4jVersion}"
+			txtFileVersion="${l4jVersion}"
+			productVersion="${l4jVersion}"
+		 	txtProductVersion="${l4jVersion}"
 		/>
 	</target>
 

@@ -1,6 +1,15 @@
 <launch4jConfig>
 	<headerType>gui</headerType>
 	<!-- outfile, jarPath, txtFileVersion, txtProductVersion defined by ant -->
+	
+	<versionInfo>
+		<fileDescription>robonobo is a music sharing application</fileDescription>
+		<copyright>2010 robonobo project</copyright>
+		<productName>robonobo</productName>
+		<internalName>robonobo</internalName>
+		<originalFilename>robonobo.exe</originalFilename>
+	</versionInfo>
+	
 	<customProcName>true</customProcName>
 	<singleInstance>
 		<mutexName>robo-instance-mutex</mutexName>
