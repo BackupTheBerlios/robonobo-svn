@@ -13,12 +13,17 @@
 			<pathelement location="../core/buildlib/ant-jnlp-war-0.9_deps.jar" />
 		</classpath>
 	</typedef>
-
+	<taskdef name="nsis" classname="net.sf.nsisant.Task">
+	        <classpath location="../core/buildlib/nsisant-1.2.jar"/>
+	</taskdef>
+	<property name="nsis.path" location="c:/apps/NSIS/"/>
+	
 	<!-- Uncomment this and point it at your launch4j installation -->
 	<!--
 	<property name="launch4j.dir" location="C:/apps/Launch4J" />
 	<taskdef name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask" classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar" />
 	-->
+	
 	<property name="out" location="target/dist/" />
 
 	<tstamp>
@@ -220,6 +225,12 @@
 		/>
 	</target>
 
+	<target name="dist-win" depends="exe">
+		<nsis path="${nsis.path}" script="robo-installer.nsi">
+			<define name="VERSION" value="${version}"/>
+		</nsis>
+	</target>
+		
 	<target name="clean">
 		<delete dir="target/classes" />
 		<delete dir="${out}" />
