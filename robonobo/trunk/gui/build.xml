@@ -13,20 +13,10 @@
 			<pathelement location="../core/buildlib/ant-jnlp-war-0.9_deps.jar" />
 		</classpath>
 	</typedef>
-	<taskdef name="nsis" classname="net.sf.nsisant.Task">
-		<classpath location="../core/buildlib/nsisant-1.2.jar" />
-	</taskdef>
-	<property name="nsis.path" location="c:/apps/NSIS/" />
-	<taskdef name="envgen" classname="com.basilv.envgen.EnvGenTask" classpath="../core/buildlib/EnvGen-with-dependencies.jar"/>
 
-	<!-- Uncomment this and point it at your launch4j installation -->
-	<!--
-	<property name="launch4j.dir" location="C:/apps/Launch4J" />
-	<taskdef name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask" classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar" />
-	-->
-
-	<property name="out" location="target/dist/" />
+	<property name="dist.dir" location="target/dist/" />
 	<property name="tmp.dir" location="target/tmp" />
+	<property name="classes.dir" location="target/classes"/>
 
 	<tstamp>
 		<format property="timestamp" pattern="yyMMddHHmm" />
@@ -42,8 +32,8 @@
 	<target name="compile-all">
 		<ant dir="../console" inheritall="false" target="compile-all" />
 
-		<mkdir dir="target/classes" />
-		<javac source="1.5" target="1.5" srcdir="src/java" destdir="target/classes" debug="on" includes="**/*.java,**/*.properties,**/*.xml">
+		<mkdir dir="${classes.dir}" />
+		<javac source="1.5" target="1.5" srcdir="src/java" destdir="${classes.dir}" debug="on" includes="**/*.java,**/*.properties,**/*.xml">
 			<classpath>
 				<pathelement path="../common/target/classes" />
 				<pathelement path="../api/target/classes" />
@@ -61,21 +51,21 @@
 				</fileset>
 			</classpath>
 		</javac>
-		<copy todir="target/classes">
+		<copy todir="${classes.dir}">
 			<fileset dir="src/java" includes="**/*.properties,**/*.xml,**/*.png,**/*.js,**/*.wsf, **/*.html,**/*.txt" />
 		</copy>
 
 		<!-- Make our build.properties -->
-		<propertyfile file="target/classes/robonobo-build.properties">
+		<propertyfile file="${classes.dir}/robonobo-build.properties">
 			<entry key="version" value="${version}" />
 		</propertyfile>
 	</target>
 
 	<target name="fatjar" depends="build">
-		<fatjar.build output="${out}/robonobo-${version}.jar">
+		<fatjar.build output="${dist.dir}/robonobo-${version}.jar">
 			<fatjar.manifest manifestfile="fatjar.manifest" mergemanifests="false" />
 
-			<fatjar.filesource path="${basedir}/target/classes" relpath="." />
+			<fatjar.filesource path="${basedir}/${classes.dir}" relpath="." />
 			<fatjar.jarsource file="${basedir}/lib/TableLayout-bin-jdk1.5-2007-04-21.jar" relpath="." />
 			<fatjar.jarsource file="${basedir}/lib/swingx-0.9.7.jar" relpath="." />
 
@@ -114,7 +104,7 @@
 
 	<target name="shrink" depends="fatjar">
 		<yguard>
-			<inoutpair in="${out}/robonobo-${version}.jar" out="${out}/robonobo-${version}-shrunk.jar" />
+			<inoutpair in="${dist.dir}/robonobo-${version}.jar" out="${dist.dir}/robonobo-${version}-shrunk.jar" />
 			<shrink logfile="shrink.log">
 				<keep sourcefile="true" linenumbertable="true" localvariabletable="true" localvariabletypetable="true">
 					<!-- Mainline -->
@@ -208,70 +198,16 @@
 	</target>
 
 	<target name="jnlp" depends="fatjar">
-		<jw:jnlpwar tofile="${out}/robonobo-launch-${version}.war" codebase="http://robonobo.com/robonobo-launch-${version}" title="robonobo" vendor="The robonobo project" homepage="http://robonobo.com" pack200="false" signStorepass="password" signAlias="robo-jnlp">
-			<jw:application jar="${out}/robonobo-${version}.jar" mainclass="com.robonobo.Robonobo" />
+		<jw:jnlpwar tofile="${dist.dir}/robonobo-launch-${version}.war" codebase="http://robonobo.com/robonobo-launch-${version}" title="robonobo" vendor="The robonobo project" homepage="http://robonobo.com" pack200="false" signStorepass="password" signAlias="robo-jnlp">
+			<jw:application jar="${dist.dir}/robonobo-${version}.jar" mainclass="com.robonobo.Robonobo" />
 			<jw:description>robonobo is a music-sharing application</jw:description>
 			<jw:j2se minVersion="1.5" />
 		</jw:jnlpwar>
 	</target>
 
-	<target name="exe" depends="fatjar">
-		<launch4j configFile="./launch4j-cfg.xml" jar="${out}/robonobo-${version}.jar" outfile="${out}/robonobo-${version}.exe" fileVersion="${launch4jVersion}" txtFileVersion="${launch4jVersion}" productVersion="${launch4jVersion}" txtProductVersion="${launch4jVersion}" />
-	</target>
-
-	<target name="dist-win" depends="exe">
-		<nsis path="${nsis.path}" script="robo-installer.nsi">
-			<define name="VERSION" value="${version}" />
-		</nsis>
-	</target>
-
-	<target name="generate-plist">
-		<mkdir dir="${tmp.dir}"/>
-		<echo file="${tmp.dir}/plist-props.csv" message="version,${version}"/>
-		<envgen 
-			destdir="${tmp.dir}" 
-			envPropertiesFile="${tmp.dir}/plist-props.csv"
-			stripFileExtension="true"
-			overwrite="true">
-			<source file="template/Info.plist.ftl"/>
-		</envgen>
-	</target>
-
-	<target name="osx-app" depends="fatjar, generate-plist">
-		<copy todir="${out}/robonobo.app">
-			<fileset dir="template/robonobo.app"/>
-		</copy>
-		<copy todir="${out}/robonobo.app/Contents">
-			<fileset file="${tmp.dir}/Info.plist"/>
-		</copy>
-		<copy todir="${out}/robonobo.app/Contents/MacOS" file="/System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub" />
-		<chmod file="${out}/robonobo.app/Contents/MacOS/JavaApplicationStub" perm="755" />
-		<copy toDir="${out}/robonobo.app/Contents/Resources/Java/">
-			<fileset file="${out}/robonobo-${version}.jar" />
-		</copy>
-	</target>
-
-	<target name="dist-osx" depends="osx-app">
-		<copy todir="${tmp.dir}/dmg-skel">
-			<fileset dir="template/dmg-skel"/>
-		</copy>
-		<copy todir="${tmp.dir}/dmg-skel/robonobo.app">
-			<fileset dir="${out}/robonobo.app"/>
-		</copy>
-		<exec executable="./build-dmg.sh">
-			<arg value="${tmp.dir}/dmg-skel"/>
-			<arg value="robonobo ${version}"/>
-			<arg value="10000"/>
-			<arg value="${out}/robonobo-${version}.dmg"/>
-		</exec>
-		<!-- TODO: 
-			Move dist stuff into separate eclipse proj 
-		-->
-	</target>
-
 	<target name="clean">
-		<delete dir="target/classes" />
-		<delete dir="${out}" />
+		<delete dir="${classes.dir}" />
+		<delete dir="${dist.dir}" />
 		<delete dir="${tmp.dir}"/>
 		<ant dir="../console" inheritall="false" target="clean" />
 	</target>
