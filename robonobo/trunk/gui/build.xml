@@ -230,7 +230,28 @@
 			<define name="VERSION" value="${version}"/>
 		</nsis>
 	</target>
-		
+	
+	<target name="osx-app" depends="fatjar">
+		<copy todir="${out}/robonobo.app">
+			<fileset dir="template/robonobo.app">
+				<include name="**/*"/>
+			</fileset>
+		</copy>
+		<copy todir="${out}/robonobo.app/Contents/MacOS" file="/System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub"/>
+		<chmod file="${out}/robonobo.app/Contents/MacOS/JavaApplicationStub" perm="755"/>
+		<copy toDir="${out}/robonobo.app/Contents/Resources/Java/">
+			<fileset file="${out}/robonobo-${version}.jar"/>
+		</copy>
+	</target>
+	
+	<target name="dist-osx" depends="osx-app">
+		<!-- TODO: 
+			Make info.plist from freemarker template to include version num
+			Encapsulate build-dmg.sh into ant target
+			Move dist stuff into separate eclipse proj 
+		--> 
+	</target>
+	
 	<target name="clean">
 		<delete dir="target/classes" />
 		<delete dir="${out}" />
