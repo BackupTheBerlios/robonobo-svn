@@ -63,9 +63,9 @@
 
 	<target name="fatjar" depends="build">
 		<fatjar.build output="${dist.dir}/robonobo-${version}.jar">
-			<fatjar.manifest manifestfile="fatjar.manifest" mergemanifests="false" />
+			<fatjar.manifest manifestfile="${basedir}/fatjar.manifest" mergemanifests="false" />
 
-			<fatjar.filesource path="${basedir}/${classes.dir}" relpath="." />
+			<fatjar.filesource path="${classes.dir}" relpath="." />
 			<fatjar.jarsource file="${basedir}/lib/TableLayout-bin-jdk1.5-2007-04-21.jar" relpath="." />
 			<fatjar.jarsource file="${basedir}/lib/swingx-0.9.7.jar" relpath="." />
 

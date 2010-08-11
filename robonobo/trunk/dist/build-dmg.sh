@@ -1,5 +1,5 @@
 #!/bin/bash
-
+ 
 if [[ $# < 4 ]]
 then
     echo "Usage: build-dmg.sh <skel-dir> <dmg title> <dmg sz in kb> <final dmg name>" >&2

@@ -11,10 +11,14 @@
 	<taskdef name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask" classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar" />
 	-->
 	
+	<property name="out" location="target/dist"/>
 	<property name="dist.dir" location="target/dist/" />
 	<property name="tmp.dir" location="target/tmp" />
 	<property name="classes.dir" location="target/classes"/>
 
+	<tstamp>
+		<format property="timestamp" pattern="yyMMddHHmm" />
+	</tstamp>
 	<property name="version" value="DEV-${timestamp}" />
 	<!-- <property name="version" value="0.4.0" /> -->
 	<!-- launch4j requires the version number to be x.x.x.x -->
@@ -50,7 +54,7 @@
 		<copy todir="${dist.dir}/robonobo.app">
 			<fileset dir="template/robonobo.app"/>
 		</copy>
-		<copy todir="${dist.dir}/robonobo.app">
+		<copy todir="${dist.dir}/robonobo.app/Contents">
 			<fileset file="${tmp.dir}/Info.plist"/>
 		</copy>
 		<copy todir="${dist.dir}/robonobo.app/Contents/MacOS" file="/System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub" />
@@ -67,7 +71,8 @@
 		<copy todir="${tmp.dir}/dmg-skel/robonobo.app">
 			<fileset dir="${dist.dir}/robonobo.app"/>
 		</copy>
-		<exec executable="build-dmg.sh">
+		<chmod file="${tmp.dir}/dmg-skel/robonobo.app/Contents/MacOS/JavaApplicationStub" perm="755" />
+		<exec executable="./build-dmg.sh">
 			<arg value="${tmp.dir}/dmg-skel"/>
 			<arg value="robonobo ${version}"/>
 			<arg value="10000"/>
