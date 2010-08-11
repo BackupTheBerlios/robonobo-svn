@@ -14,17 +14,19 @@
 		</classpath>
 	</typedef>
 	<taskdef name="nsis" classname="net.sf.nsisant.Task">
-	        <classpath location="../core/buildlib/nsisant-1.2.jar"/>
+		<classpath location="../core/buildlib/nsisant-1.2.jar" />
 	</taskdef>
-	<property name="nsis.path" location="c:/apps/NSIS/"/>
-	
+	<property name="nsis.path" location="c:/apps/NSIS/" />
+	<taskdef name="envgen" classname="com.basilv.envgen.EnvGenTask" classpath="../core/buildlib/EnvGen-with-dependencies.jar"/>
+
 	<!-- Uncomment this and point it at your launch4j installation -->
 	<!--
 	<property name="launch4j.dir" location="C:/apps/Launch4J" />
 	<taskdef name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask" classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar" />
 	-->
-	
+
 	<property name="out" location="target/dist/" />
+	<property name="tmp.dir" location="target/tmp" />
 
 	<tstamp>
 		<format property="timestamp" pattern="yyMMddHHmm" />
@@ -33,10 +35,10 @@
 	<property name="version" value="DEV-${timestamp}" />
 	<!-- <property name="version" value="0.4.0" /> -->
 	<!-- launch4j requires the version number to be x.x.x.x -->
-	<property name="l4jVersion" value="0.4.0.0"/>
+	<property name="launch4jVersion" value="0.4.0.0" />
 
 	<target name="build" depends="compile-all" />
-	
+
 	<target name="compile-all">
 		<ant dir="../console" inheritall="false" target="compile-all" />
 
@@ -62,10 +64,10 @@
 		<copy todir="target/classes">
 			<fileset dir="src/java" includes="**/*.properties,**/*.xml,**/*.png,**/*.js,**/*.wsf, **/*.html,**/*.txt" />
 		</copy>
-		
+
 		<!-- Make our build.properties -->
 		<propertyfile file="target/classes/robonobo-build.properties">
-			<entry key="version" value="${version}"/>
+			<entry key="version" value="${version}" />
 		</propertyfile>
 	</target>
 
@@ -90,7 +92,7 @@
 			<fatjar.filesource path="../wang-client/target/classes" relpath="." />
 
 			<!-- Include pre-built gui-mac (won't compile on non-apple platform) -->
-			<fatjar.jarsource file="../gui-mac/dist/gui-mac.jar"/>
+			<fatjar.jarsource file="../gui-mac/dist/gui-mac.jar" />
 			<fatjar.jarsource file="../plugin-mp3/lib/mp3spi-robo.jar" relpath="." />
 			<fatjar.jarsource file="../plugin-mp3/lib/jl1.0.1.jar" relpath="." />
 			<fatjar.jarsource file="../plugin-mp3/lib/tritonus_share.jar" relpath="." />
@@ -202,9 +204,9 @@
 	</target>
 
 	<target name="genkey">
-		<genkey alias="robo-jnlp" storepass="password" dname="CN=Robonobo Dev Key, O=robonobo.com, C=UK"/>
+		<genkey alias="robo-jnlp" storepass="password" dname="CN=Robonobo Dev Key, O=robonobo.com, C=UK" />
 	</target>
-		
+
 	<target name="jnlp" depends="fatjar">
 		<jw:jnlpwar tofile="${out}/robonobo-launch-${version}.war" codebase="http://robonobo.com/robonobo-launch-${version}" title="robonobo" vendor="The robonobo project" homepage="http://robonobo.com" pack200="false" signStorepass="password" signAlias="robo-jnlp">
 			<jw:application jar="${out}/robonobo-${version}.jar" mainclass="com.robonobo.Robonobo" />
@@ -214,47 +216,63 @@
 	</target>
 
 	<target name="exe" depends="fatjar">
-		<launch4j 
-			configFile="./launch4j-cfg.xml" 
-			jar="${out}/robonobo-${version}.jar" 
-			outfile="${out}/robonobo-${version}.exe"
-			fileVersion="${l4jVersion}"
-			txtFileVersion="${l4jVersion}"
-			productVersion="${l4jVersion}"
-		 	txtProductVersion="${l4jVersion}"
-		/>
+		<launch4j configFile="./launch4j-cfg.xml" jar="${out}/robonobo-${version}.jar" outfile="${out}/robonobo-${version}.exe" fileVersion="${launch4jVersion}" txtFileVersion="${launch4jVersion}" productVersion="${launch4jVersion}" txtProductVersion="${launch4jVersion}" />
 	</target>
 
 	<target name="dist-win" depends="exe">
 		<nsis path="${nsis.path}" script="robo-installer.nsi">
-			<define name="VERSION" value="${version}"/>
+			<define name="VERSION" value="${version}" />
 		</nsis>
 	</target>
-	
-	<target name="osx-app" depends="fatjar">
+
+	<target name="generate-plist">
+		<mkdir dir="${tmp.dir}"/>
+		<echo file="${tmp.dir}/plist-props.csv" message="version,${version}"/>
+		<envgen 
+			destdir="${tmp.dir}" 
+			envPropertiesFile="${tmp.dir}/plist-props.csv"
+			stripFileExtension="true"
+			overwrite="true">
+			<source file="template/Info.plist.ftl"/>
+		</envgen>
+	</target>
+
+	<target name="osx-app" depends="fatjar, generate-plist">
 		<copy todir="${out}/robonobo.app">
-			<fileset dir="template/robonobo.app">
-				<include name="**/*"/>
-			</fileset>
+			<fileset dir="template/robonobo.app"/>
 		</copy>
-		<copy todir="${out}/robonobo.app/Contents/MacOS" file="/System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub"/>
-		<chmod file="${out}/robonobo.app/Contents/MacOS/JavaApplicationStub" perm="755"/>
+		<copy todir="${out}/robonobo.app">
+			<fileset file="${tmp.dir}/Info.plist"/>
+		</copy>
+		<copy todir="${out}/robonobo.app/Contents/MacOS" file="/System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub" />
+		<chmod file="${out}/robonobo.app/Contents/MacOS/JavaApplicationStub" perm="755" />
 		<copy toDir="${out}/robonobo.app/Contents/Resources/Java/">
-			<fileset file="${out}/robonobo-${version}.jar"/>
+			<fileset file="${out}/robonobo-${version}.jar" />
 		</copy>
 	</target>
-	
+
 	<target name="dist-osx" depends="osx-app">
+		<copy todir="${tmp.dir}/dmg-skel">
+			<fileset dir="template/dmg-skel"/>
+		</copy>
+		<copy todir="${tmp.dir}/dmg-skel/robonobo.app">
+			<fileset dir="${out}/robonobo.app"/>
+		</copy>
+		<exec executable="build-dmg.sh">
+			<arg value="${tmp.dir}/dmg-skel"/>
+			<arg value="robonobo ${version}"/>
+			<arg value="10000"/>
+			<arg value="${out}/robonobo-${version}.dmg"/>
+		</exec>
 		<!-- TODO: 
-			Make info.plist from freemarker template to include version num
-			Encapsulate build-dmg.sh into ant target
 			Move dist stuff into separate eclipse proj 
-		--> 
+		-->
 	</target>
-	
+
 	<target name="clean">
 		<delete dir="target/classes" />
 		<delete dir="${out}" />
+		<delete dir="${tmp.dir}"/>
 		<ant dir="../console" inheritall="false" target="clean" />
 	</target>
 

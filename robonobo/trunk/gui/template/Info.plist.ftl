@@ -19,7 +19,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.4.0</string>
+	<string>${version}</string>
 	<key>CFBundleSignature</key>
 	<string>RBNB</string>
 	<key>CFBundleURLTypes</key>
@@ -36,11 +36,11 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>robonobo 0.4.0</string>
+	<string>robonobo ${version}</string>
 	<key>Java</key>
 	<dict>
 		<key>ClassPath</key>
-		<string>$JAVAROOT/robonobo-0.4.0.jar:/System/Library/Java</string>
+		<string>$JAVAROOT/robonobo-${version}.jar:/System/Library/Java</string>
 		<key>JVMVersion</key>
 		<string>1.5.0+</string>
 		<key>MainClass</key>
