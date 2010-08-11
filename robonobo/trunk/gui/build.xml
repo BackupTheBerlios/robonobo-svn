@@ -241,7 +241,7 @@
 		<copy todir="${out}/robonobo.app">
 			<fileset dir="template/robonobo.app"/>
 		</copy>
-		<copy todir="${out}/robonobo.app">
+		<copy todir="${out}/robonobo.app/Contents">
 			<fileset file="${tmp.dir}/Info.plist"/>
 		</copy>
 		<copy todir="${out}/robonobo.app/Contents/MacOS" file="/System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub" />
@@ -258,7 +258,7 @@
 		<copy todir="${tmp.dir}/dmg-skel/robonobo.app">
 			<fileset dir="${out}/robonobo.app"/>
 		</copy>
-		<exec executable="build-dmg.sh">
+		<exec executable="./build-dmg.sh">
 			<arg value="${tmp.dir}/dmg-skel"/>
 			<arg value="robonobo ${version}"/>
 			<arg value="10000"/>
