@@ -6,8 +6,10 @@
 	<taskdef name="envgen" classname="com.basilv.envgen.EnvGenTask" classpath="buildlib/EnvGen-with-dependencies.jar"/>
 
 	<!-- Uncomment this and point it at your launch4j installation -->
+	<!--
 	<property name="launch4j.dir" location="C:/apps/Launch4J" />
 	<taskdef name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask" classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar" />
+	-->
 	
 	<property name="out" location="target/dist"/>
 	<property name="dist.dir" location="target/dist/" />
@@ -38,6 +40,7 @@
 
 	<target name="generate-plist">
 		<mkdir dir="${tmp.dir}"/>
+		<delete quiet="true" file="${tmp.dir}/plist-props.csv"/>
 		<echo file="${tmp.dir}/plist-props.csv" message="version,${version}"/>
 		<envgen 
 			destdir="${tmp.dir}" 
@@ -78,6 +81,34 @@
 		</exec>
 	</target>
 
+	<target name="dist-tar" depends="build-jar">
+		<mkdir dir="${tmp.dir}"/>
+		<copy todir="${tmp.dir}/robonobo-${version}">
+			<fileset dir="template/tarball"/>
+		</copy>
+		<copy todir="${tmp.dir}/robonobo-${version}">
+			<fileset file="../gui/release-notes.txt"/>
+			<fileset file="${dist.dir}/robonobo-${version}.jar"/>
+		</copy>
+		<delete quiet="true" file="${tmp.dir}/tarprops.csv"/>
+		<echo file="${tmp.dir}/tarprops.csv" message="version,${version}"/>
+		<envgen 
+			destdir="${tmp.dir}/robonobo-${version}" 
+			envPropertiesFile="${tmp.dir}/tarprops.csv"
+			stripFileExtension="true"
+			overwrite="true">
+			<source file="template/robonobo.ftl"/>
+		</envgen>
+		<chmod file="${tmp.dir}/robonobo-${version}/robonobo" perm="755"/>
+		<exec executable="tar">
+			<arg value="-czf"/>
+			<arg value="${dist.dir}/robonobo-${version}.tar.gz"/>
+			<arg value="-C"/>
+			<arg value="${tmp.dir}"/>
+			<arg value="robonobo-${version}"/>
+		</exec>
+	</target>
+		
 	<target name="clean">
 		<delete dir="${classes.dir}" />
 		<delete dir="${dist.dir}" />
