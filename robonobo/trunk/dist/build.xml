@@ -153,18 +153,10 @@
 		<mkdir dir="${src.dir}/lib"/>
 		<!-- TODO: take out libs that are handled by debian -->
 		<copy todir="${src.dir}/lib">
-			<fileset dir="../common/lib">
-				<include name="*.jar"/>
-			</fileset>
-			<fileset dir="../core/lib">
-				<include name="*.jar"/>
-			</fileset>
-			<fileset dir="../gui/lib">
-				<include name="*.jar"/>
-			</fileset>
-			<fileset dir="../plugin-mp3/lib">
-				<include name="*.jar"/>
-			</fileset>
+			<fileset file="../common/lib/jug-1.1.2.jar"/>
+			<fileset file="../core/lib/sbbi-jmx-1.0.jar"/>
+			<fileset file="../core/lib/sbbi-upnplib-1.0.3.jar"/>
+			<fileset file="../gui/lib/swingx-0.9.7.jar"/>
 		</copy>
 	</target>
 		

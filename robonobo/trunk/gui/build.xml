@@ -82,8 +82,7 @@
 			<fatjar.jarsource file="../gui-mac/dist/gui-mac.jar" />
 			<fatjar.jarsource file="../plugin-mp3/lib/mp3spi-robo.jar" relpath="." />
 			<fatjar.jarsource file="../plugin-mp3/lib/jl1.0.1.jar" relpath="." />
-			<fatjar.jarsource file="../plugin-mp3/lib/tritonus_share.jar" relpath="." />
-			<fatjar.jarsource file="../plugin-mp3/lib/basicplayer3.0.jar" relpath="." />
+			<fatjar.jarsource file="../plugin-mp3/lib/basicplayer3.0-robo.jar" relpath="." />
 			<fatjar.jarsource file="../core/lib/commons-cli-1.0.jar" relpath="." />
 			<fatjar.jarsource file="../core/lib/commons-jxpath-1.1.jar" relpath="." />
 			<fatjar.jarsource file="../core/lib/sbbi-jmx-1.0.jar" relpath="." />
