@@ -109,6 +109,75 @@
 		</exec>
 	</target>
 		
+	<target name="unified-src">
+		<!-- Builds a unified source tree for the robonobo client -->
+		<!-- NOTE: Doesn't include any mac code -->
+		<mkdir dir="${tmp.dir}"/>
+		<property name="src.dir" value="${tmp.dir}/robonobo-${version}"/>
+		<mkdir dir="${src.dir}"/>
+		<copy todir="${src.dir}/src">
+			<fileset dir="../api/src/java">
+				<include name="com/**/*"/>
+			</fileset>
+			<fileset dir="../common/src/java">
+				<include name="com/**/*"/>
+			</fileset>
+			<fileset dir="../console/src/java">
+				<include name="com/**/*"/>
+			</fileset>
+			<fileset dir="../core/src/java">
+				<include name="com/**/*"/>
+			</fileset>
+			<fileset dir="../eon/src/java">
+				<include name="com/**/*"/>
+			</fileset>
+			<fileset dir="../gui/src/java">
+				<include name="**/*"/>
+			</fileset>
+			<fileset dir="../mina/src/java">
+				<include name="com/**/*"/>
+			</fileset>
+			<fileset dir="../pageio/src/java">
+				<include name="com/**/*"/>
+			</fileset>
+			<fileset dir="../plugin-mp3/src/java">
+				<include name="com/**/*"/>
+			</fileset>
+			<fileset dir="../serialization/src/java">
+				<include name="com/**/*"/>
+			</fileset>
+			<fileset dir="../wang-client/src/java">
+				<include name="**/*"/>
+			</fileset>
+		</copy>
+		<mkdir dir="${src.dir}/lib"/>
+		<!-- TODO: take out libs that are handled by debian -->
+		<copy todir="${src.dir}/lib">
+			<fileset dir="../common/lib">
+				<include name="*.jar"/>
+			</fileset>
+			<fileset dir="../core/lib">
+				<include name="*.jar"/>
+			</fileset>
+			<fileset dir="../gui/lib">
+				<include name="*.jar"/>
+			</fileset>
+			<fileset dir="../plugin-mp3/lib">
+				<include name="*.jar"/>
+			</fileset>
+		</copy>
+	</target>
+		
+	<target name="dist-debian" depends="unified-src">
+		<property name="src.dir" value="${tmp.dir}/robonobo-${version}"/>
+		<copy todir="${src.dir}">
+			<fileset dir="template/dpkg">
+				<include name="**/*"/>
+			</fileset>
+		</copy>
+		<echo message="NOW UPDATE THE DEBIAN CHANGELOG!"/>
+	</target>
+		
 	<target name="clean">
 		<delete dir="${classes.dir}" />
 		<delete dir="${dist.dir}" />

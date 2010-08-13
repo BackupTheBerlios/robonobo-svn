@@ -1,0 +1,3 @@
+usr/share/robonobo/robonobo.jar:
+ Main-Class: com.robonobo.Robonobo
+ Debian-Java-Home: /usr/lib/jvm/java-6-openjdk
