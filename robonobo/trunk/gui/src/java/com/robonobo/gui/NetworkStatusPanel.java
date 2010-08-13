@@ -1,7 +1,5 @@
 package com.robonobo.gui;
 
-import info.clearthought.layout.TableLayout;
-
 import java.awt.Color;
 import java.awt.Font;
 
@@ -11,6 +9,7 @@ import javax.swing.SwingUtilities;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.RobonoboController;

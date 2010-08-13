@@ -1,7 +1,5 @@
 package com.robonobo.gui.preferences;
 
-import info.clearthought.layout.TableLayout;
-
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -19,6 +17,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+
+import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.util.NetUtil;
 import com.robonobo.gui.RobonoboFrame;

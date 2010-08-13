@@ -3,11 +3,11 @@ package com.robonobo.gui;
 import java.awt.Color;
 import java.text.NumberFormat;
 
-import info.clearthought.layout.TableLayout;
-
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+
+import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.RobonoboController;

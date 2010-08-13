@@ -1,7 +1,5 @@
 package com.robonobo.gui;
 
-import info.clearthought.layout.TableLayout;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -11,6 +9,8 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+
+import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.core.Platform;
 import com.robonobo.core.api.SearchExecutor;

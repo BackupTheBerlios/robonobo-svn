@@ -1,14 +1,12 @@
 package com.robonobo.gui.preferences;
 
-import info.clearthought.layout.TableLayout;
-
-import java.awt.Color;
 import java.awt.Dimension;
 
-import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.JRadioButton;
+
+import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.gui.RobonoboFrame;
 

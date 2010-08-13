@@ -1,7 +1,5 @@
 package com.robonobo.gui;
 
-import info.clearthought.layout.TableLayout;
-
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -20,11 +18,11 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
+
+import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.Platform;
-import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.model.Playlist;
 
 public class MyPlaylistDetailsPanel extends JPanel {

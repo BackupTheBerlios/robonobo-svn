@@ -1,8 +1,8 @@
 package com.robonobo.gui;
 
-import info.clearthought.layout.TableLayout;
-
 import javax.swing.JScrollPane;
+
+import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.core.api.model.User;
 

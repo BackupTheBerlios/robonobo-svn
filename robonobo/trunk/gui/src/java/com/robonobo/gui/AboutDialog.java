@@ -1,7 +1,5 @@
 package com.robonobo.gui;
 
-import info.clearthought.layout.TableLayout;
-
 import java.awt.Dimension;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,6 +7,8 @@ import java.io.InputStream;
 import javax.swing.JDialog;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
+
+import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 

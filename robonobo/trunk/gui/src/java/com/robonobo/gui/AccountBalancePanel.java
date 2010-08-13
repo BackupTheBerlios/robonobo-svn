@@ -1,11 +1,11 @@
 package com.robonobo.gui;
 
-import info.clearthought.layout.TableLayout;
-
 import java.awt.Color;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+
+import org.debian.tablelayout.TableLayout;
 
 public class AccountBalancePanel extends JPanel {
 	public AccountBalancePanel() {

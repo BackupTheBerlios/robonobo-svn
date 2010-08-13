@@ -1,11 +1,11 @@
 package com.robonobo.gui.preferences;
 
-import info.clearthought.layout.TableLayout;
-
 import java.awt.Dimension;
 
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+
+import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.gui.RobonoboFrame;

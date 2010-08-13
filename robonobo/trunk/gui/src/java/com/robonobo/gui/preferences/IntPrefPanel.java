@@ -1,11 +1,11 @@
 package com.robonobo.gui.preferences;
 
-import info.clearthought.layout.TableLayout;
-
 import java.awt.Dimension;
 
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+
+import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.swing.IntegerTextField;
 import com.robonobo.gui.RobonoboFrame;

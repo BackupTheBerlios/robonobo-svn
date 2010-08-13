@@ -1,8 +1,6 @@
 package com.robonobo.gui;
 
-import static com.robonobo.common.util.TextUtil.isNonEmpty;
-import static com.robonobo.common.util.TextUtil.numItems;
-import info.clearthought.layout.TableLayout;
+import static com.robonobo.common.util.TextUtil.*;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -33,6 +31,7 @@ import javax.swing.ListSelectionModel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.swing.SelectiveListSelectionModel;

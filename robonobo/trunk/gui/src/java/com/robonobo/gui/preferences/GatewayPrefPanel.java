@@ -1,7 +1,5 @@
 package com.robonobo.gui.preferences;
 
-import info.clearthought.layout.TableLayout;
-
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,6 +8,8 @@ import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+
+import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.swing.IntegerTextField;
 import com.robonobo.core.api.config.RobonoboConfig;

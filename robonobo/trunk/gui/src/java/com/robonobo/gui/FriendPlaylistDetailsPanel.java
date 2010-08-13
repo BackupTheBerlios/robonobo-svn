@@ -1,7 +1,6 @@
 package com.robonobo.gui;
 
-import static com.robonobo.common.util.TextUtil.escapeHtml;
-import info.clearthought.layout.TableLayout;
+import static com.robonobo.common.util.TextUtil.*;
 
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -15,6 +14,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+
+import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.Platform;

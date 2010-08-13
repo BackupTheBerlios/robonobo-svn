@@ -1,7 +1,6 @@
 package com.robonobo.gui;
 
-import static com.robonobo.common.util.FileUtil.getFileExtension;
-import info.clearthought.layout.TableLayout;
+import static com.robonobo.common.util.FileUtil.*;
 
 import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
@@ -22,6 +21,7 @@ import javax.swing.SwingUtilities;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.debian.tablelayout.TableLayout;
 import org.doomdark.uuid.UUIDGenerator;
 
 import com.robonobo.Robonobo;

@@ -3,11 +3,10 @@
 	<classpathentry kind="src" path="src/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/common"/>
-	<classpathentry kind="lib" path="lib/TableLayout-bin-jdk1.5-2007-04-21.jar"/>
-	<classpathentry kind="lib" path="lib/quaqua.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/api"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/core"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/console"/>
 	<classpathentry kind="lib" path="lib/swingx-0.9.7.jar" sourcepath="/home/macavity/src/mirror/swingx-0.9.7-src/src/java"/>
+	<classpathentry kind="lib" path="lib/tablelayout.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

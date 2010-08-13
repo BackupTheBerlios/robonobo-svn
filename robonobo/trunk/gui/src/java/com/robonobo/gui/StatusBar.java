@@ -1,13 +1,13 @@
 package com.robonobo.gui;
 
-import info.clearthought.layout.TableLayout;
-
 import java.awt.Font;
 import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+
+import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.RobonoboController;

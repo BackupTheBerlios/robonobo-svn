@@ -1,35 +1,22 @@
 package com.robonobo.gui;
 
-import static com.robonobo.gui.GUIUtils.createImageIcon;
-import info.clearthought.layout.TableLayout;
+import static com.robonobo.gui.GUIUtils.*;
 
-import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JTree;
-import javax.swing.TransferHandler;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.core.api.UserPlaylistListener;
 import com.robonobo.core.api.model.Playlist;

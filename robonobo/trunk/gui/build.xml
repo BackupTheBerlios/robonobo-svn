@@ -63,7 +63,7 @@
 			<fatjar.manifest manifestfile="${basedir}/fatjar.manifest" mergemanifests="false" />
 
 			<fatjar.filesource path="${classes.dir}" relpath="." />
-			<fatjar.jarsource file="${basedir}/lib/TableLayout-bin-jdk1.5-2007-04-21.jar" relpath="." />
+			<fatjar.jarsource file="${basedir}/lib/tablelayout.jar" relpath="." />
 			<fatjar.jarsource file="${basedir}/lib/swingx-0.9.7.jar" relpath="." />
 
 			<fatjar.filesource path="../console/target/classes" relpath="." />
