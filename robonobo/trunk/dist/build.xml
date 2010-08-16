@@ -151,12 +151,14 @@
 			</fileset>
 		</copy>
 		<mkdir dir="${src.dir}/lib"/>
-		<!-- TODO: take out libs that are handled by debian -->
+		<!-- Even though debian has mp3spi/tritonus packages, robonobo doesn't work when uses them, so
+		     package in our own, and investigate this in our copious free time... -->
 		<copy todir="${src.dir}/lib">
 			<fileset file="../common/lib/jug-1.1.2.jar"/>
 			<fileset file="../core/lib/sbbi-jmx-1.0.jar"/>
 			<fileset file="../core/lib/sbbi-upnplib-1.0.3.jar"/>
 			<fileset file="../gui/lib/swingx-0.9.7.jar"/>
+			<fileset file="../plugin-mp3/lib/mp3spi-robo.jar"/>
 		</copy>
 	</target>
 		
