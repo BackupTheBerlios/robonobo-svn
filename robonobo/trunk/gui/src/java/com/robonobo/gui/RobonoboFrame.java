@@ -3,6 +3,7 @@ package com.robonobo.gui;
 import static com.robonobo.common.util.FileUtil.*;
 
 import java.awt.Dimension;
+import java.awt.Image;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -61,6 +62,7 @@ public class RobonoboFrame extends JFrame implements UserPlaylistListener {
 		setPreferredSize(initSize);
 		setSize(initSize);
 
+		setIconImage(getRobonoboIconImage());
 		double[][] cellSizen = { { 170, TableLayout.FILL, 80 }, { TableLayout.FILL, 20, 5 } };
 		setLayout(new TableLayout(cellSizen));
 
@@ -98,6 +100,10 @@ public class RobonoboFrame extends JFrame implements UserPlaylistListener {
 				first = false;
 			}
 		});
+	}
+
+	public static Image getRobonoboIconImage() {
+		return GUIUtils.getImage("/img/robonobo-128x128.png");
 	}
 
 	public ContentPanelHolder getContentHolder() {

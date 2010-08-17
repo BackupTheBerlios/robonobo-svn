@@ -1,10 +1,15 @@
 package com.robonobo.gui;
 
+import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Window;
+import java.io.IOException;
 import java.net.URL;
 
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
+
+import com.robonobo.common.exceptions.SeekInnerCalmException;
 
 public class GUIUtils {
 	public static final int DEFAULT_NUM_SHAKES = 10;
@@ -17,6 +22,14 @@ public class GUIUtils {
 		return new ImageIcon(imgUrl, description);
 	}
 
+	public static Image getImage(String path) {
+        try {
+            return ImageIO.read(GUIUtils.class.getResource(path));
+        } catch (IOException e) {
+        	throw new SeekInnerCalmException(e);
+        }
+	}
+	
 	public static void shakeWindow(final Window win, int numShakes, int shakeForce) {
 		final Rectangle origRect = win.getBounds();
 		for (int i = 0; i < numShakes; i++) {
