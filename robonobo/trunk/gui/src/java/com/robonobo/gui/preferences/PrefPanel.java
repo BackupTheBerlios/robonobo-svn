@@ -5,7 +5,7 @@ import java.beans.PropertyDescriptor;
 import javax.swing.JPanel;
 
 import com.robonobo.common.exceptions.SeekInnerCalmException;
-import com.robonobo.gui.RobonoboFrame;
+import com.robonobo.oldgui.RobonoboFrame;
 
 public abstract class PrefPanel extends JPanel {
 	protected RobonoboFrame frame;

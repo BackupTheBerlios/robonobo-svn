@@ -8,7 +8,7 @@ import javax.swing.JRadioButton;
 
 import org.debian.tablelayout.TableLayout;
 
-import com.robonobo.gui.RobonoboFrame;
+import com.robonobo.oldgui.RobonoboFrame;
 
 @SuppressWarnings("serial")
 public class BoolPrefPanel extends PrefPanel {

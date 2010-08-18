@@ -8,7 +8,7 @@ import javax.swing.JLabel;
 import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.exceptions.SeekInnerCalmException;
-import com.robonobo.gui.RobonoboFrame;
+import com.robonobo.oldgui.RobonoboFrame;
 
 @SuppressWarnings("serial")
 public class ChoicePrefPanel extends PrefPanel {

@@ -8,7 +8,7 @@ import javax.swing.JTextField;
 import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.swing.IntegerTextField;
-import com.robonobo.gui.RobonoboFrame;
+import com.robonobo.oldgui.RobonoboFrame;
 
 @SuppressWarnings("serial")
 public class IntPrefPanel extends PrefPanel {

@@ -8,5 +8,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/console"/>
 	<classpathentry kind="lib" path="lib/swingx-0.9.7.jar" sourcepath="/home/macavity/src/mirror/swingx-0.9.7-src/src/java"/>
 	<classpathentry kind="lib" path="lib/tablelayout.jar"/>
+	<classpathentry kind="lib" path="lib/robolaf.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

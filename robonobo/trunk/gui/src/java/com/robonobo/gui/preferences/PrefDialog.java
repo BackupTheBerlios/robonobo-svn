@@ -21,7 +21,7 @@ import javax.swing.JTabbedPane;
 import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.util.NetUtil;
-import com.robonobo.gui.RobonoboFrame;
+import com.robonobo.oldgui.RobonoboFrame;
 
 @SuppressWarnings("serial")
 public class PrefDialog extends JDialog {

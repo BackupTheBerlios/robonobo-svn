@@ -18,8 +18,8 @@ import com.robonobo.console.RobonoboConsole;
 import com.robonobo.core.Platform;
 import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.RobonoboStatus;
-import com.robonobo.gui.EULAFrame;
-import com.robonobo.gui.RobonoboFrame;
+import com.robonobo.oldgui.EULAFrame;
+import com.robonobo.oldgui.RobonoboFrame;
 
 /**
  * Just a mainline - starts a RobonoboFrame or RobonoboConsole as appropriate
