@@ -1,4 +1,4 @@
-package com.robonobo.gui;
+package com.robonobo.gui.frames;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -6,7 +6,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -22,23 +21,18 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JRadioButton;
-import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
@@ -58,227 +52,41 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
 
+import com.robonobo.common.exceptions.SeekInnerCalmException;
+import com.robonobo.core.Platform;
+import com.robonobo.gui.components.PlaybackProgressBar;
 import com.robonobo.gui.laf.RobonoboLookAndFeel;
+import com.robonobo.gui.panels.LeftSidebar;
 
-public class Main {
-
+public class RobonoboFrame extends JFrame {
+	private JMenuBar menuBar;
+	
 	public static void main(String[] args) {
-
-		// Extract the .ttf files if needed
-//		final File fontsDir = new File(System.getProperty("java.home") + "/lib/fonts");
-//		if (fontsDir.exists() && fontsDir.isDirectory()) {
-//			final File veraFile = new File(fontsDir, "Vera.ttf");
-//			if (!veraFile.exists()) {
-//				extractFileFromResource("Vera.ttf", veraFile);
-//			}
-//			final File veraBdFile = new File(fontsDir, "VeraBd.ttf");
-//			if (!veraBdFile.exists()) {
-//				extractFileFromResource("VeraBd.ttf", veraBdFile);
-//			}
-//			final File veraBIFile = new File(fontsDir, "VeraBI.ttf");
-//			if (!veraBIFile.exists()) {
-//				extractFileFromResource("VeraBI.ttf", veraBIFile);
-//			}
-//			final File veraItFile = new File(fontsDir, "VeraIt.ttf");
-//			if (!veraItFile.exists()) {
-//				extractFileFromResource("VeraIt.ttf", veraItFile);
-//			}
-//		}
-
-		// Set look and feel
 		try {
 			UIManager.setLookAndFeel(new RobonoboLookAndFeel());
 		} catch (UnsupportedLookAndFeelException e) {
-			e.printStackTrace();
+			throw new SeekInnerCalmException(e);
 		}
+		final JFrame mainFrame = new RobonoboFrame();
+		mainFrame.setVisible(true);
+		mainFrame.setLocationRelativeTo(null);
+		mainFrame.setVisible(true);
+	}
 
-		final JFrame mainFrame = new JFrame("Test");
-		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	public RobonoboFrame() {
+		setTitle("robonobo");
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		// MenuBar
-		final JMenuBar menuBar = new JMenuBar();
-		mainFrame.setJMenuBar(menuBar);
-
-		final JMenu fileMenu = new JMenu("File");
-		menuBar.add(fileMenu);
-		fileMenu.add(new JMenuItem("Open"));
-		fileMenu.add(new JMenuItem("Save"));
-		fileMenu.add(new JMenuItem("Save As..."));
-		final JMenuItem closeItem = new JMenuItem("Close");
-		closeItem.setEnabled(false);
-		fileMenu.add(closeItem);
-		fileMenu.addSeparator();
-		fileMenu.add(new JMenuItem("Quit"));
-
-		final JMenu networkMenu = new JMenu("Network");
-		menuBar.add(networkMenu);
-		final JRadioButtonMenuItem connectItem = new JRadioButtonMenuItem("Connect", true);
-		networkMenu.add(connectItem);
-		final JRadioButtonMenuItem disconnectItem = new JRadioButtonMenuItem("Disconnect", false);
-		networkMenu.add(disconnectItem);
-		final ButtonGroup connectGroup = new ButtonGroup();
-		connectGroup.add(connectItem);
-		connectGroup.add(disconnectItem);
-		final JRadioButtonMenuItem directLinkItem = new JRadioButtonMenuItem("Direct Link", true);
-		directLinkItem.setEnabled(false);
-		directLinkItem.setSelected(true);
-		networkMenu.add(directLinkItem);
-		final JRadioButtonMenuItem useProxyItem = new JRadioButtonMenuItem("Use Proxy", false);
-		useProxyItem.setEnabled(false);
-		networkMenu.add(useProxyItem);
-
-		final JMenu optionsMenu = new JMenu("Options");
-		menuBar.add(optionsMenu);
-		optionsMenu.add(new JCheckBoxMenuItem("Random", true));
-		optionsMenu.add(new JCheckBoxMenuItem("Loop"));
-		final JCheckBoxMenuItem reverseItem = new JCheckBoxMenuItem("Reverse", true);
-		reverseItem.setEnabled(false);
-		optionsMenu.add(reverseItem);
-		final JCheckBoxMenuItem noDuplicatedItem = new JCheckBoxMenuItem("No Duplicated", false);
-		noDuplicatedItem.setEnabled(false);
-		optionsMenu.add(noDuplicatedItem);
-
-		final JMenu debugMenu = new JMenu("Debug");
-		menuBar.add(debugMenu);
-		final JMenu debugModeMenu = new JMenu("Mode");
-		debugMenu.add(debugModeMenu);
-		debugModeMenu.add(new JMenuItem("Mode A"));
-		debugModeMenu.add(new JMenuItem("Mode B"));
-		final JMenu logMenu = new JMenu("Log...");
-		logMenu.setEnabled(false);
-		debugMenu.add(logMenu);
-
-		final JMenu helpMenu = new JMenu("Help");
-		helpMenu.setEnabled(false);
-		menuBar.add(helpMenu);
+		menuBar = Platform.getPlatform().getMenuBar(this);
+//		setJMenuBar(menuBar);
 
 		// main layout
 		final JPanel mainPanel = new JPanel(new BorderLayout());
-		mainFrame.setContentPane(mainPanel);
+		setContentPane(mainPanel);
 
-		// left panel
-		final JPanel leftPanel = new JPanel();
-		mainPanel.add(leftPanel, BorderLayout.WEST);
-		leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
-		leftPanel.setOpaque(true);
-		leftPanel.setBackground(new Color(28, 28, 28));
-		leftPanel.setPreferredSize(new Dimension(200, 700));
-		leftPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-
-		final JPanel musicLibPanel = new JPanel(new BorderLayout());
-		leftPanel.add(musicLibPanel);
-		musicLibPanel.setOpaque(false);
-		musicLibPanel.setPreferredSize(new Dimension(200, 30));
-		musicLibPanel.setMaximumSize(new Dimension(200, 30));
-		final JLabel musicLibLabel = new JLabel(" Music Library");
-		musicLibLabel.setForeground(Color.WHITE);
-		musicLibPanel.add(musicLibLabel, BorderLayout.WEST);
-		final JLabel plusLabel = new JLabel("[+]");
-		plusLabel.setForeground(Color.BLUE);
-		plusLabel.setFont(new Font("Bitstream Vera Sans", Font.PLAIN, 20));
-		musicLibPanel.add(plusLabel, BorderLayout.EAST);
-
-		final JPanel treeListView = new JPanel();
-		final JScrollPane treeListScroller = new JScrollPane(treeListView, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		leftPanel.add(treeListScroller);
-		treeListScroller.getViewport().getView().setBackground(Color.WHITE);
-		treeListView.setLayout(new BoxLayout(treeListView, BoxLayout.Y_AXIS));
-		final JLabel everyOneMusicLabel = new JLabel("Everyone's Music");
-		treeListView.add(everyOneMusicLabel);
-		everyOneMusicLabel.setName("robonobo.white.bar");
-		everyOneMusicLabel.setMinimumSize(new Dimension(180, 40));
-		everyOneMusicLabel.setPreferredSize(new Dimension(180, 40));
-		everyOneMusicLabel.setMaximumSize(new Dimension(180, 40));
-		everyOneMusicLabel.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
-		final DefaultMutableTreeNode treeRoot = new DefaultMutableTreeNode("Friends");
-		final JTree everyOneMusicTree = new JTree(new DefaultTreeModel(treeRoot));
-		everyOneMusicTree.setName("robonobo.playlist.tree");
-		treeListView.add(everyOneMusicTree);
-		everyOneMusicTree.setRootVisible(true);
-		final DefaultMutableTreeNode geffensNode = new DefaultMutableTreeNode("Geffen's");
-		treeRoot.insert(geffensNode, 0);
-		geffensNode.insert(new DefaultMutableTreeNode("No music found"), 0);
-		final DefaultMutableTreeNode willsNode = new DefaultMutableTreeNode("Will's");
-		treeRoot.insert(willsNode, 1);
-		willsNode.insert(new DefaultMutableTreeNode("Playlist 001 [over]"), 0);
-		willsNode.insert(new DefaultMutableTreeNode("Playlist For That Night"), 1);
-		willsNode.insert(new DefaultMutableTreeNode("I Hate This One"), 2);
-		everyOneMusicTree.expandPath(new TreePath(willsNode.getPath()));
-		everyOneMusicTree.setCellRenderer(new DefaultTreeCellRenderer() {
-			private static final long serialVersionUID = 1L;
-
-			public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-				final JLabel rdr = (JLabel) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-				final TreeNode node = (TreeNode) value;
-				if (!node.isLeaf()) {
-					rdr.setIcon(new ImageIcon(Main.class.getResource("/img/icon/playlist_people.png")));
-				} else {
-					rdr.setIcon(new ImageIcon(Main.class.getResource("/img/icon/music_icon.png")));
-				}
-				return rdr;
-			}
-
-			public void paint(Graphics g) {
-				paintComponent(g);
-			}
-		});
-		everyOneMusicTree.setMinimumSize(new Dimension(175, 130));
-		everyOneMusicTree.setPreferredSize(new Dimension(175, 130));
-		everyOneMusicTree.setAlignmentX(0.0f);
-		everyOneMusicTree.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		everyOneMusicTree.setMaximumSize(new Dimension(65535, 65535));
-		final JLabel myMusicLabel = new JLabel("My Music");
-		treeListView.add(myMusicLabel);
-		myMusicLabel.setName("robonobo.black.bar");
-		myMusicLabel.setForeground(Color.white);
-		myMusicLabel.setMinimumSize(new Dimension(180, 40));
-		myMusicLabel.setPreferredSize(new Dimension(180, 40));
-		myMusicLabel.setMaximumSize(new Dimension(180, 40));
-		myMusicLabel.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
-		final JList myMusicList = new JList(new Object[] { "New Playlist", "Playlist 001", "Playlist For That Night", "I Hate This One", "DJ Mix FIFE!~" });
-		treeListView.add(myMusicList);
-		myMusicList.setName("robonobo.playlist.list");
-		myMusicList.setCellRenderer(new DefaultListCellRenderer() {
-			private static final long serialVersionUID = 1L;
-
-			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-				final JLabel rdr = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-				rdr.setIcon(new ImageIcon(Main.class.getResource("/img/icon/music_icon.png")));
-				rdr.setBorder(null);
-				return rdr;
-			}
-		});
-		myMusicList.setAlignmentX(0.0f);
-		myMusicList.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		myMusicList.setMaximumSize(new Dimension(65535, 65535));
-
-		final JLabel bigLabel = new JLabel("345.00");
-		leftPanel.add(bigLabel);
-		bigLabel.setPreferredSize(new Dimension(200, 50));
-		bigLabel.setForeground(Color.ORANGE);
-		bigLabel.setFont(new Font("Bitstream Vera Sans", Font.PLAIN, 22));
-		bigLabel.setAlignmentX(0.5f);
-
-		final JLabel statusLabel = new JLabel("<html>Status:<b>Connected</b></html>");
-		leftPanel.add(statusLabel);
-		statusLabel.setPreferredSize(new Dimension(200, 25));
-		statusLabel.setAlignmentX(0.5f);
-		statusLabel.setOpaque(true);
-		statusLabel.setBackground(Color.LIGHT_GRAY);
-		statusLabel.setHorizontalAlignment(JLabel.CENTER);
-		statusLabel.setBorder(BorderFactory.createLoweredBevelBorder());
-
-		final JLabel networkLabel = new JLabel("<html><font color=white style='font-size:9pt;'>22/108 Linked Connections<br>25k up / 5k down</font></html>");
-		leftPanel.add(networkLabel);
-		networkLabel.setPreferredSize(new Dimension(200, 50));
-		networkLabel.setAlignmentX(0.5f);
-		networkLabel.setIcon(new ImageIcon(Main.class.getResource("/img/icon/earth.png")));
+		final JPanel leftSidebar = new LeftSidebar();
+		mainPanel.add(leftSidebar, BorderLayout.WEST);
 
 		// right panel (top + middle + bottom)
 		final JPanel rightPanel = new JPanel(new BorderLayout(10, 10));
@@ -313,7 +121,7 @@ public class Main {
 		playerPanel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 		final PlaybackProgressBar progressBar = new PlaybackProgressBar();
 		progressBar.setPreferredSize(new Dimension(305, 24));
-		progressBar.addListener(new IPlaybackProgressBar.Listener() {
+		progressBar.addListener(new PlaybackProgressBar.Listener() {
 			public void sliderFinishedMoving() {
 			}
 
@@ -339,22 +147,22 @@ public class Main {
 		buttonsPanel.setOpaque(false);
 		final JButton backButton = new JButton();
 		backButton.setName("robonobo.round.button");
-		backButton.setIcon(new ImageIcon(Main.class.getResource("/img/icon/play_back.png")));
+		backButton.setIcon(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/play_back.png")));
 		backButton.setPreferredSize(new Dimension(50, 50));
 		buttonsPanel.add(backButton);
 		final JButton ejectButton = new JButton();
 		ejectButton.setName("robonobo.round.button");
-		ejectButton.setIcon(new ImageIcon(Main.class.getResource("/img/icon/play_eject.png")));
+		ejectButton.setIcon(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/play_eject.png")));
 		ejectButton.setPreferredSize(new Dimension(50, 50));
 		buttonsPanel.add(ejectButton);
 		final JButton playButton = new JButton();
 		playButton.setName("robonobo.round.button");
-		playButton.setIcon(new ImageIcon(Main.class.getResource("/img/icon/play_play.png")));
+		playButton.setIcon(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/play_play.png")));
 		playButton.setPreferredSize(new Dimension(50, 50));
 		buttonsPanel.add(playButton);
 		final JButton nextButton = new JButton();
 		nextButton.setName("robonobo.round.button");
-		nextButton.setIcon(new ImageIcon(Main.class.getResource("/img/icon/play_next.png")));
+		nextButton.setIcon(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/play_next.png")));
 		nextButton.setPreferredSize(new Dimension(50, 50));
 		buttonsPanel.add(nextButton);
 		buttonsPanel.add(Box.createHorizontalStrut(50));
@@ -578,12 +386,10 @@ public class Main {
 		dlgTree.setPreferredSize(new Dimension(100, 100));
 		treeListPanel.add(new JScrollPane(dlgTree, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
 
-		mainFrame.setPreferredSize(new Dimension(1024, 723));
-		mainFrame.pack();
-		mainFrame.setLocationRelativeTo(null);
-		mainFrame.setVisible(true);
+		setPreferredSize(new Dimension(1024, 723));
+		pack();
 	}
-
+	
 	/**
 	 * Extract file from resource
 	 * 
@@ -593,7 +399,7 @@ public class Main {
 	private static final void extractFileFromResource(String resName, File targetFile) {
 		try {
 			final byte[] buf = new byte[1024];
-			final InputStream resIs = Main.class.getResourceAsStream(resName);
+			final InputStream resIs = RobonoboFrame.class.getResourceAsStream(resName);
 			if (resIs != null) {
 				final FileOutputStream fileOs = new FileOutputStream(targetFile);
 				int read = resIs.read(buf);
@@ -626,9 +432,9 @@ public class Main {
 					final SortKey sk = sortKeys.get(0);
 					if (column == sk.getColumn()) {
 						if (sk.getSortOrder() == SortOrder.ASCENDING) {
-							setIcon(new ImageIcon(Main.class.getResource("/img/icon/arrow_up.png")));
+							setIcon(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/arrow_up.png")));
 						} else if (sk.getSortOrder() == SortOrder.DESCENDING) {
-							setIcon(new ImageIcon(Main.class.getResource("/img/icon/arrow_down.png")));
+							setIcon(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/arrow_down.png")));
 						} else {
 							setIcon(null);
 						}
@@ -639,4 +445,7 @@ public class Main {
 			return this;
 		}
 	}
+	
+	// BELOW HERE IS REAL CODE (ABOVE IS COPY PASTA, WHICH SHOULD HAVE BEEN DELETED)
+	
 }

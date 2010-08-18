@@ -1,4 +1,4 @@
-package com.robonobo.gui;
+package com.robonobo.gui.components;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -17,7 +17,7 @@ import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 
-public class PlaybackProgressBar extends JProgressBar implements IPlaybackProgressBar {
+public class PlaybackProgressBar extends JProgressBar {
 
 	private static final long serialVersionUID = 1L;
 	private static final int DEFAULT_THUMB_WIDTH = 65;
@@ -203,5 +203,12 @@ public class PlaybackProgressBar extends JProgressBar implements IPlaybackProgre
 
 	public void setStartText(String text) {
 		startLabel.setText(text);
+	}
+	
+	public interface Listener {
+		/** Called when the user drags the slider to a new position */
+		public void sliderMoved(int newProgress);
+		/** Called when the user releases the mouse to stop dragging the slider */
+		public void sliderFinishedMoving();
 	}
 }

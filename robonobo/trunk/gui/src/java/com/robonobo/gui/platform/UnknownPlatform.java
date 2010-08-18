@@ -31,8 +31,8 @@ import com.robonobo.common.util.CodeUtil;
 import com.robonobo.core.Platform;
 import com.robonobo.core.api.Robonobo;
 import com.robonobo.core.itunes.ITunesService;
-import com.robonobo.oldgui.MenuBar;
-import com.robonobo.oldgui.RobonoboFrame;
+import com.robonobo.gui.components.MenuBar;
+import com.robonobo.gui.frames.RobonoboFrame;
 
 public class UnknownPlatform extends Platform {
 	private Font tableBodyFont = new Font("sans-serif", Font.PLAIN, 12);
