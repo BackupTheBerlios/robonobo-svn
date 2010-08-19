@@ -167,10 +167,11 @@ public class LeftSidebar extends JPanel {
 		add(spacerPanel);
 		
 		final JPanel botLeftPanel = new JPanel();
-		botLeftPanel.setPreferredSize(new Dimension(200, 75));
+		botLeftPanel.setPreferredSize(new Dimension(200, 80));
 		botLeftPanel.setLayout(new BoxLayout(botLeftPanel, BoxLayout.Y_AXIS));
-		botLeftPanel.setBackground(DARK_BG);
+		botLeftPanel.setName("robonobo.status.panel");
 		botLeftPanel.setOpaque(true);
+		botLeftPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
 		add(botLeftPanel);
 		JPanel balancePanel = new JPanel();
 		balancePanel.setLayout(new BoxLayout(balancePanel, BoxLayout.X_AXIS));
