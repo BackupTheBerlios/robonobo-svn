@@ -55,6 +55,7 @@ import javax.swing.table.TableRowSorter;
 
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.core.Platform;
+import com.robonobo.gui.RobonoboFont;
 import com.robonobo.gui.components.PlaybackProgressBar;
 import com.robonobo.gui.laf.RobonoboLookAndFeel;
 import com.robonobo.gui.panels.LeftSidebar;
@@ -108,7 +109,7 @@ public class RobonoboFrame extends JFrame {
 		headTitleLabel.setMinimumSize(new Dimension(450, 40));
 		headTitleLabel.setMaximumSize(new Dimension(450, 40));
 		headTitleLabel.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
-		headTitleLabel.setFont(new Font("Bitstream Vera Sans", Font.PLAIN, 24));
+		headTitleLabel.setFont(RobonoboFont.getFont(23, false));
 		headTitleLabel.setForeground(new Color(0, 0, 128));
 		titlesPanel.add(headTitleLabel);
 		final JLabel subTitleLabel = new JLabel("Ween / Don't Shit Where You Eat");
