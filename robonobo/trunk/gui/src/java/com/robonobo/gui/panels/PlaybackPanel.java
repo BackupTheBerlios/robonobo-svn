@@ -25,7 +25,6 @@ public class PlaybackPanel extends JPanel {
 		setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		setBackground(Color.LIGHT_GRAY);
 		final JPanel titlesPanel = new JPanel();
-//		titlesPanel.setBorder(BorderFactory.createLineBorder(Color.RED));
 		titlesPanel.setLayout(new BoxLayout(titlesPanel, BoxLayout.PAGE_AXIS));
 		titlesPanel.setOpaque(false);
 		add(titlesPanel, BorderLayout.CENTER);
@@ -50,27 +49,11 @@ public class PlaybackPanel extends JPanel {
 		final JPanel playerPanel = new JPanel(new BorderLayout(5, 5));
 		add(playerPanel, BorderLayout.EAST);
 		playerPanel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-		final PlaybackProgressBar progressBar = new PlaybackProgressBar();
-		progressBar.setPreferredSize(new Dimension(305, 24));
-		progressBar.addListener(new PlaybackProgressBar.Listener() {
-			public void sliderFinishedMoving() {
-			}
-
-			public void sliderMoved(int newProgress) {
-				final int totalSec = progressBar.getValue();
-				final int hours = totalSec / 3600;
-				final int minutes = (totalSec % 3600) / 60;
-				final int seconds = (totalSec % 60);
-				if (hours > 0) {
-					progressBar.setSliderText(String.format("%d:%02d:%02d", hours, minutes, seconds));
-				} else {
-					progressBar.setSliderText(String.format("%02d:%02d", minutes, seconds));
-				}
-			}
-		});
-//		progressBar.setMaximum(335);
-//		progressBar.setValue(0);
-		progressBar.setStartText("");
+		
+		PlaybackProgressBar progressBar = new PlaybackProgressBar(325);
+		progressBar.setTrackLength(335000);
+		progressBar.setPreferredSize(new Dimension(325, 24));
+		progressBar.setDataAvailable(0.5f);
 		playerPanel.add(progressBar, BorderLayout.NORTH);
 		final JPanel playerCtrlPanel = new JPanel(new BorderLayout());
 		playerPanel.add(playerCtrlPanel, BorderLayout.CENTER);

@@ -1,6 +1,5 @@
 package com.robonobo.gui.components;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ComponentAdapter;
@@ -17,163 +16,124 @@ import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 
-public class PlaybackProgressBar extends JProgressBar {
+import com.robonobo.gui.RobonoboFont;
 
-	private static final long serialVersionUID = 1L;
-	private static final int DEFAULT_THUMB_WIDTH = 65;
-	private static final int MAXIMUM_PROGRESS_VALUE = 35999;
-	
-	private int sliderThumbWidth;
+/**
+ * Maintains two 'progress' indicators. The first, 'availableData', displays how much data we have downloaded by means of a light blue bar, and is the limit to
+ * how far we can seek by dragging the slider. The second, 'trackPosition', is our playback position within the track and displayed by means of the slider
+ * position.
+ * 
+ * @author macavity
+ * 
+ */
+@SuppressWarnings("serial")
+public class PlaybackProgressBar extends JProgressBar {
+	private static final int SLIDER_TOTAL_WIDTH = 65;
+	private static final int SLIDER_OPAQUE_WIDTH = 62;
+
+//	private int sliderThumbWidth;
 	private boolean dragging;
+	/** In reference to the slider thumb */
+	private Point mouseDownPt;
 	private List<Listener> listeners;
 
 	private JButton sliderThumb;
-	private JLabel startLabel;
 	private JLabel endLabel;
-	
-	/**
-	 * Constructor: do some initialization
-	 */
-	public PlaybackProgressBar() {
+
+	private long trackLengthMs;
+	private long trackPositionMs;
+	private float dataAvailable;
+
+	public PlaybackProgressBar(int maxValue) {
 		super();
 		setName("robonobo.playback.progressbar");
 		listeners = new ArrayList<Listener>();
 		setMinimum(0);
-		setMaximum(MAXIMUM_PROGRESS_VALUE);
-		
-		// layout the progress bar
+		setMaximum(maxValue);
+
+		// Absolute positioning of elements
 		setLayout(null);
-		
-		sliderThumbWidth = DEFAULT_THUMB_WIDTH;
+
 		sliderThumb = new JButton();
 		sliderThumb.setName("robonobo.playback.progressbar.thumb");
+		sliderThumb.setFont(RobonoboFont.getFont(11, false));
 		sliderThumb.setFocusable(false);
 		sliderThumb.setLocation(0, 0);
 		add(sliderThumb);
-		
-		startLabel = new JLabel("0:00");
-		startLabel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
-		startLabel.setSize(startLabel.getPreferredSize());
-		startLabel.setForeground(Color.WHITE);
-		add(startLabel);
-		
-		endLabel = new JLabel("9:59:59");
+
+		endLabel = new JLabel();
 		endLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
 		endLabel.setSize(endLabel.getPreferredSize());
+		endLabel.setFont(RobonoboFont.getFont(12, false));
 		add(endLabel);
-		
-		// component resized
+
 		addComponentListener(new ComponentAdapter() {
 			public void componentResized(ComponentEvent e) {
 				// auto adjust thumb size
-				sliderThumb.setSize(new Dimension(sliderThumbWidth, getHeight()));
+				sliderThumb.setSize(new Dimension(SLIDER_TOTAL_WIDTH, getHeight()));
 				// update the thumb's position
-				updateThumbPosition();
+				setTrackPosition(0);
 				// auto adjust the labels' position
-				startLabel.setLocation(0, (getHeight() - startLabel.getHeight()) / 2);
 				endLabel.setLocation(getWidth() - endLabel.getWidth(), (getHeight() - endLabel.getHeight()) / 2);
 			}
 		});
-		
+
 		// mouse event processing
 		sliderThumb.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
 				dragging = true;
+				mouseDownPt = e.getPoint();
 			}
+
 			public void mouseReleased(MouseEvent e) {
 				if (dragging) {
 					dragging = false;
-					for (Listener l : listeners) {	// notify listeners
-						l.sliderFinishedMoving();
+					mouseDownPt = null;
+					for (Listener l : listeners) {
+						// notify listeners
+						// TODO do this via the thread pool...
+						l.sliderReleased(trackPositionMs);
 					}
 				}
 			}
 		});
 		sliderThumb.addMouseMotionListener(new MouseMotionAdapter() {
 			public void mouseDragged(MouseEvent e) {
-				final Point pos = SwingUtilities.convertPoint(sliderThumb, e.getPoint(), PlaybackProgressBar.this);
-				int curValue = pos.x * MAXIMUM_PROGRESS_VALUE / getWidth();
-				if (curValue < 0) {
-					curValue = 0;
-				} else if (curValue > MAXIMUM_PROGRESS_VALUE) {
-					curValue = MAXIMUM_PROGRESS_VALUE;
-				}
-				setValue(curValue);
+				// Get position relative to progress bar
+				Point progressBarPos = SwingUtilities.convertPoint(sliderThumb, e.getPoint(), PlaybackProgressBar.this);
+				// Take into account which part of the slider they're dragging by using mouseDownPt
+				int thumbX = progressBarPos.x - mouseDownPt.x;
+				// thumbX <= 0, trackPosition = 0
+				// thumbX >= maximum - thumbWidth, trackPosition = trackLength
+				int maxX = getMaximum() - SLIDER_TOTAL_WIDTH;
+				float relPos = (float) thumbX / maxX;
+				if(relPos > dataAvailable)
+					relPos = dataAvailable;
+				long trackPos = (long) (relPos * trackLengthMs);
+				if(trackPos < 0)
+					trackPos = 0;
+				if(trackPos > trackLengthMs)
+					trackPos = trackLengthMs;
+				setTrackPosition(trackPos);
 			}
-		});
-	}
-	
-	private void updateThumbPosition() {
-		final int halfThumbWidth = sliderThumbWidth / 2;
-		int curPos = getWidth() * getValue() / MAXIMUM_PROGRESS_VALUE - halfThumbWidth;
-		if (curPos < 0) {
-			curPos = 0;
-		} else if (curPos > getWidth() - sliderThumbWidth) {
-			curPos = getWidth() - sliderThumbWidth;
-		}
-		sliderThumb.setLocation(curPos, 0);
+		});		
 	}
 
 	/**
-	 * Override this method to avoid using vertical orientation.
+	 * pos = 0, trackPosition = 0 <br/>
+	 * pos = (maximum - thumbWidth), trackPosition = trackLength
 	 */
+	private void setThumbPosition(int pos) {
+		if (pos < 0)
+			pos = 0;
+		if (pos > (getMaximum() - SLIDER_OPAQUE_WIDTH))
+			pos = getMaximum() - SLIDER_OPAQUE_WIDTH;
+		sliderThumb.setLocation(pos, 0);
+	}
+
 	public void setOrientation(int newOrientation) {
-		if (newOrientation != JProgressBar.HORIZONTAL) {
+		if (newOrientation != JProgressBar.HORIZONTAL)
 			throw new RuntimeException("PlaybackProgressBar only support horizontal orientation");
-		}
-	}
-	
-	/**
-	 * Override this method to avoid using unexpected maximum value.
-	 */
-	public void setMaximum(int n) {
-		if (n > MAXIMUM_PROGRESS_VALUE) {
-			throw new RuntimeException("PlaybackProgressBar's maximum value must equal or less than " + MAXIMUM_PROGRESS_VALUE);
-		}
-		super.setMaximum(n);
-	}
-
-	/**
-	 * Override this method to avoid using unexpected minimum value.
-	 */
-	public void setMinimum(int n) {
-		if (n != 0) {
-			throw new RuntimeException("PlaybackProgressBar's minimun value must be 0");
-		}
-		super.setMinimum(n);
-	}
-
-	/**
-	 * Set the progress value and update the thumb position
-	 */
-	public void setValue(int n) {
-		if (n != getValue()) {
-			super.setValue(n);
-			// move the thumb
-			updateThumbPosition();
-			// notify listeners
-			for (Listener l : listeners) {
-				l.sliderMoved(n);
-			}
-		}
-	}
-
-	/**
-	 * Get the width of slider thumb
-	 * 
-	 * @return the width
-	 */
-	public int getSliderThumbWidth() {
-		return sliderThumbWidth;
-	}
-
-	/**
-	 * Set the width of slider thumb
-	 * 
-	 * @param sliderThumbWidth
-	 */
-	public void setSliderThumbWidth(int sliderThumbWidth) {
-		this.sliderThumbWidth = sliderThumbWidth;
 	}
 
 	/** IPlaybackProgressBar */
@@ -185,30 +145,49 @@ public class PlaybackProgressBar extends JProgressBar {
 		listeners.remove(listener);
 	}
 
-	public int getProgress() {
-		return getValue();
+	public void setTrackLength(long lengthMs) {
+		this.trackLengthMs = lengthMs;
+		setEndText(timeLblFromMs(lengthMs));
 	}
 
-	public void setProgress(int progress) {
-		setValue(progress);
+	public void setTrackPosition(long positionMs) {
+		trackPositionMs = positionMs;
+		// pos = 0, trackPosition = 0
+		// pos = (maximum - thumbWidth), trackPosition = trackLength
+		int thumbPos = (int) ((getMaximum() - SLIDER_OPAQUE_WIDTH) * ((float) positionMs / trackLengthMs));
+		setSliderText(timeLblFromMs(positionMs));
+		setThumbPosition(thumbPos);
 	}
 
-	public void setEndText(String text) {
+	public void setDataAvailable(float available) {
+		// Colour in progress bar value to illustrate seek limit - take into account thumb width
+		this.dataAvailable = available;
+		int val = (int) (SLIDER_OPAQUE_WIDTH + (available * getMaximum()));
+		setValue(val);
+	}
+
+	private void setEndText(String text) {
 		endLabel.setText(text);
+		endLabel.setSize(endLabel.getPreferredSize());
+		endLabel.setLocation(getWidth() - endLabel.getWidth(), (getHeight() - endLabel.getHeight()) / 2);
 	}
 
-	public void setSliderText(String text) {
+	private void setSliderText(String text) {
 		sliderThumb.setText(text);
 	}
 
-	public void setStartText(String text) {
-		startLabel.setText(text);
+	private String timeLblFromMs(long ms) {
+		int totalSec = (int) (ms / 1000);
+		int hours = totalSec / 3600;
+		int minutes = (totalSec % 3600) / 60;
+		int seconds = (totalSec % 60);
+		if (hours > 0)
+			return String.format("%d:%d:%02d", hours, minutes, seconds);
+		else
+			return String.format("%d:%02d", minutes, seconds);
 	}
-	
+
 	public interface Listener {
-		/** Called when the user drags the slider to a new position */
-		public void sliderMoved(int newProgress);
-		/** Called when the user releases the mouse to stop dragging the slider */
-		public void sliderFinishedMoving();
+		public void sliderReleased(long trackPositionMs);
 	}
 }
