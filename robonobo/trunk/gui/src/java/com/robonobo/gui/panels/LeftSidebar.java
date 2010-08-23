@@ -24,6 +24,7 @@ import com.robonobo.gui.RobonoboFont;
 import com.robonobo.gui.components.ExpandoTree;
 import com.robonobo.gui.frames.RobonoboFrame;
 
+@SuppressWarnings("serial")
 public class LeftSidebar extends JPanel {
 	static final Color DARK_BG = new Color(28, 28, 28);
 	static final Color GREY_BG = new Color(0xb2, 0xb5, 0xb9);
@@ -31,9 +32,8 @@ public class LeftSidebar extends JPanel {
 	
 	public LeftSidebar() {
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-		setPreferredSize(new Dimension(200, 700));
-		setBorder(BorderFactory.createEmptyBorder(11, 5, 5, 5));
-
+		setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
+		
 		final JPanel treeListView = new JPanel();
 		final JScrollPane treeListScroller = new JScrollPane(treeListView, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		add(treeListScroller);
@@ -43,12 +43,12 @@ public class LeftSidebar extends JPanel {
 		
 		JPanel searchPanel = new JPanel();
 		searchPanel.setLayout(new BoxLayout(searchPanel, BoxLayout.Y_AXIS));
-		searchPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
+		searchPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
 		searchPanel.setOpaque(true);
 		searchPanel.setBackground(GREY_BG);
-		searchPanel.setPreferredSize(new Dimension(175, 30));
-		searchPanel.setMinimumSize(new Dimension(175, 30));
-		searchPanel.setMaximumSize(new Dimension(175, 30));
+		searchPanel.setPreferredSize(new Dimension(185, 30));
+		searchPanel.setMinimumSize(new Dimension(185, 30));
+		searchPanel.setMaximumSize(new Dimension(185, 30));
 		searchPanel.setAlignmentX(0f);
 		JTextField searchField = new JTextField("Search...");
 		searchField.setName("robonobo.search.textfield");
@@ -80,7 +80,6 @@ public class LeftSidebar extends JPanel {
 				JPanel pnl = new JPanel();
 				pnl.setLayout(new BoxLayout(pnl, BoxLayout.X_AXIS));
 				pnl.setBackground(textLbl.getBackground());
-				
 				pnl.add(textLbl);
 				pnl.add(closeLbl);
 				pnl.setMaximumSize(new Dimension(65535, 65535));
@@ -102,12 +101,10 @@ public class LeftSidebar extends JPanel {
 		geffensNode.insert(new DefaultMutableTreeNode("No music found"), 0);
 		final DefaultMutableTreeNode willsNode = new DefaultMutableTreeNode("Will Morton");
 		treeRoot.insert(willsNode, 1);
-		willsNode.insert(new DefaultMutableTreeNode("Playlist 001 [over]"), 0);
-		willsNode.insert(new DefaultMutableTreeNode("Playlist For That Night"), 1);
+		willsNode.insert(new DefaultMutableTreeNode("Playlist 001"), 0);
+		willsNode.insert(new DefaultMutableTreeNode("Another playlist"), 1);
 		willsNode.insert(new DefaultMutableTreeNode("I Hate This One"), 2);
 		everyOneMusicTree.setCellRenderer(new DefaultTreeCellRenderer() {
-			private static final long serialVersionUID = 1L;
-
 			public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 				final JLabel rdr = (JLabel) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 				final TreeNode node = (TreeNode) value;
@@ -117,6 +114,7 @@ public class LeftSidebar extends JPanel {
 					rdr.setIcon(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/friend.png")));
 				else
 					rdr.setIcon(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/music_icon.png")));
+				rdr.setBorder(BorderFactory.createLineBorder(Color.RED));
 				return rdr;
 			}
 
@@ -125,7 +123,7 @@ public class LeftSidebar extends JPanel {
 			}
 		});
 		everyOneMusicTree.setAlignmentX(0.0f);
-		everyOneMusicTree.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+		everyOneMusicTree.setBorder(BorderFactory.createEmptyBorder(5, 10, 3, 10));
 		
 		JPanel myMusicLblPanel = new JPanel();
 		myMusicLblPanel.setBackground(GREY_BG);
@@ -133,9 +131,9 @@ public class LeftSidebar extends JPanel {
 		myMusicLblPanel.setAlignmentX(0f);
 		myMusicLblPanel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
 		myMusicLblPanel.setLayout(new BoxLayout(myMusicLblPanel, BoxLayout.Y_AXIS));
-		myMusicLblPanel.setPreferredSize(new Dimension(175, 19));
-		myMusicLblPanel.setMinimumSize(new Dimension(175, 19));
-		myMusicLblPanel.setMaximumSize(new Dimension(175, 19));
+		myMusicLblPanel.setPreferredSize(new Dimension(185, 19));
+		myMusicLblPanel.setMinimumSize(new Dimension(185, 19));
+		myMusicLblPanel.setMaximumSize(new Dimension(185, 19));
 		JLabel myMusicLbl = new JLabel("My Music Library", new ImageIcon(RobonoboFrame.class.getResource("/img/icon/home.png")), JLabel.LEFT);
 		myMusicLbl.setFont(RobonoboFont.getFont(11, true));
 		myMusicLblPanel.add(myMusicLbl);
@@ -165,35 +163,6 @@ public class LeftSidebar extends JPanel {
 		spacerPanel.setPreferredSize(new Dimension(200, 5));
 		spacerPanel.setOpaque(false);
 		add(spacerPanel);
-		
-		final JPanel botLeftPanel = new JPanel();
-		botLeftPanel.setPreferredSize(new Dimension(200, 80));
-		botLeftPanel.setLayout(new BoxLayout(botLeftPanel, BoxLayout.Y_AXIS));
-		botLeftPanel.setName("robonobo.status.panel");
-		botLeftPanel.setOpaque(true);
-		botLeftPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-		add(botLeftPanel);
-		JPanel balancePanel = new JPanel();
-		balancePanel.setLayout(new BoxLayout(balancePanel, BoxLayout.X_AXIS));
-		final JLabel balanceLabel = new JLabel(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/wang_symbol.png")));
-		balanceLabel.setText("345.00");
-		balanceLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
-		balanceLabel.setForeground(BALANCE_FG);
-		balanceLabel.setFont(RobonoboFont.getFont(22, false));
-		balancePanel.add(balanceLabel);
-		JLabel queryLabel = new JLabel(" ?");
-		queryLabel.setForeground(BALANCE_FG);
-		queryLabel.setFont(RobonoboFont.getFont(12, false));
-		balancePanel.add(queryLabel);
-		botLeftPanel.add(balancePanel);
-
-		final JLabel networkLabel = new JLabel("<html><font color=white style='font-size:9pt;'>4 Linked Connections<br>25KB/s up - 5KB/s down</font></html>");
-		botLeftPanel.add(networkLabel);
-		networkLabel.setPreferredSize(new Dimension(200, 50));
-		networkLabel.setOpaque(true);
-		networkLabel.setBackground(DARK_BG);
-		networkLabel.setAlignmentX(0.5f);
-		networkLabel.setIcon(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/connection_ok.png")));
-		networkLabel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
+		add(new StatusPanel());
 	}
 }
