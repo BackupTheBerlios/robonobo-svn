@@ -51,7 +51,7 @@ public class PlaybackPanel extends JPanel {
 		playerPanel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 		
 		PlaybackProgressBar progressBar = new PlaybackProgressBar(325);
-		progressBar.setTrackLength(335000);
+		progressBar.setTrackLength(3350000);
 		progressBar.setPreferredSize(new Dimension(325, 24));
 		progressBar.setDataAvailable(0.5f);
 		playerPanel.add(progressBar, BorderLayout.NORTH);

@@ -1,5 +1,6 @@
 package com.robonobo.gui.components;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ComponentAdapter;
@@ -38,7 +39,7 @@ public class PlaybackProgressBar extends JProgressBar {
 	private List<Listener> listeners;
 
 	private JButton sliderThumb;
-	private JLabel endLabel;
+	private JLabel startLabel, endLabel;
 
 	private long trackLengthMs;
 	private long trackPositionMs;
@@ -61,6 +62,12 @@ public class PlaybackProgressBar extends JProgressBar {
 		sliderThumb.setLocation(0, 0);
 		add(sliderThumb);
 
+		startLabel = new JLabel("-0:00");
+		startLabel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
+		startLabel.setSize(startLabel.getPreferredSize());
+		startLabel.setForeground(Color.WHITE);
+		add(startLabel);
+
 		endLabel = new JLabel();
 		endLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
 		endLabel.setSize(endLabel.getPreferredSize());
@@ -74,7 +81,8 @@ public class PlaybackProgressBar extends JProgressBar {
 				// update the thumb's position
 				setTrackPosition(0);
 				// auto adjust the labels' position
-				endLabel.setLocation(getWidth() - endLabel.getWidth(), (getHeight() - endLabel.getHeight()) / 2);
+				startLabel.setLocation(0, ((getHeight() - startLabel.getHeight()) / 2)+1);
+				endLabel.setLocation(getWidth() - endLabel.getWidth(), ((getHeight() - endLabel.getHeight()) / 2)+1);
 			}
 		});
 
@@ -156,16 +164,24 @@ public class PlaybackProgressBar extends JProgressBar {
 		// pos = (maximum - thumbWidth), trackPosition = trackLength
 		int thumbPos = (int) ((getMaximum() - SLIDER_OPAQUE_WIDTH) * ((float) positionMs / trackLengthMs));
 		setSliderText(timeLblFromMs(positionMs));
+		long msLeft = trackLengthMs - trackPositionMs;
+		setStartText("-"+timeLblFromMs(msLeft));
 		setThumbPosition(thumbPos);
 	}
 
 	public void setDataAvailable(float available) {
 		// Colour in progress bar value to illustrate seek limit - take into account thumb width
 		this.dataAvailable = available;
-		int val = (int) (SLIDER_OPAQUE_WIDTH + (available * getMaximum()));
+		int max = getMaximum() - SLIDER_OPAQUE_WIDTH;
+		int val = SLIDER_OPAQUE_WIDTH + (int) (available * max);
 		setValue(val);
 	}
 
+	private void setStartText(String text) {
+		startLabel.setText(text);
+		startLabel.setSize(startLabel.getPreferredSize());
+	}
+	
 	private void setEndText(String text) {
 		endLabel.setText(text);
 		endLabel.setSize(endLabel.getPreferredSize());
@@ -177,7 +193,7 @@ public class PlaybackProgressBar extends JProgressBar {
 	}
 
 	private String timeLblFromMs(long ms) {
-		int totalSec = (int) (ms / 1000);
+		int totalSec = Math.round(ms / 1000f);
 		int hours = totalSec / 3600;
 		int minutes = (totalSec % 3600) / 60;
 		int seconds = (totalSec % 60);
