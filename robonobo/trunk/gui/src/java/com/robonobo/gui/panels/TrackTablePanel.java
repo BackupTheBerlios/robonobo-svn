@@ -5,6 +5,7 @@ import java.util.Enumeration;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -26,6 +27,7 @@ import javax.swing.table.TableRowSorter;
 import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.gui.RobonoboFont;
+import com.robonobo.gui.components.DownloadStatusProgressBar;
 import com.robonobo.gui.frames.RobonoboFrame;
 
 @SuppressWarnings("serial")
@@ -58,28 +60,7 @@ public class TrackTablePanel extends JPanel {
 		playList.getColumnModel().getColumn(5).setPreferredWidth(50);
 		playList.getColumnModel().getColumn(6).setPreferredWidth(200);
 		playList.getColumnModel().getColumn(7).setPreferredWidth(1000);
-		playList.getColumnModel().getColumn(6).setCellRenderer(new DefaultTableCellRenderer() {
-			private JProgressBar progressRdr = new JProgressBar(JProgressBar.HORIZONTAL);
-
-			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-				if (value instanceof Integer) {
-					progressRdr.setMinimum(0);
-					progressRdr.setMaximum(100);
-					final int curVal = ((Integer) value).intValue();
-					if (curVal == -1) {
-						progressRdr.setValue(0);
-						progressRdr.setEnabled(false);
-					} else {
-						progressRdr.setValue(curVal);
-						progressRdr.setEnabled(true);
-					}
-					return progressRdr;
-
-				}
-				Component result = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-				return result;
-			}
-		});
+		playList.getColumnModel().getColumn(6).setCellRenderer(new DownloadProgressCellRenderer());
 		tableModel.insertRow(0, new Object[] { "Mi Tierra", "Guitarra de Pasion", "01 of 18", "2005", "Guitarra de Pasion", "4:24", "Sharing" });
 		tableModel.insertRow(1, new Object[] { "EI Sueno", "Guitarra de Pasion", "02 of 18", "2005", "Guitarra de Pasion", "5:06", "Sharing" });
 		tableModel.insertRow(2, new Object[] { "EI Bambuquero", "Guitarra de Pasion", "03 of 18", "2005", "Guitarra de Pasion", "3:50", "Sharing" });
@@ -117,6 +98,40 @@ public class TrackTablePanel extends JPanel {
 		});
 	}
 	
+	private class DownloadProgressCellRenderer extends DefaultTableCellRenderer {
+		private JProgressBar pBar;
+		private JPanel pnl;
+		
+		public DownloadProgressCellRenderer() {
+			pBar = new DownloadStatusProgressBar();
+			pnl = new JPanel();
+			pnl.setLayout(new BoxLayout(pnl, BoxLayout.X_AXIS));
+			pnl.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
+			pnl.setOpaque(false);
+			pnl.add(pBar);
+		}
+		
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+			if (value instanceof Integer) {
+				pBar.setMinimum(0);
+				pBar.setMaximum(100);
+				final int curVal = ((Integer) value).intValue();
+				if (curVal == -1) {
+					pBar.setValue(0);
+					pBar.setEnabled(false);
+					pBar.setString("queued");
+				} else {
+					pBar.setValue(curVal);
+					pBar.setEnabled(true);
+					pBar.setString("Downloading (1): "+curVal+"%");
+				}
+				return pnl;
+			}
+			Component result = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			return result;
+		}
+	}
+
 	// Sortable Table Header Renderer
 	private static class SortableHeaderRenderer extends DefaultTableCellRenderer {
 		private static final long serialVersionUID = 1L;
