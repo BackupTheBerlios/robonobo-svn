@@ -26,7 +26,7 @@ import javax.swing.table.TableRowSorter;
 
 import org.debian.tablelayout.TableLayout;
 
-import com.robonobo.gui.RobonoboFont;
+import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.components.DownloadStatusProgressBar;
 import com.robonobo.gui.frames.RobonoboFrame;
 
@@ -38,8 +38,8 @@ public class TrackTablePanel extends JPanel {
 		setBorder(BorderFactory.createEmptyBorder(0, 1, 0, 1));
 		final DefaultTableModel tableModel = new DefaultTableModel(new Object[] { "Title", "Album", "Track", "Year", "Album", "Time", "Status", "Comment" }, 0);
 		final JTable playList = new JTable(tableModel);
-		playList.setFont(RobonoboFont.getFont(12, false));
-		playList.getTableHeader().setFont(RobonoboFont.getFont(12, true));
+		playList.setFont(RoboFont.getFont(12, false));
+		playList.getTableHeader().setFont(RoboFont.getFont(12, true));
 		final JScrollPane middleScroller = new JScrollPane(playList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 		add(middleScroller, "0,0");
 		playList.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -49,7 +49,7 @@ public class TrackTablePanel extends JPanel {
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 				Component result = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				((JComponent)result).setBorder(BorderFactory.createEmptyBorder(1, 5, 1, 1));
-				result.setFont(RobonoboFont.getFont(12, true));
+				result.setFont(RoboFont.getFont(12, true));
 				return result;
 			}
 		});
@@ -138,7 +138,7 @@ public class TrackTablePanel extends JPanel {
 
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-			setFont(RobonoboFont.getFont(12, false));
+			setFont(RoboFont.getFont(12, false));
 			setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
 			final RowSorter<?> sorter = table.getRowSorter();
 			if (sorter != null) {

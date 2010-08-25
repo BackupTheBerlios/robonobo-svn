@@ -1,9 +1,8 @@
 /**
  * 
  */
-package com.robonobo.oldgui;
+package com.robonobo.gui.model;
 
-import java.awt.Font;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -16,39 +15,48 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
-import com.robonobo.common.swing.DefaultSortableTreeNode;
 import com.robonobo.common.swing.SortableTreeNode;
 import com.robonobo.common.swing.SortedTreeModel;
 import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.UserPlaylistListener;
 import com.robonobo.core.api.model.Playlist;
 import com.robonobo.core.api.model.User;
-import com.robonobo.gui.model.FriendTreeNode;
-import com.robonobo.gui.model.PlaylistTreeNode;
+import com.robonobo.gui.frames.RobonoboFrame;
 
 @SuppressWarnings("serial")
-class FriendTreeModel extends SortedTreeModel implements UserPlaylistListener {
+public class FriendTreeModel extends SortedTreeModel implements UserPlaylistListener {
 	static final int MAX_FRIEND_PLAYLIST_TITLE_WIDTH = 100;
 	RobonoboFrame frame;
 	RobonoboController controller;
-	Font font;
-	FriendsTree tree;
 	Map<Long, FriendTreeNode> friendNodes = new HashMap<Long, FriendTreeNode>();
 	Map<Long, Map<String, PlaylistTreeNode>> playlistNodes = new HashMap<Long, Map<String, PlaylistTreeNode>>();
 	Log log = LogFactory.getLog(getClass());
+	SelectableTreeNode myRoot;
 
-	public FriendTreeModel(RobonoboFrame rFrame, Font font) {
+	public FriendTreeModel(RobonoboFrame rFrame) {
 		super(null);
-		setRoot(new DefaultSortableTreeNode("Friends"));
+		myRoot = new SelectableTreeNode("Friends");
+		setRoot(myRoot);
+		DEBUG_insertNodes();
 		frame = rFrame;
-		controller = frame.controller;
-		this.font = font;
-		controller.addUserPlaylistListener(this);
+		controller = frame.getController();
+//		controller.addUserPlaylistListener(this);
 	}
 
-	/** Have this fugly callback as we need to expand & resize the tree when we change data */
-	public void setTree(FriendsTree tree) {
-		this.tree = tree;
+	private void DEBUG_insertNodes() {
+		User geffen = new User();
+		geffen.setFriendlyName("Joe van Geffen");
+		FriendTreeNode geffensNode = new FriendTreeNode(geffen);
+		myRoot.insert(geffensNode, 0);
+		geffensNode.insert(new PlaylistTreeNode("JvG's fave playlist", frame), 0);
+		User will = new User();
+		will.setFriendlyName("Will Morton has a very very very long name");
+		FriendTreeNode willsNode = new FriendTreeNode(will);
+		myRoot.insert(willsNode, 1);
+		willsNode.insert(new PlaylistTreeNode("Playlist 001", frame), 0);
+		willsNode.insert(new PlaylistTreeNode("Another playlist", frame), 1);
+		willsNode.insert(new PlaylistTreeNode("I Hate This One", frame), 2);
+		willsNode.insert(new PlaylistTreeNode("A really really really long playlist name", frame), 2);
 	}
 	
 	public void loggedIn() {
@@ -59,7 +67,6 @@ class FriendTreeModel extends SortedTreeModel implements UserPlaylistListener {
 					friendNodes.clear();
 					playlistNodes.clear();
 				}
-				tree.updateMaxSize();
 				nodeStructureChanged(getRoot());
 			}
 		});
@@ -79,14 +86,12 @@ class FriendTreeModel extends SortedTreeModel implements UserPlaylistListener {
 							}
 						}
 					}
-					tree.updateMaxSize();
 				}
 			});
 		} else if (controller.getMyUser().getFriendIds().contains(u.getUserId())) {
 			SwingUtilities.invokeLater(new CatchingRunnable() {
 				public void doRun() throws Exception {
 					synchronized (FriendTreeModel.this) {
-						boolean wasEmpty = (friendNodes.size() == 0);
 						if (friendNodes.containsKey(u.getUserId())) {
 							FriendTreeNode ftn = friendNodes.get(u.getUserId());
 							// Already have this friend - check to see if any playlists have been deleted
@@ -109,11 +114,7 @@ class FriendTreeModel extends SortedTreeModel implements UserPlaylistListener {
 							playlistNodes.put(u.getUserId(), new HashMap<String, PlaylistTreeNode>());
 							insertNodeSorted(getRoot(), ftn);
 						}
-						// If we were empty but now we're not, expand the root to show friends
-						if(wasEmpty && (friendNodes.size() > 0))
-							tree.expandRow(0);
 					}
-					tree.updateMaxSize();
 				}
 			});
 		}
@@ -129,7 +130,7 @@ class FriendTreeModel extends SortedTreeModel implements UserPlaylistListener {
 							long friendId = ftn.getFriend().getUserId();
 							PlaylistTreeNode ptn = playlistNodes.get(friendId).get(p.getPlaylistId());
 							if(ptn == null) {
-//								ptn = new PlaylistTreeNode(p, frame, font, MAX_FRIEND_PLAYLIST_TITLE_WIDTH);
+								ptn = new PlaylistTreeNode(p, frame);
 								playlistNodes.get(friendId).put(p.getPlaylistId(), ptn);
 								insertNodeSorted(ftn, ptn);
 							} else {
@@ -139,7 +140,6 @@ class FriendTreeModel extends SortedTreeModel implements UserPlaylistListener {
 						}
 					}
 				}
-				tree.updateMaxSize();
 			}
 		});
 	}

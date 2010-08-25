@@ -14,11 +14,11 @@ import com.robonobo.common.exceptions.SeekInnerCalmException;
 /**
  * robonobo only uses one font family, Bitstream Vera Sans.  We can't rely on this being available on the 
  * system, so we bundle it in our jar and build it as required.  This class keeps track of our 
- * instatiated font instances and re-uses them to save ram.
+ * instantiated font instances and re-uses them to save ram.
  * 
  * @author macavity
  */
-public class RobonoboFont {
+public class RoboFont {
 	static final String FONT_NAME = "Bitstream Vera Sans";
 	static Font basePlainFont;
 	static Font baseBoldFont;
@@ -39,8 +39,8 @@ public class RobonoboFont {
 			derivedBoldFonts.put(12, baseBoldFont);
 		} else {
 			// Not on the system - build this sucka from our ttf file
-			InputStream plainIs = RobonoboFont.class.getResourceAsStream("/font/Vera.ttf");
-			InputStream boldIs = RobonoboFont.class.getResourceAsStream("/font/VeraBd.ttf");
+			InputStream plainIs = RoboFont.class.getResourceAsStream("/font/Vera.ttf");
+			InputStream boldIs = RoboFont.class.getResourceAsStream("/font/VeraBd.ttf");
 			try {
 				Font onePoint = Font.createFont(Font.TRUETYPE_FONT, plainIs);
 				basePlainFont = onePoint.deriveFont(Font.PLAIN, 12);
@@ -54,7 +54,7 @@ public class RobonoboFont {
 		}
 	}
 
-	private RobonoboFont() {
+	private RoboFont() {
 		// Never instantiate this class
 	}
 	

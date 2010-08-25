@@ -17,6 +17,7 @@ import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.UserPlaylistListener;
 import com.robonobo.core.api.model.Playlist;
 import com.robonobo.core.api.model.User;
+import com.robonobo.gui.model.PlaylistTreeNode;
 
 public class MyPlaylistsTreeModel extends SortedTreeModel implements UserPlaylistListener {
 	static final int MAX_MY_PLAYLIST_TITLE_WIDTH = 120;
@@ -25,7 +26,7 @@ public class MyPlaylistsTreeModel extends SortedTreeModel implements UserPlaylis
 	 * more than one of our friends
 	 */
 	private Map<String, PlaylistTreeNode> playlistNodes = new HashMap<String, PlaylistTreeNode>();
-	private NewPlaylistTreeNode newPlaylistNode;
+//	private NewPlaylistTreeNode newPlaylistNode;
 	private RobonoboFrame frame;
 	private RobonoboController controller;
 	private Font font;
@@ -51,8 +52,8 @@ public class MyPlaylistsTreeModel extends SortedTreeModel implements UserPlaylis
 				synchronized (MyPlaylistsTreeModel.this) {
 					getRoot().removeAllChildren();
 					playlistNodes.clear();
-					newPlaylistNode = new NewPlaylistTreeNode(frame, font);
-					insertNodeSorted(getRoot(), newPlaylistNode);
+//					newPlaylistNode = new NewPlaylistTreeNode(frame, font);
+//					insertNodeSorted(getRoot(), newPlaylistNode);
 					tree.expandRow(0);
 				}
 				tree.updateMaxSize();
@@ -90,7 +91,7 @@ public class MyPlaylistsTreeModel extends SortedTreeModel implements UserPlaylis
 						PlaylistTreeNode ptn = playlistNodes.get(p.getPlaylistId());
 						if(ptn == null) {
 							// New playlist
-							ptn = new PlaylistTreeNode(p, frame, font, MAX_MY_PLAYLIST_TITLE_WIDTH);
+//							ptn = new PlaylistTreeNode(p, frame, font, MAX_MY_PLAYLIST_TITLE_WIDTH);
 							playlistNodes.put(p.getPlaylistId(), ptn);
 							insertNodeSorted(getRoot(), ptn);
 						} else {
@@ -115,6 +116,7 @@ public class MyPlaylistsTreeModel extends SortedTreeModel implements UserPlaylis
 	}
 	
 	public TreePath getNewPlaylistTreePath() {
-		return new TreePath(getPathToRoot(newPlaylistNode));
+//		return new TreePath(getPathToRoot(newPlaylistNode));
+		return null;
 	}
 }

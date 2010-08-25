@@ -22,6 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.core.Platform;
+import com.robonobo.gui.GUIUtils;
 
 public class LoginDialog extends JDialog implements KeyListener {
 	private RobonoboFrame frame;

@@ -12,10 +12,12 @@ import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.core.Platform;
+import com.robonobo.core.RobonoboController;
 import com.robonobo.gui.laf.RobonoboLookAndFeel;
 import com.robonobo.gui.panels.LeftSidebar;
 import com.robonobo.gui.panels.MainPanel;
 
+@SuppressWarnings("serial")
 public class RobonoboFrame extends JFrame {
 	private JMenuBar menuBar;
 
@@ -43,7 +45,7 @@ public class RobonoboFrame extends JFrame {
 		contentPane.setLayout(new TableLayout(cellSizen));
 		setContentPane(contentPane);
 
-		JPanel leftSidebar = new LeftSidebar();
+		JPanel leftSidebar = new LeftSidebar(this);
 		contentPane.add(leftSidebar, "1,1");
 
 		JPanel mainPanel = new MainPanel();
@@ -55,4 +57,7 @@ public class RobonoboFrame extends JFrame {
 		pack();
 	}
 
+	public RobonoboController getController() {
+		return null;
+	}
 }

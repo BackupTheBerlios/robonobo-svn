@@ -12,6 +12,7 @@ import org.debian.tablelayout.TableLayout;
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.RobonoboController;
 import com.robonobo.core.wang.WangListener;
+import com.robonobo.gui.GUIUtils;
 
 public class WangPanel extends JPanel implements WangListener {
 	static double MIN_OK_BALANCE = 1d;

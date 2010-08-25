@@ -1,4 +1,4 @@
-package com.robonobo.oldgui;
+package com.robonobo.gui;
 
 import java.awt.Image;
 import java.awt.Rectangle;

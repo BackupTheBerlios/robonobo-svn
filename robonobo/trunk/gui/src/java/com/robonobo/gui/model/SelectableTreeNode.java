@@ -1,12 +1,11 @@
-package com.robonobo.oldgui;
+package com.robonobo.gui.model;
 
 import java.awt.datatransfer.Transferable;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-
 import com.robonobo.common.swing.SortableTreeNode;
 
-public abstract class SelectableTreeNode extends SortableTreeNode {
+@SuppressWarnings("serial")
+public class SelectableTreeNode extends SortableTreeNode {
 	
 	public SelectableTreeNode(Object val) {
 		super(val);
@@ -23,5 +22,10 @@ public abstract class SelectableTreeNode extends SortableTreeNode {
 	/** For drag n drop */
 	public boolean importData(Transferable t) {
 		return false;
+	}
+	
+	@Override
+	public int compareTo(SortableTreeNode o) {
+		return 0;
 	}
 }

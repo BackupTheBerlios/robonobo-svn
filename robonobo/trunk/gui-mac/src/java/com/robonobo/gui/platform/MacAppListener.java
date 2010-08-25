@@ -2,8 +2,8 @@ package com.robonobo.gui.platform;
 
 import com.apple.eawt.ApplicationEvent;
 import com.apple.eawt.ApplicationListener;
-import com.robonobo.gui.AboutDialog;
-import com.robonobo.gui.RobonoboFrame;
+import com.robonobo.oldgui.AboutDialog;
+import com.robonobo.oldgui.RobonoboFrame;
 
 public class MacAppListener implements ApplicationListener {
 	private RobonoboFrame frame;

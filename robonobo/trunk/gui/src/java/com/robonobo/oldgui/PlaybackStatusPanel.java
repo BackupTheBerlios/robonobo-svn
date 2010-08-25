@@ -19,6 +19,7 @@ import com.robonobo.core.Platform;
 import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.PlaybackListener;
 import com.robonobo.core.api.model.Stream;
+import com.robonobo.gui.GUIUtils;
 
 @SuppressWarnings("serial")
 public class PlaybackStatusPanel extends JPanel implements PlaybackListener {

@@ -1,4 +1,4 @@
-package com.robonobo.oldgui;
+package com.robonobo.gui.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -6,6 +6,7 @@ import org.apache.commons.logging.LogFactory;
 import com.robonobo.common.swing.SortableTreeNode;
 import com.robonobo.core.api.model.User;
 
+@SuppressWarnings("serial")
 public class FriendTreeNode extends SelectableTreeNode {
 	private User friend;
 	Log log = LogFactory.getLog(getClass());

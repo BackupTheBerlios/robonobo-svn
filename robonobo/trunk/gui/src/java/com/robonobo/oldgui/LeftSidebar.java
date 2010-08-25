@@ -1,6 +1,6 @@
 package com.robonobo.oldgui;
 
-import static com.robonobo.oldgui.GUIUtils.*;
+import static com.robonobo.gui.GUIUtils.*;
 
 import java.awt.Dimension;
 import java.awt.Font;

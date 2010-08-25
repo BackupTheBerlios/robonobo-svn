@@ -13,8 +13,8 @@ import com.apple.eawt.Application;
 import com.apple.eio.FileManager;
 import com.robonobo.common.util.CodeUtil;
 import com.robonobo.core.itunes.ITunesService;
-import com.robonobo.gui.RobonoboFrame;
 import com.robonobo.gui.itunes.mac.MacITunesService;
+import com.robonobo.oldgui.RobonoboFrame;
 
 public class MacPlatform extends UnknownPlatform {
 	

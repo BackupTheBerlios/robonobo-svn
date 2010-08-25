@@ -17,6 +17,7 @@ import com.robonobo.core.api.PlaybackListener;
 import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.model.CloudTrack;
 import com.robonobo.core.api.model.Track;
+import com.robonobo.gui.GUIUtils;
 
 @SuppressWarnings("serial")
 public class PlayPauseButton extends MainButton implements PlaybackListener {

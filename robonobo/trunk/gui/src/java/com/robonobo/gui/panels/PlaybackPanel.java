@@ -1,7 +1,8 @@
 package com.robonobo.gui.panels;
 
+import static com.robonobo.gui.RoboColor.*;
+
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 
@@ -13,7 +14,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import com.robonobo.gui.RobonoboFont;
+import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.components.PlaybackProgressBar;
 import com.robonobo.gui.frames.RobonoboFrame;
 
@@ -23,7 +24,7 @@ public class PlaybackPanel extends JPanel {
 		
 		setName("playback.background.panel");
 		setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		setBackground(Color.LIGHT_GRAY);
+		setBackground(MID_GRAY);
 		final JPanel titlesPanel = new JPanel();
 		titlesPanel.setLayout(new BoxLayout(titlesPanel, BoxLayout.PAGE_AXIS));
 		titlesPanel.setOpaque(false);
@@ -33,18 +34,18 @@ public class PlaybackPanel extends JPanel {
 		headTitleLabel.setMinimumSize(new Dimension(450, 35));
 		headTitleLabel.setMaximumSize(new Dimension(450, 35));
 		headTitleLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 0));
-		headTitleLabel.setFont(RobonoboFont.getFont(24, false));
-		headTitleLabel.setForeground(new Color(0x0, 0x44, 0x71));
+		headTitleLabel.setFont(RoboFont.getFont(24, false));
+		headTitleLabel.setForeground(BLUE_GRAY);
 		titlesPanel.add(headTitleLabel);
 		final JLabel artistLabel = new JLabel("Ween");
 		artistLabel.setPreferredSize(new Dimension(450, 20));
 		artistLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 0, 0));
-		artistLabel.setFont(RobonoboFont.getFont(18, true));
+		artistLabel.setFont(RoboFont.getFont(18, true));
 		titlesPanel.add(artistLabel);
 		JLabel albumLabel = new JLabel("Don't Shit Where You Eat");
 		albumLabel.setPreferredSize(new Dimension(450, 20));
 		albumLabel.setBorder(BorderFactory.createEmptyBorder(2, 12, 0, 0));
-		albumLabel.setFont(RobonoboFont.getFont(16, false));
+		albumLabel.setFont(RoboFont.getFont(16, false));
 		titlesPanel.add(albumLabel);
 		final JPanel playerPanel = new JPanel(new BorderLayout(5, 5));
 		add(playerPanel, BorderLayout.EAST);

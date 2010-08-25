@@ -17,14 +17,14 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import com.robonobo.gui.RobonoboFont;
+import com.robonobo.gui.RoboFont;
 
 public class DetailsTabPanel extends JPanel {
 	public DetailsTabPanel() {
 		setLayout(new BorderLayout());
 		setBorder(BorderFactory.createEmptyBorder(0,1,0,1));
 		final JTabbedPane tabs = new JTabbedPane(JTabbedPane.TOP);
-		tabs.setFont(RobonoboFont.getFont(14, true));
+		tabs.setFont(RoboFont.getFont(14, true));
 		add(tabs, BorderLayout.CENTER);
 		final JPanel editPlaylistPanel = new JPanel();
 		tabs.addTab("edit playlist", editPlaylistPanel);
@@ -36,11 +36,11 @@ public class DetailsTabPanel extends JPanel {
 		editPlaylistPanelLayout.columnWidths = new int[] { 115, 290, 90, 90, 90, 90 };
 		editPlaylistPanel.setLayout(editPlaylistPanelLayout);
 		final JLabel plistTitleLabel = new JLabel("Title:");
-		plistTitleLabel.setFont(RobonoboFont.getFont(13, false));
+		plistTitleLabel.setFont(RoboFont.getFont(13, false));
 		editPlaylistPanel.add(plistTitleLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0,
 				0, 0), 0, 0));
 		final JTextField plistTitleEdit = new JTextField();
-		plistTitleEdit.setFont(RobonoboFont.getFont(13, false));
+		plistTitleEdit.setFont(RoboFont.getFont(13, false));
 		plistTitleEdit.setOpaque(false);
 		plistTitleEdit.addFocusListener(new FocusAdapter() {
 			public void focusGained(FocusEvent e) {
@@ -54,11 +54,11 @@ public class DetailsTabPanel extends JPanel {
 		editPlaylistPanel.add(plistTitleEdit, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
 				new Insets(0, 0, 0, 10), 0, 0));
 		final JLabel plistDescLabel = new JLabel("Description:");
-		plistDescLabel.setFont(RobonoboFont.getFont(13, false));
+		plistDescLabel.setFont(RoboFont.getFont(13, false));
 		editPlaylistPanel.add(plistDescLabel, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0,
 				0, 0), 0, 0));
 		final JTextArea plistDescEdit = new JTextArea();
-		plistDescEdit.setFont(RobonoboFont.getFont(13, false));		
+		plistDescEdit.setFont(RoboFont.getFont(13, false));		
 		plistDescEdit.setOpaque(false);
 		plistDescEdit.addFocusListener(new FocusAdapter() {
 			public void focusGained(FocusEvent e) {
@@ -75,24 +75,24 @@ public class DetailsTabPanel extends JPanel {
 		editPlaylistPanel.add(plistDescScroller, new GridBagConstraints(1, 1, 1, 3, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0,
 				0, 0, 10), 0, 0));
 		final JCheckBox friendSeeCheckBox = new JCheckBox("Let friends see editPlaylistPanel playlist");
-		friendSeeCheckBox.setFont(RobonoboFont.getFont(12, false));
+		friendSeeCheckBox.setFont(RoboFont.getFont(12, false));
 		friendSeeCheckBox.setSelected(true);
 		editPlaylistPanel.add(friendSeeCheckBox, new GridBagConstraints(2, 1, 4, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
 				new Insets(0, 5, 0, 0), 0, 0));
 		final JCheckBox autoDownloadCheckBox = new JCheckBox("Download new tracks automatically");
-		autoDownloadCheckBox.setFont(RobonoboFont.getFont(12, false));
+		autoDownloadCheckBox.setFont(RoboFont.getFont(12, false));
 		editPlaylistPanel.add(autoDownloadCheckBox, new GridBagConstraints(2, 2, 4, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL,
 				new Insets(0, 5, 0, 0), 0, 0));
 		final JButton saveButton = new JButton("SAVE");
-		saveButton.setFont(RobonoboFont.getFont(12, true));
+		saveButton.setFont(RoboFont.getFont(12, true));
 		editPlaylistPanel.add(saveButton, new GridBagConstraints(2, 3, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 5, 0,
 				0), 0, 0));
 		final JButton shareButton = new JButton("SHARE");
-		shareButton.setFont(RobonoboFont.getFont(12, true));
+		shareButton.setFont(RoboFont.getFont(12, true));
 		editPlaylistPanel.add(shareButton, new GridBagConstraints(3, 3, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 5, 0,
 				0), 0, 0));
 		final JButton deleteButton = new JButton("DELETE");
-		deleteButton.setFont(RobonoboFont.getFont(12, true));
+		deleteButton.setFont(RoboFont.getFont(12, true));
 		deleteButton.setName("robonobo.red.button");
 		editPlaylistPanel.add(deleteButton, new GridBagConstraints(5, 3, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 5,
 				0, 5), 0, 0));

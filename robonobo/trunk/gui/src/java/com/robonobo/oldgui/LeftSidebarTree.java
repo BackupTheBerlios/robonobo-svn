@@ -22,6 +22,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import com.robonobo.core.RobonoboController;
+import com.robonobo.gui.model.SelectableTreeNode;
 
 public class LeftSidebarTree extends JTree {
 	RobonoboFrame frame;

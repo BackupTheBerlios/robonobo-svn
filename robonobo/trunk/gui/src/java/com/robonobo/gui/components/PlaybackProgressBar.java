@@ -17,7 +17,7 @@ import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 
-import com.robonobo.gui.RobonoboFont;
+import com.robonobo.gui.RoboFont;
 
 /**
  * Maintains two 'progress' indicators. The first, 'availableData', displays how much data we have downloaded by means of a light blue bar, and is the limit to
@@ -57,7 +57,7 @@ public class PlaybackProgressBar extends JProgressBar {
 
 		sliderThumb = new JButton();
 		sliderThumb.setName("robonobo.playback.progressbar.thumb");
-		sliderThumb.setFont(RobonoboFont.getFont(11, false));
+		sliderThumb.setFont(RoboFont.getFont(11, false));
 		sliderThumb.setFocusable(false);
 		sliderThumb.setLocation(0, 0);
 		add(sliderThumb);
@@ -71,7 +71,7 @@ public class PlaybackProgressBar extends JProgressBar {
 		endLabel = new JLabel();
 		endLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
 		endLabel.setSize(endLabel.getPreferredSize());
-		endLabel.setFont(RobonoboFont.getFont(12, false));
+		endLabel.setFont(RoboFont.getFont(12, false));
 		add(endLabel);
 
 		addComponentListener(new ComponentAdapter() {

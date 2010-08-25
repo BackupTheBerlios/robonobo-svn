@@ -38,6 +38,7 @@ import com.robonobo.core.api.model.DownloadingTransferStatus;
 import com.robonobo.core.api.model.Stream;
 import com.robonobo.core.api.model.Track;
 import com.robonobo.core.api.model.Track.PlaybackStatus;
+import com.robonobo.gui.GUIUtils;
 
 @SuppressWarnings("serial")
 public class TrackListTablePanel extends JPanel implements SearchExecutor, NextTrackListener {
