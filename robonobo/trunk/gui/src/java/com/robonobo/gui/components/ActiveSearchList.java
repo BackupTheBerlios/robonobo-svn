@@ -15,7 +15,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.RepaintManager;
 
 import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.frames.RobonoboFrame;
@@ -36,20 +35,15 @@ public class ActiveSearchList extends LeftSidebarList {
 
 	private class MouseListener extends MouseAdapter {
 		public void mouseClicked(MouseEvent e) {
-			ActiveSearchList me = ActiveSearchList.this;
 			int clickIdx = locationToIndex(new Point(e.getX(), e.getY()));
 			if(clickIdx < 0)
 				return;
 			if (e.getX() >= MIN_CLOSE_CLICK && e.getX() <= MAX_CLOSE_CLICK) {
 				// They clicked on the close 'X'
 				((ActiveSearchListModel) getModel()).removeElementAt(clickIdx);
-				setVisibleRowCount(getModel().getSize());
-			} else {
-				selectedIndex = clickIdx;
-				// TODO Tell the frame to load the correct main panel
+				// TODO Bring another main panel to the front
 				e.consume();
-			}
-			RepaintManager.currentManager(me).markCompletelyDirty(me);
+			} 
 		}
 	}
 
@@ -80,7 +74,7 @@ public class ActiveSearchList extends LeftSidebarList {
 		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 			String searchStr = (String) value;
 			textLbl.setText(searchStr);
-			if (index == selectedIndex) {
+			if (index == getSelectedIndex()) {
 				pnl.setBackground(LIGHT_GRAY);
 				textLbl.setForeground(BLUE_GRAY);
 			} else {

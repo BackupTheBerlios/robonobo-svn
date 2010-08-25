@@ -5,6 +5,8 @@ import static com.robonobo.gui.RoboColor.*;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -19,20 +21,23 @@ import javax.swing.JTextField;
 import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.components.ActiveSearchList;
 import com.robonobo.gui.components.FriendTree;
+import com.robonobo.gui.components.LeftSidebarComponent;
 import com.robonobo.gui.frames.RobonoboFrame;
 
 @SuppressWarnings("serial")
 public class LeftSidebar extends JPanel {
+	List<LeftSidebarComponent> sideBarComps = new ArrayList<LeftSidebarComponent>();
+	
 	public LeftSidebar(RobonoboFrame frame) {
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
 		
-		final JPanel treeListView = new JPanel();
-		final JScrollPane treeListScroller = new JScrollPane(treeListView, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		final JPanel sideBarPanel = new JPanel();
+		final JScrollPane treeListScroller = new JScrollPane(sideBarPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		add(treeListScroller);
 		treeListScroller.getViewport().getView().setBackground(Color.WHITE);
-		treeListView.setLayout(new BoxLayout(treeListView, BoxLayout.Y_AXIS));
-		treeListView.setBackground(MID_GRAY);
+		sideBarPanel.setLayout(new BoxLayout(sideBarPanel, BoxLayout.Y_AXIS));
+		sideBarPanel.setBackground(MID_GRAY);
 		
 		JPanel searchPanel = new JPanel();
 		searchPanel.setLayout(new BoxLayout(searchPanel, BoxLayout.Y_AXIS));
@@ -52,15 +57,17 @@ public class LeftSidebar extends JPanel {
 		searchField.setSelectionStart(0);
 		searchField.setSelectionEnd(searchField.getText().length());
 		searchPanel.add(searchField);
-		treeListView.add(searchPanel);
+		sideBarPanel.add(searchPanel);
 		
 		ActiveSearchList asList = new ActiveSearchList(this, frame);
 		asList.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
-		treeListView.add(asList);
+		sideBarPanel.add(asList);
+		sideBarComps.add(asList);
 
 		FriendTree fTree = new FriendTree(this, frame);
 		fTree.setBorder(BorderFactory.createEmptyBorder(5, 10, 3, 10));
-		treeListView.add(fTree);
+		sideBarPanel.add(fTree);
+		sideBarComps.add(fTree);
 		
 		JPanel myMusicLblPanel = new JPanel();
 		myMusicLblPanel.setBackground(MID_GRAY);
@@ -74,10 +81,10 @@ public class LeftSidebar extends JPanel {
 		JLabel myMusicLbl = new JLabel("My Music Library", new ImageIcon(RobonoboFrame.class.getResource("/img/icon/home.png")), JLabel.LEFT);
 		myMusicLbl.setFont(RoboFont.getFont(11, true));
 		myMusicLblPanel.add(myMusicLbl);
-		treeListView.add(myMusicLblPanel);
+		sideBarPanel.add(myMusicLblPanel);
 		
 		final JList myMusicList = new JList(new Object[] { "New Playlist", "Playlist 001", "Playlist For That Night", "I Hate This One", "DJ Mix FIFE!~" });
-		treeListView.add(myMusicList);
+		sideBarPanel.add(myMusicList);
 		myMusicList.setName("robonobo.playlist.list");
 		myMusicList.setFont(RoboFont.getFont(11, false));
 		myMusicList.setCellRenderer(new DefaultListCellRenderer() {
@@ -103,5 +110,12 @@ public class LeftSidebar extends JPanel {
 		spacerPanel.setOpaque(false);
 		add(spacerPanel);
 		add(new StatusPanel());
+	}
+	
+	public void clearSelectionExcept(LeftSidebarComponent selCmp) {
+		for (LeftSidebarComponent cmp : sideBarComps) {
+			if(cmp != selCmp)
+				cmp.relinquishSelection();
+		}
 	}
 }
