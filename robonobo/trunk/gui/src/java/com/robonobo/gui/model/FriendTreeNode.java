@@ -43,4 +43,11 @@ public class FriendTreeNode extends SelectableTreeNode {
 		return friend.getFriendlyName().compareTo(other.getFriend().getFriendlyName());
 	}
 	
+	public int totalUnseenTracks() {
+		// DEBUG - get this info from somewhere
+		String fn = friend.getFriendlyName();
+		if(fn.startsWith("Will"))
+			return 5;
+		return 0;
+	}
 }

@@ -1,4 +1,4 @@
-package com.robonobo.oldgui;
+package com.robonobo.gui.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,6 +18,7 @@ import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.TrackListener;
 import com.robonobo.core.api.model.Stream;
 import com.robonobo.core.api.model.Track;
+import com.robonobo.oldgui.StreamComparator;
 
 /**
  * A track list containing tracks, maintained in the default stream order (see StreamComparator). Add the tracks you want in your subclass constructor and
@@ -28,18 +29,18 @@ import com.robonobo.core.api.model.Track;
  */
 @SuppressWarnings("serial")
 public abstract class FreeformTrackListTableModel extends TrackListTableModel implements TrackListener {
-	Log log = LogFactory.getLog(getClass());
-	RobonoboController controller;
+	protected Log log = LogFactory.getLog(getClass());
+	protected RobonoboController controller;
 	/**
 	 * Unfortunately we need to keep track of all the streams here so we can keep the tracks sorted in the right order
 	 */
-	List<Stream> streams = new ArrayList<Stream>();
-	StreamComparator comparator = new StreamComparator();
+	protected List<Stream> streams = new ArrayList<Stream>();
+	protected StreamComparator comparator = new StreamComparator();
 	/**
 	 * We keep track of the indices of all our streams, so that when information about them is updated (upload/Download speed, status), we know which index
 	 * we're talking about and can update the table swiftly
 	 */
-	Map<String, Integer> streamIndices = new HashMap<String, Integer>();
+	protected Map<String, Integer> streamIndices = new HashMap<String, Integer>();
 
 	public FreeformTrackListTableModel(RobonoboController controller) {
 		this.controller = controller;

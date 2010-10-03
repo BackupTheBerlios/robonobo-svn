@@ -10,6 +10,7 @@ import javax.swing.event.ListSelectionListener;
 
 import com.robonobo.core.api.model.CloudTrack;
 import com.robonobo.core.api.model.Track;
+import com.robonobo.gui.model.SearchResultTableModel;
 
 @SuppressWarnings("serial")
 public class SearchResultTablePanel extends TrackListTablePanel {

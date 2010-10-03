@@ -1,4 +1,4 @@
-package com.robonobo.oldgui;
+package com.robonobo.gui.model;
 
 import javax.swing.SwingUtilities;
 

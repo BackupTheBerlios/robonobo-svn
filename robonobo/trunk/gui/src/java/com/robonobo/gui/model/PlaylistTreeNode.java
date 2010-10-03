@@ -45,6 +45,13 @@ public class PlaylistTreeNode extends SelectableTreeNode  {
 		return true;
 	}
 
+	public int unseenTracks() {
+		// DEBUG - get this info from somewhere
+		if(playlist != null && playlist.getTitle().equalsIgnoreCase("playlist 001"))
+			return 5;
+		return 0;
+	}
+	
 	protected String contentPanelName() {
 		return "playlist-" + playlist.getPlaylistId();
 	}

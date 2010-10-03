@@ -10,6 +10,7 @@ import javax.swing.TransferHandler;
 import javax.swing.event.ListSelectionListener;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
+import com.robonobo.gui.model.PlaylistTableModel;
 
 @SuppressWarnings("serial")
 public class FriendPlaylistTablePanel extends MyPlaylistTablePanel {

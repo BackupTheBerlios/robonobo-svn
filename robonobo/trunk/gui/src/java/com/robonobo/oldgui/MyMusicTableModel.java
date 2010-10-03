@@ -6,6 +6,7 @@ import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.model.CloudTrack;
 import com.robonobo.core.api.model.Track;
+import com.robonobo.gui.model.FreeformTrackListTableModel;
 
 @SuppressWarnings("serial")
 public class MyMusicTableModel extends FreeformTrackListTableModel  {

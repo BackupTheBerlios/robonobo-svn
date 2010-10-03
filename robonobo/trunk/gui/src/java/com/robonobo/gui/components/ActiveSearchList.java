@@ -23,6 +23,7 @@ import com.robonobo.gui.panels.LeftSidebar;
 
 @SuppressWarnings("serial")
 public class ActiveSearchList extends LeftSidebarList {
+	private static final int MAX_LBL_WIDTH = 160;
 	/** Clicks with an X between mincloseclick and maxcloseclick we take to be on the close 'X' **/
 	private static final int MIN_CLOSE_CLICK = 163;
 	private static final int MAX_CLOSE_CLICK = 176;
@@ -56,8 +57,8 @@ public class ActiveSearchList extends LeftSidebarList {
 			textLbl = new JLabel();
 			textLbl.setOpaque(false);
 			textLbl.setIcon(new ImageIcon(ActiveSearchList.class.getResource("/img/icon/magnifier_small.png")));
-			textLbl.setMaximumSize(new Dimension(160, 65535));
-			textLbl.setPreferredSize(new Dimension(160, 65535));
+			textLbl.setMaximumSize(new Dimension(MAX_LBL_WIDTH, 65535));
+			textLbl.setPreferredSize(new Dimension(MAX_LBL_WIDTH, 65535));
 			textLbl.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
 			textLbl.setFont(RoboFont.getFont(11, false));
 			closeLbl = new JLabel(new ImageIcon(ActiveSearchList.class.getResource("/img/icon/red_x_small.png")));

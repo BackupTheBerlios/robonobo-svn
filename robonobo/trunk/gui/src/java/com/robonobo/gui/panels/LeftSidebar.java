@@ -22,6 +22,8 @@ import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.components.ActiveSearchList;
 import com.robonobo.gui.components.FriendTree;
 import com.robonobo.gui.components.LeftSidebarComponent;
+import com.robonobo.gui.components.MyMusicSelector;
+import com.robonobo.gui.components.PlaylistList;
 import com.robonobo.gui.frames.RobonoboFrame;
 
 @SuppressWarnings("serial")
@@ -69,40 +71,33 @@ public class LeftSidebar extends JPanel {
 		sideBarPanel.add(fTree);
 		sideBarComps.add(fTree);
 		
-		JPanel myMusicLblPanel = new JPanel();
-		myMusicLblPanel.setBackground(MID_GRAY);
-		myMusicLblPanel.setOpaque(true);
-		myMusicLblPanel.setAlignmentX(0f);
-		myMusicLblPanel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
-		myMusicLblPanel.setLayout(new BoxLayout(myMusicLblPanel, BoxLayout.Y_AXIS));
-		myMusicLblPanel.setPreferredSize(new Dimension(185, 19));
-		myMusicLblPanel.setMinimumSize(new Dimension(185, 19));
-		myMusicLblPanel.setMaximumSize(new Dimension(185, 19));
-		JLabel myMusicLbl = new JLabel("My Music Library", new ImageIcon(RobonoboFrame.class.getResource("/img/icon/home.png")), JLabel.LEFT);
-		myMusicLbl.setFont(RoboFont.getFont(11, true));
-		myMusicLblPanel.add(myMusicLbl);
-		sideBarPanel.add(myMusicLblPanel);
+		MyMusicSelector myMusic = new MyMusicSelector(this, frame);
+		sideBarPanel.add(myMusic);
+		sideBarComps.add(myMusic);
 		
-		final JList myMusicList = new JList(new Object[] { "New Playlist", "Playlist 001", "Playlist For That Night", "I Hate This One", "DJ Mix FIFE!~" });
-		sideBarPanel.add(myMusicList);
-		myMusicList.setName("robonobo.playlist.list");
-		myMusicList.setFont(RoboFont.getFont(11, false));
-		myMusicList.setCellRenderer(new DefaultListCellRenderer() {
-			private static final long serialVersionUID = 1L;
-			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-				final JLabel lbl = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-				if(value.equals("New Playlist"))
-					lbl.setIcon(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/new_playlist.png")));
-				else
-					lbl.setIcon(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/playlist.png")));
-				if(isSelected)
-					lbl.setForeground(BLUE_GRAY);
-				lbl.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
-				return lbl;
-			}
-		});
-		myMusicList.setAlignmentX(0.0f);
-		myMusicList.setMaximumSize(new Dimension(65535, 65535));
+		PlaylistList playlistList = new PlaylistList(this, frame);
+		sideBarPanel.add(playlistList);
+		sideBarComps.add(playlistList);
+//		final JList myMusicList = new JList(new Object[] { "New Playlist", "Playlist 001", "Playlist For That Night", "I Hate This One", "DJ Mix FIFE!~" });
+//		sideBarPanel.add(myMusicList);
+//		myMusicList.setName("robonobo.playlist.list");
+//		myMusicList.setFont(RoboFont.getFont(11, false));
+//		myMusicList.setCellRenderer(new DefaultListCellRenderer() {
+//			private static final long serialVersionUID = 1L;
+//			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+//				final JLabel lbl = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+//				if(value.equals("New Playlist"))
+//					lbl.setIcon(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/new_playlist.png")));
+//				else
+//					lbl.setIcon(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/playlist.png")));
+//				if(isSelected)
+//					lbl.setForeground(BLUE_GRAY);
+//				lbl.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
+//				return lbl;
+//			}
+//		});
+//		myMusicList.setAlignmentX(0.0f);
+//		myMusicList.setMaximumSize(new Dimension(65535, 65535));
 
 		JPanel spacerPanel = new JPanel();
 		spacerPanel.setLayout(new BoxLayout(spacerPanel, BoxLayout.X_AXIS));

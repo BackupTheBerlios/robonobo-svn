@@ -19,6 +19,7 @@ import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.model.DownloadingTrack;
 import com.robonobo.core.api.model.SharedTrack;
 import com.robonobo.core.api.model.Track;
+import com.robonobo.gui.model.TrackListTableModel;
 
 @SuppressWarnings("serial")
 public class MyMusicTablePanel extends TrackListTablePanel {

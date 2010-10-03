@@ -1,4 +1,4 @@
-package com.robonobo.oldgui;
+package com.robonobo.gui.model;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

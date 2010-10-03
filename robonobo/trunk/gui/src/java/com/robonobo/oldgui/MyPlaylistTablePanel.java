@@ -21,6 +21,7 @@ import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.core.Platform;
 import com.robonobo.core.api.model.Stream;
+import com.robonobo.gui.model.PlaylistTableModel;
 
 @SuppressWarnings("serial")
 public class MyPlaylistTablePanel extends TrackListTablePanel {

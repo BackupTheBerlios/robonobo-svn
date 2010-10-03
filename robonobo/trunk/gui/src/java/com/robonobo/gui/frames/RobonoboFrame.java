@@ -38,7 +38,7 @@ public class RobonoboFrame extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		menuBar = Platform.getPlatform().getMenuBar(this);
-		setJMenuBar(menuBar);
+//		setJMenuBar(menuBar);
 
 		JPanel contentPane = new JPanel();
 		double[][] cellSizen = { { 5, 200, 5, TableLayout.FILL, 5 }, { 3, TableLayout.FILL, 5 } };

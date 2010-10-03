@@ -17,6 +17,7 @@ import org.debian.tablelayout.TableLayout;
 import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.model.CloudTrack;
 import com.robonobo.core.api.model.Track;
+import com.robonobo.gui.model.SearchResultTableModel;
 
 @SuppressWarnings("serial")
 public class SearchResultContentPanel extends ContentPanel {

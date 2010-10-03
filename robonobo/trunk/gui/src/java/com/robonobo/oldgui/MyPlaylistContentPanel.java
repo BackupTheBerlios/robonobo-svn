@@ -24,6 +24,7 @@ import com.robonobo.core.api.model.Playlist;
 import com.robonobo.core.api.model.PlaylistConfig;
 import com.robonobo.core.api.model.Track;
 import com.robonobo.core.api.model.User;
+import com.robonobo.gui.model.PlaylistTableModel;
 
 @SuppressWarnings("serial")
 public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylistListener {

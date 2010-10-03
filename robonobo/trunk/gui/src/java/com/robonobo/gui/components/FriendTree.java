@@ -5,6 +5,7 @@ import static com.robonobo.gui.RoboColor.*;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 
 import javax.swing.ImageIcon;
@@ -21,6 +22,8 @@ import javax.swing.tree.TreeSelectionModel;
 import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.model.FriendTreeModel;
+import com.robonobo.gui.model.FriendTreeNode;
+import com.robonobo.gui.model.PlaylistTreeNode;
 import com.robonobo.gui.model.SelectableTreeNode;
 import com.robonobo.gui.panels.LeftSidebar;
 
@@ -32,13 +35,15 @@ public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
 	LeftSidebar sideBar;
 	RobonoboFrame frame;
 	ImageIcon rootIcon, friendIcon, playlistIcon;
+	Font normalFont, boldFont;
 
 	public FriendTree(final LeftSidebar sideBar, RobonoboFrame frame) {
 		super(new FriendTreeModel(frame));
 		this.sideBar = sideBar;
 		this.frame = frame;
 
-		setFont(RoboFont.getFont(11, false));
+		normalFont = RoboFont.getFont(11, false);
+		boldFont = RoboFont.getFont(11, true);
 		setName("robonobo.playlist.tree");
 		setAlignmentX(0.0f);
 		setRootVisible(true);
@@ -71,12 +76,14 @@ public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
 	}
 
 	public void relinquishSelection() {
-		((SelectionModel)getSelectionModel()).reallyClearSelection();
+		((SelectionModel) getSelectionModel()).reallyClearSelection();
 	}
 
 	private class CellRenderer extends DefaultTreeCellRenderer {
-		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-			final JLabel lbl = (JLabel) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded,
+				boolean leaf, int row, boolean hasFocus) {
+			final JLabel lbl = (JLabel) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row,
+					hasFocus);
 			final TreeNode node = (TreeNode) value;
 
 			if (node.getParent() == null)
@@ -90,6 +97,25 @@ public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
 				lbl.setMaximumSize(MAX_PLAYLIST_SZ);
 				lbl.setPreferredSize(MAX_PLAYLIST_SZ);
 			}
+
+			if (node instanceof PlaylistTreeNode) {
+				PlaylistTreeNode ptn = (PlaylistTreeNode) node;
+				if (ptn.unseenTracks() > 0) {
+					lbl.setText("[" + ptn.unseenTracks() + "] " + lbl.getText());
+					lbl.setFont(boldFont);
+				} else
+					lbl.setFont(normalFont);
+			} else if (node instanceof FriendTreeNode) {
+				FriendTreeNode ftn = (FriendTreeNode) node;
+				if (ftn.totalUnseenTracks() > 0) {
+					lbl.setText("[" + ftn.totalUnseenTracks() + "] " + lbl.getText());
+					lbl.setFont(boldFont);
+				} else
+					lbl.setFont(normalFont);
+			} else if (node.getParent() == null) {
+				lbl.setFont(boldFont);
+			} else
+				lbl.setFont(normalFont);
 
 			if (getSelectionPath() != null && node.equals(getSelectionPath().getLastPathComponent())) {
 				lbl.setForeground(BLUE_GRAY);
@@ -114,7 +140,7 @@ public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
 		public void clearSelection() {
 			// Do nothing
 		}
-		
+
 		public void reallyClearSelection() {
 			super.clearSelection();
 		}

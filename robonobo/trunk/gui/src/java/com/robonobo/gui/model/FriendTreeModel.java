@@ -53,9 +53,14 @@ public class FriendTreeModel extends SortedTreeModel implements UserPlaylistList
 		will.setFriendlyName("Will Morton has a very very very long name");
 		FriendTreeNode willsNode = new FriendTreeNode(will);
 		myRoot.insert(willsNode, 1);
-		willsNode.insert(new PlaylistTreeNode("Playlist 001", frame), 0);
+		Playlist p = new Playlist();
+		p.setTitle("playlist 001");
+		willsNode.insert(new PlaylistTreeNode(p, frame), 0);
 		willsNode.insert(new PlaylistTreeNode("Another playlist", frame), 1);
-		willsNode.insert(new PlaylistTreeNode("I Hate This One", frame), 2);
+		Playlist p2 = new Playlist();
+		p2.setTitle("I Hate This One");
+		PlaylistTreeNode flarp = new PlaylistTreeNode(p2, frame);
+		willsNode.insert(flarp, 2);
 		willsNode.insert(new PlaylistTreeNode("A really really really long playlist name", frame), 2);
 	}
 	

@@ -1,6 +1,7 @@
 package com.robonobo.gui.components;
 
 import static com.robonobo.gui.RoboColor.*;
+import static com.robonobo.gui.GUIUtils.*;
 
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
@@ -33,7 +34,7 @@ public class MyMusicSelector extends JPanel implements LeftSidebarComponent {
 		setPreferredSize(new Dimension(185, 19));
 		setMinimumSize(new Dimension(185, 19));
 		setMaximumSize(new Dimension(185, 19));
-		JLabel myMusicLbl = new JLabel("My Music Library", new ImageIcon(RobonoboFrame.class.getResource("/img/icon/home.png")), JLabel.LEFT);
+		JLabel myMusicLbl = new JLabel("My Music Library", createImageIcon("/img/icon/home.png", null), JLabel.LEFT);
 		myMusicLbl.setFont(RoboFont.getFont(11, true));
 		myMusicLbl.setOpaque(false);
 		add(myMusicLbl);
