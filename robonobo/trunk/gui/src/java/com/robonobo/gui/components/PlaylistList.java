@@ -38,6 +38,11 @@ public class PlaylistList extends LeftSidebarList {
 		setMaximumSize(new Dimension(65535, 65535));
 	}
 
+	@Override
+	protected void itemSelected(int index) {
+		// TODO something
+	}
+	
 	class CellRenderer extends DefaultListRenderer {
 		JLabel lbl = new JLabel();
 

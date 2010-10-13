@@ -38,7 +38,6 @@ public class MyMusicSelector extends JPanel implements LeftSidebarComponent {
 		myMusicLbl.setFont(RoboFont.getFont(11, true));
 		myMusicLbl.setOpaque(false);
 		add(myMusicLbl);
-		setSelected(true);
 		addMouseListener(new MouseListener());
 	}
 
@@ -46,8 +45,9 @@ public class MyMusicSelector extends JPanel implements LeftSidebarComponent {
 		setSelected(false);
 	}
 
-	private void setSelected(boolean isSelected) {
+	public void setSelected(boolean isSelected) {
 		if (isSelected) {
+			frame.selectContentPanel("mymusiclibrary");
 			setBackground(LIGHT_GRAY);
 			setForeground(BLUE_GRAY);
 			sideBar.clearSelectionExcept(this);

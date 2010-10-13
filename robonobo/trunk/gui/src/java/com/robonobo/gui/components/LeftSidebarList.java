@@ -15,8 +15,8 @@ import com.robonobo.gui.panels.LeftSidebar;
 
 @SuppressWarnings("serial")
 public abstract class LeftSidebarList extends JList implements LeftSidebarComponent {
-	RobonoboFrame frame;
-	LeftSidebar sideBar;
+	protected RobonoboFrame frame;
+	protected LeftSidebar sideBar;
 
 	public LeftSidebarList(final LeftSidebar sideBar, RobonoboFrame frame, ListModel lm) {
 		super(lm);
@@ -33,6 +33,7 @@ public abstract class LeftSidebarList extends JList implements LeftSidebarCompon
 				if(!e.getValueIsAdjusting())
 					return;
 				sideBar.clearSelectionExcept(LeftSidebarList.this);
+				itemSelected(e.getFirstIndex());
 			}
 		});
 	}
@@ -41,6 +42,11 @@ public abstract class LeftSidebarList extends JList implements LeftSidebarCompon
 		((SelectionModel)getSelectionModel()).reallyClearSelection();
 	}
 
+	/**
+	 * The user has clicked on this item
+	 */
+	abstract protected void itemSelected(int index);
+	
 	/**
 	 * Stop Swing from deselecting us at its twisted whim
 	 * @author macavity

@@ -19,7 +19,8 @@ import javax.swing.JPanel;
 import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.model.ActiveSearchListModel;
-import com.robonobo.gui.panels.LeftSidebar;
+import com.robonobo.gui.model.SearchResultTableModel;
+import com.robonobo.gui.panels.*;
 
 @SuppressWarnings("serial")
 public class ActiveSearchList extends LeftSidebarList {
@@ -34,17 +35,38 @@ public class ActiveSearchList extends LeftSidebarList {
 		addMouseListener(new MouseListener());
 	}
 
+	@Override
+	protected void itemSelected(int index) {
+		ActiveSearchListModel m = (ActiveSearchListModel) getModel();
+		String query = (String) m.getElementAt(index);
+		frame.selectContentPanel("search/" + query);
+	}
+
+	public void searchAdded(String query) {
+		ActiveSearchListModel m = (ActiveSearchListModel) getModel();
+		m.addSearch(query);
+	}
+
 	private class MouseListener extends MouseAdapter {
 		public void mouseClicked(MouseEvent e) {
 			int clickIdx = locationToIndex(new Point(e.getX(), e.getY()));
-			if(clickIdx < 0)
+			if (clickIdx < 0)
 				return;
 			if (e.getX() >= MIN_CLOSE_CLICK && e.getX() <= MAX_CLOSE_CLICK) {
 				// They clicked on the close 'X'
-				((ActiveSearchListModel) getModel()).removeElementAt(clickIdx);
-				// TODO Bring another main panel to the front
+				ActiveSearchListModel model = (ActiveSearchListModel) getModel();
+				String query = (String) model.getElementAt(clickIdx);
+				model.removeElementAt(clickIdx);
+				ContentPanel cp = frame.removeContentPanel("search/" + query);
+				SearchResultTableModel srtm = (SearchResultTableModel) cp.getTableModel();
+				srtm.die();
+				// Bring the next search into focus if there is one, else select MyMusicLibrary
+				if (clickIdx < model.getSize())
+					setSelectedIndex(clickIdx);
+				else
+					sideBar.selectMyMusic();
 				e.consume();
-			} 
+			}
 		}
 	}
 
@@ -72,7 +94,8 @@ public class ActiveSearchList extends LeftSidebarList {
 			pnl.setMaximumSize(new Dimension(65535, 65535));
 		}
 
-		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+				boolean cellHasFocus) {
 			String searchStr = (String) value;
 			textLbl.setText(searchStr);
 			if (index == getSelectedIndex()) {

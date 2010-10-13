@@ -56,7 +56,6 @@ public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
 		setCellRenderer(new CellRenderer());
 		setSelectionModel(new SelectionModel());
 		getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-		// Detect selection and pass it to the treenode to handle
 		addTreeSelectionListener(new TreeSelectionListener() {
 			public void valueChanged(TreeSelectionEvent e) {
 				TreePath tp = e.getNewLeadSelectionPath();
@@ -132,8 +131,6 @@ public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
 
 	/**
 	 * Stop Swing from deselecting us at its twisted whim
-	 * 
-	 * @author macavity
 	 */
 	class SelectionModel extends DefaultTreeSelectionModel {
 		@Override
