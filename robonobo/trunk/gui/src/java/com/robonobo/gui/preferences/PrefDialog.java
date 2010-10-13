@@ -5,23 +5,14 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
+import javax.swing.*;
 
 import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.util.NetUtil;
-import com.robonobo.oldgui.RobonoboFrame;
+import com.robonobo.gui.frames.RobonoboFrame;
 
 @SuppressWarnings("serial")
 public class PrefDialog extends JDialog {
@@ -39,8 +30,11 @@ public class PrefDialog extends JDialog {
 		setLayout(new TableLayout(cellSizen));
 
 		JTabbedPane tabPane = new JTabbedPane();
+		System.out.println("flarp b0");
 		tabPane.addTab("Basic", new JScrollPane(createBasicPanel()));
+		System.out.println("flarp b1");
 		tabPane.addTab("Advanced", new JScrollPane(createAdvancedPanel()));
+		System.out.println("flarp b2");
 		tabPane.setSelectedIndex(0);
 		add(tabPane, "1,1,4,1");
 
@@ -75,22 +69,27 @@ public class PrefDialog extends JDialog {
 		bp.add(mrdPanel);
 		bp.add(vertSpacer());
 
-		Set<InetAddress> localIps = NetUtil.getLocalInetAddresses(false);
+		System.out.println("flarp c0");
+		Set<InetAddress> localIps = NetUtil.getLocalInetAddresses(frame.getController().getConfig().getAllowLoopbackAddress());
+		System.out.println("flarp c1");
 		String[] ipArr = new String[localIps.size()];
 		int i = 0;
 		for (InetAddress addr : localIps) {
 			ipArr[i++] = addr.getHostAddress();
 		}
+		System.out.println("flarp c2");
 		ChoicePrefPanel lipPanel = new ChoicePrefPanel(frame, "mina.localAddress", "Local IP Address", ipArr);
 		prefPanels.add(lipPanel);
 		bp.add(lipPanel);
 		bp.add(vertSpacer());
 
+		System.out.println("flarp c3");
 		GatewayPrefPanel gPanel = new GatewayPrefPanel(frame);
 		prefPanels.add(gPanel);
 		bp.add(gPanel);
 		bp.add(Box.createVerticalGlue());
 
+		System.out.println("flarp c4");
 		return bp;
 	}
 

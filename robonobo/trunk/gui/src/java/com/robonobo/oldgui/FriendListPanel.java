@@ -20,7 +20,7 @@ public class FriendListPanel extends JPanel {
 		for (Long friendId : frame.getController().getMyUser().getFriendIds()) {
 			final User ff = frame.getController().getUser(friendId);
 			JLabel plLbl = new JLabel(ff.getFriendlyName());
-			plLbl.setForeground(Platform.getPlatform().getLinkColor());
+//			plLbl.setForeground(Platform.getPlatform().getLinkColor());
 			plLbl.addMouseListener(new MouseAdapter() {
 				public void mouseClicked(MouseEvent e) {
 					frame.getContentHolder().bringPanelToFront("friend-"+ff.getEmail());

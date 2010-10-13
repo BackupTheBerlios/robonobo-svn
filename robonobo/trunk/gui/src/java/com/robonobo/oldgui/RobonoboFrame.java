@@ -38,6 +38,7 @@ import com.robonobo.core.api.model.SharedTrack;
 import com.robonobo.core.api.model.Stream;
 import com.robonobo.core.api.model.User;
 import com.robonobo.gui.GUIUtils;
+import com.robonobo.gui.dialogs.LoginDialog;
 import com.robonobo.gui.preferences.PrefDialog;
 
 @SuppressWarnings("serial")
@@ -87,7 +88,7 @@ public class RobonoboFrame extends JFrame implements UserPlaylistListener {
 		contentHolder.addContentPanel("playlist-new", new NewPlaylistContentPanel(this));
 
 		fileImportDropHandler = new FileImportDropHandler(this);
-		prefDialog = new PrefDialog(this);
+//		prefDialog = new PrefDialog(this);
 
 		// This is stupid, shouldn't need to do this, but if I just call
 		// lbar.selectAllMusic, the search box doesn't get the focus
@@ -122,9 +123,9 @@ public class RobonoboFrame extends JFrame implements UserPlaylistListener {
 	 */
 	public void showLogin(Runnable onLogin) {
 		getGlassPane().setVisible(true);
-		LoginDialog ld = new LoginDialog(this, onLogin);
-		ld.setLocationRelativeTo(this);
-		ld.setVisible(true);
+//		LoginDialog ld = new LoginDialog(this, onLogin);
+//		ld.setLocationRelativeTo(this);
+//		ld.setVisible(true);
 	}
 
 	public void showLogFrame() {

@@ -65,7 +65,6 @@ public class TrackListTablePanel extends JPanel implements SearchExecutor, NextT
 		table.setFillsViewportHeight(true);
 		table.setBackground(Color.WHITE);
 		table.setHighlighters(HighlighterFactory.createSimpleStriping());
-		table.setFont(Platform.getPlatform().getTableBodyFont());
 		table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 		if (selectionListener != null)
 			table.getSelectionModel().addListSelectionListener(selectionListener);
@@ -254,12 +253,13 @@ public class TrackListTablePanel extends JPanel implements SearchExecutor, NextT
 					return new JLabel();
 				long streamSz = d.getStream().getSize();
 				float complete = (float) d.getBytesDownloaded() / streamSz;
-				if (dStat.getProgressBar() == null)
-					dStat.setProgressBar(new JProgressBar(0, (int) streamSz));
-				dStat.getProgressBar().setValue((int) d.getBytesDownloaded());
-				dStat.getProgressBar().setString("Downloading (" + dStat.getNumSources() + "): " + percentage(complete));
-				dStat.getProgressBar().setStringPainted(true);
-				result = dStat.getProgressBar();
+//				if (dStat.getProgressBar() == null)
+//					dStat.setProgressBar(new JProgressBar(0, (int) streamSz));
+//				dStat.getProgressBar().setValue((int) d.getBytesDownloaded());
+//				dStat.getProgressBar().setString("Downloading (" + dStat.getNumSources() + "): " + percentage(complete));
+//				dStat.getProgressBar().setStringPainted(true);
+//				result = dStat.getProgressBar();
+				result = null;
 			} else {
 				String valueStr = value.toString();
 				JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, valueStr, isSelected, hasFocus, row, column);

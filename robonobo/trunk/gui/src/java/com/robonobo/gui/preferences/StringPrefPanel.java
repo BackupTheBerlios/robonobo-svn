@@ -7,7 +7,8 @@ import javax.swing.JTextField;
 
 import org.debian.tablelayout.TableLayout;
 
-import com.robonobo.oldgui.RobonoboFrame;
+import com.robonobo.gui.frames.RobonoboFrame;
+
 
 @SuppressWarnings("serial")
 public class StringPrefPanel extends PrefPanel {

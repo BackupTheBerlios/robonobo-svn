@@ -2,13 +2,11 @@ package com.robonobo.gui.preferences;
 
 import java.awt.Dimension;
 
-import javax.swing.ButtonGroup;
-import javax.swing.JLabel;
-import javax.swing.JRadioButton;
+import javax.swing.*;
 
 import org.debian.tablelayout.TableLayout;
 
-import com.robonobo.oldgui.RobonoboFrame;
+import com.robonobo.gui.frames.RobonoboFrame;
 
 @SuppressWarnings("serial")
 public class BoolPrefPanel extends PrefPanel {

@@ -2,6 +2,7 @@ package com.robonobo.gui;
 
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -50,6 +51,12 @@ public class RoboFont {
 				derivedBoldFonts.put(12, baseBoldFont);
 			} catch (Exception e) {
 				throw new SeekInnerCalmException();
+			}
+			try {
+				plainIs.close();
+				boldIs.close();
+			} catch (IOException e) {
+				// Ignore
 			}
 		}
 	}

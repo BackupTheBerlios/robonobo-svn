@@ -1,11 +1,6 @@
 package com.robonobo.oldgui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,7 +61,7 @@ public class SearchResultContentPanel extends ContentPanel {
 		btnList.add(dloadBtn);
 		mainBtnBar = new MainButtonBar(btnList, frame, tablePanel);
 		add(mainBtnBar, "1,1");
-		searchPanel = new SearchPanel(tableModel, false);
+//		searchPanel = new SearchPanel(tableModel, false);
 		add(searchPanel, "1,3");
 		add(tablePanel, "1,5");
 		tablePanel.getJTable().addMouseListener(new MouseAdapter() {

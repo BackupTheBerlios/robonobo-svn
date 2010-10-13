@@ -18,8 +18,8 @@ import com.robonobo.console.RobonoboConsole;
 import com.robonobo.core.Platform;
 import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.RobonoboStatus;
-import com.robonobo.oldgui.EULAFrame;
-import com.robonobo.oldgui.RobonoboFrame;
+import com.robonobo.gui.frames.EULAFrame;
+import com.robonobo.gui.frames.RobonoboFrame;
 
 /**
  * Just a mainline - starts a RobonoboFrame or RobonoboConsole as appropriate
@@ -145,7 +145,9 @@ public class Robonobo {
 			return;
 		}
 
+		System.out.println("flarp 3");
 		final RobonoboFrame frame = new RobonoboFrame(controller, args);
+		System.out.println("flarp 4");
 		Platform.getPlatform().initMainWindow(frame);
 		frame.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
@@ -153,7 +155,6 @@ public class Robonobo {
 			}
 		});
 		frame.setVisible(true);
-
 		// If we have no user, ask for login... otherwise wait until we have
 		// tried to login, and if it fails prompt for details
 		if (controller.getConfig().getMetadataServerUsername() == null)
@@ -167,9 +168,5 @@ public class Robonobo {
 			frame.updateStatus("Login as " + frame.getController().getMyUser().getEmail() + " succeeded", 5, 30);
 		else
 			frame.showLogin(null);
-
-		controller.addUserPlaylistListener(frame);
-		if (controller.getMyUser() != null)
-			frame.loggedIn();
 	}
 }

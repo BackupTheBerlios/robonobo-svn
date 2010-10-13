@@ -37,7 +37,9 @@ public class PlaybackStatusPanel extends JPanel implements PlaybackListener {
 		this.frame = frame;
 		this.controller = frame.getController();
 
-		int progressLblWidth = Platform.getPlatform().getTrackProgressLabelWidth();
+//		int progressLblWidth = Platform.getPlatform().getTrackProgressLabelWidth();
+		int progressLblWidth = 75;
+		
 		int artistLblWidth = 175 - progressLblWidth;
 		double[][] cellSizen = { { 10, artistLblWidth, 5, progressLblWidth, 10 }, { 0, 30, 15, 25, 10 } };
 		setLayout(new TableLayout(cellSizen));
