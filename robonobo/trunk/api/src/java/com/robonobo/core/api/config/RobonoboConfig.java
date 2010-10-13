@@ -30,6 +30,7 @@ public class RobonoboConfig implements Serializable {
 	/** "auto", "off", or a gateway port number (which means manual) */
 	String gatewayCfgMode = "auto";
 	boolean agreedToEula = false;
+	boolean allowLoopbackAddress = false;
 
 	public RobonoboConfig() {
 	}
@@ -216,5 +217,13 @@ public class RobonoboConfig implements Serializable {
 
 	public void setAgreedToEula(boolean agreedToEula) {
 		this.agreedToEula = agreedToEula;
+	}
+
+	public boolean getAllowLoopbackAddress() {
+		return allowLoopbackAddress;
+	}
+
+	public void setAllowLoopbackAddress(boolean allowLoopbackAddress) {
+		this.allowLoopbackAddress = allowLoopbackAddress;
 	}
 }
