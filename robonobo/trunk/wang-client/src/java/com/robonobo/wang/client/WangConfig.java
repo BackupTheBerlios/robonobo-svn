@@ -3,7 +3,7 @@ package com.robonobo.wang.client;
 public class WangConfig {
 	private String accountEmail;
 	private String accountPwd;
-	private String bankUrl = "http://localhost:8080/wang-server";
+	private String bankUrl = "http://robonobo.com/wang-server/";
 	/** The number of coins to keep on hand: <coin exponent>:<number>[,<exponent>:<num>...] */
 	private String floatLevel = "0:8";
 	private String coinStoreDir = "c:/tmp/coinstore";
