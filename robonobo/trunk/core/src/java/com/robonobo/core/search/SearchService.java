@@ -1,11 +1,11 @@
 package com.robonobo.core.search;
 
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.serialization.SerializationManager;
+import com.robonobo.common.util.TextUtil;
+import com.robonobo.core.api.ActiveSearch;
 import com.robonobo.core.api.SearchListener;
 import com.robonobo.core.api.model.Stream;
 import com.robonobo.core.api.proto.CoreApi.SearchResponse;
@@ -17,7 +17,9 @@ import com.robonobo.core.service.AbstractRuntimeServiceProvider;
  * @author macavity
  * 
  */
+@SuppressWarnings("unchecked")
 public class SearchService extends AbstractRuntimeServiceProvider {
+	
 	public SearchService() {
 	}
 
@@ -39,12 +41,11 @@ public class SearchService extends AbstractRuntimeServiceProvider {
 		return "core.search";
 	}
 
-	public void search(final String query, final int startResult, final SearchListener listener) {
+	public void startSearch(final String query, final int startResult, final SearchListener listener) {
 		getRobonobo().getExecutor().execute(new CatchingRunnable() {
-			@SuppressWarnings("unchecked")
 			public void doRun() throws Exception {
 				String searchUrl = getRobonobo().getConfig().getMetadataServerUrl() + "search?type=stream&q="
-						+ URLEncoder.encode(query, "utf-8");
+						+ TextUtil.urlEncode(query);
 				if (startResult > 0)
 					searchUrl += "&start=" + String.valueOf(startResult);
 				SearchResponse.Builder srb = SearchResponse.newBuilder();

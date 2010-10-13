@@ -274,7 +274,7 @@ public class RobonoboController {
 	}
 
 	public void search(String query, int startResult, SearchListener listener) {
-		inst.getSearchService().search(query, startResult, listener);
+		inst.getSearchService().startSearch(query, startResult, listener);
 	}
 
 	public int numUsefulSources(String streamId) {

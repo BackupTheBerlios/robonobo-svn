@@ -99,8 +99,12 @@ public class UserService extends AbstractRuntimeServiceProvider {
 			usersById.put(tryUser.getUserId(), tryUser);
 			this.msc = msc;
 			me = tryUser;
-			robonobo.getEventService().fireLoggedIn();
 			log.info("Login as " + email + " successful");
+			robonobo.getExecutor().execute(new CatchingRunnable() {
+				public void doRun() throws Exception {
+					robonobo.getEventService().fireLoggedIn();
+				}
+			});
 			robonobo.getExecutor().execute(new CatchingRunnable() {
 				public void doRun() throws Exception {
 					UserLookerUpper ulu = new UserLookerUpper(me);

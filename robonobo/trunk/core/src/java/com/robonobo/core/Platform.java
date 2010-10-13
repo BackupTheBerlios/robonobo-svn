@@ -79,10 +79,6 @@ public abstract class Platform {
 	
 	public abstract int getNumberOfShakesForShakeyWindow();
 
-	public abstract Font getTableBodyFont();
-
-	public abstract int getTrackProgressLabelWidth();
-
 	public abstract boolean canDnDImport(DataFlavor[] transferFlavors);
 
 	public abstract List<File> getDnDImportFiles(Transferable t) throws IOException;
@@ -94,8 +90,6 @@ public abstract class Platform {
 	public abstract boolean iTunesAvailable();
 	
 	public abstract ITunesService getITunesService();
-
-	public abstract Color getLinkColor();
 
 	public abstract void customizeMainbarButtons(List<? extends JButton> btns);
 
