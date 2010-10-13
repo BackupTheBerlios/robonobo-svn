@@ -4,24 +4,21 @@ import java.awt.Event;
 import java.io.IOException;
 import java.util.List;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
+import javax.swing.*;
 
 import com.apple.eawt.Application;
 import com.apple.eio.FileManager;
 import com.robonobo.common.util.CodeUtil;
 import com.robonobo.core.itunes.ITunesService;
+import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.itunes.mac.MacITunesService;
-import com.robonobo.oldgui.RobonoboFrame;
 
 public class MacPlatform extends UnknownPlatform {
 	
 	@Override
 	public void init() {
 		System.setProperty("apple.laf.useScreenMenuBar", "true");
-		System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Robonobo");				
+		System.setProperty("com.apple.mrj.application.apple.menu.about.name", "robonobo");				
 	}
 	
 	@Override
@@ -35,11 +32,6 @@ public class MacPlatform extends UnknownPlatform {
 		app.setEnabledPreferencesMenu(true);
 	}
 
-	@Override
-	public void setLookAndFeel() {
-		// Leave default apple l&f - or should we use quaqua?
-	}
-	
 	@Override
 	public boolean shouldSetMenuBarOnDialogs() {
 		return true;
