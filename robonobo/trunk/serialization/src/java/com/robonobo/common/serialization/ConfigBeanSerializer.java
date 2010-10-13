@@ -125,6 +125,8 @@ public class ConfigBeanSerializer {
 				String propName = m.group(2);
 				String propVal = env.get(envName);
 				PropertyDescriptor prop = propsByName.get(propName);
+				if(prop == null)
+					throw new SeekInnerCalmException("Failed to overwrite config: unknown property "+propName+" in bean "+beanName);
 				if(!propTypeOk(prop.getPropertyType()))
 					throw new IOException("Invalid property type for property '"+prop.getName()+"' in bean class "+bean.getClass());
 				prop.getWriteMethod().invoke(bean, getPropValue(prop.getPropertyType(), propVal));
