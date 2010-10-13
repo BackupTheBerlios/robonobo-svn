@@ -8,7 +8,7 @@
 		<property name="driverClass" value="org.postgresql.Driver" />
 		<property name="dbUrl" value="jdbc:postgresql://localhost:5432/wang" />
 		<property name="dbUser" value="robonobo" />
-		<property name="dbPassword" value="r00b00" />
+		<property name="dbPassword" value="password" />
 	</bean>
 
 	<bean id="userAccountDAO" class="com.robonobo.wang.server.UserAccountDAOImpl">
