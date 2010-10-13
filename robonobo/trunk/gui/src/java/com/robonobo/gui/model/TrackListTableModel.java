@@ -12,7 +12,7 @@ import com.robonobo.core.api.model.Track;
 
 @SuppressWarnings("serial")
 public abstract class TrackListTableModel extends AbstractTableModel {
-	String[] colNames = { " "/*StatusIcon*/, "Title", "Artist", "Album", "Track", "Year", "Duration", "Status", "Download", "Upload", "Size", "Stream Id" };
+	String[] colNames = { " "/*StatusIcon*/, "Title", "Artist", "Album", "Track", "Year", "Time", "Status", "Download", "Upload", "Size", "Stream Id" };
 	Pattern firstNumPat = Pattern.compile("^\\s*(\\d*).*$");
 
 	public int getColumnCount() {

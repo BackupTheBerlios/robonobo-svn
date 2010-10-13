@@ -4,13 +4,33 @@ import javax.swing.JPanel;
 
 import org.debian.tablelayout.TableLayout;
 
+import com.robonobo.gui.frames.RobonoboFrame;
+
 @SuppressWarnings("serial")
 public class MainPanel extends JPanel {
-	public MainPanel() {
-		double[][] cellSizen = { { TableLayout.FILL }, { 100, 10, TableLayout.FILL, 5, 175 } };
+	private PlaybackPanel playbackPanel;
+	private ContentPanelHolder cpHolder;
+
+	public MainPanel(RobonoboFrame frame) {
+		double[][] cellSizen = { { TableLayout.FILL }, { 100, 10, TableLayout.FILL } };
 		setLayout(new TableLayout(cellSizen));
-		add(new PlaybackPanel(), "0,0");
-		add(new TrackTablePanel(), "0,2");
-		add(new DetailsTabPanel(), "0,4");
-	}	
+		playbackPanel = new PlaybackPanel();
+		add(playbackPanel, "0,0");
+		cpHolder = new ContentPanelHolder();
+		add(cpHolder, "0,2");
+		addContentPanel("mymusiclibrary", new MyMusicContentPanel(frame));
+		selectContentPanel("mymusiclibrary");
+	}
+	
+	public void addContentPanel(String name, ContentPanel panel) {
+		cpHolder.addContentPanel(name, panel);
+	}
+	
+	public void selectContentPanel(String name) {
+		cpHolder.selectContentPanel(name);
+	}
+
+	public ContentPanel removeContentPanel(String panelName) {
+		return cpHolder.removeContentPanel(panelName);
+	}
 }

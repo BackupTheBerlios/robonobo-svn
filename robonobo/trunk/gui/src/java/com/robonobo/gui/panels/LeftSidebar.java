@@ -3,34 +3,26 @@ package com.robonobo.gui.panels;
 import static com.robonobo.gui.RoboColor.*;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
+import javax.swing.*;
 
-import com.robonobo.gui.RoboFont;
-import com.robonobo.gui.components.ActiveSearchList;
-import com.robonobo.gui.components.FriendTree;
-import com.robonobo.gui.components.LeftSidebarComponent;
-import com.robonobo.gui.components.MyMusicSelector;
-import com.robonobo.gui.components.PlaylistList;
+import com.robonobo.gui.components.*;
 import com.robonobo.gui.frames.RobonoboFrame;
+import com.robonobo.gui.model.ActiveSearchListModel;
+import com.robonobo.gui.model.SearchResultTableModel;
 
 @SuppressWarnings("serial")
 public class LeftSidebar extends JPanel {
 	List<LeftSidebarComponent> sideBarComps = new ArrayList<LeftSidebarComponent>();
+	RobonoboFrame frame;
+	private ActiveSearchList activeSearchList;
+	private MyMusicSelector myMusic;
 	
 	public LeftSidebar(RobonoboFrame frame) {
+		this.frame = frame;
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
 		
@@ -41,70 +33,49 @@ public class LeftSidebar extends JPanel {
 		sideBarPanel.setLayout(new BoxLayout(sideBarPanel, BoxLayout.Y_AXIS));
 		sideBarPanel.setBackground(MID_GRAY);
 		
-		JPanel searchPanel = new JPanel();
-		searchPanel.setLayout(new BoxLayout(searchPanel, BoxLayout.Y_AXIS));
-		searchPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
-		searchPanel.setOpaque(true);
-		searchPanel.setBackground(MID_GRAY);
-		searchPanel.setPreferredSize(new Dimension(185, 30));
-		searchPanel.setMinimumSize(new Dimension(185, 30));
-		searchPanel.setMaximumSize(new Dimension(185, 30));
-		searchPanel.setAlignmentX(0f);
-		JTextField searchField = new JTextField("Search...");
-		searchField.setName("robonobo.search.textfield");
-		searchField.setFont(RoboFont.getFont(11, false));
-		searchField.setPreferredSize(new Dimension(170, 25));
-		searchField.setMinimumSize(new Dimension(170, 25));
-		searchField.setMaximumSize(new Dimension(170, 25));
-		searchField.setSelectionStart(0);
-		searchField.setSelectionEnd(searchField.getText().length());
-		searchPanel.add(searchField);
-		sideBarPanel.add(searchPanel);
+		SearchField searchField = new SearchField(this);
+		sideBarPanel.add(searchField);
 		
-		ActiveSearchList asList = new ActiveSearchList(this, frame);
-		asList.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
-		sideBarPanel.add(asList);
-		sideBarComps.add(asList);
+		activeSearchList = new ActiveSearchList(this, frame);
+		activeSearchList.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
+		sideBarPanel.add(activeSearchList);
+		sideBarComps.add(activeSearchList);
 
 		FriendTree fTree = new FriendTree(this, frame);
 		fTree.setBorder(BorderFactory.createEmptyBorder(5, 10, 3, 10));
 		sideBarPanel.add(fTree);
 		sideBarComps.add(fTree);
 		
-		MyMusicSelector myMusic = new MyMusicSelector(this, frame);
+		myMusic = new MyMusicSelector(this, frame);
 		sideBarPanel.add(myMusic);
 		sideBarComps.add(myMusic);
 		
 		PlaylistList playlistList = new PlaylistList(this, frame);
 		sideBarPanel.add(playlistList);
 		sideBarComps.add(playlistList);
-//		final JList myMusicList = new JList(new Object[] { "New Playlist", "Playlist 001", "Playlist For That Night", "I Hate This One", "DJ Mix FIFE!~" });
-//		sideBarPanel.add(myMusicList);
-//		myMusicList.setName("robonobo.playlist.list");
-//		myMusicList.setFont(RoboFont.getFont(11, false));
-//		myMusicList.setCellRenderer(new DefaultListCellRenderer() {
-//			private static final long serialVersionUID = 1L;
-//			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-//				final JLabel lbl = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-//				if(value.equals("New Playlist"))
-//					lbl.setIcon(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/new_playlist.png")));
-//				else
-//					lbl.setIcon(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/playlist.png")));
-//				if(isSelected)
-//					lbl.setForeground(BLUE_GRAY);
-//				lbl.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
-//				return lbl;
-//			}
-//		});
-//		myMusicList.setAlignmentX(0.0f);
-//		myMusicList.setMaximumSize(new Dimension(65535, 65535));
 
 		JPanel spacerPanel = new JPanel();
 		spacerPanel.setLayout(new BoxLayout(spacerPanel, BoxLayout.X_AXIS));
 		spacerPanel.setPreferredSize(new Dimension(200, 5));
 		spacerPanel.setOpaque(false);
 		add(spacerPanel);
-		add(new StatusPanel());
+		add(new StatusPanel(frame));
+	}
+	
+	public void searchAdded(String query) {
+		ActiveSearchListModel model = (ActiveSearchListModel) activeSearchList.getModel();
+		SearchResultTableModel srtm = model.addSearch(query);
+		if(srtm != null) {
+			SearchResultContentPanel srcm = new SearchResultContentPanel(frame, srtm);
+			frame.addContentPanel("search/"+query, srcm);
+		}
+		activeSearchList.setSelectedIndex(model.indexOfQuery(query));
+		clearSelectionExcept(activeSearchList);
+		frame.selectContentPanel("search/"+query);
+	}
+	
+	public void selectMyMusic() {
+		myMusic.setSelected(true);
 	}
 	
 	public void clearSelectionExcept(LeftSidebarComponent selCmp) {

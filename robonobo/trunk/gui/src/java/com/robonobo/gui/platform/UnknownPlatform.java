@@ -13,13 +13,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JMenuBar;
-import javax.swing.JOptionPane;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
 
 import org.apache.commons.logging.Log;
@@ -33,9 +27,9 @@ import com.robonobo.core.api.Robonobo;
 import com.robonobo.core.itunes.ITunesService;
 import com.robonobo.gui.components.MenuBar;
 import com.robonobo.gui.frames.RobonoboFrame;
+import com.robonobo.gui.laf.RobonoboLookAndFeel;
 
 public class UnknownPlatform extends Platform {
-	private Font tableBodyFont = new Font("sans-serif", Font.PLAIN, 12);
 	Log log;
 	protected RobonoboFrame rFrame;
 
@@ -62,7 +56,11 @@ public class UnknownPlatform extends Platform {
 
 	@Override
 	public void setLookAndFeel() {
-		// TODO Auto-generated method stub
+		try {
+			UIManager.setLookAndFeel(new RobonoboLookAndFeel());
+		} catch (UnsupportedLookAndFeelException e) {
+			throw new SeekInnerCalmException(e);
+		}
 	}
 
 	@Override
@@ -104,16 +102,6 @@ public class UnknownPlatform extends Platform {
 	@Override
 	public int getNumberOfShakesForShakeyWindow() {
 		return 10;
-	}
-
-	@Override
-	public Font getTableBodyFont() {
-		return tableBodyFont;
-	}
-
-	@Override
-	public int getTrackProgressLabelWidth() {
-		return 70;
 	}
 
 	@Override
@@ -165,11 +153,6 @@ public class UnknownPlatform extends Platform {
 	}
 	
 	@Override
-	public Color getLinkColor() {
-		return Color.BLUE;
-	}
-	
-	@Override
 	public void customizeMainbarButtons(List<? extends JButton> btns) {
 		// Do nothing
 	}
@@ -182,6 +165,7 @@ public class UnknownPlatform extends Platform {
 	@Override
 	public void openUrl(String url) throws IOException {
 		// Make sure we're in java6+ so that we have the java desktop classes, otherwise pop up a warning
+		// TODO Use a 3rd party lib in java<6
 		if(CodeUtil.javaMajorVersion() < 6) {
 			SwingUtilities.invokeLater(new CatchingRunnable() {
 				public void doRun() throws Exception {

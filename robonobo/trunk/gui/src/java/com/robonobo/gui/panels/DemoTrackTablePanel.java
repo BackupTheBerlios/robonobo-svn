@@ -28,14 +28,15 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 import org.debian.tablelayout.TableLayout;
+import org.jdesktop.swingx.table.TableColumnExt;
 
 import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.components.DownloadStatusProgressBar;
 import com.robonobo.gui.frames.RobonoboFrame;
 
 @SuppressWarnings("serial")
-public class TrackTablePanel extends JPanel {
-	public TrackTablePanel() {
+public class DemoTrackTablePanel extends JPanel {
+	public DemoTrackTablePanel() {
 		double[][] cellSizen = { { TableLayout.FILL }, { TableLayout.FILL } };
 		setLayout(new TableLayout(cellSizen));
 		setBorder(BorderFactory.createEmptyBorder(0, 1, 0, 1));

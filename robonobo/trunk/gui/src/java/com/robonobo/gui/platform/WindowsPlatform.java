@@ -10,15 +10,6 @@ import com.robonobo.gui.itunes.windows.WindowsITunesService;
 
 public class WindowsPlatform extends UnknownPlatform {
 	@Override
-	public void setLookAndFeel() {
-		try {
-			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-		} catch (Exception e) {
-			throw new SeekInnerCalmException();
-		}
-	}
-
-	@Override
 	public File getDefaultHomeDirectory() {
 		return new File(System.getenv("APPDATA"), "robonobo");
 	}

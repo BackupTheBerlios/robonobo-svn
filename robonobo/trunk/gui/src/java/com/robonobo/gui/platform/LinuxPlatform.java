@@ -27,22 +27,8 @@ public class LinuxPlatform extends UnknownPlatform {
 	}
 	
 	@Override
-	public void setLookAndFeel() {
-		try {
-			UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
-		} catch (Exception e) {
-			throw new SeekInnerCalmException();
-		}
-	}
-
-	@Override
 	public int getNumberOfShakesForShakeyWindow() {
 		return 25;
-	}
-
-	@Override
-	public int getTrackProgressLabelWidth() {
-		return 80;
 	}
 
 	@Override
