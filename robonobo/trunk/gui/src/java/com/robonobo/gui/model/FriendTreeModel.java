@@ -37,33 +37,11 @@ public class FriendTreeModel extends SortedTreeModel implements UserPlaylistList
 		super(null);
 		myRoot = new SelectableTreeNode("Friends");
 		setRoot(myRoot);
-		DEBUG_insertNodes();
 		frame = rFrame;
 		controller = frame.getController();
-//		controller.addUserPlaylistListener(this);
+		controller.addUserPlaylistListener(this);
 	}
 
-	private void DEBUG_insertNodes() {
-		User geffen = new User();
-		geffen.setFriendlyName("Joe van Geffen");
-		FriendTreeNode geffensNode = new FriendTreeNode(geffen);
-		myRoot.insert(geffensNode, 0);
-		geffensNode.insert(new PlaylistTreeNode("JvG's fave playlist", frame), 0);
-		User will = new User();
-		will.setFriendlyName("Will Morton has a very very very long name");
-		FriendTreeNode willsNode = new FriendTreeNode(will);
-		myRoot.insert(willsNode, 1);
-		Playlist p = new Playlist();
-		p.setTitle("playlist 001");
-		willsNode.insert(new PlaylistTreeNode(p, frame), 0);
-		willsNode.insert(new PlaylistTreeNode("Another playlist", frame), 1);
-		Playlist p2 = new Playlist();
-		p2.setTitle("I Hate This One");
-		PlaylistTreeNode flarp = new PlaylistTreeNode(p2, frame);
-		willsNode.insert(flarp, 2);
-		willsNode.insert(new PlaylistTreeNode("A really really really long playlist name", frame), 2);
-	}
-	
 	public void loggedIn() {
 		SwingUtilities.invokeLater(new CatchingRunnable() {
 			public void doRun() throws Exception {

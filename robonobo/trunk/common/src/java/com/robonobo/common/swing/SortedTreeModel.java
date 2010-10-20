@@ -1,7 +1,6 @@
 package com.robonobo.common.swing;
 
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
+import javax.swing.tree.*;
 
 public class SortedTreeModel extends DefaultTreeModel {
 

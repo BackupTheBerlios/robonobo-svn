@@ -103,10 +103,6 @@ public class UserService extends AbstractRuntimeServiceProvider {
 			robonobo.getExecutor().execute(new CatchingRunnable() {
 				public void doRun() throws Exception {
 					robonobo.getEventService().fireLoggedIn();
-				}
-			});
-			robonobo.getExecutor().execute(new CatchingRunnable() {
-				public void doRun() throws Exception {
 					UserLookerUpper ulu = new UserLookerUpper(me);
 					ulu.doRun();
 				}
@@ -315,6 +311,16 @@ public class UserService extends AbstractRuntimeServiceProvider {
 		});
 	}
 
+	public int numUnseenTracksForUser(User u) {
+		// TODO Implement me
+		return 0;
+	}
+	
+	public int numUnseenTracksForPlaylist(Playlist p) {
+		// TODO Implement me
+		return 0;
+	}
+	
 	private void checkUserUpdate(User u, boolean cascade) throws IOException, RobonoboException {
 		User newU = getUpdatedUser(u.getUserId());
 		if ((newU.getUpdated() == null && u.getUpdated() == null) || newU.getUpdated().after(u.getUpdated())) {

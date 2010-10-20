@@ -1,38 +1,64 @@
 package com.robonobo.gui.model;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import javax.swing.DefaultListModel;
+import javax.swing.SwingUtilities;
 
+import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.RobonoboController;
+import com.robonobo.core.api.UserPlaylistListener;
+import com.robonobo.core.api.model.Playlist;
+import com.robonobo.core.api.model.User;
 
-/**
- * TODO Make this actually do something
- * @author macavity
- *
- */
-public class PlaylistListModel extends DefaultListModel {
-	List<String> flarp = new ArrayList<String>(Arrays.asList("New playlist", "Playlist 001", "A really really really long playlist name", "Playlist For That Night", "I Hate This One", "DJ Mix FIFE!~"));
+public class PlaylistListModel extends DefaultListModel implements UserPlaylistListener {
+	List<Playlist> playlists = new ArrayList<Playlist>();
+	
 	RobonoboController control;
 
 	public PlaylistListModel(RobonoboController control) {
 		this.control = control;
+		control.addUserPlaylistListener(this);
 	}
 	
 	@Override
 	public Object getElementAt(int index) {
-		return flarp.get(index);
+		return playlists.get(index).getTitle();
 	}
 
 	@Override
 	public int getSize() {
-		return flarp.size();
+		return playlists.size();
 	}
 	
 	public void removeElementAt(int index) {
-		flarp.remove(index);
+		playlists.remove(index);
 		fireIntervalRemoved(this, index, index);
+	}
+	
+	@Override
+	public void loggedIn() {
+		SwingUtilities.invokeLater(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				synchronized (PlaylistListModel.this) {
+					int oldSize = playlists.size();
+					playlists.clear();
+					if(oldSize > 0)
+						fireIntervalRemoved(this, 0, oldSize-1);
+				}
+			}
+		});
+	}
+	
+	@Override
+	public void userChanged(User u) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
+	public void playlistChanged(Playlist p) {
+		// TODO Auto-generated method stub
+		
 	}
 }

@@ -13,12 +13,9 @@ import javax.swing.JLabel;
 import javax.swing.JTree;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.DefaultTreeSelectionModel;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
+import javax.swing.tree.*;
 
+import com.robonobo.core.api.model.User;
 import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.model.FriendTreeModel;
@@ -74,6 +71,11 @@ public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
 		});
 	}
 
+	@Override
+	public FriendTreeModel getModel() {
+		return (FriendTreeModel) super.getModel();
+	}
+	
 	public void relinquishSelection() {
 		((SelectionModel) getSelectionModel()).reallyClearSelection();
 	}
@@ -85,34 +87,43 @@ public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
 					hasFocus);
 			final TreeNode node = (TreeNode) value;
 
-			if (node.getParent() == null)
-				lbl.setIcon(rootIcon);
-			else if (!node.isLeaf()) {
-				lbl.setIcon(friendIcon);
-				lbl.setMaximumSize(MAX_FRIEND_SZ);
-				lbl.setPreferredSize(MAX_FRIEND_SZ);
-			} else {
+			if (node instanceof PlaylistTreeNode) {
 				lbl.setIcon(playlistIcon);
 				lbl.setMaximumSize(MAX_PLAYLIST_SZ);
 				lbl.setPreferredSize(MAX_PLAYLIST_SZ);
-			}
-
-			if (node instanceof PlaylistTreeNode) {
 				PlaylistTreeNode ptn = (PlaylistTreeNode) node;
-				if (ptn.unseenTracks() > 0) {
-					lbl.setText("[" + ptn.unseenTracks() + "] " + lbl.getText());
+				int numUnseen = frame.getController().numUnseenTracks(ptn.getPlaylist());
+				if (numUnseen > 0) {
+					lbl.setText("[" + numUnseen + "] " + lbl.getText());
 					lbl.setFont(boldFont);
 				} else
 					lbl.setFont(normalFont);
 			} else if (node instanceof FriendTreeNode) {
+				lbl.setIcon(friendIcon);
+				lbl.setMaximumSize(MAX_FRIEND_SZ);
+				lbl.setPreferredSize(MAX_FRIEND_SZ);
 				FriendTreeNode ftn = (FriendTreeNode) node;
-				if (ftn.totalUnseenTracks() > 0) {
-					lbl.setText("[" + ftn.totalUnseenTracks() + "] " + lbl.getText());
+				int numUnseen = frame.getController().numUnseenTracks(ftn.getFriend());
+				if (numUnseen > 0) {
+					lbl.setText("[" + numUnseen + "] " + lbl.getText());
 					lbl.setFont(boldFont);
 				} else
 					lbl.setFont(normalFont);
 			} else if (node.getParent() == null) {
-				lbl.setFont(boldFont);
+				lbl.setIcon(rootIcon);
+				// Are there any unseen tracks at all?
+				int numUnseen = 0;
+				User me = frame.getController().getMyUser();
+				if(me != null) {
+					for (Long friendId : me.getFriendIds()) {
+						User friend = frame.getController().getUser(friendId);
+						numUnseen += frame.getController().numUnseenTracks(friend);
+					}
+				}
+				if(numUnseen > 0)
+					lbl.setFont(boldFont);
+				else
+					lbl.setFont(normalFont);
 			} else
 				lbl.setFont(normalFont);
 
