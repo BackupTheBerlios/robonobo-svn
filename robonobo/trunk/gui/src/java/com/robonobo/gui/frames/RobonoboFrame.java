@@ -21,16 +21,16 @@ import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.common.util.FileUtil;
 import com.robonobo.core.Platform;
 import com.robonobo.core.RobonoboController;
-import com.robonobo.core.api.RobonoboException;
-import com.robonobo.core.api.RobonoboStatus;
+import com.robonobo.core.api.*;
 import com.robonobo.core.api.model.*;
 import com.robonobo.gui.dialogs.LoginDialog;
 import com.robonobo.gui.laf.RobonoboLookAndFeel;
 import com.robonobo.gui.panels.*;
 import com.robonobo.gui.preferences.PrefDialog;
+import com.sun.org.apache.xml.internal.utils.StopParseException;
 
 @SuppressWarnings("serial")
-public class RobonoboFrame extends JFrame {
+public class RobonoboFrame extends JFrame implements RobonoboStatusListener {
 	private RobonoboController control;
 	private String[] cmdLineArgs;
 	private JMenuBar menuBar;
@@ -58,16 +58,11 @@ public class RobonoboFrame extends JFrame {
 	public RobonoboFrame(RobonoboController control, String[] args) {
 		this.control = control;
 		this.cmdLineArgs = args;
-		System.out.println("flarp a0");
 
 		setTitle("robonobo");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		System.out.println("flarp a1");
-		prefDialog = new PrefDialog(this);
-		System.out.println("flarp a2");
 		menuBar = Platform.getPlatform().getMenuBar(this);
-		System.out.println("flarp a3");
 		setJMenuBar(menuBar);
 		
 		JPanel contentPane = new JPanel();
@@ -79,13 +74,24 @@ public class RobonoboFrame extends JFrame {
 		mainPanel = new MainPanel(this);
 		contentPane.add(mainPanel, "3,1");
 		setPreferredSize(new Dimension(1024, 723));
-		System.out.println("flarp a4");
 		pack();
 		leftSidebar.selectMyMusic();
-		System.out.println("flarp a5");
 		
+		if(control.getStatus() != RobonoboStatus.Stopped)
+			setupPrefDialog();
 	}
 
+	@Override
+	public void roboStatusChanged() {
+		// The preference dialog depends on the controller's config being available
+		if(prefDialog == null)
+			setupPrefDialog();
+	}
+	
+	private void setupPrefDialog() {
+		prefDialog = new PrefDialog(this);
+	}
+	
 	public void addContentPanel(String panelName, ContentPanel panel) {
 		mainPanel.addContentPanel(panelName, panel);
 	}

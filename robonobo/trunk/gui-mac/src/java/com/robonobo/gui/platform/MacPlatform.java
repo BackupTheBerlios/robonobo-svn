@@ -8,19 +8,34 @@ import javax.swing.*;
 
 import com.apple.eawt.Application;
 import com.apple.eio.FileManager;
+import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.common.util.CodeUtil;
 import com.robonobo.core.itunes.ITunesService;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.itunes.mac.MacITunesService;
 
 public class MacPlatform extends UnknownPlatform {
-	
+
 	@Override
 	public void init() {
 		System.setProperty("apple.laf.useScreenMenuBar", "true");
-		System.setProperty("com.apple.mrj.application.apple.menu.about.name", "robonobo");				
+		System.setProperty("com.apple.mrj.application.apple.menu.about.name", "robonobo");
 	}
-	
+
+	@Override
+	public void setLookAndFeel() {
+		// For the menu bar, we keep the L&F from the platform default so that it appears in the expected place for the mac
+		// Mad props to Marian Bouček, re http://www.ptakopysk.cz/algi/index.html
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (Exception e) {
+			throw new SeekInnerCalmException();
+		}
+		String mbUI = UIManager.getString("MenuBarUI");
+		super.setLookAndFeel();
+		UIManager.put("MenuBarUI", mbUI);
+	}
+
 	@Override
 	public void initMainWindow(JFrame jFrame) throws Exception {
 		RobonoboFrame frame = (RobonoboFrame) jFrame;
@@ -36,64 +51,63 @@ public class MacPlatform extends UnknownPlatform {
 	public boolean shouldSetMenuBarOnDialogs() {
 		return true;
 	}
-	
+
 	@Override
 	public boolean shouldShowPrefsInFileMenu() {
 		return false;
 	}
 
-	
 	@Override
 	public boolean shouldShowQuitInFileMenu() {
 		return false;
 	}
-	
+
 	@Override
 	public boolean shouldShowOptionsMenu() {
 		return false;
 	}
-	
+
 	@Override
 	public boolean shouldShowAboutInHelpMenu() {
 		return false;
 	}
-	
+
 	@Override
 	public KeyStroke getAccelKeystroke(int key) {
 		return KeyStroke.getKeyStroke(key, Event.META_MASK);
 	}
-	
+
 	@Override
 	public int getCommandModifierMask() {
 		return Event.META_MASK;
 	}
-	
+
 	@Override
 	public boolean iTunesAvailable() {
 		return true;
 	}
-	
+
 	@Override
 	public ITunesService getITunesService() {
 		return new MacITunesService();
 	}
-	
+
 	@Override
 	public void customizeMainbarButtons(List<? extends JButton> btns) {
-		for(int i=0;i<btns.size();i++) {
+		for (int i = 0; i < btns.size(); i++) {
 			JButton btn = btns.get(i);
 			btn.putClientProperty("JButton.buttonType", "bevel");
 		}
 	}
-	
+
 	@Override
 	public void customizeSearchTextField(JTextField field) {
 		field.putClientProperty("JTextField.variant", "search");
 	}
-	
+
 	@Override
 	public void openUrl(String url) throws IOException {
-		if(CodeUtil.javaMajorVersion() >= 6)
+		if (CodeUtil.javaMajorVersion() >= 6)
 			super.openUrl(url);
 		else
 			FileManager.openURL(url);

@@ -32,10 +32,10 @@ public class NetworkStatusPanel extends JPanel implements RobonoboStatusListener
 		statusLbl.setFont(new Font("sans-serif", Font.PLAIN, 10));
 		add(statusLbl, "1,1");
 		controller.addRobonoboStatusListener(this);
-		statusChanged();
+		roboStatusChanged();
 	}
 
-	public void statusChanged() {
+	public void roboStatusChanged() {
 		final RobonoboStatus status = controller.getStatus();
 		log.warn("NetworkStatusPanel: "+status);
 		SwingUtilities.invokeLater(new CatchingRunnable() {

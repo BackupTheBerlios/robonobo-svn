@@ -118,6 +118,8 @@ public class GatewayService extends AbstractRuntimeServiceProvider {
 				}
 			}
 		} catch (IOException ignore) {
+		} catch(Exception e) {
+			log.error("Caught "+e.getClass().getName()+" while creating port mapping: "+e.getMessage());
 		}
 		log.info("Failed to create UPnP port mapping");
 	}

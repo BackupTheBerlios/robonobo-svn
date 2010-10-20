@@ -13,23 +13,25 @@ public class MetadataServerConfig implements Serializable {
 	}
 
 	public MetadataServerConfig(String baseUrl) {
+		if(!baseUrl.endsWith("/"))
+			baseUrl = baseUrl + "/";
 		this.baseUrl = baseUrl;
 	}
 
 	public String getPlaylistUrl(String playlistId) {
-		return baseUrl + "/playlists/" + playlistId;
+		return baseUrl + "playlists/" + playlistId;
 	}
 
 	public String getSendPlaylistUrl(String playlistId, long friendId) {
-		return baseUrl + "/share-playlist/send?plid="+playlistId+"&friendid="+friendId;
+		return baseUrl + "share-playlist/send?plid="+playlistId+"&friendid="+friendId;
 	}
 	
 	public String getSendPlaylistUrl(String playlistId, String email) {
-		return baseUrl + "/share-playlist/send?plid="+playlistId+"&email="+urlEncode(email);
+		return baseUrl + "share-playlist/send?plid="+playlistId+"&email="+urlEncode(email);
 	}
 	
 	public String getSharePlaylistUrl(String playlistId, Set<Long> friendIds, Set<String> emails) {
-		StringBuffer sb = new StringBuffer(baseUrl).append("/share-playlist/share?plid=");
+		StringBuffer sb = new StringBuffer(baseUrl).append("share-playlist/share?plid=");
 		sb.append(playlistId);
 		if(friendIds.size() > 0) {
 			sb.append("&friendids=");
@@ -57,14 +59,14 @@ public class MetadataServerConfig implements Serializable {
 	}
 	
 	public String getStreamUrl(String streamId) {
-		return baseUrl + "/streams/" + streamId;
+		return baseUrl + "streams/" + streamId;
 	}
 
 	public String getUserUrl(String userEmail) {
-		return baseUrl + "/users/byemail/" + urlEncode(userEmail);
+		return baseUrl + "users/byemail/" + urlEncode(userEmail);
 	}
 	
 	public String getUserUrl(long userId) {
-		return baseUrl + "/users/byid/" + userId;
+		return baseUrl + "users/byid/" + userId;
 	}
 }

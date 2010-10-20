@@ -56,7 +56,7 @@ public class Robonobo {
 				if (acceptedEula) {
 					controller.getConfig().setAgreedToEula(true);
 					controller.saveConfig();
-					startup(controller, args, true);
+					startup(null, args, true);
 				} else {
 					System.exit(0);
 				}
@@ -65,7 +65,7 @@ public class Robonobo {
 					public void doRun() throws Exception {
 						controller.getConfig().setAgreedToEula(true);
 						controller.saveConfig();
-						startup(controller, args, false);
+						startup(null, args, false);
 					}
 				};
 				CatchingRunnable onCancel = new CatchingRunnable() {
@@ -145,9 +145,7 @@ public class Robonobo {
 			return;
 		}
 
-		System.out.println("flarp 3");
 		final RobonoboFrame frame = new RobonoboFrame(controller, args);
-		System.out.println("flarp 4");
 		Platform.getPlatform().initMainWindow(frame);
 		frame.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {

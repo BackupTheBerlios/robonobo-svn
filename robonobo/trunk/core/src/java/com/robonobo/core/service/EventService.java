@@ -224,7 +224,7 @@ public class EventService extends AbstractRuntimeServiceProvider implements Mina
 			arr = getStArr();
 		}
 		for (RobonoboStatusListener listener : arr) {
-			listener.statusChanged();
+			listener.roboStatusChanged();
 		}
 	}
 

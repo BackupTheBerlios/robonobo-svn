@@ -29,7 +29,7 @@ public class RobonoboWangConfig extends WangConfig {
 	/**
 	 * The time to cache the bank balance (secs) - leave this at a large value
 	 * unless you're using multiple nodes with the same account and you
-	 * desparately need up-to-date figures
+	 * desperately need up-to-date figures
 	 */
 	private int bankBalanceCacheTime = 60 * 60 * 24;
 

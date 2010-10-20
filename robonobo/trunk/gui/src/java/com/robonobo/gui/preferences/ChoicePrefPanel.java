@@ -31,7 +31,6 @@ public class ChoicePrefPanel extends PrefPanel {
 	}
 
 	public void resetValue() {
-		System.out.println("flarp d0");
 		String propVal = getProperty(propName);
 		int selIndex = -1;
 		for (int i = 0; i < choices.length; i++) {
@@ -43,7 +42,6 @@ public class ChoicePrefPanel extends PrefPanel {
 		if(selIndex < 0)
 			throw new SeekInnerCalmException("Invalid prop value for property "+propName);
 		combo.setSelectedIndex(selIndex);
-		System.out.println("flarp d1");
 	}
 	
 	@Override
