@@ -16,9 +16,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
 
+import com.robonobo.common.concurrent.SafetyNet;
 import com.robonobo.common.serialization.ConfigBeanSerializer;
 import com.robonobo.common.serialization.PageBufferSerializer;
 import com.robonobo.common.serialization.SerializationManager;
+import com.robonobo.common.util.ExceptionEvent;
+import com.robonobo.common.util.ExceptionListener;
 import com.robonobo.core.api.Robonobo;
 import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.RobonoboStatus;
@@ -335,6 +338,12 @@ public class RobonoboInstance implements Robonobo {
 			PropertyConfigurator.configureAndWatch(log4jCfgFile.getAbsolutePath());
 			log = LogFactory.getLog(getClass());
 			log.fatal("O HAI!  robonobo starting using homedir " + homeDir.getAbsolutePath());
+			// Log uncaught exceptions in other threads
+			SafetyNet.addListener(new ExceptionListener() {
+				public void onException(ExceptionEvent e) {
+					log.error("Uncaught exception", e.getException());
+				}
+			});
 		} catch (Exception e) {
 			System.err.println("Error: Unable to initialize log4j logging (caught " + e.getClass().getName() + ": "
 					+ e.getMessage() + ")");

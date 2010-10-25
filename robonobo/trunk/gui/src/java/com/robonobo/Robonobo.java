@@ -31,6 +31,7 @@ public class Robonobo {
 	private static final String TEXT_EULA_PATH = "/eula.txt";
 
 	public static void main(String[] args) throws Exception {
+		// Register exception handler for threads
 		// 1st-stage arg checker
 		boolean consoleOnly = false;
 		for (int i = 0; i < args.length; i++) {

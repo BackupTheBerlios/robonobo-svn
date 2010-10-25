@@ -9,13 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.robonobo.core.RobonoboInstance;
-import com.robonobo.core.api.NextPrevListener;
-import com.robonobo.core.api.PlaybackListener;
-import com.robonobo.core.api.RobonoboStatus;
-import com.robonobo.core.api.RobonoboStatusListener;
-import com.robonobo.core.api.TrackListener;
-import com.robonobo.core.api.TransferSpeed;
-import com.robonobo.core.api.UserPlaylistListener;
+import com.robonobo.core.api.*;
 import com.robonobo.core.api.model.DownloadingTrack;
 import com.robonobo.core.api.model.Playlist;
 import com.robonobo.core.api.model.SharedTrack;
@@ -34,6 +28,7 @@ public class EventService extends AbstractRuntimeServiceProvider implements Mina
 	private List<RobonoboStatusListener> stList = new ArrayList<RobonoboStatusListener>();
 	private List<NextPrevListener> npList = new ArrayList<NextPrevListener>();
 	private List<WangListener> wList = new ArrayList<WangListener>();
+	private List<TransferSpeedListener> tsList = new ArrayList<TransferSpeedListener>();
 	private int minaSupernodes = 0;
 	private Log log = LogFactory.getLog(getClass());
 
@@ -86,6 +81,14 @@ public class EventService extends AbstractRuntimeServiceProvider implements Mina
 	
 	public synchronized void removeWangListener(WangListener l) {
 		wList.remove(l);
+	}
+	
+	public synchronized void addTransferSpeedListener(TransferSpeedListener l) {
+		tsList.add(l);
+	}
+	
+	public synchronized void removeTransferSpeedListener(TransferSpeedListener l) {
+		tsList.remove(l);
 	}
 	
 	public void fireTrackUpdated(String streamId) {
@@ -228,6 +231,26 @@ public class EventService extends AbstractRuntimeServiceProvider implements Mina
 		}
 	}
 
+	public void fireConnectionAdded(ConnectedNode node) {
+		RobonoboStatusListener[] arr;
+		synchronized (this) {
+			arr = getStArr();
+		}
+		for (RobonoboStatusListener listener : arr) {
+			listener.connectionAdded(node);
+		}
+	}
+
+	public void fireConnectionLost(ConnectedNode node) {
+		RobonoboStatusListener[] arr;
+		synchronized (this) {
+			arr = getStArr();
+		}
+		for (RobonoboStatusListener listener : arr) {
+			listener.connectionLost(node);
+		}
+	}
+
 	public void fireNextPrevChanged(boolean canNext, boolean canPrev) {
 		NextPrevListener[] arr;
 		synchronized (this) {
@@ -255,6 +278,7 @@ public class EventService extends AbstractRuntimeServiceProvider implements Mina
 				fireStatusChanged();
 			}
 		}
+		fireConnectionAdded(node);
 	}
 
 	public void nodeDisconnected(ConnectedNode node) {
@@ -266,6 +290,7 @@ public class EventService extends AbstractRuntimeServiceProvider implements Mina
 			if(minaSupernodes > 0)
 				minaSupernodes--;
 		}
+		fireConnectionLost(node);
 	}
 
 	public void fireWangBalanceChanged(double newBalance) {
@@ -278,6 +303,16 @@ public class EventService extends AbstractRuntimeServiceProvider implements Mina
 		}
 	}
 	
+	public void fireNewTransferSpeeds(Map<String, TransferSpeed> speedsByStream, Map<String, TransferSpeed> speedsByNode) {
+		TransferSpeedListener[] arr;
+		synchronized (this) {
+			arr = getTSArr();
+		}
+		for (TransferSpeedListener listener : arr) {
+			listener.newTransferSpeeds(speedsByStream, speedsByNode);
+		}
+	}
+
 	/** Copy the list of listeners, to remove deadlock possibilities */
 	private TrackListener[] getTrArr() {
 		TrackListener[] result = new TrackListener[trList.size()];
@@ -314,6 +349,12 @@ public class EventService extends AbstractRuntimeServiceProvider implements Mina
 	private WangListener[] getWArr() {
 		WangListener[] result = new WangListener[wList.size()];
 		wList.toArray(result);
+		return result;
+	}
+
+	private TransferSpeedListener[] getTSArr() {
+		TransferSpeedListener[] result = new TransferSpeedListener[tsList.size()];
+		tsList.toArray(result);
 		return result;
 	}
 

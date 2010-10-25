@@ -1,20 +1,22 @@
 package com.robonobo.core.mina;
 
-import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.*;
+import java.util.concurrent.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.robonobo.common.concurrent.CatchingRunnable;
+import com.robonobo.core.api.TransferSpeed;
 import com.robonobo.core.service.AbstractRuntimeServiceProvider;
 import com.robonobo.mina.Mina;
-import com.robonobo.mina.external.Application;
-import com.robonobo.mina.external.MinaConfig;
-import com.robonobo.mina.external.MinaControl;
+import com.robonobo.mina.external.*;
 
 public class MinaService extends AbstractRuntimeServiceProvider {
 	SonarNodeLocator locator;
 	Log log = LogFactory.getLog(getClass());
 	protected MinaControl mina;
+	ScheduledFuture<?> transferSpeedsTask = null;
 
 	public MinaService() {
 		super();
@@ -40,6 +42,7 @@ public class MinaService extends AbstractRuntimeServiceProvider {
 	}
 
 	public void shutdown() throws Exception {
+		transferSpeedsTask.cancel(false);
 		mina.stop();
 		mina = null;
 	}
@@ -57,5 +60,18 @@ public class MinaService extends AbstractRuntimeServiceProvider {
 		if(getRobonobo().getConfig().isAgoric())
 			mina.setCurrencyClient(getRobonobo().getWangService());
 		mina.start();
+		// Fire off our transfer speeds every second
+		transferSpeedsTask = getRobonobo().getExecutor().scheduleAtFixedRate(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				Map<String, TransferSpeed> speedsByStream = mina.getTransferSpeeds();
+				ConnectedNode[] nodeArr = mina.getConnectedNodes();
+				Map<String, TransferSpeed> speedsByNode = new HashMap<String, TransferSpeed>();
+				for (ConnectedNode node : nodeArr) {
+					TransferSpeed ts = new TransferSpeed(node.nodeId, node.downloadRate, node.uploadRate);
+					speedsByNode.put(node.nodeId, ts);
+				}
+				getRobonobo().getEventService().fireNewTransferSpeeds(speedsByStream, speedsByNode);
+			}
+		}, 1, 1, TimeUnit.SECONDS);
 	}
 }

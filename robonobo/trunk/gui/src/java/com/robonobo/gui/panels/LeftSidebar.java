@@ -20,6 +20,7 @@ public class LeftSidebar extends JPanel {
 	RobonoboFrame frame;
 	private ActiveSearchList activeSearchList;
 	private MyMusicSelector myMusic;
+	private NewPlaylistSelector newPlaylist;
 	
 	public LeftSidebar(RobonoboFrame frame) {
 		this.frame = frame;
@@ -49,6 +50,10 @@ public class LeftSidebar extends JPanel {
 		myMusic = new MyMusicSelector(this, frame);
 		sideBarPanel.add(myMusic);
 		sideBarComps.add(myMusic);
+		
+		newPlaylist = new NewPlaylistSelector(this, frame);
+		sideBarPanel.add(newPlaylist);
+		sideBarComps.add(newPlaylist);
 		
 		PlaylistList playlistList = new PlaylistList(this, frame);
 		sideBarPanel.add(playlistList);

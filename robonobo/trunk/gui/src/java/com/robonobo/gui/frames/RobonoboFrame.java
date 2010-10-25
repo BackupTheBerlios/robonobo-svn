@@ -8,6 +8,7 @@ import java.io.FileFilter;
 import java.security.SecureRandom;
 import java.util.*;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 import org.apache.commons.logging.Log;
@@ -23,10 +24,12 @@ import com.robonobo.core.Platform;
 import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.*;
 import com.robonobo.core.api.model.*;
+import com.robonobo.gui.GUIUtils;
 import com.robonobo.gui.dialogs.LoginDialog;
 import com.robonobo.gui.laf.RobonoboLookAndFeel;
 import com.robonobo.gui.panels.*;
 import com.robonobo.gui.preferences.PrefDialog;
+import com.robonobo.mina.external.ConnectedNode;
 import com.sun.org.apache.xml.internal.utils.StopParseException;
 
 @SuppressWarnings("serial")
@@ -60,6 +63,7 @@ public class RobonoboFrame extends JFrame implements RobonoboStatusListener {
 		this.cmdLineArgs = args;
 
 		setTitle("robonobo");
+		setIconImage(GUIUtils.getImage("/img/icon/robonobo-64x64.png"));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		menuBar = Platform.getPlatform().getMenuBar(this);
@@ -86,6 +90,16 @@ public class RobonoboFrame extends JFrame implements RobonoboStatusListener {
 		// The preference dialog depends on the controller's config being available
 		if(prefDialog == null)
 			setupPrefDialog();
+	}
+	
+	@Override
+	public void connectionAdded(ConnectedNode node) {
+		// Do nothing
+	}
+	
+	@Override
+	public void connectionLost(ConnectedNode node) {
+		// Do nothing
 	}
 	
 	private void setupPrefDialog() {

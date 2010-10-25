@@ -4,18 +4,18 @@
 package com.robonobo.core.api;
 
 public class TransferSpeed {
-	public String streamId;
+	public String id;
 	public int download;
 	public int upload;
 	
-	public TransferSpeed(String streamId, int download, int upload) {
-		this.streamId = streamId;
+	public TransferSpeed(String id, int download, int upload) {
+		this.id = id;
 		this.download = download;
 		this.upload = upload;
 	}
 
-	public String getStreamId() {
-		return streamId;
+	public String getId() {
+		return id;
 	}
 
 	public int getDownload() {
@@ -28,6 +28,6 @@ public class TransferSpeed {
 	
 	@Override
 	public String toString() {
-		return "[id="+streamId+",dl="+download+",ul="+upload+"]";
+		return "[id="+id+",dl="+download+",ul="+upload+"]";
 	}
 }

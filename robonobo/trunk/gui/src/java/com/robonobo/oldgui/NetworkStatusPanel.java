@@ -15,6 +15,7 @@ import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.RobonoboStatus;
 import com.robonobo.core.api.RobonoboStatusListener;
+import com.robonobo.mina.external.ConnectedNode;
 
 public class NetworkStatusPanel extends JPanel implements RobonoboStatusListener {
 	private JLabel statusLbl;
@@ -50,5 +51,17 @@ public class NetworkStatusPanel extends JPanel implements RobonoboStatusListener
 				}
 			}
 		});
+	}
+	
+	@Override
+	public void connectionAdded(ConnectedNode node) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
+	public void connectionLost(ConnectedNode node) {
+		// TODO Auto-generated method stub
+		
 	}
 }

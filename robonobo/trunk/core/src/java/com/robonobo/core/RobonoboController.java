@@ -19,16 +19,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
-import com.robonobo.core.api.CurrencyException;
-import com.robonobo.core.api.NextPrevListener;
-import com.robonobo.core.api.NextTrackListener;
-import com.robonobo.core.api.PlaybackListener;
-import com.robonobo.core.api.RobonoboException;
-import com.robonobo.core.api.RobonoboStatus;
-import com.robonobo.core.api.RobonoboStatusListener;
-import com.robonobo.core.api.SearchListener;
-import com.robonobo.core.api.TrackListener;
-import com.robonobo.core.api.UserPlaylistListener;
+import com.robonobo.core.api.*;
 import com.robonobo.core.api.config.RobonoboConfig;
 import com.robonobo.core.api.model.CloudTrack;
 import com.robonobo.core.api.model.DownloadingTrack;
@@ -39,6 +30,7 @@ import com.robonobo.core.api.model.Stream;
 import com.robonobo.core.api.model.Track;
 import com.robonobo.core.api.model.User;
 import com.robonobo.core.wang.WangListener;
+import com.robonobo.mina.external.ConnectedNode;
 import com.robonobo.mina.external.FoundSourceListener;
 
 /**
@@ -108,6 +100,14 @@ public class RobonoboController {
 		inst.getEventService().removeWangListener(l);
 	}
 
+	public void addTransferSpeedListener(TransferSpeedListener l) {
+		inst.getEventService().addTransferSpeedListener(l);
+	}
+	
+	public void removeTransferSpeedListener(TransferSpeedListener l) {
+		inst.getEventService().removeTransferSpeedListener(l);
+	}
+	
 	public RobonoboStatus getStatus() {
 		return inst.getStatus();
 	}
@@ -196,7 +196,7 @@ public class RobonoboController {
 		return inst.getMina().getMyEndPointUrls();
 	}
 
-	public List getConnectedNodes() {
+	public List<ConnectedNode> getConnectedNodes() {
 		return Arrays.asList(inst.getMina().getConnectedNodes());
 	}
 

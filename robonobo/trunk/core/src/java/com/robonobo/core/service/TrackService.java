@@ -10,7 +10,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
-import com.robonobo.core.api.TransferSpeed;
+import com.robonobo.core.api.*;
 import com.robonobo.core.api.AudioPlayer.Status;
 import com.robonobo.core.api.model.CloudTrack;
 import com.robonobo.core.api.model.Stream;
@@ -26,7 +26,7 @@ import com.robonobo.mina.external.MinaControl;
  * @author macavity
  * 
  */
-public class TrackService extends AbstractRuntimeServiceProvider {
+public class TrackService extends AbstractRuntimeServiceProvider implements TransferSpeedListener {
 	Log log = LogFactory.getLog(getClass());
 	private ShareService share;
 	private DownloadService download;
@@ -34,7 +34,6 @@ public class TrackService extends AbstractRuntimeServiceProvider {
 	private PlaybackService playback;
 	private EventService event;
 	private MinaControl mina;
-	private ScheduledFuture<?> transferSpeedsTask;
 	protected Map<String, TransferSpeed> transferSpeeds = null;
 	private String currentPlayingStreamId = null;
 	private boolean allSharesStarted;
@@ -71,25 +70,26 @@ public class TrackService extends AbstractRuntimeServiceProvider {
 				event.fireAllTracksLoaded();
 			}
 		});
-		transferSpeedsTask = getRobonobo().getExecutor().scheduleAtFixedRate(new CatchingRunnable() {
-			public void doRun() throws Exception {
-				// We fire the updated event for all streams that were in the
-				// previous set of speeds and this set, so they get reset to 0
-				Set<String> changedStreamIds = new HashSet<String>();
-				synchronized (TrackService.this) {
-					if (transferSpeeds != null)
-						changedStreamIds.addAll(transferSpeeds.keySet());
-					transferSpeeds = mina.getTransferSpeeds();
-					changedStreamIds.addAll(transferSpeeds.keySet());
-				}
-				event.fireTracksUpdated(changedStreamIds);
-			}
-		}, 1, 1, TimeUnit.SECONDS);
+		event.addTransferSpeedListener(this);
 	}
 
 	@Override
+	public void newTransferSpeeds(Map<String, TransferSpeed> speedsByStream, Map<String, TransferSpeed> speedsByNode) {
+		// We fire the updated event for all streams that were in the
+		// previous set of speeds and this set, so they get reset to 0
+		Set<String> changedStreamIds = new HashSet<String>();
+		synchronized (this) {
+			if (transferSpeeds != null)
+				changedStreamIds.addAll(transferSpeeds.keySet());
+			transferSpeeds = speedsByStream;
+			changedStreamIds.addAll(transferSpeeds.keySet());
+		}
+		if(changedStreamIds.size() > 0)
+			event.fireTracksUpdated(changedStreamIds);
+	}
+	
+	@Override
 	public void shutdown() throws Exception {
-		transferSpeedsTask.cancel(true);
 	}
 
 	/**
