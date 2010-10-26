@@ -1,21 +1,12 @@
 package com.robonobo.gui.components;
 
-import static com.robonobo.gui.RoboColor.MID_GRAY;
+import static com.robonobo.gui.RoboColor.*;
 
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.*;
 
-import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.panels.LeftSidebar;
 
 @SuppressWarnings("serial")
@@ -33,7 +24,6 @@ public class SearchField extends JPanel {
 		setAlignmentX(0f);
 		searchField = new JTextField("Search...");
 		searchField.setName("robonobo.search.textfield");
-		searchField.setFont(RoboFont.getFont(11, false));
 		searchField.setPreferredSize(new Dimension(170, 25));
 		searchField.setMinimumSize(new Dimension(170, 25));
 		searchField.setMaximumSize(new Dimension(170, 25));

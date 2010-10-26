@@ -19,11 +19,8 @@ public class PrevButton extends MainButton implements NextPrevListener {
 		});
 	}
 
-	public void canPlayNext(boolean canNext) {
-		// Do nothing 
-	}
-
-	public void canPlayPrevious(boolean canPrev) {
+	@Override
+	public void updateNextPrev(boolean canNext, boolean canPrev) {
 		setEnabled(canPrev);
 	}
 }

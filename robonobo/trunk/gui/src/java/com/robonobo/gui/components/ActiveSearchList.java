@@ -58,7 +58,7 @@ public class ActiveSearchList extends LeftSidebarList {
 				String query = (String) model.getElementAt(clickIdx);
 				model.removeElementAt(clickIdx);
 				ContentPanel cp = frame.removeContentPanel("search/" + query);
-				SearchResultTableModel srtm = (SearchResultTableModel) cp.getTableModel();
+				SearchResultTableModel srtm = (SearchResultTableModel) cp.getTrackList().getTableModel();
 				srtm.die();
 				// Bring the next search into focus if there is one, else select MyMusicLibrary
 				if (clickIdx < model.getSize())

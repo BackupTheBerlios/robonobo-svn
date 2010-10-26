@@ -1,33 +1,12 @@
-package com.robonobo.oldgui;
+package com.robonobo.gui.dialogs;
 
 import static com.robonobo.common.util.TextUtil.*;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.HeadlessException;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Vector;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
 
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.ListModel;
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,6 +19,8 @@ import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.model.Playlist;
 import com.robonobo.core.api.model.User;
+import com.robonobo.gui.frames.RobonoboFrame;
+
 
 public class SharePlaylistDialog extends JDialog implements KeyListener {
 	private RobonoboFrame frame;

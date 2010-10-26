@@ -11,6 +11,7 @@ import com.robonobo.core.api.UserPlaylistListener;
 import com.robonobo.core.api.model.Playlist;
 import com.robonobo.core.api.model.User;
 
+@SuppressWarnings("serial")
 public class PlaylistListModel extends DefaultListModel implements UserPlaylistListener {
 	List<Playlist> playlists = new ArrayList<Playlist>();
 	
@@ -32,7 +33,9 @@ public class PlaylistListModel extends DefaultListModel implements UserPlaylistL
 	}
 	
 	public void removeElementAt(int index) {
-		playlists.remove(index);
+		synchronized (this) {
+			playlists.remove(index);
+		}
 		fireIntervalRemoved(this, index, index);
 	}
 	
@@ -50,6 +53,15 @@ public class PlaylistListModel extends DefaultListModel implements UserPlaylistL
 		});
 	}
 	
+	public Playlist getPlaylistAt(int index) {
+		return playlists.get(index);
+	}
+	
+	public synchronized int getPlaylistIndex(Playlist p) {
+		// TODO Optimize me (?)
+		return playlists.indexOf(p);
+	}
+
 	@Override
 	public void userChanged(User u) {
 		// TODO Auto-generated method stub

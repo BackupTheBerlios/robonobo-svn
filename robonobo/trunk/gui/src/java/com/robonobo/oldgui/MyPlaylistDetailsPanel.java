@@ -24,6 +24,7 @@ import org.debian.tablelayout.TableLayout;
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.Platform;
 import com.robonobo.core.api.model.Playlist;
+import com.robonobo.gui.dialogs.SharePlaylistDialog;
 
 public class MyPlaylistDetailsPanel extends JPanel {
 	RobonoboFrame frame;
@@ -159,7 +160,8 @@ public class MyPlaylistDetailsPanel extends JPanel {
 			shareBtn = new JButton("Share...");
 			shareBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					SharePlaylistDialog dialog = new SharePlaylistDialog(frame, p);
+					SharePlaylistDialog dialog = null;
+//					SharePlaylistDialog dialog = new SharePlaylistDialog(frame, p);
 					dialog.setLocationRelativeTo(frame);
 					dialog.setVisible(true);
 				}

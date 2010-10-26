@@ -12,9 +12,9 @@ import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.model.TestyTrackListTableModel;
 
 @SuppressWarnings("serial")
-public class MyMusicContentPanel extends ContentPanel {
+public class MyMusicLibraryContentPanel extends ContentPanel {
 
-	public MyMusicContentPanel(RobonoboFrame frame) {
+	public MyMusicLibraryContentPanel(RobonoboFrame frame) {
 		super(frame, new TestyTrackListTableModel(frame.getController()));
 //		super(frame, new MyMusicTableModel(frame.getController()));
 		tabPane.insertTab("library", null, new MyLibraryTabPanel(), null, 0);

@@ -29,6 +29,12 @@ public class ContentPanelHolder extends JPanel {
 		return panels.get(name);
 	}
 	
+	ContentPanel currentContentPanel() {
+		if(currentPanel == null)
+			return null;
+		return panels.get(currentPanel);
+	}
+	
 	ContentPanel removeContentPanel(String name) {
 		ContentPanel panel = panels.remove(name);
 		if(panel != null)

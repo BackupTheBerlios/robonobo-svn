@@ -25,14 +25,12 @@ public class PlaylistTableModel extends TrackListTableModel implements TrackList
 	private RobonoboController controller;
 	private Playlist p;
 	private boolean myPlaylist;
-	private boolean isDummy;
 	private Map<String, Integer> streamIndices = new HashMap<String, Integer>();
 	Log log = LogFactory.getLog(getClass());
 
-	public PlaylistTableModel(RobonoboController controller, Playlist p, boolean myPlaylist, boolean isDummy) {
+	public PlaylistTableModel(RobonoboController controller, Playlist p, boolean myPlaylist) {
 		this.controller = controller;
 		this.myPlaylist = myPlaylist;
-		this.isDummy = isDummy;
 		controller.addTrackListener(this);
 		update(p, false);
 	}
@@ -119,13 +117,7 @@ public class PlaylistTableModel extends TrackListTableModel implements TrackList
 				fireTableDataChanged();
 			}
 		});
-		if (!isDummy) {
-			controller.getExecutor().execute(new CatchingRunnable() {
-				public void doRun() throws Exception {
-					controller.addOrUpdatePlaylist(p);
-				}
-			});
-		}
+		runPlaylistUpdate();
 	}
 
 	public void removeStreamIds(List<String> streamIds) {
@@ -141,13 +133,7 @@ public class PlaylistTableModel extends TrackListTableModel implements TrackList
 				fireTableDataChanged();
 			}
 		});
-		if (!isDummy) {
-			controller.getExecutor().execute(new CatchingRunnable() {
-				public void doRun() throws Exception {
-					controller.addOrUpdatePlaylist(p);
-				}
-			});
-		}
+		runPlaylistUpdate();
 	}
 
 	public void tracksUpdated(Collection<String> streamIds) {
@@ -181,7 +167,7 @@ public class PlaylistTableModel extends TrackListTableModel implements TrackList
 		// Do nothing
 	}
 
-	public Playlist getP() {
+	public Playlist getPlaylist() {
 		return p;
 	}
 
@@ -192,5 +178,13 @@ public class PlaylistTableModel extends TrackListTableModel implements TrackList
 			String streamId = p.getStreamIds().get(i);
 			streamIndices.put(streamId, i);
 		}
+	}
+	
+	protected void runPlaylistUpdate() {
+		controller.getExecutor().execute(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				controller.addOrUpdatePlaylist(p);
+			}
+		});		
 	}
 }

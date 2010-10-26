@@ -8,8 +8,8 @@ import com.robonobo.core.api.model.CloudTrack;
 import com.robonobo.core.api.model.Track;
 
 @SuppressWarnings("serial")
-public class MyMusicTableModel extends FreeformTrackListTableModel  {
-	public MyMusicTableModel(RobonoboController controller) {
+public class MyMusicLibraryTableModel extends FreeformTrackListTableModel  {
+	public MyMusicLibraryTableModel(RobonoboController controller) {
 		super(controller);
 		// If everything's started already before we get here, load it now
 		if (controller.haveAllTransfersStarted())
@@ -30,15 +30,11 @@ public class MyMusicTableModel extends FreeformTrackListTableModel  {
 			}
 		}
 		
-		if(SwingUtilities.isEventDispatchThread())
-			fireTableDataChanged();
-		else {
-			SwingUtilities.invokeLater(new CatchingRunnable() {
-				public void doRun() throws Exception { 
-					fireTableDataChanged();	
-				}
-			});
-		}
+		SwingUtilities.invokeLater(new CatchingRunnable() {
+			public void doRun() throws Exception { 
+				fireTableDataChanged();	
+			}
+		});
 	}
 
 	public void trackUpdated(String streamId) {
@@ -67,16 +63,12 @@ public class MyMusicTableModel extends FreeformTrackListTableModel  {
 			remove(t);
 		else if(index >= 0 ){
 			// Updated
-			if(SwingUtilities.isEventDispatchThread())
-				fireTableRowsUpdated(index, index);
-			else {
-				final int findex = index;
-				SwingUtilities.invokeLater(new CatchingRunnable() {
-					public void doRun() throws Exception {
-						fireTableRowsUpdated(findex, findex);
-					}
-				});
-			}
+			final int findex = index;
+			SwingUtilities.invokeLater(new CatchingRunnable() {
+				public void doRun() throws Exception {
+					fireTableRowsUpdated(findex, findex);
+				}
+			});
 		}
 	}
 }

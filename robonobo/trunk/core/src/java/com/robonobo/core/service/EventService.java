@@ -257,8 +257,7 @@ public class EventService extends AbstractRuntimeServiceProvider implements Mina
 			arr = getNpArr();
 		}
 		for (NextPrevListener listener : arr) {
-			listener.canPlayNext(canNext);
-			listener.canPlayPrevious(canPrev);
+			listener.updateNextPrev(canNext, canPrev);
 		}
 	}
 

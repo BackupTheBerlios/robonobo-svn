@@ -85,6 +85,14 @@ public class RobonoboFrame extends JFrame implements RobonoboStatusListener {
 			setupPrefDialog();
 	}
 
+	public LeftSidebar getLeftSidebar() {
+		return leftSidebar;
+	}
+	
+	public PlaybackPanel getPlaybackPanel() {
+		return mainPanel.getPlaybackPanel();
+	}
+	
 	@Override
 	public void roboStatusChanged() {
 		// The preference dialog depends on the controller's config being available
@@ -112,6 +120,10 @@ public class RobonoboFrame extends JFrame implements RobonoboStatusListener {
 	
 	public void selectContentPanel(String panelName) {
 		mainPanel.selectContentPanel(panelName);
+	}
+	
+	public ContentPanel currentContentPanel() {
+		return mainPanel.currentContentPanel();
 	}
 	
 	public ContentPanel removeContentPanel(String panelName) {

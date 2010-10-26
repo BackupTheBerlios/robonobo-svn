@@ -28,7 +28,7 @@ public class FriendPlaylistTablePanel extends MyPlaylistTablePanel {
 		SwingUtilities.invokeLater(new CatchingRunnable() {
 			public void doRun() throws Exception {
 				frame.getLeftSidebar().selectMyMusic();
-				frame.getLeftSidebar().selectFriendPlaylist(tm.getP());
+				frame.getLeftSidebar().selectFriendPlaylist(tm.getPlaylist());
 			}
 		});
 	}

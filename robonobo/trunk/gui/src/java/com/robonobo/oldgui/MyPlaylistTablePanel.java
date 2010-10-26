@@ -55,7 +55,7 @@ public class MyPlaylistTablePanel extends TrackListTablePanel {
 		SwingUtilities.invokeLater(new CatchingRunnable() {
 			public void doRun() throws Exception {
 				frame.getLeftSidebar().selectMyMusic();
-				frame.getLeftSidebar().selectMyPlaylist(tm.getP());
+				frame.getLeftSidebar().selectMyPlaylist(tm.getPlaylist());
 			}
 		});
 	}

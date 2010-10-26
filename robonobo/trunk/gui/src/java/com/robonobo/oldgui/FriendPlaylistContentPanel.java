@@ -65,7 +65,8 @@ public class FriendPlaylistContentPanel extends ContentPanel implements UserPlay
 				}
 			}
 		};
-		tableModel = new PlaylistTableModel(controller, p, true, true);
+		tableModel = new PlaylistTableModel(controller, p, false);
+//		tableModel = new PlaylistTableModel(controller, p, true, true);
 		tablePanel = new FriendPlaylistTablePanel(frame, tableModel, new SelectionListener(), keyListener);
 		List<MainButton> btnList = new ArrayList<MainButton>();
 		prevBtn = new PrevButton(frame.getController());

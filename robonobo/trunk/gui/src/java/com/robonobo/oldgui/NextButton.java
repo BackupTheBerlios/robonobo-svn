@@ -8,6 +8,7 @@ import com.robonobo.core.api.NextPrevListener;
 
 public class NextButton extends MainButton implements NextPrevListener {
 	public static final String IMG_NEXT = "/img/Next.png";
+
 	public NextButton(final RobonoboController controller) {
 		super(IMG_NEXT, "Play next track");
 		controller.addNextPrevListener(this);
@@ -19,11 +20,16 @@ public class NextButton extends MainButton implements NextPrevListener {
 		});
 	}
 
-	public void canPlayNext(boolean canNext) {
+	@Override
+	public void updateNextPrev(boolean canNext, boolean canPrev) {
 		setEnabled(canNext);
 	}
 
-	public void canPlayPrevious(boolean canPrev) {
-		// Do nothing
-	}
+//	public void canPlayNext(boolean canNext) {
+//		setEnabled(canNext);
+//	}
+//
+//	public void canPlayPrevious(boolean canPrev) {
+//		// Do nothing
+//	}
 }

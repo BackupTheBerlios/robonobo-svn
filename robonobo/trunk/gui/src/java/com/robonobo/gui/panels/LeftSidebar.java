@@ -9,6 +9,7 @@ import java.util.List;
 
 import javax.swing.*;
 
+import com.robonobo.core.api.model.Playlist;
 import com.robonobo.gui.components.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.model.ActiveSearchListModel;
@@ -21,6 +22,7 @@ public class LeftSidebar extends JPanel {
 	private ActiveSearchList activeSearchList;
 	private MyMusicSelector myMusic;
 	private NewPlaylistSelector newPlaylist;
+	private PlaylistList playlistList;
 	
 	public LeftSidebar(RobonoboFrame frame) {
 		this.frame = frame;
@@ -55,7 +57,7 @@ public class LeftSidebar extends JPanel {
 		sideBarPanel.add(newPlaylist);
 		sideBarComps.add(newPlaylist);
 		
-		PlaylistList playlistList = new PlaylistList(this, frame);
+		playlistList = new PlaylistList(this, frame);
 		sideBarPanel.add(playlistList);
 		sideBarComps.add(playlistList);
 
@@ -81,6 +83,10 @@ public class LeftSidebar extends JPanel {
 	
 	public void selectMyMusic() {
 		myMusic.setSelected(true);
+	}
+	
+	public void selectMyPlaylist(Playlist p) {
+		playlistList.selectPlaylist(p);
 	}
 	
 	public void clearSelectionExcept(LeftSidebarComponent selCmp) {

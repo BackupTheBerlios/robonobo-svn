@@ -1,21 +1,17 @@
 package com.robonobo.gui.components;
 
-import static com.robonobo.gui.GUIUtils.createImageIcon;
-import static com.robonobo.gui.RoboColor.BLUE_GRAY;
-import static com.robonobo.gui.RoboColor.DARK_GRAY;
-import static com.robonobo.gui.RoboColor.LIGHT_GRAY;
-import static com.robonobo.gui.RoboColor.MID_GRAY;
+import static com.robonobo.gui.GUIUtils.*;
+import static com.robonobo.gui.RoboColor.*;
 
 import java.awt.Component;
 import java.awt.Dimension;
 
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JList;
+import javax.swing.*;
 
 import org.jdesktop.swingx.renderer.DefaultListRenderer;
 
+import com.robonobo.common.concurrent.CatchingRunnable;
+import com.robonobo.core.api.model.Playlist;
 import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.model.PlaylistListModel;
@@ -38,9 +34,21 @@ public class PlaylistList extends LeftSidebarList {
 		setMaximumSize(new Dimension(65535, 65535));
 	}
 
+	public void selectPlaylist(Playlist p) {
+		PlaylistListModel m = (PlaylistListModel) getModel();
+		final int idx = m.getPlaylistIndex(p);
+		SwingUtilities.invokeLater(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				setSelectedIndex(idx);
+			}
+		});
+	}
+	
 	@Override
 	protected void itemSelected(int index) {
-		// TODO something
+		PlaylistListModel m = (PlaylistListModel) getModel();
+		Playlist p = m.getPlaylistAt(index);
+		frame.selectContentPanel("playlist/"+p.getPlaylistId());
 	}
 	
 	class CellRenderer extends DefaultListRenderer {

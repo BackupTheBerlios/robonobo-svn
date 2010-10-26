@@ -58,7 +58,8 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 	}
 
 	void initComponents() {
-		tableModel = new PlaylistTableModel(controller, p, true, dummyTracklist());
+//		tableModel = new PlaylistTableModel(controller, p, true, dummyTracklist());
+		tableModel = null;
 		KeyAdapter keyListener = new KeyAdapter() {
 			public void keyPressed(KeyEvent e) {
 				// Spacebar == play/pause

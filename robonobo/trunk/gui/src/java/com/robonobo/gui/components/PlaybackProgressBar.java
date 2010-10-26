@@ -1,23 +1,15 @@
 package com.robonobo.gui.components;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Point;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JProgressBar;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
+import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.gui.RoboFont;
+import com.robonobo.gui.frames.RobonoboFrame;
 
 /**
  * Maintains two 'progress' indicators. The first, 'availableData', displays how much data we have downloaded by means of a light blue bar, and is the limit to
@@ -29,10 +21,13 @@ import com.robonobo.gui.RoboFont;
  */
 @SuppressWarnings("serial")
 public class PlaybackProgressBar extends JProgressBar {
+	private static final int TOTAL_WIDTH = 325;
 	private static final int SLIDER_TOTAL_WIDTH = 65;
 	private static final int SLIDER_OPAQUE_WIDTH = 62;
 
-//	private int sliderThumbWidth;
+	private RobonoboFrame frame;
+	// Locked means no current track - can't drag slider, no progress indicators
+	private boolean locked = true;
 	private boolean dragging;
 	/** In reference to the slider thumb */
 	private Point mouseDownPt;
@@ -45,13 +40,14 @@ public class PlaybackProgressBar extends JProgressBar {
 	private long trackPositionMs;
 	private float dataAvailable;
 
-	public PlaybackProgressBar(int maxValue) {
-		super();
+	public PlaybackProgressBar(final RobonoboFrame frame) {
+		this.frame = frame;
 		setName("robonobo.playback.progressbar");
 		listeners = new ArrayList<Listener>();
 		setMinimum(0);
-		setMaximum(maxValue);
-
+		setMaximum(TOTAL_WIDTH);
+		setPreferredSize(new Dimension(325, 24));
+		
 		// Absolute positioning of elements
 		setLayout(null);
 
@@ -97,11 +93,13 @@ public class PlaybackProgressBar extends JProgressBar {
 				if (dragging) {
 					dragging = false;
 					mouseDownPt = null;
-					for (Listener l : listeners) {
-						// notify listeners
-						// TODO do this via the thread pool...
-						l.sliderReleased(trackPositionMs);
-					}
+					frame.getController().getExecutor().execute(new CatchingRunnable() {
+						public void doRun() throws Exception {
+							for (Listener l : listeners) {
+								l.sliderReleased(trackPositionMs);
+							}
+						}
+					});
 				}
 			}
 		});
@@ -144,7 +142,6 @@ public class PlaybackProgressBar extends JProgressBar {
 			throw new RuntimeException("PlaybackProgressBar only support horizontal orientation");
 	}
 
-	/** IPlaybackProgressBar */
 	public void addListener(Listener listener) {
 		listeners.add(listener);
 	}
@@ -153,7 +150,20 @@ public class PlaybackProgressBar extends JProgressBar {
 		listeners.remove(listener);
 	}
 
-	public void setTrackLength(long lengthMs) {
+	/**
+	 * Locks the component until setTrackLength() is called
+	 */
+	public void lock() {
+		locked = true;
+		setEndText("");
+		setTrackPosition(0);
+		setDataAvailable(0f);
+		doRepaint();
+	}
+	
+	public void setTrackDuration(long lengthMs) {
+		if(locked)
+			locked = false;
 		this.trackLengthMs = lengthMs;
 		setEndText(timeLblFromMs(lengthMs));
 	}
@@ -167,6 +177,7 @@ public class PlaybackProgressBar extends JProgressBar {
 		long msLeft = trackLengthMs - trackPositionMs;
 		setStartText("-"+timeLblFromMs(msLeft));
 		setThumbPosition(thumbPos);
+		doRepaint();
 	}
 
 	public void setDataAvailable(float available) {
@@ -175,6 +186,7 @@ public class PlaybackProgressBar extends JProgressBar {
 		int max = getMaximum() - SLIDER_OPAQUE_WIDTH;
 		int val = SLIDER_OPAQUE_WIDTH + (int) (available * max);
 		setValue(val);
+		doRepaint();
 	}
 
 	private void setStartText(String text) {
@@ -203,6 +215,10 @@ public class PlaybackProgressBar extends JProgressBar {
 			return String.format("%d:%02d", minutes, seconds);
 	}
 
+	private void doRepaint() {
+		RepaintManager.currentManager(this).markCompletelyDirty(this);
+	}
+	
 	public interface Listener {
 		public void sliderReleased(long trackPositionMs);
 	}

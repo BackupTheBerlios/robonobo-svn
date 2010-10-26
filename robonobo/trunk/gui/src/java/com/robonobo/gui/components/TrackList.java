@@ -8,6 +8,7 @@ import java.util.regex.Matcher;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -43,7 +44,7 @@ public class TrackList extends JPanel implements SearchExecutor, NextTrackListen
 	Log log;
 	RobonoboFrame frame;
 	
-	public TrackList(RobonoboFrame frame, TrackListTableModel model, ListSelectionListener selectionListener, KeyListener keyListener) {
+	public TrackList(final RobonoboFrame frame, TrackListTableModel model) {
 		this.model = model;
 		this.frame = frame;
 		log = LogFactory.getLog(getClass());
@@ -59,8 +60,12 @@ public class TrackList extends JPanel implements SearchExecutor, NextTrackListen
 		table.setBackground(Color.WHITE);
 		table.setHighlighters(HighlighterFactory.createSimpleStriping());
 		table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-		if (selectionListener != null)
-			table.getSelectionModel().addListSelectionListener(selectionListener);
+		// When the selection changes, notify our playback panel
+		table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+			public void valueChanged(ListSelectionEvent e) {
+				frame.getPlaybackPanel().trackSelectionChanged();
+			}
+		});
 		
 		// Cell renderers
 		table.getColumn(0).setCellRenderer(new PlaybackStatusRenderer());
@@ -76,9 +81,6 @@ public class TrackList extends JPanel implements SearchExecutor, NextTrackListen
 		table.getColumn(9).setCellRenderer(tr);
 		table.getColumn(10).setCellRenderer(tr);
 		table.getColumn(11).setCellRenderer(tr);
-		
-		if(keyListener != null)
-			table.addKeyListener(keyListener);
 		
 		// Render table header as not bold
 		table.getTableHeader().setDefaultRenderer(new DefaultTableCellRenderer() {
@@ -145,6 +147,10 @@ public class TrackList extends JPanel implements SearchExecutor, NextTrackListen
 		}
 	}
 
+	public TrackListTableModel getTableModel() {
+		return model;
+	}
+	
 	public JTable getJTable() {
 		return table;
 	}
