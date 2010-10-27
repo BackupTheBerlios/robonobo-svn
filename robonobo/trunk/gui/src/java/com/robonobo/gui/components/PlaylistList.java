@@ -48,7 +48,7 @@ public class PlaylistList extends LeftSidebarList {
 	protected void itemSelected(int index) {
 		PlaylistListModel m = (PlaylistListModel) getModel();
 		Playlist p = m.getPlaylistAt(index);
-		frame.selectContentPanel("playlist/"+p.getPlaylistId());
+		frame.getMainPanel().selectContentPanel("playlist/"+p.getPlaylistId());
 	}
 	
 	class CellRenderer extends DefaultListRenderer {

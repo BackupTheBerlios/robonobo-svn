@@ -47,7 +47,7 @@ public abstract class LeftSidebarSelector extends JPanel implements LeftSidebarC
 	
 	public void setSelected(boolean isSelected) {
 		if (isSelected) {
-			frame.selectContentPanel(contentPanelName);
+			frame.getMainPanel().selectContentPanel(contentPanelName);
 			setBackground(LIGHT_GRAY);
 			setForeground(BLUE_GRAY);
 			sideBar.clearSelectionExcept(this);

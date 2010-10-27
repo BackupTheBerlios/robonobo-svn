@@ -25,7 +25,7 @@ import com.robonobo.gui.panels.*;
 @SuppressWarnings("serial")
 public class ActiveSearchList extends LeftSidebarList {
 	private static final int MAX_LBL_WIDTH = 160;
-	/** Clicks with an X between mincloseclick and maxcloseclick we take to be on the close 'X' **/
+	/** Clicks with an X coord between mincloseclick and maxcloseclick we take to be on the close 'X' **/
 	private static final int MIN_CLOSE_CLICK = 163;
 	private static final int MAX_CLOSE_CLICK = 176;
 
@@ -39,7 +39,7 @@ public class ActiveSearchList extends LeftSidebarList {
 	protected void itemSelected(int index) {
 		ActiveSearchListModel m = (ActiveSearchListModel) getModel();
 		String query = (String) m.getElementAt(index);
-		frame.selectContentPanel("search/" + query);
+		frame.getMainPanel().selectContentPanel("search/" + query);
 	}
 
 	public void searchAdded(String query) {
@@ -57,7 +57,7 @@ public class ActiveSearchList extends LeftSidebarList {
 				ActiveSearchListModel model = (ActiveSearchListModel) getModel();
 				String query = (String) model.getElementAt(clickIdx);
 				model.removeElementAt(clickIdx);
-				ContentPanel cp = frame.removeContentPanel("search/" + query);
+				ContentPanel cp = frame.getMainPanel().removeContentPanel("search/" + query);
 				SearchResultTableModel srtm = (SearchResultTableModel) cp.getTrackList().getTableModel();
 				srtm.die();
 				// Bring the next search into focus if there is one, else select MyMusicLibrary

@@ -8,7 +8,7 @@ import java.util.Set;
 
 import com.robonobo.core.api.proto.CoreApi.PlaylistMsg;
 
-public class Playlist {
+public class Playlist implements Comparable<Playlist> {
 	String title;
 	Date updated;
 	List<String> streamIds = new ArrayList<String>();
@@ -63,6 +63,11 @@ public class Playlist {
 		return playlistId.equals(p.playlistId);
 	}
 
+	@Override
+	public int compareTo(Playlist o) {
+		return title.compareTo(o.getTitle());
+	}
+	
 	public String getPlaylistId() {
 		return playlistId;
 	}

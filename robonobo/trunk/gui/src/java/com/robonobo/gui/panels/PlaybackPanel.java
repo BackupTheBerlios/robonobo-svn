@@ -224,7 +224,7 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 	}
 	
 	private void checkButtonsEnabled() {
-		List<String> selStreamIds = frame.currentContentPanel().getTrackList().getSelectedStreamIds();
+		List<String> selStreamIds = frame.getMainPanel().currentContentPanel().getTrackList().getSelectedStreamIds();
 		synchronized (this) {
 			// Enable download button if there are any tracks selected
 			dloadBtn.setEnabled(selStreamIds.size() > 0);
@@ -266,7 +266,7 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 		public void actionPerformed(ActionEvent e) {
 			switch (state) {
 			case Stopped:
-				TrackList trackList = frame.currentContentPanel().getTrackList();
+				TrackList trackList = frame.getMainPanel().currentContentPanel().getTrackList();
 				List<String> selSids = trackList.getSelectedStreamIds();
 				if (selSids.size() > 0) {
 					trackList.clearTableSelection();

@@ -30,6 +30,10 @@ public class MainPanel extends JPanel {
 		return cpHolder.currentContentPanel();
 	}
 	
+	public ContentPanel getContentPanel(String name) {
+		return cpHolder.getContentPanel(name);
+	}
+	
 	public void selectContentPanel(String name) {
 		cpHolder.selectContentPanel(name);
 	}

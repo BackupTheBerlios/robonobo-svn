@@ -64,7 +64,6 @@ public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
 				boolean wantSelect = stn.handleSelect();
 				if (wantSelect) {
 					sideBar.clearSelectionExcept(FriendTree.this);
-					// TODO Tell the frame to select the correct main panel
 				} else
 					setSelectionPath(e.getOldLeadSelectionPath());
 			}

@@ -158,7 +158,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 				iTunesCB = new JCheckBox("Export playlist to iTunes");
 				iTunesCB.setFont(RoboFont.getFont(12, true));
 				iTunesCB.setSelected("true".equalsIgnoreCase(pc.getItem("iTunesExport")));
-				options.put("iTunesExport", friendsCB);
+				options.put("iTunesExport", iTunesCB);
 				iTunesCB.addActionListener(al);
 				add(iTunesCB);
 			}
@@ -184,6 +184,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 					savePlaylist();
 				}
 			});
+			saveBtn.setEnabled(false);
 			add(saveBtn);
 			
 			if (allowShare()) {

@@ -41,12 +41,12 @@ public class PlaylistTreeNode extends SelectableTreeNode  {
 
 	@Override
 	public boolean handleSelect() {
-//		frame.getContentHolder().bringPanelToFront(contentPanelName());
+		frame.getMainPanel().selectContentPanel(contentPanelName());
 		return true;
 	}
 
 	protected String contentPanelName() {
-		return "playlist-" + playlist.getPlaylistId();
+		return "playlist/" + playlist.getPlaylistId();
 	}
 
 	@Override
