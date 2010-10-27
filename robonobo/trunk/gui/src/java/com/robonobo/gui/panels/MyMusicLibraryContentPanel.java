@@ -9,14 +9,14 @@ import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.core.Platform;
 import com.robonobo.gui.frames.RobonoboFrame;
-import com.robonobo.gui.model.TestyTrackListTableModel;
+import com.robonobo.gui.model.MyMusicLibraryTableModel;
 
 @SuppressWarnings("serial")
 public class MyMusicLibraryContentPanel extends ContentPanel {
 
 	public MyMusicLibraryContentPanel(RobonoboFrame frame) {
-		super(frame, new TestyTrackListTableModel(frame.getController()));
-//		super(frame, new MyMusicTableModel(frame.getController()));
+//		super(frame, new TestyTrackListTableModel(frame.getController()));
+		super(frame, new MyMusicLibraryTableModel(frame.getController()));
 		tabPane.insertTab("library", null, new MyLibraryTabPanel(), null, 0);
 		tabPane.setSelectedIndex(0);
 	}

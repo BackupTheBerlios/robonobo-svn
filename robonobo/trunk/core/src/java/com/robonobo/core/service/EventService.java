@@ -1,32 +1,20 @@
 package com.robonobo.core.service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.robonobo.core.RobonoboInstance;
 import com.robonobo.core.api.*;
-import com.robonobo.core.api.model.DownloadingTrack;
-import com.robonobo.core.api.model.Playlist;
-import com.robonobo.core.api.model.SharedTrack;
-import com.robonobo.core.api.model.Stream;
-import com.robonobo.core.api.model.Track;
-import com.robonobo.core.api.model.User;
+import com.robonobo.core.api.model.*;
 import com.robonobo.core.wang.WangListener;
-import com.robonobo.mina.external.ConnectedNode;
-import com.robonobo.mina.external.MinaControl;
-import com.robonobo.mina.external.MinaListener;
+import com.robonobo.mina.external.*;
 
 public class EventService extends AbstractRuntimeServiceProvider implements MinaListener {
 	private List<TrackListener> trList = new ArrayList<TrackListener>();
 	private List<PlaybackListener> plList = new ArrayList<PlaybackListener>();
 	private List<UserPlaylistListener> upList = new ArrayList<UserPlaylistListener>();
 	private List<RobonoboStatusListener> stList = new ArrayList<RobonoboStatusListener>();
-	private List<NextPrevListener> npList = new ArrayList<NextPrevListener>();
 	private List<WangListener> wList = new ArrayList<WangListener>();
 	private List<TransferSpeedListener> tsList = new ArrayList<TransferSpeedListener>();
 	private int minaSupernodes = 0;
@@ -57,14 +45,6 @@ public class EventService extends AbstractRuntimeServiceProvider implements Mina
 
 	public synchronized void removeStatusListener(RobonoboStatusListener l) {
 		stList.remove(l);
-	}
-
-	public synchronized void addNextPrevListener(NextPrevListener l) {
-		npList.add(l);
-	}
-
-	public synchronized void removeNextPrevListener(NextPrevListener l) {
-		npList.remove(l);
 	}
 
 	public synchronized void addUserPlaylistListener(UserPlaylistListener l) {
@@ -251,22 +231,11 @@ public class EventService extends AbstractRuntimeServiceProvider implements Mina
 		}
 	}
 
-	public void fireNextPrevChanged(boolean canNext, boolean canPrev) {
-		NextPrevListener[] arr;
-		synchronized (this) {
-			arr = getNpArr();
-		}
-		for (NextPrevListener listener : arr) {
-			listener.updateNextPrev(canNext, canPrev);
-		}
-	}
-
 	public void removeAllListeners() {
 		trList.clear();
 		plList.clear();
 		upList.clear();
 		stList.clear();
-		npList.clear();
 	}
 
 	public void nodeConnected(ConnectedNode node) {
@@ -336,12 +305,6 @@ public class EventService extends AbstractRuntimeServiceProvider implements Mina
 	private RobonoboStatusListener[] getStArr() {
 		RobonoboStatusListener[] result = new RobonoboStatusListener[stList.size()];
 		stList.toArray(result);
-		return result;
-	}
-
-	private NextPrevListener[] getNpArr() {
-		NextPrevListener[] result = new NextPrevListener[npList.size()];
-		npList.toArray(result);
 		return result;
 	}
 

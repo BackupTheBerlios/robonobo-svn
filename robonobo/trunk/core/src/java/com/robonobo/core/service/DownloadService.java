@@ -46,6 +46,7 @@ public class DownloadService extends AbstractRuntimeServiceProvider implements M
 	private EventService event;
 	private PlaybackService playback;
 	private Set<String> downloadStreamIds;
+	private Set<String> preFetchStreamIds;
 	
 	/**
 	 * Saves downloads in the order they are added, to make sure they're
@@ -79,6 +80,7 @@ public class DownloadService extends AbstractRuntimeServiceProvider implements M
 		playback = robonobo.getPlaybackService();
 		downloadStreamIds = new HashSet<String>();
 		downloadStreamIds.addAll(db.getDownloads());
+		preFetchStreamIds = new HashSet<String>();
 		int numStarted = 0;
 		for (String streamId : downloadStreamIds) {
 			DownloadingTrack d = db.getDownload(streamId);
@@ -214,6 +216,10 @@ public class DownloadService extends AbstractRuntimeServiceProvider implements M
 			log.debug("Not starting finished download " + streamId);
 			return;
 		}
+		if(d.getDownloadStatus() == DownloadStatus.Downloading) {
+			log.debug("Not starting already-running download "+streamId);
+			return;
+		}
 		PageBuffer pb;
 		try {
 			pb = storage.loadPageBuf(streamId);
@@ -280,6 +286,7 @@ public class DownloadService extends AbstractRuntimeServiceProvider implements M
 		d.setDownloadStatus(DownloadStatus.Finished);
 		synchronized (dPriority) {
 			dPriority.remove(streamId);
+			preFetchStreamIds.remove(streamId);
 		}
 		updatePriorities();
 		synchronized (this) {
@@ -328,17 +335,32 @@ public class DownloadService extends AbstractRuntimeServiceProvider implements M
 		// Do nothing
 	}
 
+	public void preFetch(String streamId) {
+		DownloadingTrack d = getDownload(streamId);
+		if(d == null)
+			return;
+		try {
+		if(d.getDownloadStatus() == DownloadStatus.Paused)
+			startDownload(streamId);
+		} catch(RobonoboException e) {
+			log.error("Caught exception starting pre-fetch download for stream "+streamId, e);
+			return;
+		}
+		synchronized (dPriority) {
+			preFetchStreamIds.add(streamId);
+		}
+		updatePriorities();
+	}
+	
 	public void updatePriorities() {
 		mina.clearStreamPriorities();
 		// Currently playing/paused stream has priority
 		String curStreamId = playback.getCurrentStreamId();
-		// Then whatever's downloading next
-		String nextStreamId = playback.getNextStreamId();
 		synchronized (dPriority) {
 			for (int i = 0; i < dPriority.size(); i++) {
 				String streamId = dPriority.get(i);
 				int newPri = dPriority.size() - i;
-				if (nextStreamId != null && nextStreamId.equals(streamId))
+				if (preFetchStreamIds.contains(streamId))
 					newPri = PRIORITY_NEXT;
 				if (curStreamId != null && curStreamId.equals(streamId))
 					newPri = PRIORITY_CURRENT;

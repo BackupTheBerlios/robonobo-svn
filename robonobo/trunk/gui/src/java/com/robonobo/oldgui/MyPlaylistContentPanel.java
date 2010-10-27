@@ -73,7 +73,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 		List<MainButton> btnList = new ArrayList<MainButton>();
 		prevBtn = new PrevButton(frame.getController());
 		btnList.add(prevBtn);
-		playBtn = new PlayPauseButton(controller, tablePanel, tableModel, tablePanel);
+//		playBtn = new PlayPauseButton(controller, tablePanel, tableModel, tablePanel);
 		playBtn.setEnabled(false);
 		btnList.add(playBtn);
 		nextBtn = new NextButton(frame.getController());

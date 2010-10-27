@@ -1,22 +1,12 @@
 package com.robonobo.oldgui;
 
-import static com.robonobo.common.util.TextUtil.*;
-
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.GridLayout;
+import java.awt.*;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -24,25 +14,18 @@ import javax.swing.table.TableColumn;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jdesktop.swingx.JXTable;
-import org.jdesktop.swingx.decorator.FilterPipeline;
-import org.jdesktop.swingx.decorator.HighlighterFactory;
-import org.jdesktop.swingx.decorator.PatternFilter;
+import org.jdesktop.swingx.decorator.*;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.table.TableColumnModelExt;
 
-import com.robonobo.core.Platform;
-import com.robonobo.core.api.NextTrackListener;
 import com.robonobo.core.api.SearchExecutor;
-import com.robonobo.core.api.model.DownloadingTrack;
-import com.robonobo.core.api.model.DownloadingTransferStatus;
-import com.robonobo.core.api.model.Stream;
-import com.robonobo.core.api.model.Track;
+import com.robonobo.core.api.model.*;
 import com.robonobo.core.api.model.Track.PlaybackStatus;
 import com.robonobo.gui.GUIUtils;
 import com.robonobo.gui.model.TrackListTableModel;
 
 @SuppressWarnings("serial")
-public class TrackListTablePanel extends JPanel implements SearchExecutor, NextTrackListener {
+public class TrackListTablePanel extends JPanel implements SearchExecutor /*, NextTrackListener */{
 	JScrollPane scrollPane;
 	JXTable table;
 	TrackListTableModel model;

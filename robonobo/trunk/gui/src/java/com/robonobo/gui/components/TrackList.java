@@ -1,7 +1,6 @@
 package com.robonobo.gui.components;
 
 import java.awt.*;
-import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -21,7 +20,6 @@ import org.jdesktop.swingx.decorator.SortOrder;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.table.TableColumnModelExt;
 
-import com.robonobo.core.api.NextTrackListener;
 import com.robonobo.core.api.SearchExecutor;
 import com.robonobo.core.api.model.*;
 import com.robonobo.core.api.model.DownloadingTrack.DownloadStatus;
@@ -32,7 +30,7 @@ import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.model.TrackListTableModel;
 
 @SuppressWarnings("serial")
-public class TrackList extends JPanel implements SearchExecutor, NextTrackListener {
+public class TrackList extends JPanel implements SearchExecutor {
 	JScrollPane scrollPane;
 	JXTable table;
 	TrackListTableModel model;
@@ -43,7 +41,7 @@ public class TrackList extends JPanel implements SearchExecutor, NextTrackListen
 	ImageIcon downloadingIcon = GUIUtils.createImageIcon("/img/table/download.png", null);
 	Log log;
 	RobonoboFrame frame;
-	
+
 	public TrackList(final RobonoboFrame frame, TrackListTableModel model) {
 		this.model = model;
 		this.frame = frame;
@@ -66,7 +64,7 @@ public class TrackList extends JPanel implements SearchExecutor, NextTrackListen
 				frame.getPlaybackPanel().trackSelectionChanged();
 			}
 		});
-		
+
 		// Cell renderers
 		table.getColumn(0).setCellRenderer(new PlaybackStatusRenderer());
 		TextRenderer tr = new TextRenderer();
@@ -81,20 +79,21 @@ public class TrackList extends JPanel implements SearchExecutor, NextTrackListen
 		table.getColumn(9).setCellRenderer(tr);
 		table.getColumn(10).setCellRenderer(tr);
 		table.getColumn(11).setCellRenderer(tr);
-		
+
 		// Render table header as not bold
 		table.getTableHeader().setDefaultRenderer(new DefaultTableCellRenderer() {
 			ImageIcon ascSortIcon = GUIUtils.createImageIcon("/img/icon/arrow_up.png", null);
 			ImageIcon descSortIcon = GUIUtils.createImageIcon("/img/icon/arrow_down.png", null);
-			
+
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
 					boolean hasFocus, int row, int column) {
-				JLabel result = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				JLabel result = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row,
+						column);
 				result.setFont(RoboFont.getFont(12, false));
 				result.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 0));
 				SortOrder so = TrackList.this.table.getSortOrder(column);
-				if(so.isSorted()) {
-					if(so.isAscending())
+				if (so.isSorted()) {
+					if (so.isAscending())
 						setIcon(ascSortIcon);
 					else
 						setIcon(descSortIcon);
@@ -104,7 +103,7 @@ public class TrackList extends JPanel implements SearchExecutor, NextTrackListen
 				return result;
 			}
 		});
-		
+
 		TableColumnModelExt cm = (TableColumnModelExt) table.getColumnModel();
 		cm.getColumn(0).setPreferredWidth(22); // Status icon
 		cm.getColumn(1).setPreferredWidth(187); // Title
@@ -121,7 +120,7 @@ public class TrackList extends JPanel implements SearchExecutor, NextTrackListen
 
 		int[] hiddenCols = hiddenCols();
 		List<TableColumn> cols = cm.getColumns(true);
-		for(int i=0;i<hiddenCols.length;i++) {
+		for (int i = 0; i < hiddenCols.length; i++) {
 			TableColumnExt colExt = (TableColumnExt) cols.get(hiddenCols[i]);
 			colExt.setVisible(false);
 		}
@@ -131,9 +130,9 @@ public class TrackList extends JPanel implements SearchExecutor, NextTrackListen
 
 	// By default we just hide the stream id, subclasses hide more
 	protected int[] hiddenCols() {
-		return new int[]{ 11 } ;
+		return new int[] { 11 };
 	}
-	
+
 	public void search(String query) {
 		table.clearSelection();
 		if (query == null || query.length() == 0) {
@@ -150,7 +149,7 @@ public class TrackList extends JPanel implements SearchExecutor, NextTrackListen
 	public TrackListTableModel getTableModel() {
 		return model;
 	}
-	
+
 	public JTable getJTable() {
 		return table;
 	}
@@ -164,7 +163,7 @@ public class TrackList extends JPanel implements SearchExecutor, NextTrackListen
 		List<String> result = new ArrayList<String>(selRows.length);
 		for (int row : selRows) {
 			String sid = model.getStreamId(row);
-			if(sid != null)
+			if (sid != null)
 				result.add(sid);
 		}
 		return result;
@@ -176,7 +175,7 @@ public class TrackList extends JPanel implements SearchExecutor, NextTrackListen
 		for (int row : selRows) {
 			// This might be null if we are in the middle of deleting rows
 			Track t = model.getTrack(row);
-			if(t != null)
+			if (t != null)
 				result.add(t);
 		}
 		return result;
@@ -186,8 +185,8 @@ public class TrackList extends JPanel implements SearchExecutor, NextTrackListen
 		table.removeRowSelectionInterval(0, table.getRowCount() - 1);
 	}
 
-	public String getNextTrack(String lastTrackStreamId) {
-		int modelIndex = model.getTrackIndex(lastTrackStreamId);
+	public String getNextStreamId(String curStreamId) {
+		int modelIndex = model.getTrackIndex(curStreamId);
 		if (modelIndex < 0)
 			return null;
 		int tblIndex = table.convertRowIndexToView(modelIndex);
@@ -195,6 +194,17 @@ public class TrackList extends JPanel implements SearchExecutor, NextTrackListen
 			return null;
 		int nextModelIndex = table.convertRowIndexToModel(tblIndex + 1);
 		return model.getStreamId(nextModelIndex);
+	}
+
+	public String getPrevStreamId(String curStreamId) {
+		int modelIndex = model.getTrackIndex(curStreamId);
+		if (modelIndex < 0)
+			return null;
+		int tblIndex = table.convertRowIndexToView(modelIndex);
+		if (tblIndex == 0)
+			return null;
+		int prevModelIndex = table.convertRowIndexToModel(tblIndex - 1);
+		return model.getStreamId(prevModelIndex);
 	}
 
 	public void scrollTableToStream(String streamId) {
@@ -224,12 +234,12 @@ public class TrackList extends JPanel implements SearchExecutor, NextTrackListen
 	class TextRenderer extends DefaultTableCellRenderer {
 		Font plainFont = RoboFont.getFont(12, false);
 		Font boldFont = RoboFont.getFont(12, true);
-		
-		public Component getTableCellRendererComponent(
-				JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+				boolean hasFocus, int row, int column) {
 			Component result = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			((JComponent) result).setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 0));
-			if(column == 1)
+			if (column == 1)
 				result.setFont(boldFont);
 			else
 				result.setFont(plainFont);
@@ -239,8 +249,8 @@ public class TrackList extends JPanel implements SearchExecutor, NextTrackListen
 
 	class PlaybackStatusRenderer extends DefaultTableCellRenderer {
 		@Override
-		public Component getTableCellRendererComponent(
-				JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+				boolean hasFocus, int row, int column) {
 			JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			lbl.setText(null);
 			lbl.setHorizontalAlignment(JLabel.CENTER);
@@ -307,7 +317,7 @@ public class TrackList extends JPanel implements SearchExecutor, NextTrackListen
 				} else {
 					pBar.setValue(pcnt);
 					pBar.setEnabled(true);
-					pBar.setString("Downloading ("+numSources+"): " + pcnt + "%");
+					pBar.setString("Downloading (" + numSources + "): " + pcnt + "%");
 				}
 				Color bg = lbl.getBackground();
 				pBarPnl.setBackground(bg);

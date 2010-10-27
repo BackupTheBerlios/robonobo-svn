@@ -25,7 +25,7 @@ public class RobonoboConfig implements Serializable {
 	String formatSupportProviders = "com.robonobo.plugin.mp3.Mp3FormatSupportProvider";
 	int dataPageSize = 32768;
 	int userUpdateFrequency = 300; // Secs
-	int downloadCacheTime = 30;
+	int downloadCacheTime = 30; // Secs
 	boolean agoric = true;
 	/** "auto", "off", or a gateway port number (which means manual) */
 	String gatewayCfgMode = "auto";

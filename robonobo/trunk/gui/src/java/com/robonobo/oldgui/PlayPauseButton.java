@@ -12,7 +12,6 @@ import org.apache.commons.logging.LogFactory;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.RobonoboController;
-import com.robonobo.core.api.NextTrackListener;
 import com.robonobo.core.api.PlaybackListener;
 import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.model.CloudTrack;
@@ -39,16 +38,16 @@ public class PlayPauseButton extends MainButton implements PlaybackListener {
 	RobonoboController controller;
 	TrackListTablePanel tablePanel;
 	TrackListTableModel tableModel;
-	private NextTrackListener finishListener;
+//	private NextTrackListener finishListener;
 
 	public PlayPauseButton(RobonoboController controller, TrackListTablePanel tablePanel,
-			TrackListTableModel tableModel, NextTrackListener finishListener) {
+			TrackListTableModel tableModel /*, NextTrackListener finishListener */) {
 		super(IMG_PLAY, "Play selected tracks");
 		this.controller = controller;
 		controller.addPlaybackListener(this);
 		this.tablePanel = tablePanel;
 		this.tableModel = tableModel;
-		this.finishListener = finishListener;
+//		this.finishListener = finishListener;
 		addActionListener(new PlayPauseListener());
 	}
 
@@ -57,11 +56,11 @@ public class PlayPauseButton extends MainButton implements PlaybackListener {
 	 * will happen!
 	 */
 	public void play(List<String> streamIds) {
-		controller.clearPlayQueue();
-		for (String streamId : streamIds) {
-			controller.addToPlayQueue(streamId);
-		}
-		doPlay();
+//		controller.clearPlayQueue();
+//		for (String streamId : streamIds) {
+//			controller.addToPlayQueue(streamId);
+//		}
+//		doPlay();
 	}
 
 	/**
@@ -69,8 +68,8 @@ public class PlayPauseButton extends MainButton implements PlaybackListener {
 	 * will happen!
 	 */
 	public void play(String streamId) {
-		controller.clearPlayQueue();
-		controller.addToPlayQueue(streamId);
+//		controller.clearPlayQueue();
+//		controller.addToPlayQueue(streamId);
 		doPlay();
 	}
 
@@ -79,7 +78,7 @@ public class PlayPauseButton extends MainButton implements PlaybackListener {
 			controller.stopPlayback();
 		controller.getExecutor().execute(new CatchingRunnable() {
 			public void doRun() throws Exception {
-				controller.play(finishListener);
+//				controller.play(finishListener);
 			}
 		});
 		tablePanel.clearTableSelection();
@@ -162,12 +161,12 @@ public class PlayPauseButton extends MainButton implements PlaybackListener {
 				if (selSids.size() > 0) {
 					tablePanel.clearTableSelection();
 					controller.spawnNecessaryDownloads(selSids);
-					controller.clearPlayQueue();
-					controller.stopPlayback();
-					for (String sid : selSids) {
-						controller.addToPlayQueue(sid);
-					}
-					controller.play(finishListener);
+//					controller.clearPlayQueue();
+//					controller.stopPlayback();
+//					for (String sid : selSids) {
+//						controller.addToPlayQueue(sid);
+//					}
+//					controller.play(finishListener);
 				}
 				break;
 			case Playing:

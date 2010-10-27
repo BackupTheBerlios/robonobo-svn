@@ -58,7 +58,7 @@ public class MyMusicContentPanel extends ContentPanel {
 		prevBtn = new PrevButton(controller);
 		btnList.add(prevBtn);
 
-		playBtn = new PlayPauseButton(controller, tablePanel, tableModel, tablePanel);
+//		playBtn = new PlayPauseButton(controller, tablePanel, tableModel, tablePanel);
 		playBtn.setEnabled(false);
 		btnList.add(playBtn);
 

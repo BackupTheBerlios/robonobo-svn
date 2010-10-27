@@ -1,31 +1,19 @@
 package com.robonobo.core.service;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.common.util.TimeUtil;
-import com.robonobo.core.api.AudioPlayer;
-import com.robonobo.core.api.AudioPlayerListener;
-import com.robonobo.core.api.NextTrackListener;
-import com.robonobo.core.api.RobonoboException;
-import com.robonobo.core.api.StreamVelocity;
+import com.robonobo.core.api.*;
 import com.robonobo.core.api.AudioPlayer.Status;
-import com.robonobo.core.api.model.CloudTrack;
-import com.robonobo.core.api.model.DownloadingTrack;
-import com.robonobo.core.api.model.Stream;
-import com.robonobo.core.api.model.Track;
+import com.robonobo.core.api.model.*;
 import com.robonobo.core.api.model.DownloadingTrack.DownloadStatus;
 import com.robonobo.mina.external.MinaControl;
-import com.robonobo.mina.external.buffer.PageBuffer;
-import com.robonobo.mina.external.buffer.PageBufferListener;
-import com.robonobo.mina.external.buffer.PageInfo;
+import com.robonobo.mina.external.buffer.*;
 
 public class PlaybackService extends AbstractRuntimeServiceProvider implements AudioPlayerListener, PageBufferListener {
 	private AudioPlayer.Status status = Status.Stopped;
@@ -41,17 +29,13 @@ public class PlaybackService extends AbstractRuntimeServiceProvider implements A
 	 */
 	public static final int BYTES_BUFFERED_DATA = 256000;
 	private AudioPlayer player;
-	private List<String> playQueue = new LinkedList<String>();
-	private int playQueuePosition = -1;
 	private Date playStartTime;
-	private NextTrackListener finishListener = null;
 	private final Log log = LogFactory.getLog(getClass());
 	private EventService event;
 	private TrackService tracks;
 	private DownloadService download;
 	private MinaControl mina;
 	String currentStreamId;
-	String nextStreamId;
 
 	public PlaybackService() {
 		addHardDependency("core.tracks");
@@ -70,31 +54,18 @@ public class PlaybackService extends AbstractRuntimeServiceProvider implements A
 		stop();
 	}
 
-	public synchronized void addToPlayQueue(String streamId) {
-		playQueue.add(streamId);
-	}
-
-	public synchronized void addToPlayQueue(Collection<String> streamIds) {
-		playQueue.addAll(streamIds);
-	}
-
-	public synchronized void clearQueue() {
-		// This only clears the queue from our current position forwards -
-		// history is preserved
-		while (playQueue.size() > playQueuePosition + 1)
-			playQueue.remove(playQueuePosition + 1);
-	}
-
 	public Status getStatus() {
 		return status;
 	}
 
 	/**
-	 * 
+	 * Passing streamId = null is the same as passing the currently playing stream 
 	 */
-	public synchronized void play() {
-		// If we have an existent audio player, just set it playing
-		if (player != null) {
+	public synchronized void play(String streamId) {
+		if(streamId == null)
+			streamId = currentStreamId;
+		// If we have an existent audio player (and we're being told to play the same stream), just set it playing
+		if (streamId.equals(currentStreamId) && player != null) {
 			try {
 				player.play();
 				status = Status.Playing;
@@ -105,21 +76,15 @@ public class PlaybackService extends AbstractRuntimeServiceProvider implements A
 			event.firePlaybackStarted();
 			return;
 		}
-		// If we are paused but with no player, we never got enough data to
-		// start last time - don't move to the next stream, try this one again
-		if (status != Status.Paused) {
-			playQueuePosition++;
-			if (playQueuePosition >= playQueue.size()) {
-				playQueuePosition--;
-				currentStreamId = null;
-				return;
-			}
-			// Tell our listeners if we can now do next or previous
-			boolean canNext = playQueuePosition < playQueue.size() - 1;
-			boolean canPrev = playQueuePosition > 0;
-			event.fireNextPrevChanged(canNext, canPrev);
+		// If we're currently playing something else, stop it
+		if(player != null) {
+			String stoppedStreamId = currentStreamId;
+			player.stop();
+			currentStreamId = null;
+			player = null;
+			event.fireTrackUpdated(stoppedStreamId);
 		}
-		currentStreamId = playQueue.get(playQueuePosition);
+		currentStreamId = streamId;
 		Track t = tracks.getTrack(currentStreamId);
 		if (t instanceof CloudTrack) {
 			// Whoops, we're not sharing/downloading this stream...
@@ -130,6 +95,7 @@ public class PlaybackService extends AbstractRuntimeServiceProvider implements A
 				log.error("Error adding download", e);
 				return;
 			}
+			t = download.getDownload(currentStreamId);
 		}
 		// If this is a download, make sure it's running and is highest
 		// priority/velocity
@@ -156,18 +122,14 @@ public class PlaybackService extends AbstractRuntimeServiceProvider implements A
 		// playing
 		Stream s = robonobo.getMetadataService().getStream(currentStreamId);
 		boolean bufferedEnough = bufferedEnough(s, pb);
-		if (bufferedEnough) {
+		if (bufferedEnough)
 			startPlaying(s, pb);
-		} else {
+		else {
 			status = Status.Starting;
 			event.firePlaybackStarting();
 			tracks.notifyPlayingTrackChange(currentStreamId);
 			pb.addListener(this);
 		}
-	}
-
-	public String getNextStreamId() {
-		return nextStreamId;
 	}
 
 	public void advisedOfTotalPages(PageBuffer pb) {
@@ -275,7 +237,7 @@ public class PlaybackService extends AbstractRuntimeServiceProvider implements A
 			return;
 		switch (status) {
 		case Paused:
-			play();
+			play(currentStreamId);
 			break;
 		case Playing:
 			pause();
@@ -298,25 +260,6 @@ public class PlaybackService extends AbstractRuntimeServiceProvider implements A
 		event.firePlaybackStopped();
 	}
 
-	public synchronized void next() {
-		stop();
-		play();
-	}
-
-	public synchronized void previous() {
-		stop();
-		if (TimeUtil.timeInPast(PREV_TRACK_GRACE_PERIOD * 1000).before(playStartTime)) {
-			// Prev track
-			if (playQueue.size() > 1)
-				playQueuePosition -= 2;
-			else
-				throw new SeekInnerCalmException();
-		} else
-			// Restart current track
-			playQueuePosition--;
-		play();
-	}
-
 	public void onCompletion() {
 		synchronized (this) {
 			player = null;
@@ -326,26 +269,12 @@ public class PlaybackService extends AbstractRuntimeServiceProvider implements A
 		String justFinStreamId = currentStreamId;
 		tracks.notifyPlayingTrackChange(justFinStreamId);
 		event.firePlaybackCompleted();
-		synchronized (this) {
-			currentStreamId = null;
-			if (playQueue.size() == playQueuePosition + 1) {
-				if (finishListener != null) {
-					String nextSid = finishListener.getNextTrack(justFinStreamId);
-					if (nextSid != null) {
-						addToPlayQueue(nextSid);
-						play();
-					}
-				}
-			} else
-				play();
-		}
 	}
 
 	public void onError(String error) {
 		String errStreamId = currentStreamId;
 		String myErr = "Got playback error while playing " + errStreamId + ": " + error;
 		log.debug(myErr);
-		event.firePlaybackError(myErr);
 		// If we are downloading this, stop at once, it's fux0red
 		DownloadingTrack d = robonobo.getDbService().getDownload(errStreamId);
 		if (d != null) {
@@ -355,24 +284,16 @@ public class PlaybackService extends AbstractRuntimeServiceProvider implements A
 				log.error("Caught exception while stopping download", e);
 			}
 		}
-		player = null;
 		synchronized (this) {
 			currentStreamId = null;
-			if (playQueue.size() == playQueuePosition + 1) {
-				if (finishListener != null) {
-					String nextSid = finishListener.getNextTrack(errStreamId);
-					if (nextSid != null) {
-						addToPlayQueue(nextSid);
-						play();
-					}
-				}
-			} else
-				play();
+			player = null;
 		}
+		event.fireTrackUpdated(errStreamId);
+		event.firePlaybackError(myErr);
 	}
 
 	public synchronized void stopIfCurrentlyPlaying(String streamId) {
-		if (player != null && playQueue.get(playQueuePosition).equals(streamId))
+		if (player != null && currentStreamId.equals(streamId))
 			stop();
 	}
 
@@ -388,52 +309,10 @@ public class PlaybackService extends AbstractRuntimeServiceProvider implements A
 		// The player calls this with microsecs=0 when we pause, just ignore it
 		if (microsecs == 0)
 			return;
-		event.firePlaybackProgress(microsecs);
 		// This might be null if we are a left-over thread, just exit
 		if (currentStreamId == null)
 			return;
-		// Cue up the next track if necessary
-		Stream currentStream = robonobo.getMetadataService().getStream(currentStreamId);
-		long msLeft = currentStream.getDuration() - (microsecs / 1000);
-		if (msLeft < (getRobonobo().getConfig().getDownloadCacheTime() * 1000)) {
-			nextStreamId = finishListener.getNextTrack(currentStream.getStreamId());
-			if (nextStreamId != null) {
-				// If we don't have this track, better fetch it
-				Track t = tracks.getTrack(nextStreamId);
-				if (t instanceof CloudTrack)
-					preFetchTrack(t.getStream());
-				// If we're downloading this track, move it up in priority so we
-				// get it faster
-				else if (t instanceof DownloadingTrack) {
-					DownloadingTrack d = (DownloadingTrack) t;
-					if (d.getDownloadStatus() == DownloadStatus.Paused) {
-						try {
-							download.startDownload(nextStreamId);
-						} catch (RobonoboException e) {
-							log.error("Error starting pre-fetch download", e);
-						}
-					}
-					download.updatePriorities();
-					mina.setStreamVelocity(nextStreamId, StreamVelocity.MaxRate);
-				}
-			}
-		}
-	}
-
-	private void preFetchTrack(Stream s) {
-		log.info("Pre-fetching next track '" + s.getTitle() + "'");
-		try {
-			download.addDownload(s.getStreamId());
-			DownloadingTrack d = download.getDownload(s.getStreamId());
-			if (d.getDownloadStatus() == DownloadStatus.Paused)
-				download.startDownload(s.getStreamId());
-		} catch (RobonoboException e) {
-			log.error("Caught exception pre-caching download", e);
-		}
-	}
-
-	public void setFinishListener(NextTrackListener finishListener) {
-		this.finishListener = finishListener;
+		event.firePlaybackProgress(microsecs);
 	}
 
 	public AudioPlayer.Status playbackStatus() {

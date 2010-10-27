@@ -76,14 +76,6 @@ public class RobonoboController {
 		inst.getEventService().removeStatusListener(l);
 	}
 
-	public void addNextPrevListener(NextPrevListener l) {
-		inst.getEventService().addNextPrevListener(l);
-	}
-
-	public void removeNextPrevListener(NextPrevListener l) {
-		inst.getEventService().removeNextPrevListener(l);
-	}
-
 	public void addUserPlaylistListener(UserPlaylistListener l) {
 		inst.getEventService().addUserPlaylistListener(l);
 	}
@@ -103,11 +95,11 @@ public class RobonoboController {
 	public void addTransferSpeedListener(TransferSpeedListener l) {
 		inst.getEventService().addTransferSpeedListener(l);
 	}
-	
+
 	public void removeTransferSpeedListener(TransferSpeedListener l) {
 		inst.getEventService().removeTransferSpeedListener(l);
 	}
-	
+
 	public RobonoboStatus getStatus() {
 		return inst.getStatus();
 	}
@@ -128,6 +120,13 @@ public class RobonoboController {
 		}
 	}
 
+	/**
+	 * Notifies that this streamId is going to be played shortly and should be downloaded/prioritized as necessary 
+	 */
+	public void preFetch(String streamId) {
+		inst.getDownloadService().preFetch(streamId);
+	}
+	
 	public void addDownload(String streamId, String pathToFile) throws RobonoboException {
 		inst.getDownloadService().addDownload(streamId, new File(pathToFile));
 	}
@@ -144,7 +143,7 @@ public class RobonoboController {
 			public void doRun() throws Exception {
 				for (String sid : streamIds) {
 					Track t = getTrack(sid);
-					if(t instanceof CloudTrack)
+					if (t instanceof CloudTrack)
 						addDownload(sid);
 				}
 			}
@@ -311,18 +310,8 @@ public class RobonoboController {
 		return inst.getExecutor();
 	}
 
-	public void addToPlayQueue(String streamId) {
-		inst.getPlaybackService().addToPlayQueue(streamId);
-	}
-
-	public void clearPlayQueue() {
-		inst.getPlaybackService().clearQueue();
-	}
-
-	public void play(NextTrackListener finishListener) {
-		if (finishListener != null)
-			inst.getPlaybackService().setFinishListener(finishListener);
-		inst.getPlaybackService().play();
+	public void play(String streamId) {
+		inst.getPlaybackService().play(streamId);
 	}
 
 	public void pause() {
@@ -340,14 +329,6 @@ public class RobonoboController {
 	/** If we are playing, pause. If we are paused, play. Otherwise, do nothing */
 	public void togglePlayPause() {
 		inst.getPlaybackService().togglePlayPause();
-	}
-
-	public void next() {
-		inst.getPlaybackService().next();
-	}
-
-	public void previous() {
-		inst.getPlaybackService().previous();
 	}
 
 	public void stopPlayback() {
@@ -508,11 +489,11 @@ public class RobonoboController {
 	public int numUnseenTracks(User u) {
 		return inst.getUsersService().numUnseenTracksForUser(u);
 	}
-	
+
 	public int numUnseenTracks(Playlist p) {
 		return inst.getUsersService().numUnseenTracksForPlaylist(p);
 	}
-	
+
 	/**
 	 * For debugging only
 	 */

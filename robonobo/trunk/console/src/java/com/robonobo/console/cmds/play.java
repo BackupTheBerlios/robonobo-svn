@@ -13,11 +13,9 @@ public class play implements ConsoleCommand {
 	public void run(RobonoboConsole console, String[] args, PrintWriter out) throws Exception {
 		if (args.length > 0) {
 			String streamId = args[0];
-			console.getController().stopPlayback();
-			console.getController().clearPlayQueue();
-			console.getController().addToPlayQueue(streamId);
-		}
-		console.getController().play(null);
+			console.getController().play(streamId);
+		} else
+			console.getController().play(null);
 	}
 
 }
