@@ -1,12 +1,11 @@
 package com.robonobo.gui.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import javax.swing.AbstractListModel;
 
 @SuppressWarnings("serial")
-public class SortedListModel<T extends Comparable<T>> extends AbstractListModel {
+public class SortedListModel<T extends Comparable<T>> extends AbstractListModel implements Iterable<T> {
 	protected List<T> list = new ArrayList<T>();
 
 	public SortedListModel() {
@@ -84,5 +83,10 @@ public class SortedListModel<T extends Comparable<T>> extends AbstractListModel 
 			return insertIndex(element, low, pivot);
 		else
 			return insertIndex(element, pivot, high);
+	}
+
+	@Override
+	public Iterator<T> iterator() {
+		return list.iterator();
 	}
 }

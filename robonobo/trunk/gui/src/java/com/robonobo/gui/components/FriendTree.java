@@ -79,6 +79,10 @@ public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
 		((SelectionModel) getSelectionModel()).reallyClearSelection();
 	}
 
+	public void selectForPlaylist(String playlistId) {
+		setSelectionPath(getModel().getPlaylistTreePath(playlistId));
+	}
+	
 	private class CellRenderer extends DefaultTreeCellRenderer {
 		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded,
 				boolean leaf, int row, boolean hasFocus) {

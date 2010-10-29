@@ -1,7 +1,9 @@
 package com.robonobo.gui.panels;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import static com.robonobo.common.util.TextUtil.*;
+
+import java.awt.ComponentOrientation;
+import java.awt.event.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,6 +12,7 @@ import javax.swing.*;
 import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
+import com.robonobo.common.util.TextUtil;
 import com.robonobo.core.Platform;
 import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.UserPlaylistListener;
@@ -38,14 +41,14 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 		this.pc = pc;
 		tabPane.insertTab("playlist", null, new PlaylistDetailsPanel(), null, 0);
 		tabPane.setSelectedIndex(0);
-		if(addAsListener())
+		if (addAsListener())
 			frame.getController().addUserPlaylistListener(this);
 	}
 
 	protected boolean addAsListener() {
 		return true;
 	}
-	
+
 	protected boolean allowShare() {
 		return true;
 	}
@@ -55,9 +58,9 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 	}
 
 	protected boolean detailsChanged() {
-		return (p.getTitle() != null && p.getTitle().length() > 0);
+		return isNonEmpty(titleField.getText());
 	}
-	
+
 	protected void savePlaylist() {
 		frame.getController().getExecutor().execute(new CatchingRunnable() {
 			public void doRun() throws Exception {
@@ -76,7 +79,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			}
 		});
 	}
-	
+
 	protected void deletePlaylist() {
 		frame.getLeftSidebar().selectMyMusic();
 		frame.getController().getExecutor().execute(new CatchingRunnable() {
@@ -90,48 +93,55 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			}
 		});
 	}
-	
+
 	@Override
 	public void loggedIn() {
 		// Do nothing
 	}
-	
+
 	@Override
 	public void userChanged(User u) {
 		// Do nothing
 	}
-	
+
 	@Override
 	public void playlistChanged(Playlist p) {
-		if(p.equals(this.p)) {
+		if (p.equals(this.p)) {
 			this.p = p;
 			titleField.setText(p.getTitle());
 			descField.setText(p.getDescription());
 			friendsCB.setSelected(p.getAnnounce());
-			PlaylistTableModel ptm = (PlaylistTableModel) trackList.getTableModel();
+			PlaylistTableModel ptm = (PlaylistTableModel) trackList.getModel();
 			ptm.update(p, true);
 		}
 	}
-	
+
 	class PlaylistDetailsPanel extends JPanel {
 		public PlaylistDetailsPanel() {
-			double[][] cellSizen = { { 5, 150, 5, 250, 5, TableLayout.FILL, 5 },
-					{ 5, 30, 5, 30, 5, TableLayout.FILL, 5, 30, 5 } };
+			double[][] cellSizen = { { 5, 35, 5, 365, 20, TableLayout.FILL, 5 },
+					{ 5, 25, 0, 25, 0, TableLayout.FILL, 5, 30, 5 } };
 			setLayout(new TableLayout(cellSizen));
 
+			KeyListener kl = new KeyAdapter() {
+				@Override
+				public void keyTyped(KeyEvent e) {
+					saveBtn.setEnabled(detailsChanged());
+				}
+			};
 			JLabel titleLbl = new JLabel("Title:");
 			titleLbl.setFont(RoboFont.getFont(13, false));
 			add(titleLbl, "1,1");
 			titleField = new JTextField(p.getTitle());
-			titleField.setFont(RoboFont.getFont(13, false));
+			titleField.setFont(RoboFont.getFont(11, false));
+			titleField.addKeyListener(kl);
 			add(titleField, "3,1");
 
 			JLabel descLbl = new JLabel("Description:");
 			descLbl.setFont(RoboFont.getFont(13, false));
-			add(descLbl, "1,3,3,3,f,t");
+			add(descLbl, "1,3,3,3");
 			descField = new JTextArea(p.getDescription());
-			descField.setFont(RoboFont.getFont(13, false));
-			add(descField, "1,5,3,5");
+			descField.setFont(RoboFont.getFont(11, false));
+			add(new JScrollPane(descField), "1,5,3,7");
 
 			add(new OptsPanel(), "5,1,5,5");
 			add(new ButtonsPanel(), "5,7");
@@ -153,7 +163,8 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			friendsCB.setSelected(p.getAnnounce());
 			friendsCB.addActionListener(al);
 			add(friendsCB);
-			
+			add(Box.createVerticalStrut(5));
+
 			if (Platform.getPlatform().iTunesAvailable()) {
 				iTunesCB = new JCheckBox("Export playlist to iTunes");
 				iTunesCB.setFont(RoboFont.getFont(12, true));
@@ -167,26 +178,27 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 
 	class ButtonsPanel extends JPanel {
 		public ButtonsPanel() {
-			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-			
-			saveBtn = new JButton("SAVE");
-			saveBtn.setFont(RoboFont.getFont(12, true));
-			saveBtn.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					p.setAnnounce(friendsCB.isSelected());
-					pc.getItems().clear();
-					for (String opt : options.keySet()) {
-						JCheckBox cb = options.get(opt);
-						if(cb.isSelected())
-							pc.setItem(opt, "true");
+			setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+			setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
+
+			// Laying out right-to-left
+			if (allowDel()) {
+				delBtn = new JButton("DELETE");
+				delBtn.setFont(RoboFont.getFont(12, true));
+				delBtn.setName("robonobo.red.button");
+				delBtn.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						int result = JOptionPane.showConfirmDialog(ButtonsPanel.this,
+								"Are you sure you want to delete this playlist?", "Delete this playlist?",
+								JOptionPane.YES_NO_OPTION);
+						if (result == JOptionPane.YES_OPTION)
+							deletePlaylist();
 					}
-					saveBtn.setEnabled(false);
-					savePlaylist();
-				}
-			});
-			saveBtn.setEnabled(false);
-			add(saveBtn);
-			
+				});
+				add(delBtn);
+				add(Box.createHorizontalStrut(5));
+			}
+
 			if (allowShare()) {
 				shareBtn = new JButton("SHARE");
 				shareBtn.setFont(RoboFont.getFont(12, true));
@@ -198,21 +210,27 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 					}
 				});
 				add(shareBtn);
+				add(Box.createHorizontalStrut(5));
 			}
-
-			if (allowDel()) {
-				delBtn = new JButton("DELETE");
-				delBtn.setFont(RoboFont.getFont(12, true));
-				delBtn.setName("robonobo.red.button");
-				delBtn.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						int result = JOptionPane.showConfirmDialog(ButtonsPanel.this, "Are you sure you want to delete this playlist?", "Delete this playlist?", JOptionPane.YES_NO_OPTION);
-						if(result == JOptionPane.YES_OPTION)
-							deletePlaylist();
+			
+			saveBtn = new JButton("SAVE");
+			saveBtn.setFont(RoboFont.getFont(12, true));
+			saveBtn.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					p.setAnnounce(friendsCB.isSelected());
+					pc.getItems().clear();
+					for (String opt : options.keySet()) {
+						JCheckBox cb = options.get(opt);
+						if (cb.isSelected())
+							pc.setItem(opt, "true");
 					}
-				});
-				add(delBtn);
-			}
+					saveBtn.setEnabled(false);
+					savePlaylist();
+				}
+			});
+			saveBtn.setEnabled(false);
+			add(saveBtn);
+
 		}
 	}
 }

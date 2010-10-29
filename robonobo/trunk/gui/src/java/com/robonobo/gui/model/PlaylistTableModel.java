@@ -171,6 +171,12 @@ public class PlaylistTableModel extends TrackListTableModel implements TrackList
 		return p;
 	}
 
+	@Override
+	public boolean allowDelete() {
+		// Allow deletions only from my playlists
+		return myPlaylist;
+	}
+	
 	/** Must only be called from inside sync block */
 	private void updateStreamIndices() {
 		streamIndices.clear();

@@ -108,4 +108,7 @@ public abstract class TrackListTableModel extends AbstractTableModel {
 	public abstract int getTrackIndex(String streamId);
 
 	public abstract int numTracks();
+	
+	/** Are we allowed to delete tracks from this tracklist? */
+	public abstract boolean allowDelete();
 }

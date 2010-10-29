@@ -121,8 +121,7 @@ public class PlaybackService extends AbstractRuntimeServiceProvider implements A
 		// away, otherwise ask it to notify us when it gets data, and start
 		// playing
 		Stream s = robonobo.getMetadataService().getStream(currentStreamId);
-		boolean bufferedEnough = bufferedEnough(s, pb);
-		if (bufferedEnough)
+		if (bufferedEnough(s, pb))
 			startPlaying(s, pb);
 		else {
 			status = Status.Starting;
@@ -201,7 +200,8 @@ public class PlaybackService extends AbstractRuntimeServiceProvider implements A
 		synchronized (this) {
 			if (status == Status.Starting) {
 				// We don't have a player yet, we're waiting for feedback to be
-				// buffered - remove ourselves as a listener
+				// buffered - remove ourselves as a listener so we don't start
+				// playing when the buffer is full
 				mina.getPageBuffer(currentStreamId).removeListener(this);
 			}
 			if (player != null) {
@@ -248,9 +248,8 @@ public class PlaybackService extends AbstractRuntimeServiceProvider implements A
 	public void stop() {
 		String stoppedStreamId;
 		synchronized (this) {
-			if (player != null) {
+			if (player != null)
 				player.stop();
-			}
 			player = null;
 			status = Status.Stopped;
 			stoppedStreamId = currentStreamId;

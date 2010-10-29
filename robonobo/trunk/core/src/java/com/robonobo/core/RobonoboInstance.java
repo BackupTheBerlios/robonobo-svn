@@ -371,6 +371,7 @@ public class RobonoboInstance implements Robonobo {
 	}
 
 	public void setStatus(RobonoboStatus status) {
+		log.debug("New status: "+status);
 		this.status = status;
 	}
 }

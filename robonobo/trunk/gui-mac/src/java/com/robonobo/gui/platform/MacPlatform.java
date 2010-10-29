@@ -1,10 +1,12 @@
 package com.robonobo.gui.platform;
 
 import java.awt.Event;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileSystemView;
 
 import com.apple.eawt.Application;
 import com.apple.eio.FileManager;
@@ -105,6 +107,12 @@ public class MacPlatform extends UnknownPlatform {
 		field.putClientProperty("JTextField.variant", "search");
 	}
 
+	@Override
+	public File getDefaultHomeDirectory() {
+		File libDir = new File(FileSystemView.getFileSystemView().getDefaultDirectory(), "Library");
+		return new File(libDir, "robonobo");
+	}
+	
 	@Override
 	public void openUrl(String url) throws IOException {
 		if (CodeUtil.javaMajorVersion() >= 6)

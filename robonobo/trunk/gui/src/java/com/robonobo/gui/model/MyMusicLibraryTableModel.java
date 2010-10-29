@@ -37,6 +37,11 @@ public class MyMusicLibraryTableModel extends FreeformTrackListTableModel  {
 		});
 	}
 
+	@Override
+	public boolean allowDelete() {
+		return true;
+	}
+	
 	public void trackUpdated(String streamId) {
 		Track t = controller.getTrack(streamId);
 		boolean shouldAdd = false;

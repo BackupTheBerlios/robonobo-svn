@@ -180,6 +180,10 @@ public class PlaybackProgressBar extends JProgressBar {
 		doRepaint();
 	}
 
+	public long getTrackPosition() {
+		return trackPositionMs;
+	}
+	
 	public void setDataAvailable(float available) {
 		// Colour in progress bar value to illustrate seek limit - take into account thumb width
 		this.dataAvailable = available;

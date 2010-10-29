@@ -9,6 +9,9 @@ import java.util.List;
 
 import javax.swing.*;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.robonobo.core.api.UserPlaylistListener;
 import com.robonobo.core.api.model.*;
 import com.robonobo.gui.components.*;
@@ -24,6 +27,8 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 	private MyMusicSelector myMusic;
 	private NewPlaylistSelector newPlaylist;
 	private PlaylistList playlistList;
+	private FriendTree friendTree;
+	Log log = LogFactory.getLog(getClass());
 
 	public LeftSidebar(RobonoboFrame frame) {
 		this.frame = frame;
@@ -46,10 +51,10 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 		sideBarPanel.add(activeSearchList);
 		sideBarComps.add(activeSearchList);
 
-		FriendTree fTree = new FriendTree(this, frame);
-		fTree.setBorder(BorderFactory.createEmptyBorder(5, 10, 3, 10));
-		sideBarPanel.add(fTree);
-		sideBarComps.add(fTree);
+		friendTree = new FriendTree(this, frame);
+		friendTree.setBorder(BorderFactory.createEmptyBorder(5, 10, 3, 10));
+		sideBarPanel.add(friendTree);
+		sideBarComps.add(friendTree);
 
 		myMusic = new MyMusicSelector(this, frame);
 		sideBarPanel.add(myMusic);
@@ -69,8 +74,30 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 		spacerPanel.setOpaque(false);
 		add(spacerPanel);
 		add(new StatusPanel(frame));
+		
+		frame.getController().addUserPlaylistListener(this);
 	}
 
+	public void selectForContentPanel(String cpn) {
+		if(cpn.equals("mymusiclibrary"))
+			myMusic.setSelected(true);
+		else if(cpn.equals("newplaylist"))
+			newPlaylist.setSelected(true);
+		else if(cpn.startsWith("search/"))
+			activeSearchList.selectForQuery(cpn.substring("search/".length()));
+		else if(cpn.startsWith("playlist/")) {
+			// Playlist might be one of mine or it might be a friend's
+			String plId = cpn.substring("playlist/".length());
+			Playlist p = frame.getController().getPlaylist(plId);
+			User me = frame.getController().getMyUser();
+			if(me.getPlaylistIds().contains(plId))
+				playlistList.selectPlaylist(p);
+			else
+				friendTree.selectForPlaylist(plId);
+		} else
+			log.error("Couldn't select content panel: "+cpn);
+	}
+	
 	public void searchAdded(String query) {
 		ActiveSearchListModel model = (ActiveSearchListModel) activeSearchList.getModel();
 		SearchResultTableModel srtm = model.addSearch(query);

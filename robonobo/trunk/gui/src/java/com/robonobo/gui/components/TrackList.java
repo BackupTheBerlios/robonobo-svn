@@ -1,6 +1,8 @@
 package com.robonobo.gui.components;
 
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -124,6 +126,16 @@ public class TrackList extends JPanel implements SearchExecutor {
 			TableColumnExt colExt = (TableColumnExt) cols.get(hiddenCols[i]);
 			colExt.setVisible(false);
 		}
+		
+		table.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				if(e.getClickCount() == 2) {
+					frame.getPlaybackPanel().play();
+					e.consume();
+				}
+			}
+		});
+
 		scrollPane = new JScrollPane(table);
 		add(scrollPane, "0,0");
 	}
@@ -146,7 +158,7 @@ public class TrackList extends JPanel implements SearchExecutor {
 		}
 	}
 
-	public TrackListTableModel getTableModel() {
+	public TrackListTableModel getModel() {
 		return model;
 	}
 

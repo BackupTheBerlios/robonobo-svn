@@ -61,4 +61,9 @@ public class SearchResultTableModel extends FreeformTrackListTableModel implemen
 	public void foundBroadcaster(String streamId, String nodeId) {
 		trackUpdated(streamId);
 	}
+	
+	@Override
+	public boolean allowDelete() {
+		return false;
+	}
 }

@@ -2,55 +2,126 @@ package com.robonobo.gui.components;
 
 import static com.robonobo.gui.GUIUtils.*;
 import static com.robonobo.gui.RoboColor.*;
+import static javax.swing.SwingUtilities.*;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.*;
 
 import org.jdesktop.swingx.renderer.DefaultListRenderer;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
+import com.robonobo.core.api.UserPlaylistListener;
 import com.robonobo.core.api.model.Playlist;
+import com.robonobo.core.api.model.User;
 import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.model.PlaylistListModel;
 import com.robonobo.gui.panels.LeftSidebar;
 
 @SuppressWarnings("serial")
-public class PlaylistList extends LeftSidebarList {
+public class PlaylistList extends LeftSidebarList implements UserPlaylistListener {
 	private static final int MAX_LBL_WIDTH = 170;
-	
-	ImageIcon newPlaylistIcon;
+
 	ImageIcon playlistIcon;
-		
+
 	public PlaylistList(LeftSidebar sideBar, RobonoboFrame frame) {
 		super(sideBar, frame, new PlaylistListModel(frame.getController()));
-		newPlaylistIcon = createImageIcon("/img/icon/new_playlist.png", null);
 		playlistIcon = createImageIcon("/img/icon/playlist.png", null);
 		setCellRenderer(new CellRenderer());
 		setName("robonobo.playlist.list");
 		setAlignmentX(0.0f);
 		setMaximumSize(new Dimension(65535, 65535));
+		// We do the listener stuff here rather than in the model as we may need to reselect or resize as a consequence
+		frame.getController().addUserPlaylistListener(this);
 	}
 
-	public void selectPlaylist(Playlist p) {
-		PlaylistListModel m = (PlaylistListModel) getModel();
-		final int idx = m.getPlaylistIndex(p);
-		SwingUtilities.invokeLater(new CatchingRunnable() {
+	public PlaylistListModel getModel() {
+		return (PlaylistListModel) super.getModel();
+	}
+	
+	public void selectPlaylist(final Playlist p) {
+		invokeLater(new CatchingRunnable() {
 			public void doRun() throws Exception {
-				setSelectedIndex(idx);
+				setSelectedIndex(getModel().getPlaylistIndex(p));
 			}
 		});
 	}
-	
+
+	@Override
+	public void loggedIn() {
+		invokeLater(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				getModel().clear();
+			}
+		});
+	}
+
+	@Override
+	public void userChanged(final User u) {
+		invokeLater(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				if(u.getUserId() != frame.getController().getMyUser().getUserId())
+					return;
+				
+				Playlist selP = (getSelectedIndex() < 0) ? null : getModel().getPlaylistAt(getSelectedIndex());
+				boolean selPGone = false;
+				
+				// Check for removed playlists
+				List<Playlist> toRm = new ArrayList<Playlist>();
+				for (Playlist p : getModel()) {
+					if(!u.getPlaylistIds().contains(p.getPlaylistId()))
+						toRm.add(p);
+				}
+				for (Playlist p : toRm) {
+					if(p.equals(selP))
+						selPGone = true;
+					getModel().remove(p);
+				}
+				
+				// Removing items might have buggered up the selection, so put it back.
+				// If the selected playlist has gone, then go to my library
+				if(selP != null) {
+					if(selPGone)
+						frame.getLeftSidebar().selectMyMusic();
+					else {
+						int idx = getModel().getPlaylistIndex(selP);
+						setSelectedIndex(idx);
+					}
+				}
+			}
+		});
+	}
+
+	@Override
+	public void playlistChanged(final Playlist p) {
+		invokeLater(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				String plId = p.getPlaylistId();
+				if (frame.getController().getMyUser().getPlaylistIds().contains(plId)) {
+					Playlist selP = (getSelectedIndex() < 0) ? null : getModel().getPlaylistAt(getSelectedIndex());
+					boolean needReselect = p.equals(selP);
+					getModel().remove(p);
+					getModel().insertSorted(p);
+					if(needReselect) {
+						int idx = getModel().getPlaylistIndex(p);
+						setSelectedIndex(idx);
+					}
+				}
+			}
+		});
+	}
+
 	@Override
 	protected void itemSelected(int index) {
 		PlaylistListModel m = (PlaylistListModel) getModel();
 		Playlist p = m.getPlaylistAt(index);
-		frame.getMainPanel().selectContentPanel("playlist/"+p.getPlaylistId());
+		frame.getMainPanel().selectContentPanel("playlist/" + p.getPlaylistId());
 	}
-	
+
 	class CellRenderer extends DefaultListRenderer {
 		JLabel lbl = new JLabel();
 
@@ -62,16 +133,13 @@ public class PlaylistList extends LeftSidebarList {
 			lbl.setMaximumSize(new Dimension(MAX_LBL_WIDTH, 65535));
 			lbl.setPreferredSize(new Dimension(MAX_LBL_WIDTH, 65535));
 		}
-		
+
 		@Override
-		public Component getListCellRendererComponent(JList list, Object value,
-				int index, boolean isSelected, boolean cellHasFocus) {
+		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+				boolean cellHasFocus) {
 			lbl.setText((String) value);
-			if(index == 0)
-				lbl.setIcon(newPlaylistIcon);
-			else
-				lbl.setIcon(playlistIcon);
-			if(isSelected) {
+			lbl.setIcon(playlistIcon);
+			if (isSelected) {
 				lbl.setBackground(LIGHT_GRAY);
 				lbl.setForeground(BLUE_GRAY);
 			} else {

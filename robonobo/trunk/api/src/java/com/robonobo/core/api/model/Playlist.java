@@ -55,6 +55,8 @@ public class Playlist implements Comparable<Playlist> {
 	}
 
 	public boolean equals(Object obj) {
+		if(obj == null)
+			return false;
 		if(!(obj instanceof Playlist))
 			return false;
 		Playlist p = (Playlist) obj;

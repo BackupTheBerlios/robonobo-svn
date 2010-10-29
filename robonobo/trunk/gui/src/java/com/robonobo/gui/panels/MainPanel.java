@@ -19,6 +19,7 @@ public class MainPanel extends JPanel {
 		cpHolder = new ContentPanelHolder();
 		add(cpHolder, "0,2");
 		addContentPanel("mymusiclibrary", new MyMusicLibraryContentPanel(frame));
+		addContentPanel("newplaylist", new NewPlaylistContentPanel(frame));
 		selectContentPanel("mymusiclibrary");
 	}
 	
@@ -28,6 +29,10 @@ public class MainPanel extends JPanel {
 
 	public ContentPanel currentContentPanel() {
 		return cpHolder.currentContentPanel();
+	}
+	
+	public String currentContentPanelName() {
+		return cpHolder.currentPanelName();
 	}
 	
 	public ContentPanel getContentPanel(String name) {

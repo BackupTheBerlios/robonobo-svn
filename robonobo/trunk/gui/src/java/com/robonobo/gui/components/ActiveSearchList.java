@@ -28,23 +28,28 @@ public class ActiveSearchList extends LeftSidebarList {
 	/** Clicks with an X coord between mincloseclick and maxcloseclick we take to be on the close 'X' **/
 	private static final int MIN_CLOSE_CLICK = 163;
 	private static final int MAX_CLOSE_CLICK = 176;
+	ActiveSearchListModel aslm;
 
 	public ActiveSearchList(LeftSidebar sideBar, final RobonoboFrame frame) {
 		super(sideBar, frame, new ActiveSearchListModel(frame.getController()));
+		aslm = (ActiveSearchListModel) getModel();
 		setCellRenderer(new CellRenderer());
 		addMouseListener(new MouseListener());
 	}
 
+	public void selectForQuery(String query) {
+		int idx = aslm.indexOfQuery(query);
+		setSelectedIndex(idx);
+	}
+	
 	@Override
 	protected void itemSelected(int index) {
-		ActiveSearchListModel m = (ActiveSearchListModel) getModel();
-		String query = (String) m.getElementAt(index);
+		String query = (String) aslm.getElementAt(index);
 		frame.getMainPanel().selectContentPanel("search/" + query);
 	}
 
 	public void searchAdded(String query) {
-		ActiveSearchListModel m = (ActiveSearchListModel) getModel();
-		m.addSearch(query);
+		aslm.addSearch(query);
 	}
 
 	private class MouseListener extends MouseAdapter {
@@ -54,14 +59,13 @@ public class ActiveSearchList extends LeftSidebarList {
 				return;
 			if (e.getX() >= MIN_CLOSE_CLICK && e.getX() <= MAX_CLOSE_CLICK) {
 				// They clicked on the close 'X'
-				ActiveSearchListModel model = (ActiveSearchListModel) getModel();
-				String query = (String) model.getElementAt(clickIdx);
-				model.removeElementAt(clickIdx);
+				String query = (String) aslm.getElementAt(clickIdx);
+				aslm.removeElementAt(clickIdx);
 				ContentPanel cp = frame.getMainPanel().removeContentPanel("search/" + query);
-				SearchResultTableModel srtm = (SearchResultTableModel) cp.getTrackList().getTableModel();
+				SearchResultTableModel srtm = (SearchResultTableModel) cp.getTrackList().getModel();
 				srtm.die();
 				// Bring the next search into focus if there is one, else select MyMusicLibrary
-				if (clickIdx < model.getSize())
+				if (clickIdx < aslm.getSize())
 					setSelectedIndex(clickIdx);
 				else
 					sideBar.selectMyMusic();

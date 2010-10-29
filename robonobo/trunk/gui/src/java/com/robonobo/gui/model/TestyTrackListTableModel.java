@@ -84,6 +84,11 @@ public class TestyTrackListTableModel extends TrackListTableModel {
 		return traxOrder.size();
 	}
 
+	@Override
+	public boolean allowDelete() {
+		return false;
+	}
+	
 	class TestyDownloadingTrack extends DownloadingTrack {
 		int bytesDownloaded;
 		DownloadingTransferStatus transStat;

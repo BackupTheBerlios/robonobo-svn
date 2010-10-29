@@ -43,6 +43,15 @@ public abstract class LeftSidebarList extends JList implements LeftSidebarCompon
 	}
 
 	/**
+	 * The BoxLayout used in the LeftSidebar works with maximum sizes, so
+	 * whenever we add/remove/collapse/expand nodes, we have to update it
+	 */
+//	protected void updateMaxSize() {
+//		// Fill width, but not height
+//		setMaximumSize(new Dimension(Integer.MAX_VALUE, getPreferredSize().height));
+//	}
+
+	/**
 	 * The user has clicked on this item
 	 */
 	abstract protected void itemSelected(int index);

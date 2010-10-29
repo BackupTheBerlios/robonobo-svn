@@ -250,7 +250,6 @@ public class RobonoboController {
 			} catch (Exception ignore) {
 			}
 		}
-		inst.setStatus(RobonoboStatus.NotConnected);
 	}
 
 	public Track getTrack(String streamId) {

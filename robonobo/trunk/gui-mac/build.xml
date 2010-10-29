@@ -9,6 +9,7 @@
 				<pathelement path="../gui/target/classes" />
 				<pathelement path="../api/target/classes" />
 				<pathelement path="../core/target/classes" />
+				<pathelement path="../common/target/classes" />
 				<fileset dir="../common/lib">
 					<include name="**/*.jar" />
 				</fileset>

@@ -127,15 +127,17 @@ public class StatusPanel extends JPanel implements WangListener, RobonoboStatusL
 						networkStatusIcon.setIcon(connFailImg);
 						break;
 					case NotConnected:
-						numConnsLbl.setText("No connections");
+						numConnsLbl.setText("No Connections");
 						networkStatusIcon.setIcon(connFailImg);
+						break;
 					case Connected:
 						List<ConnectedNode> nodes = control.getConnectedNodes();
 						if(nodes.size() > 0)
 							networkStatusIcon.setIcon(connOkImg);
 						else
 							networkStatusIcon.setIcon(connFailImg);
-						numConnsLbl.setText(TextUtil.numItems(nodes, "connection"));
+						numConnsLbl.setText(TextUtil.numItems(nodes, "Connection"));
+						break;
 					case Stopping:
 						numConnsLbl.setText("Stopping...");
 					}
