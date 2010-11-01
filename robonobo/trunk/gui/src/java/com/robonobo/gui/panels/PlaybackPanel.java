@@ -176,18 +176,9 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 		delBtn.setPreferredSize(new Dimension(40, 40));
 		delBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				List<String> selSids = frame.getMainPanel().currentContentPanel().getTrackList().getSelectedStreamIds();
-				for (String sid : selSids) {
-					Track t = control.getTrack(sid);
-					try {
-						if (t instanceof DownloadingTrack)
-							control.deleteDownload(sid);
-						else if (t instanceof SharedTrack)
-							control.deleteShare(sid);
-					} catch (RobonoboException ex) {
-						log.error("Error deleting share/download", ex);
-					}
-				}
+				TrackList tl = frame.getMainPanel().currentContentPanel().getTrackList();
+				List<String> selSids = tl.getSelectedStreamIds();
+				tl.getModel().deleteTracks(selSids);				
 			}
 		});
 		buttonsPanel.add(delBtn);
@@ -358,14 +349,18 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 		}
 	}
 
+	public void trackListPanelChanged() {
+		checkButtonsEnabled();
+	}
+	
 	private void checkButtonsEnabled() {
 		boolean tracksSelected = false;
 		boolean allowDelete = false;
 		boolean allowDownload = false;
 		if (frame.getMainPanel() != null && frame.getMainPanel().currentContentPanel() != null) {
-			List<String> selSids = frame.getMainPanel().currentContentPanel().getTrackList().getSelectedStreamIds();
+			TrackList tl = frame.getMainPanel().currentContentPanel().getTrackList();
+			List<String> selSids = tl.getSelectedStreamIds();
 			tracksSelected = (selSids.size() > 0);
-			allowDelete = frame.getMainPanel().currentContentPanel().getTrackList().getModel().allowDelete();
 			// Only allow download if at least one of the selected tracks is a cloud track
 			// Only allow delete if at least one of the selected tracks is a download/sharing track
 			for (String sid : selSids) {
@@ -375,6 +370,7 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 				if ((t instanceof DownloadingTrack) || (t instanceof SharedTrack))
 					allowDelete = true;
 			}
+			allowDelete = allowDelete && tl.getModel().allowDelete();
 		}
 		synchronized (this) {
 			// [Dis|En]able next/prev buttons

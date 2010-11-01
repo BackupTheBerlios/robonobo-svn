@@ -1,12 +1,18 @@
 package com.robonobo.gui.panels;
 
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 import javax.swing.*;
 
 import org.debian.tablelayout.TableLayout;
 
+import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.Platform;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.model.MyMusicLibraryTableModel;
@@ -15,10 +21,33 @@ import com.robonobo.gui.model.MyMusicLibraryTableModel;
 public class MyMusicLibraryContentPanel extends ContentPanel {
 
 	public MyMusicLibraryContentPanel(RobonoboFrame frame) {
-//		super(frame, new TestyTrackListTableModel(frame.getController()));
 		super(frame, new MyMusicLibraryTableModel(frame.getController()));
 		tabPane.insertTab("library", null, new MyLibraryTabPanel(), null, 0);
 		tabPane.setSelectedIndex(0);
+	}
+
+	@Override
+	public boolean canImport(JComponent comp, DataFlavor[] transferFlavors) {
+		return Platform.getPlatform().canDnDImport(transferFlavors);
+	}
+
+	@Override
+	public boolean importData(JComponent comp, Transferable t) {
+		frame.updateStatus("Importing tracks...", 0, 30);
+		List<File> l = null;
+		try {
+			l = Platform.getPlatform().getDnDImportFiles(t);
+		} catch (IOException e) {
+			log.error("Caught exception dropping files", e);
+			return false;
+		}
+		final List<File> fl = l;
+		frame.getController().getExecutor().execute(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				frame.importFilesOrDirectories(fl);
+			}
+		});
+		return true;
 	}
 
 	class MyLibraryTabPanel extends JPanel {
@@ -28,7 +57,7 @@ public class MyMusicLibraryContentPanel extends ContentPanel {
 			JCheckBox shareLibCheckBox = new JCheckBox("Share library with friends?");
 			// TODO Plumb this in
 			shareLibCheckBox.setSelected(true);
-			add(shareLibCheckBox,"1,1,3,1");
+			add(shareLibCheckBox, "1,1,3,1");
 			JButton addFilesBtn = new JButton("Add files...");
 			addFilesBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -36,7 +65,7 @@ public class MyMusicLibraryContentPanel extends ContentPanel {
 				}
 			});
 			add(addFilesBtn, "1,3");
-			if(Platform.getPlatform().iTunesAvailable()) {
+			if (Platform.getPlatform().iTunesAvailable()) {
 				JButton addITunesBtn = new JButton("Add from iTunes...");
 				addITunesBtn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {

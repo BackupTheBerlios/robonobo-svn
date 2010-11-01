@@ -12,12 +12,13 @@ import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.model.Playlist;
 import com.robonobo.core.api.model.PlaylistConfig;
 import com.robonobo.gui.frames.RobonoboFrame;
+import com.robonobo.gui.model.NewPlaylistTableModel;
 
 @SuppressWarnings("serial")
 public class NewPlaylistContentPanel extends MyPlaylistContentPanel {
 
 	public NewPlaylistContentPanel(RobonoboFrame frame) {
-		super(frame, new Playlist(), new PlaylistConfig());
+		super(frame, new Playlist(), new PlaylistConfig(), new NewPlaylistTableModel(frame.getController()));
 	}
 
 	@Override

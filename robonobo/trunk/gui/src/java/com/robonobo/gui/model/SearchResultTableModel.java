@@ -1,8 +1,11 @@
 package com.robonobo.gui.model;
 
+import java.util.List;
+
 import javax.swing.SwingUtilities;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
+import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.SearchListener;
 import com.robonobo.core.api.model.*;
@@ -41,7 +44,7 @@ public class SearchResultTableModel extends FreeformTrackListTableModel implemen
 
 	public void die() {
 		for (Stream s : streams) {
-			controller.stopFindingSources(s.getStreamId(), this);
+			control.stopFindingSources(s.getStreamId(), this);
 		}
 		streams.clear();
 		streamIndices.clear();
@@ -52,10 +55,10 @@ public class SearchResultTableModel extends FreeformTrackListTableModel implemen
 	}
 
 	public void foundResult(final Stream s) {
-		Track t = controller.getTrack(s.getStreamId());
+		Track t = control.getTrack(s.getStreamId());
 		add(t);
 		if (t instanceof CloudTrack)
-			controller.findSources(s.getStreamId(), this);
+			control.findSources(s.getStreamId(), this);
 	}
 
 	public void foundBroadcaster(String streamId, String nodeId) {
@@ -65,5 +68,10 @@ public class SearchResultTableModel extends FreeformTrackListTableModel implemen
 	@Override
 	public boolean allowDelete() {
 		return false;
+	}
+	
+	@Override
+	public void deleteTracks(List<String> streamIds) {
+		throw new SeekInnerCalmException();
 	}
 }

@@ -1,11 +1,13 @@
 package com.robonobo.gui.model;
 
+import java.util.List;
+
 import javax.swing.SwingUtilities;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.RobonoboController;
-import com.robonobo.core.api.model.CloudTrack;
-import com.robonobo.core.api.model.Track;
+import com.robonobo.core.api.RobonoboException;
+import com.robonobo.core.api.model.*;
 
 @SuppressWarnings("serial")
 public class MyMusicLibraryTableModel extends FreeformTrackListTableModel  {
@@ -20,12 +22,12 @@ public class MyMusicLibraryTableModel extends FreeformTrackListTableModel  {
 		synchronized (this) {
 			streams.clear();
 			streamIndices.clear();
-			for(String streamId : controller.getShares()) {
-				Track t = controller.getTrack(streamId);
+			for(String streamId : control.getShares()) {
+				Track t = control.getTrack(streamId);
 				add(t, false);
 			}
-			for(String streamId : controller.getDownloads()) {
-				Track t = controller.getTrack(streamId);
+			for(String streamId : control.getDownloads()) {
+				Track t = control.getTrack(streamId);
 				add(t, false);
 			}
 		}
@@ -42,8 +44,24 @@ public class MyMusicLibraryTableModel extends FreeformTrackListTableModel  {
 		return true;
 	}
 	
+	@Override
+	public void deleteTracks(List<String> streamIds) {
+		for (String sid : streamIds) {
+			Track t = control.getTrack(sid);
+			try {
+				if (t instanceof DownloadingTrack)
+					control.deleteDownload(sid);
+				else if (t instanceof SharedTrack)
+					control.deleteShare(sid);
+			} catch (RobonoboException ex) {
+				log.error("Error deleting share/download", ex);
+			}
+		}
+	
+	}
+	
 	public void trackUpdated(String streamId) {
-		Track t = controller.getTrack(streamId);
+		Track t = control.getTrack(streamId);
 		boolean shouldAdd = false;
 		boolean shouldRm = false;
 		int index = -1;

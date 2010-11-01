@@ -15,6 +15,7 @@ public class NewPlaylistContentPanel extends MyPlaylistContentPanel {
 
 	NewPlaylistContentPanel(RobonoboFrame frame) {
 		super(frame, new Playlist(), new PlaylistConfig());
+//		super(frame, new Playlist(), new PlaylistConfig(), false);
 	}
 
 	void savePlaylist() {

@@ -30,7 +30,7 @@ import com.robonobo.oldgui.StreamComparator;
 @SuppressWarnings("serial")
 public abstract class FreeformTrackListTableModel extends TrackListTableModel implements TrackListener {
 	protected Log log = LogFactory.getLog(getClass());
-	protected RobonoboController controller;
+	protected RobonoboController control;
 	/**
 	 * Unfortunately we need to keep track of all the streams here so we can keep the tracks sorted in the right order
 	 */
@@ -43,7 +43,7 @@ public abstract class FreeformTrackListTableModel extends TrackListTableModel im
 	protected Map<String, Integer> streamIndices = new HashMap<String, Integer>();
 
 	public FreeformTrackListTableModel(RobonoboController controller) {
-		this.controller = controller;
+		this.control = controller;
 		controller.addTrackListener(this);
 	}
 
@@ -136,7 +136,7 @@ public abstract class FreeformTrackListTableModel extends TrackListTableModel im
 				return null;
 			streamId = streams.get(index).getStreamId();
 		}
-		Track result = controller.getTrack(streamId);
+		Track result = control.getTrack(streamId);
 		return result;
 	}
 

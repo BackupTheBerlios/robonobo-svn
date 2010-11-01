@@ -94,7 +94,8 @@ public class PlaylistTableModel extends TrackListTableModel implements TrackList
 	}
 
 	/**
-	 * If any of these streams are already in this playlist, they will be removed before being added in their new position
+	 * If any of these streams are already in this playlist, they will be removed before being added in their new
+	 * position
 	 */
 	public void addStreams(List<String> streamIds, int position) {
 		if (!myPlaylist)
@@ -145,7 +146,7 @@ public class PlaylistTableModel extends TrackListTableModel implements TrackList
 
 	public void trackUpdated(final String streamId) {
 		synchronized (this) {
-			if(!streamIndices.containsKey(streamId))
+			if (!streamIndices.containsKey(streamId))
 				return;
 		}
 		SwingUtilities.invokeLater(new CatchingRunnable() {
@@ -153,13 +154,13 @@ public class PlaylistTableModel extends TrackListTableModel implements TrackList
 			public void doRun() throws Exception {
 				synchronized (PlaylistTableModel.this) {
 					final int rowIndex = (streamIndices.containsKey(streamId)) ? streamIndices.get(streamId) : -1;
-					if(rowIndex >= 0)
+					if (rowIndex >= 0)
 						fireTableRowsUpdated(rowIndex, rowIndex);
 				}
 			}
 		});
 		Track t = controller.getTrack(streamId);
-		if(t instanceof CloudTrack)
+		if (t instanceof CloudTrack)
 			controller.findSources(streamId, this);
 	}
 
@@ -176,6 +177,15 @@ public class PlaylistTableModel extends TrackListTableModel implements TrackList
 		// Allow deletions only from my playlists
 		return myPlaylist;
 	}
+
+	@Override
+	public void deleteTracks(List<String> streamIds) {
+		if(!myPlaylist)
+			throw new SeekInnerCalmException();
+		p.getStreamIds().removeAll(streamIds);
+		fireTableDataChanged();
+		runPlaylistUpdate();
+	}
 	
 	/** Must only be called from inside sync block */
 	private void updateStreamIndices() {
@@ -185,12 +195,13 @@ public class PlaylistTableModel extends TrackListTableModel implements TrackList
 			streamIndices.put(streamId, i);
 		}
 	}
-	
+
 	protected void runPlaylistUpdate() {
 		controller.getExecutor().execute(new CatchingRunnable() {
 			public void doRun() throws Exception {
 				controller.addOrUpdatePlaylist(p);
 			}
-		});		
+		});
 	}
+
 }

@@ -38,7 +38,6 @@ public abstract class LeftSidebarSelector extends JPanel implements LeftSidebarC
 		textLbl.setOpaque(false);
 		add(textLbl);
 		addMouseListener(new MouseListener());
-
 	}
 
 	public void relinquishSelection() {
@@ -60,7 +59,7 @@ public abstract class LeftSidebarSelector extends JPanel implements LeftSidebarC
 
 	class MouseListener extends MouseAdapter {
 		@Override
-		public void mouseClicked(MouseEvent e) {
+		public void mousePressed(MouseEvent e) {
 			setSelected(true);
 			e.consume();
 		}

@@ -1,5 +1,6 @@
 package com.robonobo.gui.model;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -111,4 +112,6 @@ public abstract class TrackListTableModel extends AbstractTableModel {
 	
 	/** Are we allowed to delete tracks from this tracklist? */
 	public abstract boolean allowDelete();
+	
+	public abstract void deleteTracks(List<String> streamIds);
 }

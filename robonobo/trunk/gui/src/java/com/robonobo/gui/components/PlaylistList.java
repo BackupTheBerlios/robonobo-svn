@@ -6,6 +6,8 @@ import static javax.swing.SwingUtilities.*;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,12 +16,15 @@ import javax.swing.*;
 import org.jdesktop.swingx.renderer.DefaultListRenderer;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
+import com.robonobo.core.Platform;
 import com.robonobo.core.api.UserPlaylistListener;
 import com.robonobo.core.api.model.Playlist;
 import com.robonobo.core.api.model.User;
 import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.model.PlaylistListModel;
+import com.robonobo.gui.model.StreamTransfer;
+import com.robonobo.gui.panels.ContentPanel;
 import com.robonobo.gui.panels.LeftSidebar;
 
 @SuppressWarnings("serial")
@@ -37,6 +42,7 @@ public class PlaylistList extends LeftSidebarList implements UserPlaylistListene
 		setMaximumSize(new Dimension(65535, 65535));
 		// We do the listener stuff here rather than in the model as we may need to reselect or resize as a consequence
 		frame.getController().addUserPlaylistListener(this);
+		setTransferHandler(new DnDHandler());
 	}
 
 	public PlaylistListModel getModel() {
@@ -147,6 +153,25 @@ public class PlaylistList extends LeftSidebarList implements UserPlaylistListene
 				lbl.setForeground(DARK_GRAY);
 			}
 			return lbl;
+		}
+	}
+	
+	class DnDHandler extends TransferHandler {
+		@Override
+		public boolean canImport(JComponent comp, DataFlavor[] transferFlavors) {
+			for (DataFlavor dataFlavor : transferFlavors) {
+				if (dataFlavor.equals(StreamTransfer.DATA_FLAVOR))
+					return true;
+			}
+			return Platform.getPlatform().canDnDImport(transferFlavors);
+		}
+		
+		@Override
+		public boolean importData(JComponent comp, Transferable t) {
+			Playlist p = getModel().getPlaylistAt(getSelectedIndex());
+			String cpName = "playlist/"+p.getPlaylistId();
+			ContentPanel cp = frame.getMainPanel().getContentPanel(cpName);
+			return cp.importData(comp, t);
 		}
 	}
 }

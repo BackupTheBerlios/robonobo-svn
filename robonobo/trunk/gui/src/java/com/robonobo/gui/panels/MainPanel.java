@@ -41,6 +41,7 @@ public class MainPanel extends JPanel {
 	
 	public void selectContentPanel(String name) {
 		cpHolder.selectContentPanel(name);
+		playbackPanel.trackListPanelChanged();
 	}
 
 	public ContentPanel removeContentPanel(String panelName) {

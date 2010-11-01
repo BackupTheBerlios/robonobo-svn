@@ -7,12 +7,16 @@ import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.robonobo.common.concurrent.CatchingRunnable;
 
 @SuppressWarnings("serial")
 public class ContentPanelHolder extends JPanel {
 	private Map<String, ContentPanel> panels = new HashMap<String, ContentPanel>();
 	String currentPanel;
+	Log log = LogFactory.getLog(getClass());
 	
 	ContentPanelHolder() {
 		setLayout(new CardLayout());
@@ -47,6 +51,10 @@ public class ContentPanelHolder extends JPanel {
 	}
 	
 	void selectContentPanel(final String panelName) {
+		if(!panels.containsKey(panelName)) {
+			log.error("Tried to select non-existent main panel: "+panelName);
+			return;
+		}
 		final CardLayout cl = (CardLayout) getLayout();
 		currentPanel = panelName;
 		if(SwingUtilities.isEventDispatchThread())

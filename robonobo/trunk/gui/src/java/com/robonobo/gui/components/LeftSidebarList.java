@@ -30,10 +30,11 @@ public abstract class LeftSidebarList extends JList implements LeftSidebarCompon
 		setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent e) {
-				if(!e.getValueIsAdjusting())
+				int selIdx = getSelectedIndex();
+				if(selIdx < 0)
 					return;
 				sideBar.clearSelectionExcept(LeftSidebarList.this);
-				itemSelected(e.getFirstIndex());
+				itemSelected(selIdx);
 			}
 		});
 	}

@@ -4,13 +4,12 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.KeyListener;
 
-import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
-import javax.swing.TransferHandler;
+import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.gui.model.PlaylistTableModel;
+import com.robonobo.gui.model.StreamTransfer;
 
 @SuppressWarnings("serial")
 public class FriendPlaylistTablePanel extends MyPlaylistTablePanel {

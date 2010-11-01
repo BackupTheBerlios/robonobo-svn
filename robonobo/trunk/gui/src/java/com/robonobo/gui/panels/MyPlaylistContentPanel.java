@@ -3,15 +3,19 @@ package com.robonobo.gui.panels;
 import static com.robonobo.common.util.TextUtil.*;
 
 import java.awt.ComponentOrientation;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 import javax.swing.*;
 
 import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
+import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.common.util.TextUtil;
 import com.robonobo.core.Platform;
 import com.robonobo.core.api.RobonoboException;
@@ -20,7 +24,7 @@ import com.robonobo.core.api.model.*;
 import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.dialogs.SharePlaylistDialog;
 import com.robonobo.gui.frames.RobonoboFrame;
-import com.robonobo.gui.model.PlaylistTableModel;
+import com.robonobo.gui.model.*;
 
 @SuppressWarnings("serial")
 public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylistListener {
@@ -45,6 +49,16 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			frame.getController().addUserPlaylistListener(this);
 	}
 
+	protected MyPlaylistContentPanel(RobonoboFrame frame, Playlist p, PlaylistConfig pc, PlaylistTableModel model) {
+		super(frame, model);
+		this.p = p;
+		this.pc = pc;
+		tabPane.insertTab("playlist", null, new PlaylistDetailsPanel(), null, 0);
+		tabPane.setSelectedIndex(0);
+		if (addAsListener())
+			frame.getController().addUserPlaylistListener(this);
+	}
+	
 	protected boolean addAsListener() {
 		return true;
 	}
@@ -116,6 +130,66 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 		}
 	}
 
+	@Override
+	public boolean canImport(JComponent comp, DataFlavor[] transferFlavors) {
+		for (DataFlavor dataFlavor : transferFlavors) {
+			if (dataFlavor.equals(StreamTransfer.DATA_FLAVOR))
+				return true;
+		}
+		return Platform.getPlatform().canDnDImport(transferFlavors);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public boolean importData(JComponent comp, Transferable t) {
+		JTable table = trackList.getJTable();
+		final PlaylistTableModel tm = (PlaylistTableModel) trackList.getModel();
+		// If we have a mouse location, drop things there, otherwise
+		// at the end
+		int mouseRow = (table.getMousePosition() == null) ? -1 : table.rowAtPoint(table.getMousePosition());
+		final int insertRow = (mouseRow >= 0) ? mouseRow : tm.getRowCount();
+		boolean transferFromRobo = false;
+		for (DataFlavor flavor : t.getTransferDataFlavors()) {
+			if (flavor.equals(StreamTransfer.DATA_FLAVOR)) {
+				transferFromRobo = true;
+				break;
+			}
+		}
+		if (transferFromRobo) {
+			// DnD streams from inside robonobo
+			List<String> streamIds;
+			try {
+				streamIds = (List<String>) t.getTransferData(StreamTransfer.DATA_FLAVOR);
+			} catch (Exception e) {
+				throw new SeekInnerCalmException();
+			}
+			tm.addStreams(streamIds, insertRow);
+			return true;
+		} else {
+			// DnD files from somewhere else
+			frame.updateStatus("Importing tracks...", 0, 30);
+			List<File> importFiles = null;
+			try {
+				importFiles = Platform.getPlatform().getDnDImportFiles(t);
+			} catch (IOException e) {
+				log.error("Caught exception dropping files", e);
+				return false;
+			}
+			final List<File> fl = importFiles;
+			frame.getController().getExecutor().execute(new CatchingRunnable() {
+				public void doRun() throws Exception {
+					List<Stream> streams = frame.importFilesOrDirectories(fl);
+					List<String> streamIds = new ArrayList<String>();
+					for (Stream s : streams) {
+						streamIds.add(s.getStreamId());
+					}
+					tm.addStreams(streamIds, insertRow);
+				}
+			});
+			return true;
+		}
+	}
+
 	class PlaylistDetailsPanel extends JPanel {
 		public PlaylistDetailsPanel() {
 			double[][] cellSizen = { { 5, 35, 5, 365, 20, TableLayout.FILL, 5 },
@@ -141,6 +215,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			add(descLbl, "1,3,3,3");
 			descField = new JTextArea(p.getDescription());
 			descField.setFont(RoboFont.getFont(11, false));
+			descField.addKeyListener(kl);
 			add(new JScrollPane(descField), "1,5,3,7");
 
 			add(new OptsPanel(), "5,1,5,5");
@@ -212,7 +287,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 				add(shareBtn);
 				add(Box.createHorizontalStrut(5));
 			}
-			
+
 			saveBtn = new JButton("SAVE");
 			saveBtn.setFont(RoboFont.getFont(12, true));
 			saveBtn.addActionListener(new ActionListener() {
