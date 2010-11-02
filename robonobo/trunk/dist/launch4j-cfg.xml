@@ -19,9 +19,9 @@
 		<minVersion>1.6.0</minVersion>
 	</jre>
 	<messages>
-		<startupErr>Robonobo encountered an error on startup. We are sorry :-( Please file a bug report at http://robonobo.com/bugs/newticket and we will fix it ASAP.</startupErr>
-		<jreVersionErr>The version of Java you have is too old - but a newer one should have been installed by Robonobo! Please file a bug report at http://robonobo.com/bugs/newticket and we will fix it ASAP.</jreVersionErr>
-		<launcherErr>Robonobo encountered an error while launching. We are sorry :-( Please file a bug report at http://robonobo.com/bugs/newticket and we will fix it ASAP.</launcherErr>
+		<startupErr>robonobo encountered an error on startup. We are sorry :-( Please file a bug report at http://robonobo.com/ and we will fix it ASAP.</startupErr>
+		<jreVersionErr>The version of Java you have is too old - but a newer one should have been installed by robonobo! Please file a bug report at http://robonobo.com/ and we will fix it ASAP.</jreVersionErr>
+		<launcherErr>robonobo encountered an error while launching. We are sorry :-( Please file a bug report at http://robonobo.com/ and we will fix it ASAP.</launcherErr>
 	</messages>
 	<!-- 
 	<splash>
