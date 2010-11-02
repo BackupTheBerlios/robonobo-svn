@@ -28,7 +28,6 @@ import com.robonobo.gui.model.*;
 
 @SuppressWarnings("serial")
 public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylistListener {
-	protected Playlist p;
 	protected PlaylistConfig pc;
 	protected JTextField titleField;
 	protected JTextArea descField;
@@ -41,7 +40,6 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 
 	public MyPlaylistContentPanel(RobonoboFrame frame, Playlist p, PlaylistConfig pc) {
 		super(frame, new PlaylistTableModel(frame.getController(), p, true));
-		this.p = p;
 		this.pc = pc;
 		tabPane.insertTab("playlist", null, new PlaylistDetailsPanel(), null, 0);
 		tabPane.setSelectedIndex(0);
@@ -51,7 +49,6 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 
 	protected MyPlaylistContentPanel(RobonoboFrame frame, Playlist p, PlaylistConfig pc, PlaylistTableModel model) {
 		super(frame, model);
-		this.p = p;
 		this.pc = pc;
 		tabPane.insertTab("playlist", null, new PlaylistDetailsPanel(), null, 0);
 		tabPane.setSelectedIndex(0);
@@ -78,6 +75,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 	protected void savePlaylist() {
 		frame.getController().getExecutor().execute(new CatchingRunnable() {
 			public void doRun() throws Exception {
+				Playlist p = getModel().getPlaylist();
 				p.setTitle(titleField.getText());
 				p.setDescription(descField.getText());
 				try {
@@ -99,7 +97,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 		frame.getController().getExecutor().execute(new CatchingRunnable() {
 			public void doRun() throws Exception {
 				try {
-					frame.getController().nukePlaylist(p);
+					frame.getController().nukePlaylist(getModel().getPlaylist());
 				} catch (RobonoboException e) {
 					frame.updateStatus("Error deleting playlist: " + e.getMessage(), 10, 30);
 					log.error("Error deleting playlist", e);
@@ -108,6 +106,10 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 		});
 	}
 
+	protected PlaylistTableModel getModel(){
+		return (PlaylistTableModel) trackList.getModel();
+	}
+	
 	@Override
 	public void loggedIn() {
 		// Do nothing
@@ -120,8 +122,8 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 
 	@Override
 	public void playlistChanged(Playlist p) {
-		if (p.equals(this.p)) {
-			this.p = p;
+		if (p.equals(getModel().getPlaylist())) {
+			getModel().setPlaylist(p);
 			titleField.setText(p.getTitle());
 			descField.setText(p.getDescription());
 			friendsCB.setSelected(p.getAnnounce());
@@ -202,6 +204,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 					saveBtn.setEnabled(detailsChanged());
 				}
 			};
+			Playlist p = getModel().getPlaylist();
 			JLabel titleLbl = new JLabel("Title:");
 			titleLbl.setFont(RoboFont.getFont(13, false));
 			add(titleLbl, "1,1");
@@ -235,7 +238,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 
 			friendsCB = new JCheckBox("Let friends see this playlist");
 			friendsCB.setFont(RoboFont.getFont(12, true));
-			friendsCB.setSelected(p.getAnnounce());
+			friendsCB.setSelected(getModel().getPlaylist().getAnnounce());
 			friendsCB.addActionListener(al);
 			add(friendsCB);
 			add(Box.createVerticalStrut(5));
@@ -279,7 +282,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 				shareBtn.setFont(RoboFont.getFont(12, true));
 				shareBtn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						SharePlaylistDialog dialog = new SharePlaylistDialog(frame, p);
+						SharePlaylistDialog dialog = new SharePlaylistDialog(frame, getModel().getPlaylist());
 						dialog.setLocationRelativeTo(frame);
 						dialog.setVisible(true);
 					}
@@ -292,7 +295,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			saveBtn.setFont(RoboFont.getFont(12, true));
 			saveBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					p.setAnnounce(friendsCB.isSelected());
+					getModel().getPlaylist().setAnnounce(friendsCB.isSelected());
 					pc.getItems().clear();
 					for (String opt : options.keySet()) {
 						JCheckBox cb = options.get(opt);

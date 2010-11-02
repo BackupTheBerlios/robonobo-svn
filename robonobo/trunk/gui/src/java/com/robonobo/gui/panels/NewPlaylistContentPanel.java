@@ -23,6 +23,7 @@ public class NewPlaylistContentPanel extends MyPlaylistContentPanel {
 
 	@Override
 	protected void savePlaylist() {
+		final Playlist p = getModel().getPlaylist();
 		p.setTitle(titleField.getText());
 		p.setDescription(descField.getText());
 		final RobonoboController control = frame.getController();
@@ -47,12 +48,13 @@ public class NewPlaylistContentPanel extends MyPlaylistContentPanel {
 						frame.getLeftSidebar().selectMyPlaylist(p);
 						// Now that they're not looking, re-init everything with
 						// a new empty playlist
-						p = new Playlist();
+						Playlist newP = new Playlist();
 						titleField.setText("");
 						descField.setText("");
 						friendsCB.setSelected(p.getAnnounce());
 						if(iTunesCB != null)
 							iTunesCB.setSelected(false);
+						getModel().setPlaylist(newP);
 					}
 				});
 			}
