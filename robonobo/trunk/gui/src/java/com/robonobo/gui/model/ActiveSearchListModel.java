@@ -45,7 +45,7 @@ public class ActiveSearchListModel extends DefaultListModel {
 		queries.add(query);
 		fireIntervalAdded(this, getSize()-1, getSize()-1);
 		SearchResultTableModel srtm = new SearchResultTableModel(control);
-//		control.search(query, 0, srtm);	
+		control.search(query, 0, srtm);	
 		return srtm;
 	}
 }

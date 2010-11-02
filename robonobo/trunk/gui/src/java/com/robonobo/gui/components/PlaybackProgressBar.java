@@ -61,13 +61,14 @@ public class PlaybackProgressBar extends JProgressBar {
 		startLabel = new JLabel("-0:00");
 		startLabel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
 		startLabel.setSize(startLabel.getPreferredSize());
+		startLabel.setFont(RoboFont.getFont(11, false));
 		startLabel.setForeground(Color.WHITE);
 		add(startLabel);
 
 		endLabel = new JLabel();
 		endLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
 		endLabel.setSize(endLabel.getPreferredSize());
-		endLabel.setFont(RoboFont.getFont(12, false));
+		endLabel.setFont(RoboFont.getFont(11, false));
 		add(endLabel);
 
 		addComponentListener(new ComponentAdapter() {
@@ -77,7 +78,7 @@ public class PlaybackProgressBar extends JProgressBar {
 				// update the thumb's position
 				setTrackPosition(0);
 				// auto adjust the labels' position
-				startLabel.setLocation(0, ((getHeight() - startLabel.getHeight()) / 2)+1);
+				startLabel.setLocation(0, ((getHeight() - startLabel.getHeight()) / 2));
 				endLabel.setLocation(getWidth() - endLabel.getWidth(), ((getHeight() - endLabel.getHeight()) / 2)+1);
 			}
 		});
