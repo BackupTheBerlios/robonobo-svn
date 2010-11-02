@@ -56,6 +56,7 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 	String playingContentPanel;
 	JButton prevBtn, dloadBtn, playPauseBtn, nextBtn, delBtn;
 	boolean checkedNextTrack = false;
+	boolean seeking = false;
 	Log log = LogFactory.getLog(getClass());
 
 	public PlaybackPanel(final RobonoboFrame frame) {
@@ -106,6 +107,7 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 
 		playbackProgress = new PlaybackProgressBar(frame);
 		playbackProgress.lock();
+		
 		playerPanel.add(playbackProgress, BorderLayout.NORTH);
 		final JPanel playerCtrlPanel = new JPanel(new BorderLayout());
 		playerPanel.add(playerCtrlPanel, BorderLayout.CENTER);
@@ -274,6 +276,8 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 	public void playbackProgress(long microsecs) {
 		if (playingStream == null)
 			return;
+		if(seeking)
+			return;
 		long positionMs = microsecs / 1000;
 		playbackProgress.setTrackPosition(positionMs);
 		String preFetchStreamId = null;
@@ -321,6 +325,16 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 		playbackCompleted();
 	}
 
+	@Override
+	public void seekStarted() {
+		seeking = true;
+	}
+	
+	@Override
+	public void seekFinished() {
+		seeking = false;
+	}
+	
 	@Override
 	public void allTracksLoaded() {
 		// Do nothing

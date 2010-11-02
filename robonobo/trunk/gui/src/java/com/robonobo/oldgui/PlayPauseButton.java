@@ -125,6 +125,14 @@ public class PlayPauseButton extends MainButton implements PlaybackListener {
 		// Do nothing
 	}
 	
+	@Override
+	public void seekFinished() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	public void seekStarted() {};
+	
 	private List<Track> downloadSelected() {
 		List<Track> selected = tablePanel.getSelectedTracks();
 		for (Track t : selected) {

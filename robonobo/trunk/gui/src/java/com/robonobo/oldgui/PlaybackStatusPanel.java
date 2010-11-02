@@ -127,6 +127,18 @@ public class PlaybackStatusPanel extends JPanel implements PlaybackListener {
 		frame.updateStatus(error, 5, 30);
 	}
 
+	@Override
+	public void seekFinished() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
+	public void seekStarted() {
+		// TODO Auto-generated method stub
+		
+	}
+	
 	private void blank() {
 		titleLbl.setText(null);
 		artistLbl.setText(null);

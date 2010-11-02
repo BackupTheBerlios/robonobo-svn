@@ -171,6 +171,26 @@ public class EventService extends AbstractRuntimeServiceProvider implements Mina
 		}
 	}
 
+	public void fireSeekStarted() {
+		PlaybackListener[] arr;
+		synchronized (this) {
+			arr = getPlArr();
+		}
+		for (PlaybackListener listener : arr) {
+			listener.seekStarted();
+		}
+	}
+
+	public void fireSeekFinished() {
+		PlaybackListener[] arr;
+		synchronized (this) {
+			arr = getPlArr();
+		}
+		for (PlaybackListener listener : arr) {
+			listener.seekFinished();
+		}
+	}
+
 	public void fireUserChanged(User u) {
 		UserPlaylistListener[] arr;
 		synchronized (this) {

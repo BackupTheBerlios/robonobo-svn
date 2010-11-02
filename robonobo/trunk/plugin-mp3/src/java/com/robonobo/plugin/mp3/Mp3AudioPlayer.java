@@ -48,9 +48,9 @@ public class Mp3AudioPlayer implements AudioPlayer {
 	 */
 	private int progressBytes = 0;
 	/**
-	 * The position we have seeked to, if any
+	 * The number of ms we have seeked to, if any
 	 */
-	private int seekPos = 0; 
+	private long seekMs = 0;
 	private MP3PlaybackListener listener = new MP3PlaybackListener();
 	private Status status;
 	private ThreadPoolExecutor executor;
@@ -69,7 +69,7 @@ public class Mp3AudioPlayer implements AudioPlayer {
 						basicPlayer = new BasicPlayer();
 						basicPlayer.addBasicPlayerListener(listener);
 						basicPlayer.open(new PageBufferInputStream(pb));
-						seekPos = 0;
+						seekMs = 0;
 						progressBytes = 0;
 						basicPlayer.play();
 					} else
@@ -113,48 +113,35 @@ public class Mp3AudioPlayer implements AudioPlayer {
 	}
 
 	/**
-	 * @param ms Position in the stream to seek to, as a millisecs offset from start of stream 
+	 * @param ms
+	 *            Position in the stream to seek to, as a millisecs offset from start of stream
 	 */
-	public void seek(long ms) throws IOException {
+	public void seek(final long ms) throws IOException {
 		// Can only seek if playing or paused
-		if(status == Status.Stopped) {
+		if (status == Status.Stopped) {
 			log.error("Can't seek while stopped");
 			return;
 		}
-		int currentPos = seekPos + progressBytes;
 		// Work out where we're seeking to in byte terms
-		float wayThrough = ms / s.getDuration();
-		seekPos = (int) (wayThrough * s.getSize());
-		// BasicPlayer can't seek backwards, so if we're seeking backwards, stop
-		// and restart with a new player
-		if(seekPos < currentPos) {
-			executor.execute(new CatchingRunnable() {
-				public void doRun() throws Exception {
-					basicPlayer.stop();
-					PageBufferInputStream pbis = new PageBufferInputStream(pb);
-					pbis.skip(seekPos);
-					basicPlayer.open(pbis);
-					progressBytes = 0;
-					basicPlayer.play();
-					if(status == Status.Paused)
-						basicPlayer.pause();
-				}
-			});
-		} else {
-			// See how much data we've received, can't seek beyond that
-			int seekLimit = (int) (pb.getLastContiguousPage() * pb.getAvgPageSize());
-			if(seekPos > seekLimit)
-				seekPos = seekLimit;
-			int seekForward = seekPos - currentPos;
-			try {
-				basicPlayer.seek(seekForward);
-			} catch (BasicPlayerException e) {
-				// Can't have causative exception in IOE until Java6
-				if(CodeUtil.javaMajorVersion() >= 6)
-					throw new IOException(e);
-				else
-					throw new IOException("BasicPlayer error: "+e.getMessage());
-			}
+		float wayThrough = (float) ms / s.getDuration();
+		final int seekBytes = (int) (wayThrough * s.getSize());
+		// BasicPlayer refuses to seek unless playing a file - rubbish - so we start again
+		// with a new player, keeping track of where we seeked to so our progress callback
+		// stays accurate
+		log.info("Seeking: Restarting playback stream, skipping " + seekBytes + "b");
+		try {
+			basicPlayer.stop();
+			PageBufferInputStream pbis = new PageBufferInputStream(pb);
+			pbis.skip(seekBytes);
+			basicPlayer.open(pbis);
+			progressBytes = 0;
+			seekMs = ms;
+			basicPlayer.play();
+			if (status == Status.Paused)
+				basicPlayer.pause();
+		} catch (BasicPlayerException e) {
+			log.error("Error seeking", e);
+			stop();
 		}
 	}
 
@@ -176,7 +163,7 @@ public class Mp3AudioPlayer implements AudioPlayer {
 			if (status == Status.Playing)
 				progressBytes = bytesread;
 			for (AudioPlayerListener listener : listeners) {
-				listener.onProgress(microseconds);
+				listener.onProgress((seekMs * 1000) + microseconds);
 			}
 		}
 

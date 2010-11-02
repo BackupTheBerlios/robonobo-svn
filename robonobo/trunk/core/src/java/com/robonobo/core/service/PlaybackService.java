@@ -155,7 +155,7 @@ public class PlaybackService extends AbstractRuntimeServiceProvider implements A
 
 	private void startPlaying(Stream s, PageBuffer pb) {
 		synchronized (this) {
-			player = getRobonobo().getFormatService().getFormatSupportProvider(s.getMimeType()).getAudioPlayer(s, pb, getRobonobo().getExecutor());
+			player = getAudioPlayer(s, pb);
 			player.addListener(this);
 			try {
 				player.play();
@@ -171,6 +171,10 @@ public class PlaybackService extends AbstractRuntimeServiceProvider implements A
 		log.info("Started playback for " + s);
 		tracks.notifyPlayingTrackChange(currentStreamId);
 		event.firePlaybackStarted();
+	}
+
+	private AudioPlayer getAudioPlayer(Stream s, PageBuffer pb) {
+		return getRobonobo().getFormatService().getFormatSupportProvider(s.getMimeType()).getAudioPlayer(s, pb, getRobonobo().getExecutor());
 	}
 
 	// Do we have enough buffered data to start playing?
@@ -219,14 +223,19 @@ public class PlaybackService extends AbstractRuntimeServiceProvider implements A
 		event.firePlaybackPaused();
 	}
 
+	/**
+	 * @param ms Position to seek to, measured from the start of the stream
+	 */
 	public synchronized void seek(long ms) {
 		if (player != null) {
+			event.fireSeekStarted();
 			try {
 				player.seek(ms);
 			} catch (IOException e) {
 				log.error("Error seeking", e);
 				stop();
-				return;
+			} finally {
+				event.fireSeekFinished();
 			}
 		}
 	}

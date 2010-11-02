@@ -7,6 +7,9 @@ import java.util.List;
 
 import javax.swing.*;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.frames.RobonoboFrame;
@@ -39,6 +42,7 @@ public class PlaybackProgressBar extends JProgressBar {
 	private long trackLengthMs;
 	private long trackPositionMs;
 	private float dataAvailable;
+	Log log = LogFactory.getLog(getClass());
 
 	public PlaybackProgressBar(final RobonoboFrame frame) {
 		this.frame = frame;
@@ -121,9 +125,16 @@ public class PlaybackProgressBar extends JProgressBar {
 					trackPos = 0;
 				if(trackPos > trackLengthMs)
 					trackPos = trackLengthMs;
-				setTrackPosition(trackPos);
+				setTrackPosition(trackPos, true);
 			}
 		});		
+		
+		addListener(new Listener() {
+			@Override
+			public void sliderReleased(long trackPositionMs) {
+				frame.getController().seek(trackPositionMs);
+			}
+		});
 	}
 
 	/**
@@ -170,6 +181,13 @@ public class PlaybackProgressBar extends JProgressBar {
 	}
 
 	public void setTrackPosition(long positionMs) {
+		setTrackPosition(positionMs, false);
+	}
+	
+	private void setTrackPosition(long positionMs, boolean viaDrag) {
+		// Don't update if we're dragging
+		if(dragging && !viaDrag)
+			return;
 		trackPositionMs = positionMs;
 		// pos = 0, trackPosition = 0
 		// pos = (maximum - thumbWidth), trackPosition = trackLength
@@ -181,6 +199,7 @@ public class PlaybackProgressBar extends JProgressBar {
 		doRepaint();
 	}
 
+	
 	public long getTrackPosition() {
 		return trackPositionMs;
 	}
