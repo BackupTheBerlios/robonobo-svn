@@ -112,12 +112,4 @@ public class MacPlatform extends UnknownPlatform {
 		File libDir = new File(FileSystemView.getFileSystemView().getDefaultDirectory(), "Library");
 		return new File(libDir, "robonobo");
 	}
-	
-	@Override
-	public void openUrl(String url) throws IOException {
-		if (CodeUtil.javaMajorVersion() >= 6)
-			super.openUrl(url);
-		else
-			FileManager.openURL(url);
-	}
 }

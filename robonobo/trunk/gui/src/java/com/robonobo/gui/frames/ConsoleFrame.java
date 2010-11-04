@@ -1,4 +1,4 @@
-package com.robonobo.oldgui;
+package com.robonobo.gui.frames;
 
 import gnu.iou.sh.Shell;
 import gnu.iou.sh.Shell.Plugin;
@@ -60,7 +60,7 @@ public class ConsoleFrame extends JFrame {
 		}
 
 		public String userVersion() {
-			return "Robonobo Console v"+frame.getVersion();
+			return "Robonobo Console v"+frame.getController().getVersion();
 		}
 	}
 }

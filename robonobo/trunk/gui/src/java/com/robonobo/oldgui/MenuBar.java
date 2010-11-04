@@ -154,10 +154,10 @@ public class MenuBar extends JMenuBar {
 	}
 
 	private void openUrl(String url) {
-		try {
-			Platform.getPlatform().openUrl(url);
-		} catch (IOException e) {
-			log.error("Caught error opening url " + url);
-		}
+//		try {
+//			Platform.getPlatform().openUrl(url);
+//		} catch (IOException e) {
+//			log.error("Caught error opening url " + url);
+//		}
 	}
 }

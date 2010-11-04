@@ -26,8 +26,7 @@ import com.robonobo.core.api.SearchExecutor;
 import com.robonobo.core.api.model.*;
 import com.robonobo.core.api.model.DownloadingTrack.DownloadStatus;
 import com.robonobo.core.api.model.Track.PlaybackStatus;
-import com.robonobo.gui.GUIUtils;
-import com.robonobo.gui.RoboFont;
+import com.robonobo.gui.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.model.TrackListTableModel;
 
@@ -36,11 +35,10 @@ public class TrackList extends JPanel implements SearchExecutor {
 	JScrollPane scrollPane;
 	JXTable table;
 	TrackListTableModel model;
-	// TODO: Have a separate starting icon
-	ImageIcon startingIcon = GUIUtils.createImageIcon("/img/table/play.png", null);
-	ImageIcon playingIcon = GUIUtils.createImageIcon("/img/table/play.png", null);
-	ImageIcon pausedIcon = GUIUtils.createImageIcon("/img/table/pause.png", null);
-	ImageIcon downloadingIcon = GUIUtils.createImageIcon("/img/table/download.png", null);
+	Icon startingIcon = new SpinnerIcon(16, RoboColor.DARKISH_GRAY);
+	Icon playingIcon = GUIUtils.createImageIcon("/img/table/play.png", null);
+	Icon pausedIcon = GUIUtils.createImageIcon("/img/table/pause.png", null);
+	Icon downloadingIcon = GUIUtils.createImageIcon("/img/table/download.png", null);
 	Log log;
 	RobonoboFrame frame;
 

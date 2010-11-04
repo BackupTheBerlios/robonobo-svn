@@ -3,12 +3,12 @@ package com.robonobo.gui.frames;
 import static com.robonobo.common.util.FileUtil.*;
 
 import java.awt.Dimension;
+import java.awt.Image;
 import java.io.File;
 import java.io.FileFilter;
 import java.security.SecureRandom;
 import java.util.*;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 
 import org.apache.commons.logging.Log;
@@ -30,7 +30,6 @@ import com.robonobo.gui.laf.RobonoboLookAndFeel;
 import com.robonobo.gui.panels.*;
 import com.robonobo.gui.preferences.PrefDialog;
 import com.robonobo.mina.external.ConnectedNode;
-import com.sun.org.apache.xml.internal.utils.StopParseException;
 
 @SuppressWarnings("serial")
 public class RobonoboFrame extends JFrame implements RobonoboStatusListener {
@@ -247,6 +246,20 @@ public class RobonoboFrame extends JFrame implements RobonoboStatusListener {
 
 	public void showPreferences() {
 		prefDialog.setVisible(true);
+	}
+
+	public void showConsole() {
+		ConsoleFrame consoleFrame = new ConsoleFrame(this);
+		consoleFrame.setVisible(true);
+	}
+
+	public void showLogFrame() {
+		Log4jMonitorFrame logFrame = new Log4jMonitorFrame(this);
+		logFrame.setVisible(true);
+	}
+
+	public static Image getRobonoboIconImage() {
+		return GUIUtils.getImage("/img/robonobo-128x128.png");
 	}
 
 	public void updateStatus(String msg, int minShowSecs, int maxShowSecs) {

@@ -160,24 +160,5 @@ public class UnknownPlatform extends Platform {
 	@Override
 	public void customizeSearchTextField(JTextField field) {
 		// Do nothing
-	}
-	
-	@Override
-	public void openUrl(String url) throws IOException {
-		// Make sure we're in java6+ so that we have the java desktop classes, otherwise pop up a warning
-		// TODO Use a 3rd party lib in java<6
-		if(CodeUtil.javaMajorVersion() < 6) {
-			SwingUtilities.invokeLater(new CatchingRunnable() {
-				public void doRun() throws Exception {
-					JOptionPane.showMessageDialog(rFrame, "We are sorry - to open URLs from robonobo, you must be running java version 6 or higher.  To get the latest version of java, visit http://java.sun.com");
-				}
-			});
-			return;
-		}
-		try {
-			Desktop.getDesktop().browse(new URI(url));
-		} catch (URISyntaxException e) {
-			throw new IOException(e);
-		}
-	}
+	}	
 }

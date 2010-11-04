@@ -1,20 +1,19 @@
 package com.robonobo.gui.components;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.io.IOException;
+import java.awt.event.*;
 
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
+import javax.swing.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.robonobo.common.concurrent.CatchingRunnable;
+import com.robonobo.common.util.NetUtil;
 import com.robonobo.core.Platform;
+import com.robonobo.gui.dialogs.AboutDialog;
 import com.robonobo.gui.frames.RobonoboFrame;
 
+@SuppressWarnings("serial")
 public class MenuBar extends JMenuBar {
 	private Log log;
 
@@ -27,7 +26,7 @@ public class MenuBar extends JMenuBar {
 		login.setAccelerator(Platform.getPlatform().getAccelKeystroke(KeyEvent.VK_L));
 		login.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-//				frame.showLogin(null);
+				frame.showLogin(null);
 			}
 		});
 		fileMenu.add(login);
@@ -36,7 +35,7 @@ public class MenuBar extends JMenuBar {
 		shareFiles.setAccelerator(Platform.getPlatform().getAccelKeystroke(KeyEvent.VK_O));
 		shareFiles.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-//				frame.showAddSharesDialog();
+				frame.showAddSharesDialog();
 			}
 		});
 		fileMenu.add(shareFiles);
@@ -46,32 +45,23 @@ public class MenuBar extends JMenuBar {
 			iTunesImport.setAccelerator(Platform.getPlatform().getAccelKeystroke(KeyEvent.VK_I));
 			iTunesImport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-//					frame.getController().getExecutor().execute(new CatchingRunnable() {
-//						public void doRun() throws Exception {
-//							frame.importITunes();
-//						}
-//					});
+					frame.getController().getExecutor().execute(new CatchingRunnable() {
+						public void doRun() throws Exception {
+							frame.importITunes();
+						}
+					});
 
 				}
 			});
 			fileMenu.add(iTunesImport);
 		}
 
-		JMenuItem watchDir = new JMenuItem("Watch directory...", KeyEvent.VK_D);
-		watchDir.setAccelerator(Platform.getPlatform().getAccelKeystroke(KeyEvent.VK_D));
-		watchDir.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-//				frame.showWatchDirDialog();
-			}
-		});
-		fileMenu.add(watchDir);
-
 		if (Platform.getPlatform().shouldShowQuitInFileMenu()) {
 			JMenuItem quit = new JMenuItem("Quit", KeyEvent.VK_Q);
 			quit.setAccelerator(Platform.getPlatform().getAccelKeystroke(KeyEvent.VK_Q));
 			quit.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-//					frame.shutdown();
+					frame.shutdown();
 				}
 			});
 			fileMenu.add(quit);
@@ -82,7 +72,7 @@ public class MenuBar extends JMenuBar {
 		JMenuItem updateUsers = new JMenuItem("Update friends & playlists");
 		updateUsers.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-//				frame.getController().checkUsersUpdate();
+				frame.getController().checkUsersUpdate();
 			}
 		});
 		networkMenu.add(updateUsers);
@@ -93,7 +83,7 @@ public class MenuBar extends JMenuBar {
 			JMenuItem showPrefs = new JMenuItem("Preferences...");
 			showPrefs.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-//					frame.showPreferences();
+					frame.showPreferences();
 				}
 			});
 			optionsMenu.add(showPrefs);
@@ -104,14 +94,14 @@ public class MenuBar extends JMenuBar {
 		JMenuItem openConsole = new JMenuItem("Open Console");
 		openConsole.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-//				frame.showConsole();
+				frame.showConsole();
 			}
 		});
 		debugMenu.add(openConsole);
 		JMenuItem showLog = new JMenuItem("Show Log Window");
 		showLog.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-//				frame.showLogFrame();
+				frame.showLogFrame();
 			}
 		});
 		debugMenu.add(showLog);
@@ -122,8 +112,8 @@ public class MenuBar extends JMenuBar {
 			JMenuItem showAbout = new JMenuItem("About robonobo");
 			showAbout.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-//					AboutDialog dialog = new AboutDialog(frame);
-//					dialog.setVisible(true);
+					AboutDialog dialog = new AboutDialog(frame);
+					dialog.setVisible(true);
 				}
 			});
 			helpMenu.add(showAbout);
@@ -131,21 +121,21 @@ public class MenuBar extends JMenuBar {
 		JMenuItem showHelpPage = new JMenuItem("Go to online help...");
 		showHelpPage.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-//				openUrl(frame.getController().getConfig().getHelpUrl());
+				openUrl(frame.getController().getConfig().getHelpUrl());
 			}
 		});
 		helpMenu.add(showHelpPage);
 		JMenuItem showWiki = new JMenuItem("Go to developer wiki...");
 		showWiki.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-//				openUrl(frame.getController().getConfig().getWikiUrl());
+				openUrl(frame.getController().getConfig().getWikiUrl());
 			}
 		});
 		helpMenu.add(showWiki);
 		JMenuItem submitBugReport = new JMenuItem("Submit bug report...");
 		submitBugReport.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-//				openUrl(frame.getController().getConfig().getBugReportUrl());
+				openUrl(frame.getController().getConfig().getBugReportUrl());
 			}
 		});
 		helpMenu.add(submitBugReport);
@@ -153,8 +143,8 @@ public class MenuBar extends JMenuBar {
 
 	private void openUrl(String url) {
 		try {
-			Platform.getPlatform().openUrl(url);
-		} catch (IOException e) {
+			NetUtil.browse(url);
+		} catch (Exception e) {
 			log.error("Caught error opening url " + url);
 		}
 	}
