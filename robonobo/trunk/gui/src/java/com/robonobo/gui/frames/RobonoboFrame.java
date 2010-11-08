@@ -29,6 +29,7 @@ import com.robonobo.gui.GuiConfig;
 import com.robonobo.gui.laf.RobonoboLookAndFeel;
 import com.robonobo.gui.panels.*;
 import com.robonobo.gui.preferences.PrefDialog;
+import com.robonobo.gui.tasks.ImportFilesTask;
 import com.robonobo.mina.external.ConnectedNode;
 
 @SuppressWarnings("serial")
@@ -148,36 +149,20 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 		prefDialog = new PrefDialog(this);
 	}
 
-	public List<Stream> importFilesOrDirectories(final List<File> files) {
+	public void importFilesOrDirectories(final List<File> files) {
 		List<File> allFiles = new ArrayList<File>();
 		for (File selFile : files)
 			if (selFile.isDirectory())
 				allFiles.addAll(FileUtil.getFilesWithinPath(selFile, "mp3"));
 			else
 				allFiles.add(selFile);
-		return importFiles(allFiles);
+		importFiles(allFiles);
+		return;
 	}
 
-	public List<Stream> importFiles(final List<File> files) {
-		List<Stream> streams = new ArrayList<Stream>();
-		for (File file : files) {
-			RobonoboStatus status = control.getStatus();
-			if (status == RobonoboStatus.Stopping || status == RobonoboStatus.Stopped)
-				return streams;
-			String filePath = file.getAbsolutePath();
-			updateStatus("Adding share from file " + filePath, 0, 60);
-			Stream s = null;
-			try {
-				s = control.addShare(filePath);
-			} catch (RobonoboException e) {
-				log.error("Error adding share from file " + filePath, e);
-				updateStatus("Not adding share from file " + file.getName() + ": " + e.getMessage(), 5, 10);
-				continue;
-			}
-			streams.add(s);
-			updateStatus("Added share '" + s.getTitle() + "'", 0, 10);
-		}
-		return streams;
+	public void importFiles(final List<File> files) {
+		ImportFilesTask t = new ImportFilesTask(control, files);
+		control.runTask(t);
 	}
 
 	public void importITunes() {

@@ -24,6 +24,9 @@ public abstract class ContentPanel extends JPanel {
 	protected RobonoboFrame frame;
 	protected Log log = LogFactory.getLog(getClass());
 
+	public ContentPanel() {
+	}
+
 	public ContentPanel(RobonoboFrame frame, TrackListTableModel tableModel) {
 		this.frame = frame;
 		double[][] cellSizen = { { TableLayout.FILL }, { TableLayout.FILL, 5, 175 } };
@@ -32,6 +35,7 @@ public abstract class ContentPanel extends JPanel {
 		trackList.getJTable().setDragEnabled(true);
 		trackList.getJTable().setTransferHandler(createTrackListTransferHandler());
 		add(trackList, "0,0");
+
 		tabPane = new JTabbedPane(JTabbedPane.TOP);
 		tabPane.setBorder(BorderFactory.createEmptyBorder(0, 1, 0, 1));
 		add(tabPane, "0,2");

@@ -21,6 +21,7 @@ public abstract class LeftSidebarSelector extends JPanel implements LeftSidebarC
 	protected LeftSidebar sideBar;
 	protected RobonoboFrame frame;
 	protected String contentPanelName;
+	private JLabel lbl;
 
 	public LeftSidebarSelector(LeftSidebar sideBar, RobonoboFrame frame, String label, boolean lblBold, Icon icon, String contentPanelName) {
 		this.sideBar = sideBar;
@@ -33,10 +34,10 @@ public abstract class LeftSidebarSelector extends JPanel implements LeftSidebarC
 		setPreferredSize(new Dimension(185, 19));
 		setMinimumSize(new Dimension(185, 19));
 		setMaximumSize(new Dimension(185, 19));
-		JLabel textLbl = new JLabel(label, icon, JLabel.LEFT);
-		textLbl.setFont(RoboFont.getFont(11, lblBold));
-		textLbl.setOpaque(false);
-		add(textLbl);
+		lbl = new JLabel(label, icon, JLabel.LEFT);
+		lbl.setFont(RoboFont.getFont(11, lblBold));
+		lbl.setOpaque(false);
+		add(lbl);
 		addMouseListener(new MouseListener());
 	}
 
@@ -57,6 +58,18 @@ public abstract class LeftSidebarSelector extends JPanel implements LeftSidebarC
 		RepaintManager.currentManager(this).markCompletelyDirty(this);
 	}
 
+	public void setIcon(Icon icon) {
+		lbl.setIcon(icon);
+	}
+	
+	public void setBold(boolean bold) {
+		lbl.setFont(RoboFont.getFont(11, bold));
+	}
+	
+	public void setText(String text) {
+		lbl.setText(text);
+	}
+	
 	class MouseListener extends MouseAdapter {
 		@Override
 		public void mousePressed(MouseEvent e) {

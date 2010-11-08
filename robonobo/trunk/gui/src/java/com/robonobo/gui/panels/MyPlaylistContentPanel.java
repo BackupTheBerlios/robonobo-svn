@@ -18,6 +18,7 @@ import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.common.util.TextUtil;
 import com.robonobo.core.Platform;
+import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.UserPlaylistListener;
 import com.robonobo.core.api.model.*;
@@ -25,6 +26,7 @@ import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.dialogs.SharePlaylistDialog;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.model.*;
+import com.robonobo.gui.tasks.ImportFilesTask;
 
 @SuppressWarnings("serial")
 public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylistListener {
@@ -177,21 +179,26 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 				log.error("Caught exception dropping files", e);
 				return false;
 			}
-			final List<File> fl = importFiles;
-			frame.getController().getExecutor().execute(new CatchingRunnable() {
-				public void doRun() throws Exception {
-					List<Stream> streams = frame.importFilesOrDirectories(fl);
-					List<String> streamIds = new ArrayList<String>();
-					for (Stream s : streams) {
-						streamIds.add(s.getStreamId());
-					}
-					tm.addStreams(streamIds, insertRow);
-				}
-			});
+			frame.getController().runTask(new PlaylistImportTask(importFiles, insertRow));
 			return true;
 		}
 	}
 
+	class PlaylistImportTask extends ImportFilesTask {
+		int insertRow;
+		
+		public PlaylistImportTask(List<File> files, int insertRow) {
+			super(frame.getController(), files);
+			this.insertRow = insertRow;
+		}
+
+		@Override
+		protected void streamsAdded(List<String> streamIds) {
+			PlaylistTableModel tm = (PlaylistTableModel) trackList.getModel();
+			tm.addStreams(streamIds, insertRow);
+		}
+	}
+	
 	class PlaylistDetailsPanel extends JPanel {
 		public PlaylistDetailsPanel() {
 			double[][] cellSizen = { { 5, 35, 5, 365, 20, TableLayout.FILL, 5 },

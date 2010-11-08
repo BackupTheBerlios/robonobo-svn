@@ -8,19 +8,26 @@ import com.robonobo.gui.frames.RobonoboFrame;
 
 @SuppressWarnings("serial")
 public class MainPanel extends JPanel {
+	private RobonoboFrame frame;
 	private PlaybackPanel playbackPanel;
 	private ContentPanelHolder cpHolder;
 
-	public MainPanel(RobonoboFrame frame) {
+	public MainPanel(RobonoboFrame f) {
+		frame = f;
 		double[][] cellSizen = { { TableLayout.FILL }, { 100, 10, TableLayout.FILL } };
 		setLayout(new TableLayout(cellSizen));
 		playbackPanel = new PlaybackPanel(frame);
 		add(playbackPanel, "0,0");
 		cpHolder = new ContentPanelHolder();
 		add(cpHolder, "0,2");
+		addDefaultContentPanels();
+		selectContentPanel("mymusiclibrary");
+	}
+	
+	private void addDefaultContentPanels() {
 		addContentPanel("mymusiclibrary", new MyMusicLibraryContentPanel(frame));
 		addContentPanel("newplaylist", new NewPlaylistContentPanel(frame));
-		selectContentPanel("mymusiclibrary");
+		addContentPanel("tasklist", new TaskListContentPanel(frame));
 	}
 	
 	public void addContentPanel(String name, ContentPanel panel) {

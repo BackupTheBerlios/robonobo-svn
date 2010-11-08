@@ -73,8 +73,8 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 		titlesPanel.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				// Double click on title shows the playing track in the content panel
-				if(e.getClickCount() == 2) {
-					if(playingStream != null) {
+				if (e.getClickCount() == 2) {
+					if (playingStream != null) {
 						frame.getLeftSidebar().selectForContentPanel(playingContentPanel);
 						playingTrackList.scrollTableToStream(playingStream.getStreamId());
 					}
@@ -107,7 +107,7 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 
 		playbackProgress = new PlaybackProgressBar(frame);
 		playbackProgress.lock();
-		
+
 		playerPanel.add(playbackProgress, BorderLayout.NORTH);
 		final JPanel playerCtrlPanel = new JPanel(new BorderLayout());
 		playerPanel.add(playerCtrlPanel, BorderLayout.CENTER);
@@ -135,17 +135,19 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 		dloadBtn.setPreferredSize(new Dimension(50, 50));
 		dloadBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				List<String> selSids = frame.getMainPanel().currentContentPanel().getTrackList().getSelectedStreamIds();
-				for (String sid : selSids) {
-					Track t = control.getTrack(sid);
-					try {
-						if (t instanceof CloudTrack)
-							control.addDownload(sid);
-					} catch (RobonoboException ex) {
-						log.error("Error adding download", ex);
+				TrackList tl = frame.getMainPanel().currentContentPanel().getTrackList();
+				if (tl != null) {
+					List<String> selSids = tl.getSelectedStreamIds();
+					for (String sid : selSids) {
+						Track t = control.getTrack(sid);
+						try {
+							if (t instanceof CloudTrack)
+								control.addDownload(sid);
+						} catch (RobonoboException ex) {
+							log.error("Error adding download", ex);
+						}
 					}
 				}
-
 			}
 		});
 		buttonsPanel.add(dloadBtn);
@@ -179,8 +181,10 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 		delBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				TrackList tl = frame.getMainPanel().currentContentPanel().getTrackList();
-				List<String> selSids = tl.getSelectedStreamIds();
-				tl.getModel().deleteTracks(selSids);				
+				if (tl != null) {
+					List<String> selSids = tl.getSelectedStreamIds();
+					tl.getModel().deleteTracks(selSids);
+				}
 			}
 		});
 		buttonsPanel.add(delBtn);
@@ -276,7 +280,7 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 	public void playbackProgress(long microsecs) {
 		if (playingStream == null)
 			return;
-		if(seeking)
+		if (seeking)
 			return;
 		long positionMs = microsecs / 1000;
 		playbackProgress.setTrackPosition(positionMs);
@@ -329,12 +333,12 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 	public void seekStarted() {
 		seeking = true;
 	}
-	
+
 	@Override
 	public void seekFinished() {
 		seeking = false;
 	}
-	
+
 	@Override
 	public void allTracksLoaded() {
 		// Do nothing
@@ -366,25 +370,27 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 	public void trackListPanelChanged() {
 		checkButtonsEnabled();
 	}
-	
+
 	private void checkButtonsEnabled() {
 		boolean tracksSelected = false;
 		boolean allowDelete = false;
 		boolean allowDownload = false;
 		if (frame.getMainPanel() != null && frame.getMainPanel().currentContentPanel() != null) {
 			TrackList tl = frame.getMainPanel().currentContentPanel().getTrackList();
-			List<String> selSids = tl.getSelectedStreamIds();
-			tracksSelected = (selSids.size() > 0);
-			// Only allow download if at least one of the selected tracks is a cloud track
-			// Only allow delete if at least one of the selected tracks is a download/sharing track
-			for (String sid : selSids) {
-				Track t = control.getTrack(sid);
-				if (t instanceof CloudTrack)
-					allowDownload = true;
-				if ((t instanceof DownloadingTrack) || (t instanceof SharedTrack))
-					allowDelete = true;
+			if (tl != null) {
+				List<String> selSids = tl.getSelectedStreamIds();
+				tracksSelected = (selSids.size() > 0);
+				// Only allow download if at least one of the selected tracks is a cloud track
+				// Only allow delete if at least one of the selected tracks is a download/sharing track
+				for (String sid : selSids) {
+					Track t = control.getTrack(sid);
+					if (t instanceof CloudTrack)
+						allowDownload = true;
+					if ((t instanceof DownloadingTrack) || (t instanceof SharedTrack))
+						allowDelete = true;
+				}
+				allowDelete = allowDelete && tl.getModel().allowDelete();
 			}
-			allowDelete = allowDelete && tl.getModel().allowDelete();
 		}
 		synchronized (this) {
 			// [Dis|En]able next/prev buttons

@@ -21,7 +21,7 @@ import com.robonobo.common.util.TimeUtil;
 import com.robonobo.core.api.model.CloudTrack;
 import com.robonobo.core.api.model.Stream;
 import com.robonobo.core.api.model.Track;
-import com.robonobo.core.service.AbstractRuntimeServiceProvider;
+import com.robonobo.core.service.AbstractService;
 import com.robonobo.midas.model.MidasPlaylist;
 
 /**
@@ -35,7 +35,7 @@ import com.robonobo.midas.model.MidasPlaylist;
  * @author macavity
  * 
  */
-public class PlaylistMirrorPlugin extends AbstractRuntimeServiceProvider {
+public class PlaylistMirrorPlugin extends AbstractService {
 	PlaylistMirrorConfig cfg;
 	Log log = LogFactory.getLog(getClass());
 	SessionFactory sessionFactory;

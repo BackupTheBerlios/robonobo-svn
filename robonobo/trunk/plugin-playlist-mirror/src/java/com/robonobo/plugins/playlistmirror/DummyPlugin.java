@@ -1,8 +1,8 @@
 package com.robonobo.plugins.playlistmirror;
 
-import com.robonobo.core.service.AbstractRuntimeServiceProvider;
+import com.robonobo.core.service.AbstractService;
 
-public class DummyPlugin extends AbstractRuntimeServiceProvider {
+public class DummyPlugin extends AbstractService {
 
 	@Override
 	public void shutdown() throws Exception {

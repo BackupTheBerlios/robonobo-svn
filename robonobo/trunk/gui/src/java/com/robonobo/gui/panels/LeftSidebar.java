@@ -25,17 +25,21 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 	RobonoboFrame frame;
 	private ActiveSearchList activeSearchList;
 	private MyMusicSelector myMusic;
+	private TaskListSelector taskList;
+	private boolean showTasks = false;
 	private NewPlaylistSelector newPlaylist;
 	private PlaylistList playlistList;
 	private FriendTree friendTree;
 	Log log = LogFactory.getLog(getClass());
+	private JPanel sideBarPanel;
+	private SearchField searchField;
 
 	public LeftSidebar(RobonoboFrame frame) {
 		this.frame = frame;
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
 
-		final JPanel sideBarPanel = new JPanel();
+		sideBarPanel = new JPanel();
 		final JScrollPane treeListScroller = new JScrollPane(sideBarPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
 				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		add(treeListScroller);
@@ -43,7 +47,7 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 		sideBarPanel.setLayout(new BoxLayout(sideBarPanel, BoxLayout.Y_AXIS));
 		sideBarPanel.setBackground(MID_GRAY);
 
-		SearchField searchField = new SearchField(this);
+		searchField = new SearchField(this);
 		sideBarPanel.add(searchField);
 
 		activeSearchList = new ActiveSearchList(this, frame);
@@ -60,6 +64,9 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 		sideBarPanel.add(myMusic);
 		sideBarComps.add(myMusic);
 
+		taskList = new TaskListSelector(this, frame);
+		sideBarComps.add(taskList);
+		
 		newPlaylist = new NewPlaylistSelector(this, frame);
 		sideBarPanel.add(newPlaylist);
 		sideBarComps.add(newPlaylist);
@@ -78,6 +85,26 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 		frame.getController().addUserPlaylistListener(this);
 	}
 
+	private void relayoutSidebar() {
+		sideBarPanel.removeAll();
+		sideBarPanel.add(searchField);
+		sideBarPanel.add(activeSearchList);
+		sideBarPanel.add(friendTree);
+		sideBarPanel.add(myMusic);
+		if(showTasks)
+			sideBarPanel.add(taskList);
+		sideBarPanel.add(newPlaylist);
+		sideBarPanel.add(playlistList);
+		sideBarPanel.invalidate();
+	}
+	
+	public void showTaskList(boolean show) {
+		if(showTasks == show)
+			return;
+		showTasks = show;
+		relayoutSidebar();
+	}
+	
 	public void selectForContentPanel(String cpn) {
 		if(cpn.equals("mymusiclibrary"))
 			myMusic.setSelected(true);
