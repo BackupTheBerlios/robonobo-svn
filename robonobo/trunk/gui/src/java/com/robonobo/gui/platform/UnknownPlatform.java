@@ -1,16 +1,9 @@
 package com.robonobo.gui.platform;
 
-import java.awt.Color;
-import java.awt.Desktop;
 import java.awt.Event;
-import java.awt.Font;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.datatransfer.*;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.swing.*;
@@ -19,9 +12,7 @@ import javax.swing.filechooser.FileSystemView;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
-import com.robonobo.common.util.CodeUtil;
 import com.robonobo.core.Platform;
 import com.robonobo.core.api.Robonobo;
 import com.robonobo.core.itunes.ITunesService;
@@ -160,5 +151,5 @@ public class UnknownPlatform extends Platform {
 	@Override
 	public void customizeSearchTextField(JTextField field) {
 		// Do nothing
-	}	
+	}
 }

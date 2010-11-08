@@ -63,9 +63,8 @@
 			<fatjar.manifest manifestfile="${basedir}/fatjar.manifest" mergemanifests="false" />
 
 			<fatjar.filesource path="${classes.dir}" relpath="." />
-			<fatjar.jarsource file="${basedir}/lib/tablelayout.jar" relpath="." />
-			<fatjar.jarsource file="${basedir}/lib/swingx-0.9.7.jar" relpath="." />
 			<fatjar.jarsource file="${basedir}/lib/robolaf.jar" relpath="." />
+			<fatjar.jarsource file="${basedir}/lib/swingx-0.9.7.jar" relpath="." />
 
 			<fatjar.filesource path="../console/target/classes" relpath="." />
 			<fatjar.filesource path="../plugin-mp3/target/classes" relpath="." />
@@ -88,6 +87,7 @@
 			<fatjar.jarsource file="../core/lib/commons-jxpath-1.1.jar" relpath="." />
 			<fatjar.jarsource file="../core/lib/sbbi-jmx-1.0.jar" relpath="." />
 			<fatjar.jarsource file="../core/lib/sbbi-upnplib-1.0.3.jar" relpath="." />
+			<fatjar.jarsource file="../common/lib/tablelayout.jar" relpath="." />
 			<fatjar.jarsource file="../common/lib/jug-1.1.2.jar" relpath="." />
 			<fatjar.jarsource file="../common/lib/log4j-1.2.13.jar" relpath="." />
 			<fatjar.jarsource file="../common/lib/commons-logging-1.0.3.jar" relpath="." />

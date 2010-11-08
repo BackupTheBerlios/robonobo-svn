@@ -25,14 +25,14 @@ import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.*;
 import com.robonobo.core.api.model.*;
 import com.robonobo.gui.GUIUtils;
-import com.robonobo.gui.dialogs.LoginDialog;
+import com.robonobo.gui.dialogs.LoginPanel;
 import com.robonobo.gui.laf.RobonoboLookAndFeel;
 import com.robonobo.gui.panels.*;
 import com.robonobo.gui.preferences.PrefDialog;
 import com.robonobo.mina.external.ConnectedNode;
 
 @SuppressWarnings("serial")
-public class RobonoboFrame extends JFrame implements RobonoboStatusListener {
+public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListener {
 	private RobonoboController control;
 	private String[] cmdLineArgs;
 	private JMenuBar menuBar;
@@ -239,9 +239,9 @@ public class RobonoboFrame extends JFrame implements RobonoboStatusListener {
 	 *            GUI thread (so don't do too much in it)
 	 */
 	public void showLogin(Runnable onLogin) {
-		LoginDialog ld = new LoginDialog(this, onLogin);
-		ld.setLocationRelativeTo(this);
-		ld.setVisible(true);
+		LoginPanel lp = new LoginPanel(this, onLogin);
+		dim();
+		showSheet(lp);
 	}
 
 	public void showPreferences() {

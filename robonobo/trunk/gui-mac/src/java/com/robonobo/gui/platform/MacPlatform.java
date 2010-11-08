@@ -1,5 +1,8 @@
 package com.robonobo.gui.platform;
 
+import static com.robonobo.common.util.CodeUtil.*;
+
+import java.awt.Dialog;
 import java.awt.Event;
 import java.io.File;
 import java.io.IOException;
@@ -7,6 +10,8 @@ import java.util.List;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
+
+import org.debian.tablelayout.TableLayout;
 
 import com.apple.eawt.Application;
 import com.apple.eio.FileManager;
@@ -26,7 +31,8 @@ public class MacPlatform extends UnknownPlatform {
 
 	@Override
 	public void setLookAndFeel() {
-		// For the menu bar, we keep the L&F from the platform default so that it appears in the expected place for the mac
+		// For the menu bar, we keep the L&F from the platform default so that it appears in the expected place for the
+		// mac
 		// Mad props to Marian Bouček, re http://www.ptakopysk.cz/algi/index.html
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());

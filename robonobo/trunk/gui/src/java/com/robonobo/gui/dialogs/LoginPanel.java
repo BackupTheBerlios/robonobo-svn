@@ -14,7 +14,7 @@ import com.robonobo.core.Platform;
 import com.robonobo.gui.GUIUtils;
 import com.robonobo.gui.frames.RobonoboFrame;
 
-public class LoginDialog extends JDialog implements KeyListener {
+public class LoginPanel extends JPanel implements KeyListener {
 	private RobonoboFrame frame;
 	private Dimension size = new Dimension(320, 200);
 	private JButton loginBtn;
@@ -24,18 +24,17 @@ public class LoginDialog extends JDialog implements KeyListener {
 	private Runnable onLogin;
 	private Log log = LogFactory.getLog(getClass());
 
-	public LoginDialog(RobonoboFrame rFrame, Runnable onLogin) throws HeadlessException {
-		super(rFrame, true);
+	public LoginPanel(RobonoboFrame rFrame, Runnable onLogin) throws HeadlessException {
 		this.frame = rFrame;
 		this.onLogin = onLogin;
 		setPreferredSize(size);
 		setSize(size);
-		setTitle("robonobo login");
 		double[][] cellSizen = {
 				{ 10, 100, 10, 180, 10 },
 				{ 0, 60, 5, 25, 5, 25, 10, 40 }
 		};
 		setLayout(new TableLayout(cellSizen));
+		setName("playback.background.panel");
 		JLabel blurbLbl = new JLabel("<html><center><p>Please login to robonobo.<br>Visit http://robonobo.com for an account.</p></center></html>", SwingConstants.CENTER);
 		add(blurbLbl, "1,1,3,1");
 		add(new JLabel("Email:"), "1,3,r,f");
@@ -55,18 +54,18 @@ public class LoginDialog extends JDialog implements KeyListener {
 		});
 		loginBtn.addKeyListener(this);
 		loginBtn.setPreferredSize(new Dimension(90, 29));
-		getRootPane().setDefaultButton(loginBtn);
+//		getRootPane().setDefaultButton(loginBtn);
 		cancelBtn = new JButton("Cancel");
 		cancelBtn.setName("robonobo.red.button");
 		cancelBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				LoginDialog.this.setVisible(false);
+				LoginPanel.this.setVisible(false);
 			}
 		});
 		cancelBtn.addKeyListener(this);
 		cancelBtn.getActionMap().put("ESCAPE", new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
-				LoginDialog.this.setVisible(false);
+				LoginPanel.this.setVisible(false);
 			}
 		});
 
@@ -80,14 +79,14 @@ public class LoginDialog extends JDialog implements KeyListener {
 	private void tryLogin() {
 		if(frame.getController().tryLogin(emailField.getText(), new String(passwordField.getPassword()))) {
 			frame.updateStatus("Login as "+frame.getController().getMyUser().getEmail()+" succeeded", 5, 30);
-			LoginDialog.this.setVisible(false);
+			LoginPanel.this.setVisible(false);
 			if(onLogin != null) {
 				frame.getController().getExecutor().execute(onLogin);
 			}
 		} else {
 			frame.updateStatus(emailField.getText(), 5, 30);
 			// Shake your moneymaker
-			GUIUtils.shakeWindow(this, Platform.getPlatform().getNumberOfShakesForShakeyWindow(), GUIUtils.DEFAULT_SHAKE_FORCE);
+//			GUIUtils.shakeWindow(this, Platform.getPlatform().getNumberOfShakesForShakeyWindow(), GUIUtils.DEFAULT_SHAKE_FORCE);
 		}
 	}
 
@@ -100,6 +99,13 @@ public class LoginDialog extends JDialog implements KeyListener {
 			frame.shutdown();
 	}
 
+	@Override
+	public void setVisible(boolean visible) {
+		super.setVisible(visible);
+		if(!visible)
+			frame.undim();
+	}
+	
 	public void keyReleased(KeyEvent e) {}// Do nothing
 
 	public void keyTyped(KeyEvent e) {}// Do nothing

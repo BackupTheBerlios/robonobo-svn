@@ -8,11 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JMenuBar;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
+import javax.swing.*;
 
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.core.api.Robonobo;
