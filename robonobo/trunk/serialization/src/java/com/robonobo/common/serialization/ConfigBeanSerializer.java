@@ -23,7 +23,7 @@ import com.robonobo.common.exceptions.SeekInnerCalmException;
 
 /**
  * [De]Serializes a config bean to/from an easy-to-read text file. Note, config
- * beans can only have string, int, long or boolean properties
+ * beans can only have string, int, long, double or boolean properties
  */
 public class ConfigBeanSerializer {
 	Log log = LogFactory.getLog(getClass());
