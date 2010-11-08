@@ -11,7 +11,7 @@ import com.robonobo.core.api.Robonobo;
  * @author ray
  *
  */
-public interface RuntimeServiceProvider {
+public interface RuntimeService {
 	/**
 	 * A user-friendly name
 	 * @return
