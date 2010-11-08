@@ -25,14 +25,14 @@ import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.*;
 import com.robonobo.core.api.model.*;
 import com.robonobo.gui.GUIUtils;
-import com.robonobo.gui.dialogs.LoginPanel;
+import com.robonobo.gui.GuiConfig;
 import com.robonobo.gui.laf.RobonoboLookAndFeel;
 import com.robonobo.gui.panels.*;
 import com.robonobo.gui.preferences.PrefDialog;
 import com.robonobo.mina.external.ConnectedNode;
 
 @SuppressWarnings("serial")
-public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListener {
+public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListener, TrackListener {
 	private RobonoboController control;
 	private String[] cmdLineArgs;
 	private JMenuBar menuBar;
@@ -40,6 +40,7 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 	private MainPanel mainPanel;
 	private LeftSidebar leftSidebar;
 	private Log log = LogFactory.getLog(RobonoboFrame.class);
+	private GuiConfig guiConfig;
 
 	/**
 	 * For debugging only! Delete me when the GUI is done :-)
@@ -64,10 +65,10 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 		setTitle("robonobo");
 		setIconImage(GUIUtils.getImage("/img/icon/robonobo-64x64.png"));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
+
 		menuBar = Platform.getPlatform().getMenuBar(this);
 		setJMenuBar(menuBar);
-		
+
 		JPanel contentPane = new JPanel();
 		double[][] cellSizen = { { 5, 200, 5, TableLayout.FILL, 5 }, { 3, TableLayout.FILL, 5 } };
 		contentPane.setLayout(new TableLayout(cellSizen));
@@ -79,44 +80,74 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 		setPreferredSize(new Dimension(1024, 723));
 		pack();
 		leftSidebar.selectMyMusic();
-		
-		if(control.getStatus() != RobonoboStatus.Stopped)
+		guiConfig = (GuiConfig) control.getConfig("gui");
+		if (control.getStatus() != RobonoboStatus.Stopped)
 			setupPrefDialog();
+		control.addTrackListener(this);
 	}
 
 	public LeftSidebar getLeftSidebar() {
 		return leftSidebar;
 	}
+
+	public GuiConfig getGuiConfig() {
+		return guiConfig;
+	}
 	
 	public PlaybackPanel getPlaybackPanel() {
 		return mainPanel.getPlaybackPanel();
 	}
-	
+
 	public MainPanel getMainPanel() {
 		return mainPanel;
 	}
-	
+
 	@Override
 	public void roboStatusChanged() {
 		// The preference dialog depends on the controller's config being available
-		if(prefDialog == null)
+		if (prefDialog == null)
 			setupPrefDialog();
 	}
-	
+
 	@Override
 	public void connectionAdded(ConnectedNode node) {
 		// Do nothing
 	}
-	
+
 	@Override
 	public void connectionLost(ConnectedNode node) {
 		// Do nothing
 	}
-	
+
+	@Override
+	public void allTracksLoaded() {
+		// If we have no shares, show the welcome dialog
+		final boolean gotShares = (control.getShares().size() > 0);
+		if (!gotShares && guiConfig.getShowWelcomePanel()) {
+			SwingUtilities.invokeLater(new CatchingRunnable() {
+				public void doRun() throws Exception {
+					dim();
+					showSheet(new WelcomePanel(RobonoboFrame.this));
+				}
+			});
+		}
+
+	}
+
+	@Override
+	public void trackUpdated(String streamId) {
+		// Do nothing
+	}
+
+	@Override
+	public void tracksUpdated(Collection<String> streamIds) {
+		// Do nothing
+	}
+
 	private void setupPrefDialog() {
 		prefDialog = new PrefDialog(this);
 	}
-	
+
 	public List<Stream> importFilesOrDirectories(final List<File> files) {
 		List<File> allFiles = new ArrayList<File>();
 		for (File selFile : files)
@@ -172,7 +203,8 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 					for (File track : tracks) {
 						SharedTrack sh = control.getShareByFilePath(track);
 						if (sh == null)
-							log.error("ITunes playlist '" + pName + "' has track '" + track + "', but I am not sharing it");
+							log.error("ITunes playlist '" + pName + "' has track '" + track
+									+ "', but I am not sharing it");
 						else
 							p.getStreamIds().add(sh.getStream().getStreamId());
 					}
@@ -183,8 +215,9 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 					for (File track : tracks) {
 						SharedTrack sh = control.getShareByFilePath(track);
 						if (sh == null)
-							log.error("ITunes playlist '" + pName + "' has track '" + track + "', but I am not sharing it");
-						else if(!p.getStreamIds().contains(sh.getStream().getStreamId()))
+							log.error("ITunes playlist '" + pName + "' has track '" + track
+									+ "', but I am not sharing it");
+						else if (!p.getStreamIds().contains(sh.getStream().getStreamId()))
 							p.getStreamIds().add(sh.getStream().getStreamId());
 					}
 					control.addOrUpdatePlaylist(p);
@@ -193,7 +226,7 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 			updateStatus("Finished iTunes import", 1, 5);
 		} catch (RobonoboException e) {
 			log.error("Error importing from iTunes", e);
-			updateStatus("Error importing from iTunes: "+e.getMessage(), 10, 60);
+			updateStatus("Error importing from iTunes: " + e.getMessage(), 10, 60);
 		}
 	}
 
@@ -235,8 +268,7 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 
 	/**
 	 * @param onLogin
-	 *            If the login is successful, this will be executed on the Swing
-	 *            GUI thread (so don't do too much in it)
+	 *            If the login is successful, this will be executed on the Swing GUI thread (so don't do too much in it)
 	 */
 	public void showLogin(Runnable onLogin) {
 		LoginPanel lp = new LoginPanel(this, onLogin);
@@ -265,7 +297,7 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 	public void updateStatus(String msg, int minShowSecs, int maxShowSecs) {
 		// TODO figure out how we're doing this
 	}
-	
+
 	public void shutdown() {
 		setVisible(false);
 		Thread shutdownThread = new Thread(new CatchingRunnable() {
@@ -285,8 +317,10 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 				SwingUtilities.invokeLater(new CatchingRunnable() {
 					public void doRun() throws Exception {
 						String[] butOpts = { "Quit" };
-						int result = JOptionPane.showOptionDialog(RobonoboFrame.this, "robonobo is restarting, please wait...", "robonobo restarting",
-								JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, butOpts, "Force Quit");
+						int result = JOptionPane.showOptionDialog(RobonoboFrame.this,
+								"robonobo is restarting, please wait...", "robonobo restarting",
+								JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, butOpts,
+								"Force Quit");
 						if (result >= 0) {
 							// They pressed the button... just kill everything
 							log.fatal("Emergency shutdown during restart... pressing Big Red Switch");

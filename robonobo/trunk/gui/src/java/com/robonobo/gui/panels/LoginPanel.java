@@ -1,4 +1,4 @@
-package com.robonobo.gui.dialogs;
+package com.robonobo.gui.panels;
 
 import java.awt.Dimension;
 import java.awt.HeadlessException;

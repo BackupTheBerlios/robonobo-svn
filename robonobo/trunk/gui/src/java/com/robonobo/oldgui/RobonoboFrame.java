@@ -38,7 +38,7 @@ import com.robonobo.core.api.model.SharedTrack;
 import com.robonobo.core.api.model.Stream;
 import com.robonobo.core.api.model.User;
 import com.robonobo.gui.GUIUtils;
-import com.robonobo.gui.dialogs.LoginPanel;
+import com.robonobo.gui.panels.LoginPanel;
 import com.robonobo.gui.preferences.PrefDialog;
 
 @SuppressWarnings("serial")

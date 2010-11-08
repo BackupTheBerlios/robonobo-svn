@@ -116,6 +116,7 @@ public class MacPlatform extends UnknownPlatform {
 	@Override
 	public File getDefaultHomeDirectory() {
 		File libDir = new File(FileSystemView.getFileSystemView().getDefaultDirectory(), "Library");
-		return new File(libDir, "robonobo");
+		File appSupDir = new File(libDir, "Application Support");
+		return new File(appSupDir, "robonobo");
 	}
 }

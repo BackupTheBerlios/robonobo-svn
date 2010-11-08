@@ -58,22 +58,22 @@ public class MyMusicLibraryContentPanel extends ContentPanel {
 			// TODO Plumb this in
 			shareLibCheckBox.setSelected(true);
 			add(shareLibCheckBox, "1,1,3,1");
-			JButton addFilesBtn = new JButton("Add files...");
-			addFilesBtn.addActionListener(new ActionListener() {
+			JButton shareFilesBtn = new JButton("Share from files...");
+			shareFilesBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frame.showAddSharesDialog();
 				}
 			});
-			add(addFilesBtn, "1,3");
+			add(shareFilesBtn, "1,3");
 			if (Platform.getPlatform().iTunesAvailable()) {
-				JButton addITunesBtn = new JButton("Add from iTunes...");
-				addITunesBtn.addActionListener(new ActionListener() {
+				JButton shareITunesBtn = new JButton("Share from iTunes...");
+				shareITunesBtn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						// TODO Show iTunes stuff being added
 						frame.importITunes();
 					}
 				});
-				add(addITunesBtn, "1,5");
+				add(shareITunesBtn, "1,5");
 			}
 		}
 	}
