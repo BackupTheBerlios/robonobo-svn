@@ -35,7 +35,7 @@ import com.robonobo.core.api.proto.CoreApi.UserMsg;
  * locally
  */
 @SuppressWarnings("unchecked")
-public class UserService extends AbstractRuntimeServiceProvider {
+public class UserService extends AbstractService {
 	Log log = LogFactory.getLog(getClass());
 	private User me;
 	MetadataServerConfig msc;

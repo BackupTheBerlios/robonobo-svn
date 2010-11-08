@@ -3,18 +3,22 @@ package com.robonobo.core.service;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.robonobo.core.RobonoboInstance;
 import com.robonobo.core.api.Robonobo;
-import com.robonobo.spi.RuntimeServiceProvider;
+import com.robonobo.spi.RuntimeService;
 
 
 @SuppressWarnings("unchecked")
-abstract public class AbstractRuntimeServiceProvider implements RuntimeServiceProvider {
+abstract public class AbstractService implements RuntimeService {
 	boolean running = false;
 	Map deps = new HashMap();
 	RobonoboInstance robonobo;
+	Log log = LogFactory.getLog(getClass());
 
-	public AbstractRuntimeServiceProvider() {
+	public AbstractService() {
 		super();
 	}
 

@@ -8,11 +8,11 @@ import org.apache.commons.logging.LogFactory;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.api.TransferSpeed;
-import com.robonobo.core.service.AbstractRuntimeServiceProvider;
+import com.robonobo.core.service.AbstractService;
 import com.robonobo.mina.Mina;
 import com.robonobo.mina.external.*;
 
-public class MinaService extends AbstractRuntimeServiceProvider {
+public class MinaService extends AbstractService {
 	SonarNodeLocator locator;
 	Log log = LogFactory.getLog(getClass());
 	protected MinaControl mina;

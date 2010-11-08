@@ -15,7 +15,7 @@ import com.robonobo.core.api.model.DownloadingTrack.DownloadStatus;
 import com.robonobo.mina.external.MinaControl;
 import com.robonobo.mina.external.buffer.*;
 
-public class PlaybackService extends AbstractRuntimeServiceProvider implements AudioPlayerListener, PageBufferListener {
+public class PlaybackService extends AbstractService implements AudioPlayerListener, PageBufferListener {
 	private AudioPlayer.Status status = Status.Stopped;
 
 	/**

@@ -13,9 +13,9 @@ import org.apache.commons.logging.LogFactory;
 
 import com.robonobo.core.api.model.Playlist;
 import com.robonobo.core.api.model.User;
-import com.robonobo.core.service.AbstractRuntimeServiceProvider;
+import com.robonobo.core.service.AbstractService;
 
-public abstract class ITunesService extends AbstractRuntimeServiceProvider {
+public abstract class ITunesService extends AbstractService {
 	protected Log log = LogFactory.getLog(getClass());
 	
 	public ITunesService() {

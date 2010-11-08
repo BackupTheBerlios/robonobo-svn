@@ -24,7 +24,7 @@ import com.robonobo.mina.external.MinaControl;
  * @author macavity
  * 
  */
-public class TrackService extends AbstractRuntimeServiceProvider implements TransferSpeedListener {
+public class TrackService extends AbstractService implements TransferSpeedListener {
 	Log log = LogFactory.getLog(getClass());
 	private ShareService share;
 	private DownloadService download;

@@ -11,12 +11,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.robonobo.core.api.model.Stream;
-import com.robonobo.core.service.AbstractRuntimeServiceProvider;
+import com.robonobo.core.service.AbstractService;
 import com.robonobo.mina.external.buffer.PageBuffer;
 import com.robonobo.mina.external.buffer.PageInfo;
 
 @SuppressWarnings("unchecked")
-public class StorageService extends AbstractRuntimeServiceProvider {
+public class StorageService extends AbstractService {
 	protected Map<String, PageBuffer> bufferCache = new HashMap<String, PageBuffer>();
 	Log log = LogFactory.getLog(getClass());
 	PageInfoMgr pim;

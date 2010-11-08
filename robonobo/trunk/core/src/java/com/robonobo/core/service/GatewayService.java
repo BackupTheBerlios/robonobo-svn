@@ -19,7 +19,7 @@ import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.common.util.NetUtil;
 import com.robonobo.mina.external.MinaConfig;
 
-public class GatewayService extends AbstractRuntimeServiceProvider {
+public class GatewayService extends AbstractService {
 	private InetSocketAddress publicDetails;
 	private InternetGatewayDevice gateway;
 	Log log = LogFactory.getLog(getClass());

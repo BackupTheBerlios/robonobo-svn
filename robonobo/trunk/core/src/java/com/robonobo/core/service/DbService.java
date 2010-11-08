@@ -29,8 +29,7 @@ import com.robonobo.core.api.model.SharedTrack.ShareStatus;
  * Encapsulates local db access. Now uses hsqldb rather than derby - much
  * faster!
  */
-public class DbService extends AbstractRuntimeServiceProvider {
-	Log log = LogFactory.getLog(getClass());
+public class DbService extends AbstractService {
 	private final List freeConns = new ArrayList();
 	private int numConnsCreated = 0;
 

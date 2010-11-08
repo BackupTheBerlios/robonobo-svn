@@ -15,7 +15,7 @@ import com.robonobo.core.api.model.Stream;
 import com.robonobo.core.api.model.User;
 import com.robonobo.core.api.proto.CoreApi.StreamMsg;
 
-public class MetadataService extends AbstractRuntimeServiceProvider {
+public class MetadataService extends AbstractService {
 	Log log = LogFactory.getLog(getClass());
 	private MetadataServerConfig metadataServer;
 	private Lock serverLock = new ReentrantLock();

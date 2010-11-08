@@ -100,6 +100,14 @@ public class RobonoboController {
 		inst.getEventService().removeTransferSpeedListener(l);
 	}
 
+	public void addTaskListener(TaskListener l) {
+		inst.getEventService().addTaskListener(l);
+	}
+	
+	public void removeTaskListener(TaskListener l) {
+		inst.getEventService().removeTaskListener(l);
+	}
+	
 	public RobonoboStatus getStatus() {
 		return inst.getStatus();
 	}
@@ -473,6 +481,10 @@ public class RobonoboController {
 		inst.getDbService().putPlaylistConfig(pc);
 	}
 
+	public void runTask(Task t) {
+		inst.getTaskService().runTask(t);
+	}
+	
 	public RobonoboConfig getConfig() {
 		return inst.getConfig();
 	}

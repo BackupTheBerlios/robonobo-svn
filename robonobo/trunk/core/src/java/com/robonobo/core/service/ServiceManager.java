@@ -12,7 +12,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.robonobo.core.RobonoboInstance;
-import com.robonobo.spi.RuntimeServiceProvider;
+import com.robonobo.spi.RuntimeService;
 
 /**
  * The robonobo service framework allows arbitary addition of services which
@@ -40,9 +40,9 @@ import com.robonobo.spi.RuntimeServiceProvider;
  */
 public class ServiceManager {
 	Log log = LogFactory.getLog(getClass());
-	Map<String, RuntimeServiceProvider> services = new HashMap<String, RuntimeServiceProvider>();
+	Map<String, RuntimeService> services = new HashMap<String, RuntimeService>();
 	boolean running = false;
-	List<RuntimeServiceProvider> locks = new ArrayList<RuntimeServiceProvider>();
+	List<RuntimeService> locks = new ArrayList<RuntimeService>();
 	RobonoboInstance robonobo;
 
 	public ServiceManager(RobonoboInstance robonobo) {
@@ -54,7 +54,7 @@ public class ServiceManager {
 		return robonobo;
 	}
 
-	public RuntimeServiceProvider registerService(RuntimeServiceProvider service) {
+	public RuntimeService registerService(RuntimeService service) {
 		services.put(service.getProvides(), service);
 		return service;
 	}
@@ -65,20 +65,20 @@ public class ServiceManager {
 		}
 	}
 
-	public void unregisterService(RuntimeServiceProvider service) throws ServiceException {
+	public void unregisterService(RuntimeService service) throws ServiceException {
 		if (service.isRunning())
 			stopService(service);
 		services.remove(service);
 	}
 
-	public RuntimeServiceProvider getService(String provides) {
+	public RuntimeService getService(String provides) {
 		return services.get(provides);
 	}
 
-	protected void startServiceAndDependencies(RuntimeServiceProvider service) throws ServiceException {
+	protected void startServiceAndDependencies(RuntimeService service) throws ServiceException {
 		log.debug("Inspecting service '" + service.getName() + "' (" + service.getProvides() + ") for startup");
 		for (String provides : service.getDependencies().keySet()) {
-			RuntimeServiceProvider s = getService(provides);
+			RuntimeService s = getService(provides);
 			boolean required = service.getDependencies().get(provides);
 			// if there is no such service
 			if (s == null) {
@@ -112,9 +112,9 @@ public class ServiceManager {
 		log.info("Started service '" + service.getName() + "' (" + service.getProvides() + ")");
 	}
 
-	protected void stopServiceAndDependencies(RuntimeServiceProvider service) {
+	protected void stopServiceAndDependencies(RuntimeService service) {
 		log.debug("Inspecting service '" + service.getName() + "' (" + service.getProvides() + ") for shutdown");
-		for (RuntimeServiceProvider s : services.values()) {
+		for (RuntimeService s : services.values()) {
 			if (s.isRunning() && s.getDependencies().keySet().contains(service.getProvides())) {
 				log.debug("'" + s.getName() + "' (" + s.getProvides() + ") depends on service '" + service.getName()
 						+ "' (" + service.getProvides() + "), shutting that down");
@@ -136,7 +136,7 @@ public class ServiceManager {
 		log.info("Service Manager, spinning up...");
 		while (true) {
 			try {
-				for (RuntimeServiceProvider service : services.values()) {
+				for (RuntimeService service : services.values()) {
 					if (!service.isRunning()) {
 						try {
 							startServiceAndDependencies(service);
@@ -160,7 +160,7 @@ public class ServiceManager {
 
 	public void shutdown() {
 		log.info("Service Manager, spinning down...");
-		for (RuntimeServiceProvider service : services.values()) {
+		for (RuntimeService service : services.values()) {
 			if (service.isRunning())
 				stopServiceAndDependencies(service);
 		}
@@ -172,7 +172,7 @@ public class ServiceManager {
 		return running;
 	}
 
-	protected void startService(RuntimeServiceProvider service) throws ServiceException {
+	protected void startService(RuntimeService service) throws ServiceException {
 		try {
 			service.setRobonobo(getRobonobo());
 			service.startup();
@@ -184,7 +184,7 @@ public class ServiceManager {
 		}
 	}
 
-	protected void stopService(final RuntimeServiceProvider service) throws ServiceException {
+	protected void stopService(final RuntimeService service) throws ServiceException {
 		try {
 			service.shutdown();
 			service.setRunning(false);

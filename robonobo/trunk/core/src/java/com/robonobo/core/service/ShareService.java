@@ -31,7 +31,7 @@ import com.robonobo.spi.FormatSupportProvider;
  * @author macavity
  */
 @SuppressWarnings("unchecked")
-public class ShareService extends AbstractRuntimeServiceProvider {
+public class ShareService extends AbstractService {
 	/** Seconds */
 	// public static final int WATCHDIR_CHECK_FREQ = 60 * 10;
 	public static final int WATCHDIR_CHECK_FREQ = 30;

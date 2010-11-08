@@ -15,7 +15,7 @@ import com.robonobo.core.api.StreamIdGenerator;
 import com.robonobo.core.api.model.Stream;
 import com.robonobo.spi.FormatSupportProvider;
 
-public class FormatService extends AbstractRuntimeServiceProvider {
+public class FormatService extends AbstractService {
 	private Log log = LogFactory.getLog(getClass());
 	private List<FormatSupportProvider> fsps = new ArrayList<FormatSupportProvider>();
 	private StreamIdGenerator idGenerator = new MD5StreamIdGenerator();

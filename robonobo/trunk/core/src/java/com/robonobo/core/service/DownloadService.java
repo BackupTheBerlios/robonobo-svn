@@ -34,7 +34,7 @@ import com.robonobo.mina.external.buffer.PageBuffer;
  * @author macavity
  */
 @SuppressWarnings("unchecked")
-public class DownloadService extends AbstractRuntimeServiceProvider implements MinaListener {
+public class DownloadService extends AbstractService implements MinaListener {
 	static final int PRIORITY_CURRENT = Integer.MAX_VALUE;
 	static final int PRIORITY_NEXT = Integer.MAX_VALUE - 1;
 	Log log = LogFactory.getLog(getClass());

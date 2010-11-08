@@ -9,7 +9,7 @@ import com.robonobo.core.api.ActiveSearch;
 import com.robonobo.core.api.SearchListener;
 import com.robonobo.core.api.model.Stream;
 import com.robonobo.core.api.proto.CoreApi.SearchResponse;
-import com.robonobo.core.service.AbstractRuntimeServiceProvider;
+import com.robonobo.core.service.AbstractService;
 
 /**
  * Handles searches, manages resultant http threads
@@ -18,7 +18,7 @@ import com.robonobo.core.service.AbstractRuntimeServiceProvider;
  * 
  */
 @SuppressWarnings("unchecked")
-public class SearchService extends AbstractRuntimeServiceProvider {
+public class SearchService extends AbstractService {
 	
 	public SearchService() {
 	}

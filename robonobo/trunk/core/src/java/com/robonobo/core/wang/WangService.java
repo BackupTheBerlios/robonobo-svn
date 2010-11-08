@@ -19,13 +19,13 @@ import com.robonobo.core.api.UserPlaylistListener;
 import com.robonobo.core.api.model.Playlist;
 import com.robonobo.core.api.model.User;
 import com.robonobo.core.api.proto.CoreApi.Node;
-import com.robonobo.core.service.AbstractRuntimeServiceProvider;
+import com.robonobo.core.service.AbstractService;
 import com.robonobo.wang.WangException;
 import com.robonobo.wang.beans.CoinList;
 import com.robonobo.wang.client.WangClient;
 import com.robonobo.wang.proto.WangProtocol.CoinListMsg;
 
-public class WangService extends AbstractRuntimeServiceProvider implements CurrencyClient {
+public class WangService extends AbstractService implements CurrencyClient {
 	RobonoboWangConfig config;
 	WangClient client;
 	Log log = LogFactory.getLog(getClass());

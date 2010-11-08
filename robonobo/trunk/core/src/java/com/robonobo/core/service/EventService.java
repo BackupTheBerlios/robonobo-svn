@@ -10,13 +10,14 @@ import com.robonobo.core.api.model.*;
 import com.robonobo.core.wang.WangListener;
 import com.robonobo.mina.external.*;
 
-public class EventService extends AbstractRuntimeServiceProvider implements MinaListener {
+public class EventService extends AbstractService implements MinaListener {
 	private List<TrackListener> trList = new ArrayList<TrackListener>();
 	private List<PlaybackListener> plList = new ArrayList<PlaybackListener>();
 	private List<UserPlaylistListener> upList = new ArrayList<UserPlaylistListener>();
 	private List<RobonoboStatusListener> stList = new ArrayList<RobonoboStatusListener>();
 	private List<WangListener> wList = new ArrayList<WangListener>();
 	private List<TransferSpeedListener> tsList = new ArrayList<TransferSpeedListener>();
+	private List<TaskListener> tlList = new ArrayList<TaskListener>();
 	private int minaSupernodes = 0;
 	private Log log = LogFactory.getLog(getClass());
 
@@ -69,6 +70,14 @@ public class EventService extends AbstractRuntimeServiceProvider implements Mina
 	
 	public synchronized void removeTransferSpeedListener(TransferSpeedListener l) {
 		tsList.remove(l);
+	}
+	
+	public synchronized void addTaskListener(TaskListener l) {
+		tlList.add(l);
+	}
+	
+	public synchronized void removeTaskListener(TaskListener l) {
+		tlList.remove(l);
 	}
 	
 	public void fireTrackUpdated(String streamId) {
@@ -301,6 +310,16 @@ public class EventService extends AbstractRuntimeServiceProvider implements Mina
 		}
 	}
 
+	public void fireTaskUpdated(Task t) {
+		TaskListener[] arr;
+		synchronized (this) {
+			arr = getTLArr();
+		}
+		for (TaskListener listener : arr) {
+			listener.taskUpdated(t);
+		}
+	}
+
 	/** Copy the list of listeners, to remove deadlock possibilities */
 	private TrackListener[] getTrArr() {
 		TrackListener[] result = new TrackListener[trList.size()];
@@ -337,6 +356,12 @@ public class EventService extends AbstractRuntimeServiceProvider implements Mina
 	private TransferSpeedListener[] getTSArr() {
 		TransferSpeedListener[] result = new TransferSpeedListener[tsList.size()];
 		tsList.toArray(result);
+		return result;
+	}
+
+	private TaskListener[] getTLArr() {
+		TaskListener[] result = new TaskListener[tlList.size()];
+		tlList.toArray(result);
 		return result;
 	}
 

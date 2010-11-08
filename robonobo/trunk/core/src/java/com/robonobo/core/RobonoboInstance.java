@@ -29,22 +29,12 @@ import com.robonobo.core.api.config.RobonoboConfig;
 import com.robonobo.core.itunes.ITunesService;
 import com.robonobo.core.mina.MinaService;
 import com.robonobo.core.search.SearchService;
-import com.robonobo.core.service.DbService;
-import com.robonobo.core.service.DownloadService;
-import com.robonobo.core.service.EventService;
-import com.robonobo.core.service.FormatService;
-import com.robonobo.core.service.GatewayService;
-import com.robonobo.core.service.MetadataService;
-import com.robonobo.core.service.PlaybackService;
-import com.robonobo.core.service.ServiceManager;
-import com.robonobo.core.service.ShareService;
-import com.robonobo.core.service.TrackService;
-import com.robonobo.core.service.UserService;
+import com.robonobo.core.service.*;
 import com.robonobo.core.storage.StorageService;
 import com.robonobo.core.wang.WangService;
 import com.robonobo.mina.external.Application;
 import com.robonobo.mina.external.MinaControl;
-import com.robonobo.spi.RuntimeServiceProvider;
+import com.robonobo.spi.RuntimeService;
 
 /**
  * Central class that controls a robonobo instance; handles startup, and holds
@@ -101,6 +91,8 @@ public class RobonoboInstance implements Robonobo {
 		serviceMgr.registerService(new MetadataService());
 		serviceMgr.registerService(new PlaybackService());
 		serviceMgr.registerService(new UserService());
+		serviceMgr.registerService(new TaskService());
+		
 		if (getConfig().isAgoric())
 			serviceMgr.registerService(new WangService());
 		if (Platform.getPlatform().iTunesAvailable())
@@ -112,7 +104,7 @@ public class RobonoboInstance implements Robonobo {
 				log.info("Instantiating extra service " + serviceClass);
 				try {
 					Class<?> cl = Class.forName(serviceClass);
-					serviceMgr.registerService((RuntimeServiceProvider) cl.newInstance());
+					serviceMgr.registerService((RuntimeService) cl.newInstance());
 				} catch (ClassNotFoundException e) {
 					throw new RuntimeException(e);
 				} catch (InstantiationException e) {
@@ -235,6 +227,10 @@ public class RobonoboInstance implements Robonobo {
 		return (TrackService) serviceMgr.getService("core.tracks");
 	}
 
+	public TaskService getTaskService() {
+		return (TaskService) serviceMgr.getService("core.tasks");
+	}
+	
 	public ITunesService getITunesService() {
 		return (ITunesService) serviceMgr.getService("core.itunes");
 	}
