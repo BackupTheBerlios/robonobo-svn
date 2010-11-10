@@ -9,6 +9,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.swing.SwingUtilities;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import org.apache.commons.logging.Log;
@@ -113,12 +116,14 @@ public class FriendTreeModel extends SortedTreeModel implements UserPlaylistList
 							long friendId = ftn.getFriend().getUserId();
 							PlaylistTreeNode ptn = playlistNodes.get(friendId).get(p.getPlaylistId());
 							if(ptn == null) {
-								ptn = new PlaylistTreeNode(p, frame);
+								ptn = new PlaylistTreeNode(p, frame, FriendTreeModel.this);
 								playlistNodes.get(friendId).put(p.getPlaylistId(), ptn);
 								insertNodeSorted(ftn, ptn);
+								firePathToRootChanged(ptn);
 							} else {
 								ptn.setPlaylist(p);
 								replaceNodeSorted(ftn, ptn);
+								firePathToRootChanged(ptn);
 							}
 						}
 					}
@@ -137,6 +142,14 @@ public class FriendTreeModel extends SortedTreeModel implements UserPlaylistList
 			}
 		}
 		return null;
+	}
+	
+	public void firePathToRootChanged(TreeNode n) {
+		// Why isn't this in DefaultTreeModel?
+		TreeModelEvent e = new TreeModelEvent(this, getPathToRoot(n));
+		for (TreeModelListener l : getTreeModelListeners()) {
+			l.treeNodesChanged(e);
+		}
 	}
 	
 	@Override

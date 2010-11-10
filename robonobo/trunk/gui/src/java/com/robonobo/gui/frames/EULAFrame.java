@@ -32,6 +32,7 @@ public class EULAFrame extends JFrame {
 		JTextPane textPane = new JTextPane();
 		textPane.setContentType("text/html");
 		textPane.setText(getHtmlEula(eulaPath));
+		textPane.setEditable(false);
 		add(new JScrollPane(textPane), "1,1,4,1");
 		JButton acceptBtn = new JButton("Accept");
 		acceptBtn.addActionListener(new ActionListener() {

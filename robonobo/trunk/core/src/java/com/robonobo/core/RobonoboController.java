@@ -497,14 +497,14 @@ public class RobonoboController {
 		inst.saveConfig();
 	}
 
-	public int numUnseenTracks(User u) {
-		return inst.getUsersService().numUnseenTracksForUser(u);
-	}
-
 	public int numUnseenTracks(Playlist p) {
-		return inst.getUsersService().numUnseenTracksForPlaylist(p);
+		return inst.getDbService().numUnseenTracks(p);
 	}
 
+	public void markAllAsSeen(Playlist p) {
+		inst.getDbService().markAllAsSeen(p);
+	}
+	
 	/**
 	 * For debugging only
 	 */

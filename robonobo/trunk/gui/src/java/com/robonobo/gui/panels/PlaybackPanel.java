@@ -69,7 +69,7 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 		setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 		setBackground(MID_GRAY);
 		JPanel titlesPanel = new JPanel();
-		titlesPanel.setLayout(new BoxLayout(titlesPanel, BoxLayout.PAGE_AXIS));
+		titlesPanel.setLayout(new BoxLayout(titlesPanel, BoxLayout.Y_AXIS));
 		titlesPanel.setOpaque(false);
 		titlesPanel.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
@@ -99,7 +99,7 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 		titlesPanel.add(artistLbl);
 		albumLbl = new JLabel("");
 		albumLbl.setPreferredSize(new Dimension(450, 20));
-		albumLbl.setBorder(BorderFactory.createEmptyBorder(2, 12, 0, 0));
+		albumLbl.setBorder(BorderFactory.createEmptyBorder(2, 10, 0, 0));
 		albumLbl.setFont(RoboFont.getFont(16, false));
 		titlesPanel.add(albumLbl);
 		final JPanel playerPanel = new JPanel(new BorderLayout(5, 5));

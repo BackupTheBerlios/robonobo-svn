@@ -205,10 +205,14 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 	 * @param onLogin
 	 *            If the login is successful, this will be executed on the Swing GUI thread (so don't do too much in it)
 	 */
-	public void showLogin(Runnable onLogin) {
-		LoginPanel lp = new LoginPanel(this, onLogin);
-		dim();
-		showSheet(lp);
+	public void showLogin(final Runnable onLogin) {
+		SwingUtilities.invokeLater(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				LoginPanel lp = new LoginPanel(RobonoboFrame.this, onLogin);
+				dim();
+				showSheet(lp);
+			}
+		});
 	}
 
 	public void showPreferences() {

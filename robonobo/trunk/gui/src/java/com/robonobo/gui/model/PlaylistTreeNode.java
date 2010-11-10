@@ -14,16 +14,15 @@ public class PlaylistTreeNode extends SelectableTreeNode  {
 	Log log = LogFactory.getLog(getClass());
 	RobonoboFrame frame;
 	private Playlist playlist;
+	private FriendTreeModel model;
+	int numUnseenTracks;
 
-	public PlaylistTreeNode(Playlist p, RobonoboFrame frame) {
+	public PlaylistTreeNode(Playlist p, RobonoboFrame frame, FriendTreeModel model) {
 		super(p.getTitle());
 		this.playlist = p;
 		this.frame = frame;
-	}
-
-	public PlaylistTreeNode(String title, RobonoboFrame frame) {
-		super(title);
-		this.frame = frame;
+		this.model = model;
+		numUnseenTracks = frame.getController().numUnseenTracks(p);
 	}
 
 	public int compareTo(PlaylistTreeNode o) {
@@ -37,14 +36,26 @@ public class PlaylistTreeNode extends SelectableTreeNode  {
 	public void setPlaylist(Playlist playlist) {
 		this.playlist = playlist;
 		setUserObject(playlist.getTitle());
+		numUnseenTracks = frame.getController().numUnseenTracks(playlist);
 	}
 
 	@Override
+	public boolean wantSelect() {
+		return true;
+	}
+	
+	@Override
 	public boolean handleSelect() {
+		numUnseenTracks = 0;
+		frame.getController().markAllAsSeen(playlist);
 		frame.getMainPanel().selectContentPanel(contentPanelName());
 		return true;
 	}
 
+	public int getNumUnseenTracks() {
+		return numUnseenTracks;
+	}
+	
 	protected String contentPanelName() {
 		return "playlist/" + playlist.getPlaylistId();
 	}
@@ -52,16 +63,6 @@ public class PlaylistTreeNode extends SelectableTreeNode  {
 	@Override
 	public boolean importData(Transferable t) {
 		return false;
-		// For drag n drop, we delegate everything to the playlist's track list
-		// table... DRY and all that
-//		MyPlaylistContentPanel panel = (MyPlaylistContentPanel) frame.getContentHolder().getContentPanel(contentPanelName());
-//		TransferHandler th = panel.tablePanel.table.getTransferHandler();
-//		try {
-//			return th.importData(null, t);
-//		} catch (Exception e) {
-//			log.error("Caught exception importing data", e);
-//			return false;
-//		}
 	}
 	
 	@Override

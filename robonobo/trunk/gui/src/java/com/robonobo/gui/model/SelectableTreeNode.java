@@ -11,8 +11,12 @@ public class SelectableTreeNode extends SortableTreeNode {
 		super(val);
 	}
 	
+	public boolean wantSelect() {
+		return false;
+	}
+	
 	/**
-	 * Returns true if the node wants to remain selected, or false if it doesn't want to be selected (and the selection should remain at the old value)
+	 * Return true if the node and all its ancestors have been updated
 	 */
 	public boolean handleSelect() {
 		// Default implementation does nothing and doesn't want selection

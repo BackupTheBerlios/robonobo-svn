@@ -156,8 +156,8 @@ public class Robonobo {
 		frame.setVisible(true);
 		// If we have no user, ask for login... otherwise wait until we have
 		// tried to login, and if it fails prompt for details
-		if (controller.getConfig().getMetadataServerUsername() == null)
-			frame.showLogin(null);
+//		if (controller.getConfig().getMetadataServerUsername() == null)
+//			frame.showLogin(null);
 
 		// Wait until the controller has started before checking to see
 		// if we've logged in

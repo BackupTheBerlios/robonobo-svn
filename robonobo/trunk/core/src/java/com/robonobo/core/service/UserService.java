@@ -311,16 +311,6 @@ public class UserService extends AbstractService {
 		});
 	}
 
-	public int numUnseenTracksForUser(User u) {
-		// TODO Implement me
-		return 0;
-	}
-	
-	public int numUnseenTracksForPlaylist(Playlist p) {
-		// TODO Implement me
-		return 0;
-	}
-	
 	private void checkUserUpdate(User u, boolean cascade) throws IOException, RobonoboException {
 		User newU = getUpdatedUser(u.getUserId());
 		if ((newU.getUpdated() == null && u.getUpdated() == null) || newU.getUpdated().after(u.getUpdated())) {

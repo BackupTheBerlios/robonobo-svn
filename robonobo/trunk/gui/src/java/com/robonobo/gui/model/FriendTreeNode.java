@@ -26,6 +26,11 @@ public class FriendTreeNode extends SelectableTreeNode {
 	}
 
 	@Override
+	public boolean wantSelect() {
+		return false;
+	}
+	
+	@Override
 	public boolean handleSelect() {
 		// frame.getContentHolder().bringPanelToFront("friend-"+friend.getEmail());
 		// return true;
