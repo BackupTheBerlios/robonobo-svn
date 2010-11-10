@@ -123,10 +123,9 @@ public class SharePlaylistDialog extends JDialog implements KeyListener {
 								User me = controller.getMyUser();
 								// This is just for show in the UI, the server will be updating this figure at their end
 								me.setInvitesLeft(me.getInvitesLeft() - emails.size());
-								frame.updateStatus("Playlist shared", 5, 30);
+								log.info("Playlist '"+p.getTitle()+"' shared");
 							} catch (RobonoboException ex) {
 								log.error("Caught exception sharing playlist", ex);
-								frame.updateStatus("Error sharing playlist: " + ex.getMessage(), 10, 30);
 							}
 						}
 					});

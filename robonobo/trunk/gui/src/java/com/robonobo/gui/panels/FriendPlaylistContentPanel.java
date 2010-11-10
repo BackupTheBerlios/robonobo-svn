@@ -149,7 +149,7 @@ public class FriendPlaylistContentPanel extends ContentPanel implements UserPlay
 							try {
 								frame.getController().checkPlaylistUpdate(p.getPlaylistId());
 							} catch (RobonoboException e) {
-								frame.updateStatus("Error checking playlist update: " + e.getMessage(), 10, 30);
+								log.info("Error checking playlist update", e);
 							}
 						}
 					});

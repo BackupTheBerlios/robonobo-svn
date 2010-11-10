@@ -78,13 +78,11 @@ public class LoginPanel extends JPanel implements KeyListener {
 	
 	private void tryLogin() {
 		if(frame.getController().tryLogin(emailField.getText(), new String(passwordField.getPassword()))) {
-			frame.updateStatus("Login as "+frame.getController().getMyUser().getEmail()+" succeeded", 5, 30);
 			LoginPanel.this.setVisible(false);
 			if(onLogin != null) {
 				frame.getController().getExecutor().execute(onLogin);
 			}
 		} else {
-			frame.updateStatus(emailField.getText(), 5, 30);
 			// Shake your moneymaker
 //			GUIUtils.shakeWindow(this, Platform.getPlatform().getNumberOfShakesForShakeyWindow(), GUIUtils.DEFAULT_SHAKE_FORCE);
 		}

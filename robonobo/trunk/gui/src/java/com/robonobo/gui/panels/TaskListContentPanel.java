@@ -1,5 +1,6 @@
 package com.robonobo.gui.panels;
 
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import org.debian.tablelayout.TableLayout;
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.api.Task;
 import com.robonobo.core.api.TaskListener;
+import com.robonobo.gui.RoboColor;
 import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.frames.RobonoboFrame;
 
@@ -22,31 +24,43 @@ public class TaskListContentPanel extends ContentPanel implements TaskListener {
 
 	public TaskListContentPanel(RobonoboFrame frame) {
 		this.frame = frame;
-		double[][] cellSizen = { { 10, TableLayout.FILL, 10 }, { 10, TableLayout.FILL, 10 } };
+		double[][] cellSizen = { { 1, TableLayout.FILL, 1 }, { 0, TableLayout.FILL, 0 } };
 		setLayout(new TableLayout(cellSizen));
 
 		taskListPanel = new JPanel();
 		taskListPanel.setLayout(new BoxLayout(taskListPanel, BoxLayout.Y_AXIS));
-		add(new JScrollPane(taskListPanel, JScrollPane.VERTICAL_SCROLLBAR_NEVER,
-				JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS), "1,1");
+		taskListPanel.setBackground(RoboColor.MID_GRAY);
+		taskListPanel.setOpaque(true);
+		add(new JScrollPane(taskListPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+				JScrollPane.HORIZONTAL_SCROLLBAR_NEVER), "1,1");
 		frame.getController().addTaskListener(this);
 	}
 
 	@Override
-	public void taskUpdated(Task t) {
-		if (tasks.containsKey(t.getId()))
-			tasks.get(t.getId()).taskUpdated(t);
-		else {
-			TaskPanel p = new TaskPanel(t);
-			tasks.put(t.getId(), p);
-			taskListPanel.add(p);
-		}
+	public void taskUpdated(final Task t) {
+		if(t.isCancelled())
+			return;
+		SwingUtilities.invokeLater(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				if (tasks.containsKey(t.getId()))
+					tasks.get(t.getId()).taskUpdated(t);
+				else {
+					TaskPanel p = new TaskPanel(t);
+					tasks.put(t.getId(), p);
+					taskListPanel.add(p);
+				}
+			}
+		});
 	}
 
-	public void removeTask(Task t) {
+	public void removeTask(final Task t) {
 		TaskPanel p = tasks.remove(t.getId());
-		if (p != null)
+		if (p != null) {	
 			taskListPanel.remove(p);
+			taskListPanel.revalidate();
+			// For some reason revalidate doesn't cause the panel to repaint...?
+			RepaintManager.currentManager(taskListPanel).markCompletelyDirty(taskListPanel);
+		}
 	}
 
 	class TaskPanel extends JPanel {
@@ -54,18 +68,19 @@ public class TaskListContentPanel extends ContentPanel implements TaskListener {
 		JLabel titleLbl, statusLbl;
 		JProgressBar progBar;
 		private JButton cancelBtn;
-		private JButton goPauseBtn;
 
 		public TaskPanel(Task task) {
 			this.t = task;
 
-			double[][] cellSizen = { { 10, 50, 10, TableLayout.FILL, 10, 30, 10, 30, 10 }, { 10, 25, 10, 25, 10 } };
+			double[][] cellSizen = { { 10, 200, 10, TableLayout.FILL, 10, 80, 10 }, { 10, 25, 10, 25, 10, 1 } };
 			setLayout(new TableLayout(cellSizen));
 
 			titleLbl = new JLabel(t.getTitle());
+			titleLbl.setFont(RoboFont.getFont(16, true));
 			add(titleLbl, "1,1,3,1,l,c");
 
 			statusLbl = new JLabel(t.getStatusText());
+			statusLbl.setFont(RoboFont.getFont(12, false));
 			add(statusLbl, "1,3");
 
 			progBar = new JProgressBar(0, 100);
@@ -79,18 +94,21 @@ public class TaskListContentPanel extends ContentPanel implements TaskListener {
 			cancelBtn.setFont(RoboFont.getFont(12, true));
 			cancelBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					if ((t.getCompletion() - 1f) == 0f) {
-						removeTask(t);
-					} else {
+					if(t.getCompletion() < 1f)
 						t.cancel();
-						cancelBtn.setEnabled(false);
-					}
+					removeTask(t);
+					if(tasks.size() == 0)
+						frame.getLeftSidebar().selectMyMusic();
 				}
 			});
 			add(cancelBtn, "5,3");
-
-			goPauseBtn = new PlayPauseButton();
-			add(goPauseBtn, "7,3");
+			
+			JSeparator sep = new JSeparator(JSeparator.HORIZONTAL);
+			sep.setBackground(RoboColor.DARKISH_GRAY);
+			add(sep, "1,5,5,5");
+			// Fill width, but not height
+			Dimension maxSz = new Dimension(Integer.MAX_VALUE, getPreferredSize().height);
+			setMaximumSize(maxSz);
 		}
 
 		void taskUpdated(final Task t) {
@@ -104,32 +122,9 @@ public class TaskListContentPanel extends ContentPanel implements TaskListener {
 					progBar.setString(pcnt + "%");
 					if (pcnt == 100) {
 						cancelBtn.setText("Clear");
-						goPauseBtn.setEnabled(false);
 					}									
 				}
 			});
-		}
-
-		class PlayPauseButton extends JButton {
-			boolean doPlay = false;
-
-			public PlayPauseButton() {
-				super("Pause");
-				setFont(RoboFont.getFont(12, true));
-				addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						if (doPlay) {
-							t.resume();
-							doPlay = false;
-							setText("Pause");
-						} else {
-							t.pause();
-							doPlay = true;
-							setText("Resume");
-						}
-					}
-				});
-			}
 		}
 	}
 

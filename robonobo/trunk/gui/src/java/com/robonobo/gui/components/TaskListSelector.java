@@ -4,7 +4,6 @@ import static com.robonobo.common.util.TextUtil.*;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
@@ -17,15 +16,14 @@ import com.robonobo.gui.RoboColor;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.panels.LeftSidebar;
 
+@SuppressWarnings("serial")
 public class TaskListSelector extends LeftSidebarSelector implements TaskListener {
-	private static final int HIDE_TASKLIST_SECS = 30;
-	static Icon runningIcon = new SpinnerIcon(16, RoboColor.DARKISH_GRAY);
-	static Icon finishedIcon = GUIUtils.createImageIcon("/img/icon/tick.png", "All jobs done");
+	static Icon runningIcon = new SpinnerIcon(16, 2, RoboColor.BLUE_GRAY);
 
 	Set<Task> tasks = new HashSet<Task>();
 
 	public TaskListSelector(LeftSidebar sideBar, RobonoboFrame frame) {
-		super(sideBar, frame, "All jobs done", false, finishedIcon, "tasklist");
+		super(sideBar, frame, "0 tasks running", true, runningIcon, "tasklist");
 		frame.getController().addTaskListener(this);
 	}
 
@@ -34,32 +32,14 @@ public class TaskListSelector extends LeftSidebarSelector implements TaskListene
 		SwingUtilities.invokeLater(new CatchingRunnable() {
 			public void doRun() throws Exception {
 				synchronized (TaskListSelector.this) {
-					if ((t.getCompletion() - 1f) == 0f)
+					if (t.isCancelled() || (t.getCompletion() - 1f) == 0f)
 						tasks.remove(t);
-					if (tasks.size() == 0) {
-						setIcon(finishedIcon);
-						setText("All jobs done");
-						setBold(false);
-						startHideTimer();
-					} else {
-						setIcon(runningIcon);
-						setText(numItems(tasks, "job") + " running");
-						setBold(true);
-						sideBar.showTaskList(true);
-					}
+					else
+						tasks.add(t);
+					setText(numItems(tasks, "task") + " running");
+					sideBar.showTaskList(tasks.size() > 0);
 				}
 			}
 		});
-	}
-
-	private void startHideTimer() {
-		frame.getController().getExecutor().schedule(new CatchingRunnable() {
-			public void doRun() throws Exception {
-				synchronized (TaskListSelector.this) {
-					if (tasks.size() == 0)
-						sideBar.showTaskList(false);
-				}
-			}
-		}, HIDE_TASKLIST_SECS, TimeUnit.SECONDS);
 	}
 }

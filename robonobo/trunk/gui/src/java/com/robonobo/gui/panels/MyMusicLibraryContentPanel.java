@@ -33,7 +33,6 @@ public class MyMusicLibraryContentPanel extends ContentPanel {
 
 	@Override
 	public boolean importData(JComponent comp, Transferable t) {
-		frame.updateStatus("Importing tracks...", 0, 30);
 		List<File> l = null;
 		try {
 			l = Platform.getPlatform().getDnDImportFiles(t);

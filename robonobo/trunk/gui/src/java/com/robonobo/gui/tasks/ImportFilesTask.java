@@ -27,8 +27,11 @@ public class ImportFilesTask extends Task {
 		Iterator<File> it = files.iterator();
 		try {
 			while (it.hasNext()) {
-				if (pauseRequested || cancelRequested)
+				if (cancelRequested) {
+					cancelled = true;
+					fireUpdated();
 					return;
+				}
 				completion = (float) i / totalSz;
 				i++;
 				statusText = "Importing file " + i + " of " + totalSz;

@@ -1,12 +1,8 @@
 package com.robonobo.gui.frames;
 
-import static com.robonobo.common.util.FileUtil.*;
-
 import java.awt.Dimension;
 import java.awt.Image;
 import java.io.File;
-import java.io.FileFilter;
-import java.security.SecureRandom;
 import java.util.*;
 
 import javax.swing.*;
@@ -14,7 +10,6 @@ import javax.swing.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.debian.tablelayout.TableLayout;
-import org.doomdark.uuid.UUIDGenerator;
 
 import com.robonobo.Robonobo;
 import com.robonobo.common.concurrent.CatchingRunnable;
@@ -23,13 +18,13 @@ import com.robonobo.common.util.FileUtil;
 import com.robonobo.core.Platform;
 import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.*;
-import com.robonobo.core.api.model.*;
 import com.robonobo.gui.GUIUtils;
 import com.robonobo.gui.GuiConfig;
 import com.robonobo.gui.laf.RobonoboLookAndFeel;
 import com.robonobo.gui.panels.*;
 import com.robonobo.gui.preferences.PrefDialog;
 import com.robonobo.gui.tasks.ImportFilesTask;
+import com.robonobo.gui.tasks.ImportITunesTask;
 import com.robonobo.mina.external.ConnectedNode;
 
 @SuppressWarnings("serial")
@@ -166,53 +161,8 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 	}
 
 	public void importITunes() {
-		FileFilter mp3Filter = new FileFilter() {
-			public boolean accept(File f) {
-				return "mp3".equalsIgnoreCase(getFileExtension(f));
-			}
-		};
-		try {
-			updateStatus("Importing from iTunes...", 0, 60);
-
-			List<File> files = control.getITunesLibrary(mp3Filter);
-			importFiles(files);
-			Map<String, List<File>> itPls = control.getITunesPlaylists(mp3Filter);
-			for (String pName : itPls.keySet()) {
-				Playlist p = control.getMyPlaylistByTitle(pName);
-				if (p == null) {
-					p = new Playlist();
-					p.setPlaylistId(UUIDGenerator.getInstance().generateRandomBasedUUID(new SecureRandom()).toString());
-					p.setTitle(pName);
-					p.getOwnerIds().add(control.getMyUser().getUserId());
-					List<File> tracks = itPls.get(pName);
-					for (File track : tracks) {
-						SharedTrack sh = control.getShareByFilePath(track);
-						if (sh == null)
-							log.error("ITunes playlist '" + pName + "' has track '" + track
-									+ "', but I am not sharing it");
-						else
-							p.getStreamIds().add(sh.getStream().getStreamId());
-					}
-					control.addOrUpdatePlaylist(p);
-				} else {
-					// Update existing playlist - add each track if it's not already in there
-					List<File> tracks = itPls.get(pName);
-					for (File track : tracks) {
-						SharedTrack sh = control.getShareByFilePath(track);
-						if (sh == null)
-							log.error("ITunes playlist '" + pName + "' has track '" + track
-									+ "', but I am not sharing it");
-						else if (!p.getStreamIds().contains(sh.getStream().getStreamId()))
-							p.getStreamIds().add(sh.getStream().getStreamId());
-					}
-					control.addOrUpdatePlaylist(p);
-				}
-			}
-			updateStatus("Finished iTunes import", 1, 5);
-		} catch (RobonoboException e) {
-			log.error("Error importing from iTunes", e);
-			updateStatus("Error importing from iTunes: " + e.getMessage(), 10, 60);
-		}
+		ImportITunesTask t = new ImportITunesTask(control);
+		control.runTask(t);
 	}
 
 	public void showAddSharesDialog() {
@@ -277,10 +227,6 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 
 	public static Image getRobonoboIconImage() {
 		return GUIUtils.getImage("/img/robonobo-128x128.png");
-	}
-
-	public void updateStatus(String msg, int minShowSecs, int maxShowSecs) {
-		// TODO figure out how we're doing this
 	}
 
 	public void shutdown() {

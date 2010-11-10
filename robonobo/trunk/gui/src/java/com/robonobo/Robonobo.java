@@ -163,9 +163,7 @@ public class Robonobo {
 		// if we've logged in
 		while (controller.getStatus() == RobonoboStatus.Stopped || controller.getStatus() == RobonoboStatus.Starting)
 			Thread.sleep(100);
-		if (controller.getMyUser() != null)
-			frame.updateStatus("Login as " + frame.getController().getMyUser().getEmail() + " succeeded", 5, 30);
-		else
+		if (controller.getMyUser() == null)
 			frame.showLogin(null);
 	}
 }

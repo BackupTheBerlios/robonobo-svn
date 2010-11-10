@@ -95,7 +95,7 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 			sideBarPanel.add(taskList);
 		sideBarPanel.add(newPlaylist);
 		sideBarPanel.add(playlistList);
-		sideBarPanel.invalidate();
+		sideBarPanel.revalidate();
 	}
 	
 	public void showTaskList(boolean show) {

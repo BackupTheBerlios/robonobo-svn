@@ -17,23 +17,32 @@ class SpinnerIcon extends AbstractAnimatedIcon {
 	static int INTERVAL_ANGLE = 30;
 	static int FRAME_COUNT = (360 / INTERVAL_ANGLE) * 2;
 	static int RENDER_INTERVAL = 1000 / (360 / INTERVAL_ANGLE);
-	int w;
+	int spinWidth;
+	int pad;
 	Color c;
 	int arcOffset, arcWidth;
 	int clipOffset, clipWidth;
 	float strokeSz;
 	private Image[] frames;
 
-	public SpinnerIcon(int w, Color c) {
+	public SpinnerIcon(int spinWidth, Color c) {
+		this(spinWidth, 0, c);
+	}
+	
+	/**
+	 * @param pad Padding pixels to be added on all sides
+	 */
+	public SpinnerIcon(int spinWidth, int pad, Color c) {
 		super(FRAME_COUNT, RENDER_INTERVAL);
-		this.w = w;
+		this.spinWidth = spinWidth;
+		this.pad = pad;
 		this.c = c;
 		frames = new Image[getFrameCount()];
-		strokeSz = w / 5f;
+		strokeSz = spinWidth / 5f;
 		arcOffset = Math.round(strokeSz / 2);
-		arcWidth = (int) (w * 0.8f);
+		arcWidth = (int) (spinWidth * 0.8f);
 		clipOffset = -arcOffset;
-		clipWidth = (int) (w * 1.2f);
+		clipWidth = (int) (spinWidth * 1.2f);
 	}
 
 	@Override
@@ -42,16 +51,17 @@ class SpinnerIcon extends AbstractAnimatedIcon {
 		if (frames[idx] == null) {
 			Image image;
 			if (cmp != null)
-				image = cmp.getGraphicsConfiguration().createCompatibleImage(w, w, Transparency.TRANSLUCENT);
+				image = cmp.getGraphicsConfiguration().createCompatibleImage(getIconWidth(), getIconHeight(), Transparency.TRANSLUCENT);
 			else
-				image = new BufferedImage(w, w, BufferedImage.TYPE_INT_ARGB);
+				image = new BufferedImage(getIconWidth(), getIconHeight(), BufferedImage.TYPE_INT_ARGB);
 			Graphics2D g = (Graphics2D) image.getGraphics();
 			// For some reason if we draw an arc each frame, the lines 'jump' slightly between frames, so instead we
 			// draw a circle each time and clip it with an pie arc
 			g.setComposite(AlphaComposite.Clear);
-			g.fillRect(0, 0, w, w);
+			g.fillRect(0, 0, getIconWidth(), getIconHeight());
 			g.setComposite(AlphaComposite.Src);
 			if (idx > 0) {
+				g.translate(pad, pad);
 				g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 				g.setColor(c);
 				int arcAngle;
@@ -75,12 +85,12 @@ class SpinnerIcon extends AbstractAnimatedIcon {
 	}
 	@Override
 	public int getIconWidth() {
-		return w;
+		return spinWidth + (2*pad);
 	}
 
 	@Override
 	public int getIconHeight() {
-		return w;
+		return spinWidth + (2*pad);
 	}
 
 }

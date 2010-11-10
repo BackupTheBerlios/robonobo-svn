@@ -18,17 +18,9 @@ public abstract class Task extends CatchingRunnable {
 	protected String statusText;
 	/** 0 - 1 */
 	protected float completion;
-	protected boolean pauseRequested, cancelRequested;
+	protected boolean cancelRequested;
+	protected boolean cancelled;
 	protected Log log = LogFactory.getLog(getClass());
-	
-	public void pause() {
-		pauseRequested = true;
-	}
-	
-	public void resume() {
-		pauseRequested = false;
-		executor.execute(this);
-	}
 	
 	public void cancel() {
 		cancelRequested = true;
@@ -87,6 +79,10 @@ public abstract class Task extends CatchingRunnable {
 
 	public void setStatusText(String statusText) {
 		this.statusText = statusText;
+	}
+	
+	public boolean isCancelled() {
+		return cancelled;
 	}
 	
 	@Override

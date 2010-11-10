@@ -37,7 +37,6 @@ public class NewPlaylistContentPanel extends MyPlaylistContentPanel {
 					control.putPlaylistConfig(pc);
 					control.addOrUpdatePlaylist(p);
 				} catch (RobonoboException e) {
-					frame.updateStatus("Error creating playlist: " + e.getMessage(), 10, 30);
 					log.error("Error creating playlist", e);
 					return;
 				}

@@ -80,7 +80,8 @@ public class ShareService extends AbstractService {
 		Stream s = metadata.getStream(streamId);
 		SharedTrack sh = db.getShare(streamId);
 		if (sh != null) {
-			throw new RobonoboException("Share already added");
+			log.info("Not adding share for id "+streamId+" - sharing already");
+			return;
 		}
 		sh = new SharedTrack(s, dataFile, ShareStatus.Sharing);
 		PageBuffer pb;

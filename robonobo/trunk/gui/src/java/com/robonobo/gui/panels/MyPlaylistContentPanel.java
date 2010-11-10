@@ -16,6 +16,7 @@ import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
+import com.robonobo.common.util.FileUtil;
 import com.robonobo.common.util.TextUtil;
 import com.robonobo.core.Platform;
 import com.robonobo.core.RobonoboController;
@@ -87,7 +88,6 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 					frame.getController().addOrUpdatePlaylist(p);
 					pc.setPlaylistId(p.getPlaylistId());
 				} catch (RobonoboException e) {
-					frame.updateStatus("Error creating playlist: " + e.getMessage(), 10, 30);
 					log.error("Error creating playlist", e);
 				}
 			}
@@ -101,7 +101,6 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 				try {
 					frame.getController().nukePlaylist(getModel().getPlaylist());
 				} catch (RobonoboException e) {
-					frame.updateStatus("Error deleting playlist: " + e.getMessage(), 10, 30);
 					log.error("Error deleting playlist", e);
 				}
 			}
@@ -171,15 +170,20 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			return true;
 		} else {
 			// DnD files from somewhere else
-			frame.updateStatus("Importing tracks...", 0, 30);
-			List<File> importFiles = null;
+			List<File> files = null;
 			try {
-				importFiles = Platform.getPlatform().getDnDImportFiles(t);
+				files = Platform.getPlatform().getDnDImportFiles(t);
 			} catch (IOException e) {
 				log.error("Caught exception dropping files", e);
 				return false;
 			}
-			frame.getController().runTask(new PlaylistImportTask(importFiles, insertRow));
+			List<File> allFiles = new ArrayList<File>();
+			for (File selFile : files)
+				if (selFile.isDirectory())
+					allFiles.addAll(FileUtil.getFilesWithinPath(selFile, "mp3"));
+				else
+					allFiles.add(selFile);
+			frame.getController().runTask(new PlaylistImportTask(allFiles, insertRow));
 			return true;
 		}
 	}

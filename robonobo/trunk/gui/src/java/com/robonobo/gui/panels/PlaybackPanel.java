@@ -13,6 +13,7 @@ import javax.swing.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.*;
 import com.robonobo.core.api.model.*;
@@ -180,10 +181,14 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 		delBtn.setPreferredSize(new Dimension(40, 40));
 		delBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				TrackList tl = frame.getMainPanel().currentContentPanel().getTrackList();
+				final TrackList tl = frame.getMainPanel().currentContentPanel().getTrackList();
 				if (tl != null) {
-					List<String> selSids = tl.getSelectedStreamIds();
-					tl.getModel().deleteTracks(selSids);
+					final List<String> selSids = tl.getSelectedStreamIds();
+					control.getExecutor().execute(new CatchingRunnable() {
+						public void doRun() throws Exception {
+							tl.getModel().deleteTracks(selSids);
+						}
+					});
 				}
 			}
 		});
@@ -325,7 +330,7 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 
 	@Override
 	public void playbackError(String error) {
-		frame.updateStatus("Playback Error", 10, 30);
+		// TODO How to show error to the user?
 		playbackCompleted();
 	}
 
