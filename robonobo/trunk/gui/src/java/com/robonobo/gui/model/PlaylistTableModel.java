@@ -25,6 +25,8 @@ public class PlaylistTableModel extends TrackListTableModel implements TrackList
 	private RobonoboController controller;
 	private Playlist p;
 	private boolean myPlaylist;
+	/** Are we actively looking for sources for streams on this playlist? */
+	private boolean activated = false;
 	private Map<String, Integer> streamIndices = new HashMap<String, Integer>();
 	Log log = LogFactory.getLog(getClass());
 
@@ -48,14 +50,20 @@ public class PlaylistTableModel extends TrackListTableModel implements TrackList
 		}
 		synchronized (this) {
 			updateStreamIndices();
-			for (String streamId : p.getStreamIds()) {
-				Track t = controller.getTrack(streamId);
-				if (t instanceof CloudTrack)
-					controller.findSources(streamId, this);
-			}
 		}
+		if(myPlaylist || activated)
+			activate();
 		if (fireChangedEvent)
 			fireTableDataChanged();
+	}
+
+	public void activate() {
+		activated = true;
+		for (String streamId : p.getStreamIds()) {
+			Track t = controller.getTrack(streamId);
+			if (t instanceof CloudTrack)
+				controller.findSources(streamId, this);
+		}
 	}
 
 	public synchronized void nuke() {

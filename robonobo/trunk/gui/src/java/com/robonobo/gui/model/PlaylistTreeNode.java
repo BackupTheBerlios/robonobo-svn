@@ -5,12 +5,13 @@ import java.awt.datatransfer.Transferable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.swing.SortableTreeNode;
 import com.robonobo.core.api.model.Playlist;
 import com.robonobo.gui.frames.RobonoboFrame;
 
 @SuppressWarnings("serial")
-public class PlaylistTreeNode extends SelectableTreeNode  {
+public class PlaylistTreeNode extends SelectableTreeNode {
 	Log log = LogFactory.getLog(getClass());
 	RobonoboFrame frame;
 	private Playlist playlist;
@@ -28,7 +29,7 @@ public class PlaylistTreeNode extends SelectableTreeNode  {
 	public int compareTo(PlaylistTreeNode o) {
 		return playlist.getTitle().compareTo(o.getPlaylist().getTitle());
 	}
-	
+
 	public Playlist getPlaylist() {
 		return playlist;
 	}
@@ -43,19 +44,27 @@ public class PlaylistTreeNode extends SelectableTreeNode  {
 	public boolean wantSelect() {
 		return true;
 	}
-	
+
 	@Override
 	public boolean handleSelect() {
 		numUnseenTracks = 0;
 		frame.getController().markAllAsSeen(playlist);
 		frame.getMainPanel().selectContentPanel(contentPanelName());
+		// Start finding sources for this guy
+		frame.getController().getExecutor().execute(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				PlaylistTableModel model = (PlaylistTableModel) frame.getMainPanel()
+						.getContentPanel(contentPanelName()).getTrackList().getModel();
+				model.activate();
+			}
+		});
 		return true;
 	}
 
 	public int getNumUnseenTracks() {
 		return numUnseenTracks;
 	}
-	
+
 	protected String contentPanelName() {
 		return "playlist/" + playlist.getPlaylistId();
 	}
@@ -64,7 +73,7 @@ public class PlaylistTreeNode extends SelectableTreeNode  {
 	public boolean importData(Transferable t) {
 		return false;
 	}
-	
+
 	@Override
 	public int compareTo(SortableTreeNode o) {
 		PlaylistTreeNode other = (PlaylistTreeNode) o;
