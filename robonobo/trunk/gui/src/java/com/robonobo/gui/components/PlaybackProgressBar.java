@@ -43,6 +43,7 @@ public class PlaybackProgressBar extends JProgressBar {
 	private long trackPositionMs;
 	private float dataAvailable;
 	Log log = LogFactory.getLog(getClass());
+	private Timer pauseTimer;
 
 	public PlaybackProgressBar(final RobonoboFrame frame) {
 		this.frame = frame;
@@ -149,6 +150,33 @@ public class PlaybackProgressBar extends JProgressBar {
 		sliderThumb.setLocation(pos, 0);
 	}
 
+	public void play() {
+		pauseTimer.stop();
+		SwingUtilities.invokeLater(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				sliderThumb.setForeground(Color.BLACK);
+				sliderThumb.setName("robonobo.playback.progressbar.thumb");
+			}
+		});
+	}
+	
+	public void pause() {
+		pauseTimer = new Timer(500, new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(sliderThumb.getForeground().equals(Color.BLACK))
+					sliderThumb.setForeground(Color.WHITE);
+				else
+					sliderThumb.setForeground(Color.BLACK);
+			}
+		});
+		pauseTimer.start();
+		SwingUtilities.invokeLater(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				sliderThumb.setName("robonobo.playback.progressbar.thumb.paused");
+			}
+		});
+	}
+	
 	public void setOrientation(int newOrientation) {
 		if (newOrientation != JProgressBar.HORIZONTAL)
 			throw new RuntimeException("PlaybackProgressBar only support horizontal orientation");

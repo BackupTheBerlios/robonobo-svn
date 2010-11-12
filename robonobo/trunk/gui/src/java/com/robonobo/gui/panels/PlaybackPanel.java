@@ -277,6 +277,7 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 		}
 		playPauseBtn.setIcon(pauseIcon);
 		playPauseBtn.setToolTipText(PAUSE_TOOLTIP);
+		playbackProgress.play();
 		checkButtonsEnabled();
 		doRepaint();
 	}
@@ -311,7 +312,7 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 		playPauseBtn.setToolTipText(PLAY_TOOLTIP);
 		checkButtonsEnabled();
 		doRepaint();
-		// TODO Flash progress bar?
+		playbackProgress.pause();
 	}
 
 	@Override
