@@ -59,6 +59,15 @@ message PlaylistMsg {
 	repeated int64 owner_id = 7;
 }
 
+message LibraryTrackMsg {
+	required StreamMsg stream = 1;
+	optional int64 added_date = 2;
+}
+
+message LibraryMsg {
+	repeated LibraryTrackMsg track = 1;
+}
+
 message InviteMsg {
 	required int64 invite_id = 1;
 	required string email = 2;
