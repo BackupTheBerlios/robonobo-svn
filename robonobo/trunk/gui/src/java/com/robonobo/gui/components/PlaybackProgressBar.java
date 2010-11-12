@@ -151,7 +151,8 @@ public class PlaybackProgressBar extends JProgressBar {
 	}
 
 	public void play() {
-		pauseTimer.stop();
+		if(pauseTimer != null)
+			pauseTimer.stop();
 		SwingUtilities.invokeLater(new CatchingRunnable() {
 			public void doRun() throws Exception {
 				sliderThumb.setForeground(Color.BLACK);

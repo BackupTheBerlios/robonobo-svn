@@ -73,6 +73,12 @@ public class PlaylistTableModel extends TrackListTableModel implements TrackList
 		}
 	}
 
+	// Hide 'Added to Library' as well as streamid
+	public int[] hiddenCols() {
+		return new int[] { 11, 12 };
+	}
+
+
 	@Override
 	public synchronized int getTrackIndex(String streamId) {
 		if (streamIndices.containsKey(streamId))

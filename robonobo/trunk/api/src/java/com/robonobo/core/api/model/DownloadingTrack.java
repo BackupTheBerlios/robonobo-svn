@@ -12,7 +12,6 @@ public class DownloadingTrack extends Track {
 	private PageBuffer pageBuf;
 	private File file;
 	private DownloadStatus downloadStatus;
-	private Date dateStarted;
 	private int numSources;
 
 	public DownloadingTrack(Stream stream, File file, DownloadStatus status) {
@@ -34,14 +33,6 @@ public class DownloadingTrack extends Track {
 
 	public File getFile() {
 		return file;
-	}
-
-	public Date getDateStarted() {
-		return dateStarted;
-	}
-
-	public void setDateStarted(Date dateStarted) {
-		this.dateStarted = dateStarted;
 	}
 
 	public PageBuffer getPageBuf() {

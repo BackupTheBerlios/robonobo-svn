@@ -79,6 +79,7 @@ public class TrackList extends JPanel implements SearchExecutor {
 		table.getColumn(9).setCellRenderer(tr);
 		table.getColumn(10).setCellRenderer(tr);
 		table.getColumn(11).setCellRenderer(tr);
+		table.getColumn(12).setCellRenderer(tr);
 
 		// Render table header as not bold
 		table.getTableHeader().setDefaultRenderer(new DefaultTableCellRenderer() {
@@ -116,9 +117,10 @@ public class TrackList extends JPanel implements SearchExecutor {
 		cm.getColumn(8).setPreferredWidth(80); // Download
 		cm.getColumn(9).setPreferredWidth(80); // Upload
 		cm.getColumn(10).setPreferredWidth(60); // Size
-		cm.getColumn(11).setPreferredWidth(120); // Stream Id
+		cm.getColumn(11).setPreferredWidth(140); // Date Added
+		cm.getColumn(12).setPreferredWidth(300); // Stream Id
 
-		int[] hiddenCols = hiddenCols();
+		int[] hiddenCols = model.hiddenCols();
 		List<TableColumn> cols = cm.getColumns(true);
 		for (int i = 0; i < hiddenCols.length; i++) {
 			TableColumnExt colExt = (TableColumnExt) cols.get(hiddenCols[i]);
@@ -136,11 +138,6 @@ public class TrackList extends JPanel implements SearchExecutor {
 
 		scrollPane = new JScrollPane(table);
 		add(scrollPane, "0,0");
-	}
-
-	// By default we just hide the stream id, subclasses hide more
-	protected int[] hiddenCols() {
-		return new int[] { 11 };
 	}
 
 	public void search(String query) {

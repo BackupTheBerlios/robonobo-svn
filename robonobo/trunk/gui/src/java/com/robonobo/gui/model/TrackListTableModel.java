@@ -1,5 +1,7 @@
 package com.robonobo.gui.model;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -13,7 +15,9 @@ import com.robonobo.core.api.model.Track;
 
 @SuppressWarnings("serial")
 public abstract class TrackListTableModel extends AbstractTableModel {
-	String[] colNames = { " "/*StatusIcon*/, "Title", "Artist", "Album", "Track", "Year", "Time", "Status", "Download", "Upload", "Size", "Stream Id" };
+	static DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+		
+	String[] colNames = { " "/*StatusIcon*/, "Title", "Artist", "Album", "Track", "Year", "Time", "Status", "Download", "Upload", "Size", "Added to Library", "Stream Id" };
 	Pattern firstNumPat = Pattern.compile("^\\s*(\\d*).*$");
 
 	public int getColumnCount() {
@@ -42,6 +46,7 @@ public abstract class TrackListTableModel extends AbstractTableModel {
 		case 9:
 		case 10:
 		case 11:
+		case 12:
 			return String.class;
 		case 4:
 			return Integer.class;
@@ -87,6 +92,8 @@ public abstract class TrackListTableModel extends AbstractTableModel {
 		case 10:
 			return FileUtil.humanReadableSize(s.getSize());
 		case 11:
+			return df.format(t.getDateAdded());
+		case 12:
 			return s.getStreamId();
 		}
 		return null;
@@ -100,6 +107,11 @@ public abstract class TrackListTableModel extends AbstractTableModel {
 		if(!m.matches())
 			return null;
 		return Integer.parseInt(m.group(1));
+	}
+
+	// By default we just hide the stream id, subclasses hide more
+	public int[] hiddenCols() {
+		return new int[] { 12 };
 	}
 
 	public abstract Track getTrack(int index);

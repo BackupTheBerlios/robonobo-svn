@@ -153,7 +153,7 @@ public class DownloadService extends AbstractService implements MinaListener {
 				startTime++;
 			lastDlStartTime = startTime;
 		}
-		d.setDateStarted(new Date(startTime));
+		d.setDateAdded(new Date(startTime));
 		try {
 			PageBuffer pb = storage.createPageBufForReception(s, dataFile);
 			if (numRunningDownloads() < robonobo.getConfig().getMaxRunningDownloads())

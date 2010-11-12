@@ -7,5 +7,6 @@ public class Updater {
 	 * v0-1 update
 	 * - add gui config to robonoboconfig
 	 * - add playlist_seen_sids table to dbservice
+	 * - add date_started column to shares table in dbservice
 	 */
 }

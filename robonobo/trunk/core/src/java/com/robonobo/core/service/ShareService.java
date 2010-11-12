@@ -14,6 +14,7 @@ import org.apache.commons.logging.LogFactory;
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.common.util.FileUtil;
+import com.robonobo.common.util.TimeUtil;
 import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.model.DownloadingTrack;
 import com.robonobo.core.api.model.SharedTrack;
@@ -95,6 +96,7 @@ public class ShareService extends AbstractService {
 		} catch (IOException e) {
 			throw new RobonoboException(e);
 		}
+		sh.setDateAdded(TimeUtil.now());
 		db.putShare(sh);
 		synchronized (this) {
 			shareStreamIds.add(s.getStreamId());

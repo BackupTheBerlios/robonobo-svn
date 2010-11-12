@@ -1,5 +1,7 @@
 package com.robonobo.core.api.model;
 
+import java.util.Date;
+
 public abstract class Track {
 	public enum PlaybackStatus {
 		None, Queued, Downloading, Starting, Playing, Paused
@@ -9,6 +11,7 @@ public abstract class Track {
 	protected PlaybackStatus playbackStatus;
 	protected TransferStatus transferStatus;
 	private int dlRate, ulRate;
+	private Date dateAdded;
 
 	public Track(Stream stream) {
 		this.stream = stream;
@@ -47,5 +50,13 @@ public abstract class Track {
 	/** bytes/sec */
 	public int getUploadRate() {
 		return ulRate;
+	}
+
+	public Date getDateAdded() {
+		return dateAdded;
+	}
+
+	public void setDateAdded(Date dateAdded) {
+		this.dateAdded = dateAdded;
 	}
 }
