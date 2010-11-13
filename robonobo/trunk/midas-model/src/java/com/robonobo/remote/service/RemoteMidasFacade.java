@@ -1,8 +1,6 @@
 package com.robonobo.remote.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.robonobo.core.api.proto.CoreApi.FriendRequestMsg;
@@ -10,11 +8,7 @@ import com.robonobo.core.api.proto.CoreApi.InviteMsg;
 import com.robonobo.core.api.proto.CoreApi.PlaylistMsg;
 import com.robonobo.core.api.proto.CoreApi.StreamMsg;
 import com.robonobo.core.api.proto.CoreApi.UserMsg;
-import com.robonobo.midas.model.MidasFriendRequest;
-import com.robonobo.midas.model.MidasInvite;
-import com.robonobo.midas.model.MidasPlaylist;
-import com.robonobo.midas.model.MidasStream;
-import com.robonobo.midas.model.MidasUser;
+import com.robonobo.midas.model.*;
 
 /**
  * The client end of a remote midas service
@@ -145,6 +139,16 @@ public class RemoteMidasFacade extends JbossRemotingFacade implements MidasServi
 		if(arr == null)
 			return null;
 		return inviteFromByteArr(arr);
+	}
+	
+	@Override
+	public MidasLibrary getLibrary(MidasUser u, Date since) {
+		// We don't do library remoting yet
+		return null;
+	}
+	@Override
+	public void putLibrary(MidasLibrary lib) {
+		// We don't do library remoting yet
 	}
 	
 	private MidasPlaylist playlistFromByteArr(byte[] arr) {

@@ -91,8 +91,7 @@ public class MetadataService extends AbstractService {
 		try {
 			getRobonobo().getDbService().putStream(stream);
 			User me = getRobonobo().getUsersService().getMyUser();
-			getRobonobo().getSerializationManager().putObjectToUrl(stream.toMsg(), metadataServer.getStreamUrl(stream.getStreamId()), me.getEmail(),
-					me.getPassword());
+			getRobonobo().getSerializationManager().putObjectToUrl(stream.toMsg(), metadataServer.getStreamUrl(stream.getStreamId()));
 		} catch (Exception e) {
 			throw new RobonoboException(e);
 		}

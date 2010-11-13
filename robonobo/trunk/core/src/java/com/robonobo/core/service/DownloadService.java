@@ -70,14 +70,14 @@ public class DownloadService extends AbstractService implements MinaListener {
 
 	@Override
 	public void startup() throws Exception {
-		db = robonobo.getDbService();
-		mina = robonobo.getMina();
+		db = rbnb.getDbService();
+		mina = rbnb.getMina();
 		mina.addMinaListener(this);
-		metadata = robonobo.getMetadataService();
-		storage = robonobo.getStorageService();
-		share = robonobo.getShareService();
-		event = robonobo.getEventService();
-		playback = robonobo.getPlaybackService();
+		metadata = rbnb.getMetadataService();
+		storage = rbnb.getStorageService();
+		share = rbnb.getShareService();
+		event = rbnb.getEventService();
+		playback = rbnb.getPlaybackService();
 		downloadStreamIds = new HashSet<String>();
 		downloadStreamIds.addAll(db.getDownloads());
 		preFetchStreamIds = new HashSet<String>();
@@ -101,7 +101,7 @@ public class DownloadService extends AbstractService implements MinaListener {
 			synchronized (dPriority) {
 				dPriority.add(d.getStream().getStreamId());
 			}
-			if (numStarted < robonobo.getConfig().getMaxRunningDownloads()) {
+			if (numStarted < rbnb.getConfig().getMaxRunningDownloads()) {
 				startDownload(d, pb);
 				numStarted++;
 			}
@@ -119,7 +119,7 @@ public class DownloadService extends AbstractService implements MinaListener {
 	
 	public void addDownload(String streamId) throws RobonoboException {
 		Stream s = metadata.getStream(streamId);
-		File downloadDir = new File(robonobo.getConfig().getDownloadDirectory());
+		File downloadDir = new File(rbnb.getConfig().getDownloadDirectory());
 		String artist;
 		if (s.getAttrValue("artist") == null)
 			artist = "Unknown Artist";
@@ -134,7 +134,7 @@ public class DownloadService extends AbstractService implements MinaListener {
 		File targetDir = new File(downloadDir.getAbsolutePath() + sep + makeFileNameSafe(artist) + sep
 				+ makeFileNameSafe(album));
 		targetDir.mkdirs();
-		String fileExt = robonobo.getFormatService().getFormatSupportProvider(s.getMimeType())
+		String fileExt = rbnb.getFormatService().getFormatSupportProvider(s.getMimeType())
 				.getDefaultFileExtension();
 		File dataFile = new File(targetDir, makeFileNameSafe(s.getTitle()) + "." + fileExt);
 		addDownload(streamId, dataFile);
@@ -156,7 +156,7 @@ public class DownloadService extends AbstractService implements MinaListener {
 		d.setDateAdded(new Date(startTime));
 		try {
 			PageBuffer pb = storage.createPageBufForReception(s, dataFile);
-			if (numRunningDownloads() < robonobo.getConfig().getMaxRunningDownloads())
+			if (numRunningDownloads() < rbnb.getConfig().getMaxRunningDownloads())
 				startDownload(d, pb);
 		} catch (Exception e) {
 			log.error("Caught exception when starting download for " + s.getStreamId(), e);
@@ -257,7 +257,7 @@ public class DownloadService extends AbstractService implements MinaListener {
 			if(!downloadStreamIds.contains(streamId))
 				return null;
 		}
-		DownloadingTrack d = robonobo.getDbService().getDownload(streamId);
+		DownloadingTrack d = rbnb.getDbService().getDownload(streamId);
 		if (d != null) {
 			d.setNumSources(mina.numSources(streamId));
 			try {
@@ -314,7 +314,7 @@ public class DownloadService extends AbstractService implements MinaListener {
 					activeDls++;
 			}
 		}
-		int numToStart = robonobo.getConfig().getMaxRunningDownloads() - activeDls;
+		int numToStart = rbnb.getConfig().getMaxRunningDownloads() - activeDls;
 		if (numToStart > 0) {
 			for (DownloadingTrack d : dls) {
 				if (d.getDownloadStatus() == DownloadStatus.Paused) {

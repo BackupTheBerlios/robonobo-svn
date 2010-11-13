@@ -18,6 +18,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
+import com.robonobo.common.serialization.SerializationManager;
 import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.RobonoboStatus;
 import com.robonobo.core.api.config.MetadataServerConfig;
@@ -53,12 +54,13 @@ public class UserService extends AbstractService {
 	public UserService() {
 		addHardDependency("core.metadata");
 		addHardDependency("core.storage");
+		addHardDependency("core.library");
 	}
 
 	@Override
 	public void startup() throws Exception {
-		int updateFreq = robonobo.getConfig().getUserUpdateFrequency();
-		updateTask = robonobo.getExecutor().scheduleAtFixedRate(new UpdateChecker(), updateFreq, updateFreq, TimeUnit.SECONDS);
+		int updateFreq = rbnb.getConfig().getUserUpdateFrequency();
+		updateTask = rbnb.getExecutor().scheduleAtFixedRate(new UpdateChecker(), updateFreq, updateFreq, TimeUnit.SECONDS);
 	}
 
 	public String getName() {
@@ -76,20 +78,23 @@ public class UserService extends AbstractService {
 	}
 
 	public void checkUsersUpdate() {
-		robonobo.getExecutor().execute(new UpdateChecker());
+		rbnb.getExecutor().execute(new UpdateChecker());
 	}
 
 	public boolean tryLogin(final String email, final String password) {
-		MetadataServerConfig msc = new MetadataServerConfig(robonobo.getConfig().getMetadataServerUrl());
+		MetadataServerConfig msc = new MetadataServerConfig(rbnb.getConfig().getMetadataServerUrl());
 		try {
 			log.info("Attempting login as user " + email);
 			UserMsg.Builder ub = UserMsg.newBuilder();
-			robonobo.getSerializationManager().getObjectFromUrl(ub, msc.getUserUrl(email), email, password);
+			// If the details are wrong, this will chuck an exception
+			SerializationManager sm = rbnb.getSerializationManager();
+			sm.setCreds(email, password);
+			sm.getObjectFromUrl(ub, msc.getUserUrl(email));
 			User tryUser = new User(ub.build());
 			tryUser.setPassword(password);
-			robonobo.getConfig().setMetadataServerUsername(email);
-			robonobo.getConfig().setMetadataServerPassword(password);
-			robonobo.saveConfig();
+			rbnb.getConfig().setMetadataServerUsername(email);
+			rbnb.getConfig().setMetadataServerPassword(password);
+			rbnb.saveConfig();
 			// Reload everything again
 			usersByEmail.clear();
 			usersById.clear();
@@ -100,16 +105,16 @@ public class UserService extends AbstractService {
 			this.msc = msc;
 			me = tryUser;
 			log.info("Login as " + email + " successful");
-			robonobo.getExecutor().execute(new CatchingRunnable() {
+			rbnb.getExecutor().execute(new CatchingRunnable() {
 				public void doRun() throws Exception {
-					robonobo.getEventService().fireLoggedIn();
+					rbnb.getEventService().fireLoggedIn();
 					UserLookerUpper ulu = new UserLookerUpper(me);
 					ulu.doRun();
 				}
 			});
-			if (robonobo.getMina().isConnectedToSupernode()) {
-				robonobo.setStatus(RobonoboStatus.Connected);
-				robonobo.getEventService().fireStatusChanged();
+			if (rbnb.getMina().isConnectedToSupernode()) {
+				rbnb.setStatus(RobonoboStatus.Connected);
+				rbnb.getEventService().fireStatusChanged();
 			}
 			return true;
 		} catch (Exception e) {
@@ -128,13 +133,17 @@ public class UserService extends AbstractService {
 		return getUser(me.getEmail());
 	}
 
+	public MetadataServerConfig getMsc() {
+		return msc;
+	}
+	
 	public void updateMyUser(User u) throws IOException {
 		if (u.getEmail() != me.getEmail()) {
 			throw new SeekInnerCalmException();
 		}
 		userUpdateLock.lock();
 		try {
-			robonobo.getSerializationManager().putObjectToUrl(u.toMsg(false), msc.getUserUrl(u.getEmail()), me.getEmail(), me.getPassword());
+			rbnb.getSerializationManager().putObjectToUrl(u.toMsg(false), msc.getUserUrl(u.getEmail()));
 			synchronized (this) {
 				me = u;
 				usersByEmail.put(u.getEmail(), u);
@@ -143,11 +152,11 @@ public class UserService extends AbstractService {
 		} finally {
 			userUpdateLock.unlock();
 		}
-		robonobo.getEventService().fireUserChanged(u);
+		rbnb.getEventService().fireUserChanged(u);
 	}
 
 	public void addOrUpdatePlaylist(Playlist newP) throws IOException, RobonoboException {
-		robonobo.getSerializationManager().putObjectToUrl(newP.toMsg(), msc.getPlaylistUrl(newP.getPlaylistId()), me.getEmail(), me.getPassword());
+		rbnb.getSerializationManager().putObjectToUrl(newP.toMsg(), msc.getPlaylistUrl(newP.getPlaylistId()));
 		Playlist origP = playlists.get(newP.getPlaylistId());
 		if (origP == null) {
 			// Grab a new copy of my user, it'll have the new playlist in it
@@ -158,7 +167,7 @@ public class UserService extends AbstractService {
 	}
 
 	public void nukePlaylist(Playlist pl) throws IOException, RobonoboException {
-		robonobo.getSerializationManager().deleteObjectAtUrl(msc.getPlaylistUrl(pl.getPlaylistId()), me.getEmail(), me.getPassword());
+		rbnb.getSerializationManager().deleteObjectAtUrl(msc.getPlaylistUrl(pl.getPlaylistId()));
 		myPlaylistsByTitle.remove(pl.getTitle());
 		// Get a new copy of my user without this playlist
 		checkUserUpdate(me, false);
@@ -184,23 +193,23 @@ public class UserService extends AbstractService {
 	}
 
 	public void sendPlaylist(Playlist p, long toUserId) throws IOException {
-		robonobo.getSerializationManager().hitUrl(msc.getSendPlaylistUrl(p.getPlaylistId(), toUserId), me.getEmail(), me.getPassword());
+		rbnb.getSerializationManager().hitUrl(msc.getSendPlaylistUrl(p.getPlaylistId(), toUserId));
 		// This playlist will be removed from my list - just remove it
 		// locally, don't bother to hit the server again
 		me.getPlaylistIds().remove(p.getPlaylistId());
-		robonobo.getEventService().fireUserChanged(me);
+		rbnb.getEventService().fireUserChanged(me);
 	}
 
 	public void sendPlaylist(Playlist p, String email) throws IOException {
-		robonobo.getSerializationManager().hitUrl(msc.getSendPlaylistUrl(p.getPlaylistId(), email), me.getEmail(), me.getPassword());
+		rbnb.getSerializationManager().hitUrl(msc.getSendPlaylistUrl(p.getPlaylistId(), email));
 		// This playlist will be removed from my list - just remove it
 		// locally, don't bother to hit the server again
 		me.getPlaylistIds().remove(p.getPlaylistId());
-		robonobo.getEventService().fireUserChanged(me);
+		rbnb.getEventService().fireUserChanged(me);
 	}
 
 	public void sharePlaylist(Playlist p, Set<Long> friendIds, Set<String> emails) throws IOException, RobonoboException {
-		robonobo.getSerializationManager().hitUrl(msc.getSharePlaylistUrl(p.getPlaylistId(), friendIds, emails), me.getEmail(), me.getPassword());
+		rbnb.getSerializationManager().hitUrl(msc.getSharePlaylistUrl(p.getPlaylistId(), friendIds, emails));
 		List<User> friends = new ArrayList<User>(friendIds.size());
 		for (Long friendId : friendIds) {
 			friends.add(getUser(friendId));
@@ -229,28 +238,28 @@ public class UserService extends AbstractService {
 
 	private User getUpdatedUser(long userId) throws IOException {
 		UserMsg.Builder ub = UserMsg.newBuilder();
-		robonobo.getSerializationManager().getObjectFromUrl(ub, msc.getUserUrl(userId), me.getEmail(), me.getPassword());
+		rbnb.getSerializationManager().getObjectFromUrl(ub, msc.getUserUrl(userId));
 		return new User(ub.build());
 	}
 
 	private Playlist getUpdatedPlaylist(String playlistId) throws IOException {
 		String playlistUrl = msc.getPlaylistUrl(playlistId);
 		PlaylistMsg.Builder pb = PlaylistMsg.newBuilder();
-		robonobo.getSerializationManager().getObjectFromUrl(pb, playlistUrl, me.getEmail(), me.getPassword());
+		rbnb.getSerializationManager().getObjectFromUrl(pb, playlistUrl);
 		return new Playlist(pb.build());
 	}
 
 	public void checkPlaylistUpdate(String playlistId) throws IOException, RobonoboException {
 		Playlist currentP = playlists.get(playlistId);
 		final Playlist updatedP = getUpdatedPlaylist(playlistId);
-		PlaylistConfig pc = robonobo.getDbService().getPlaylistConfig(playlistId);
+		PlaylistConfig pc = rbnb.getDbService().getPlaylistConfig(playlistId);
 		boolean autoDownload = (pc != null) && "true".equalsIgnoreCase(pc.getItem("autoDownload"));
 		// Make sure we have copies of all streams
 		if (autoDownload) {
 			for (String streamId : updatedP.getStreamIds()) {
-				Track t = robonobo.getTrackService().getTrack(streamId);
+				Track t = rbnb.getTrackService().getTrack(streamId);
 				if (t instanceof CloudTrack)
-					robonobo.getDownloadService().addDownload(streamId);
+					rbnb.getDownloadService().addDownload(streamId);
 			}
 		}
 		if (currentP == null || currentP.getUpdated() == null || updatedP.getUpdated().after(currentP.getUpdated())) {
@@ -260,7 +269,7 @@ public class UserService extends AbstractService {
 					myPlaylistsByTitle.remove(currentP.getTitle());
 				myPlaylistsByTitle.put(updatedP.getTitle(), updatedP.getPlaylistId());
 			}
-			robonobo.getEventService().firePlaylistChanged(updatedP);
+			rbnb.getEventService().firePlaylistChanged(updatedP);
 		}
 		if (pc != null && "true".equalsIgnoreCase(pc.getItem("iTunesExport"))) {
 			final List<User> contUsers = new ArrayList<User>();
@@ -316,7 +325,7 @@ public class UserService extends AbstractService {
 		if ((newU.getUpdated() == null && u.getUpdated() == null) || newU.getUpdated().after(u.getUpdated())) {
 			for (long friendId : newU.getFriendIds()) {
 				if (!usersById.containsKey(friendId))
-					robonobo.getExecutor().execute(new UserLookerUpper(friendId));
+					rbnb.getExecutor().execute(new UserLookerUpper(friendId));
 			}
 			synchronized (UserService.this) {
 				if (newU.equals(me))
@@ -324,7 +333,7 @@ public class UserService extends AbstractService {
 				usersByEmail.put(newU.getEmail(), newU);
 				usersById.put(newU.getUserId(), newU);
 			}
-			robonobo.getEventService().fireUserChanged(newU);
+			rbnb.getEventService().fireUserChanged(newU);
 		}
 		if (cascade) {
 			for (String playlistId : newU.getPlaylistIds()) {
@@ -346,13 +355,13 @@ public class UserService extends AbstractService {
 			if ((newU.getUpdated() == null && u.getUpdated() == null) || newU.getUpdated().after(u.getUpdated())) {
 				for (long friendId : newU.getFriendIds()) {
 					if (!usersById.containsKey(friendId))
-						robonobo.getExecutor().execute(new UserLookerUpper(friendId));
+						rbnb.getExecutor().execute(new UserLookerUpper(friendId));
 				}
 				synchronized (UserService.this) {
 					usersByEmail.put(newU.getEmail(), newU);
 					usersById.put(newU.getUserId(), newU);
 				}
-				robonobo.getEventService().fireUserChanged(newU);
+				rbnb.getEventService().fireUserChanged(newU);
 			}
 			for (String playlistId : newU.getPlaylistIds()) {
 				playlistsToCheck.add(playlistId);
@@ -387,10 +396,10 @@ public class UserService extends AbstractService {
 			}
 			for (long friendId : u.getFriendIds()) {
 				if (!usersById.containsKey(friendId)) {
-					robonobo.getExecutor().execute(new UserLookerUpper(friendId));
+					rbnb.getExecutor().execute(new UserLookerUpper(friendId));
 				}
 			}
-			robonobo.getEventService().fireUserChanged(u);
+			rbnb.getEventService().fireUserChanged(u);
 			for (String playlistId : u.getPlaylistIds()) {
 				// For shared playlists, don't hit the server again if we already have it - but fire the playlist changed event so it's added to the friend tree
 				// for this user
@@ -398,8 +407,10 @@ public class UserService extends AbstractService {
 				if(p == null)
 					checkPlaylistUpdate(playlistId);
 				else
-					robonobo.getEventService().firePlaylistChanged(p);
+					rbnb.getEventService().firePlaylistChanged(p);
 			}
+			if(me.getFriendIds().contains(userId))
+				rbnb.getLibraryService().fetchLibrary(userId);
 		}
 	}
 

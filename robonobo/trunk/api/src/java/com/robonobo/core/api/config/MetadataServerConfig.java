@@ -1,6 +1,7 @@
 package com.robonobo.core.api.config;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Set;
 
 import static com.robonobo.common.util.TextUtil.*;
@@ -68,5 +69,20 @@ public class MetadataServerConfig implements Serializable {
 	
 	public String getUserUrl(long userId) {
 		return baseUrl + "users/byid/" + userId;
+	}
+	
+	public String getLibraryUrl(long userId, Date since) {
+		String url = baseUrl + "library/"+userId;
+		if(since != null)
+			url += "?since="+since.getTime();
+		return url;
+	}
+	
+	public String getLibraryAddUrl(long userId) {
+		return baseUrl + "library/"+userId+"/add";
+	}
+	
+	public String getLibraryDelUrl(long userId) {
+		return baseUrl + "library/"+userId+"/del";
 	}
 }

@@ -36,6 +36,7 @@ public class SerializationManager {
 	ObjectSerializer genericSerializer = new GenericXMLSerializer();
 	HttpClient client;
 	Log log = LogFactory.getLog(getClass());
+	String username, password;
 
 	public SerializationManager() {
 		// Use a multithreaded connection manager - keeps a set of connections
@@ -47,16 +48,21 @@ public class SerializationManager {
 		client = new HttpClient(connMgr);
 	}
 
+	public void setCreds(String user, String pwd) {
+		username = user;
+		password = pwd;
+	}
+	
 	/**
 	 * Visits the supplied url, throws an exception if we get any return code
 	 * other than 200-OK
 	 */
-	public void hitUrl(String url, String user, String pwd) throws IOException {
+	public void hitUrl(String url) throws IOException {
 		log.debug("Hitting url "+url);
 		GetMethod get = new GetMethod(url);
 		try {
 			client.getState().setAuthenticationPreemptive(true);
-			client.getState().setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(user, pwd));
+			client.getState().setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
 			int statusCode = client.executeMethod(get);
 			if (statusCode != 200)
 				throw new IOException("Failed to hit " + url + ", status code was " + statusCode);
@@ -65,7 +71,7 @@ public class SerializationManager {
 		}
 	}
 
-	public void deleteObjectAtUrl(String url, String username, String password) throws IOException {
+	public void deleteObjectAtUrl(String url) throws IOException {
 		log.debug("Deleting object at "+url);
 		DeleteMethod del = new DeleteMethod(url);
 		try {
@@ -84,12 +90,7 @@ public class SerializationManager {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void getObjectFromUrl(AbstractMessage.Builder bldr, String url) throws IOException {
-		getObjectFromUrl(bldr, url, null, null);
-	}
-
-	@SuppressWarnings("unchecked")
-	public void getObjectFromUrl(AbstractMessage.Builder bldr, String url, String username, String password)
+	public void getObjectFromUrl(AbstractMessage.Builder bldr, String url)
 			throws IOException {
 		log.debug("Getting object from "+url);
 		GetMethod get = new GetMethod(url);
@@ -117,7 +118,7 @@ public class SerializationManager {
 		getSerializerForClass(obj.getClass()).putObject(obj, out);
 	}
 
-	public void putObjectToUrl(GeneratedMessage msg, String url, String username, String password) throws IOException {
+	public void putObjectToUrl(GeneratedMessage msg, String url) throws IOException {
 		log.debug("Putting object to "+url);
 		PutMethod put = new PutMethod(url);
 		try {

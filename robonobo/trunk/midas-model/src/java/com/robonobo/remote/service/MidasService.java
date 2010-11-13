@@ -1,12 +1,8 @@
 package com.robonobo.remote.service;
 
-import java.util.List;
+import java.util.*;
 
-import com.robonobo.midas.model.MidasFriendRequest;
-import com.robonobo.midas.model.MidasInvite;
-import com.robonobo.midas.model.MidasPlaylist;
-import com.robonobo.midas.model.MidasStream;
-import com.robonobo.midas.model.MidasUser;
+import com.robonobo.midas.model.*;
 
 public interface MidasService {
 	public List<MidasUser> getAllUsers();
@@ -62,4 +58,11 @@ public interface MidasService {
 	public MidasInvite getInvite(String inviteCode);
 	
 	public void deleteInvite(String inviteCode);
+	
+	/**
+	 * @param since Pass null to get the whole library
+	 */
+	public MidasLibrary getLibrary(MidasUser u, Date since);
+	
+	public void putLibrary(MidasLibrary lib);
 }

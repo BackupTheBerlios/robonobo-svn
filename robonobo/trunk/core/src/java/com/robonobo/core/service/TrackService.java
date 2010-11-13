@@ -51,12 +51,12 @@ public class TrackService extends AbstractService implements TransferSpeedListen
 
 	@Override
 	public void startup() throws Exception {
-		share = robonobo.getShareService();
-		download = robonobo.getDownloadService();
-		metadata = robonobo.getMetadataService();
-		playback = robonobo.getPlaybackService();
-		event = robonobo.getEventService();
-		mina = robonobo.getMina();
+		share = rbnb.getShareService();
+		download = rbnb.getDownloadService();
+		metadata = rbnb.getMetadataService();
+		playback = rbnb.getPlaybackService();
+		event = rbnb.getEventService();
+		mina = rbnb.getMina();
 		// Fork off a thread to start shares, we might have a lot... do this here rather than in shareservice as we start after them and we need to be present
 		// to fire allSharesStarted
 		log.debug("Spawning thread to start shares");

@@ -92,6 +92,7 @@ public class RobonoboInstance implements Robonobo {
 		serviceMgr.registerService(new PlaybackService());
 		serviceMgr.registerService(new UserService());
 		serviceMgr.registerService(new TaskService());
+		serviceMgr.registerService(new LibraryService());
 		
 		if (getConfig().isAgoric())
 			serviceMgr.registerService(new WangService());
@@ -229,6 +230,10 @@ public class RobonoboInstance implements Robonobo {
 
 	public TaskService getTaskService() {
 		return (TaskService) serviceMgr.getService("core.tasks");
+	}
+
+	public LibraryService getLibraryService() {
+		return (LibraryService) serviceMgr.getService("core.library");
 	}
 	
 	public ITunesService getITunesService() {

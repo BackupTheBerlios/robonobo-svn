@@ -1,19 +1,12 @@
 package com.robonobo.remote.service;
 
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+import java.util.Map.Entry;
+
+import org.apache.commons.collections.MapIterator;
 
 import com.robonobo.core.api.model.Playlist;
-import com.robonobo.midas.model.MidasFriendRequest;
-import com.robonobo.midas.model.MidasFriendRequestDAO;
-import com.robonobo.midas.model.MidasInvite;
-import com.robonobo.midas.model.MidasInviteDAO;
-import com.robonobo.midas.model.MidasPlaylist;
-import com.robonobo.midas.model.MidasPlaylistDAO;
-import com.robonobo.midas.model.MidasStream;
-import com.robonobo.midas.model.MidasStreamDAO;
-import com.robonobo.midas.model.MidasUser;
-import com.robonobo.midas.model.MidasUserDAO;
+import com.robonobo.midas.model.*;
 import com.twmacinta.util.MD5;
 
 import static com.robonobo.common.util.TimeUtil.*;
@@ -211,6 +204,25 @@ public class LocalMidasService implements MidasService {
 	
 	public MidasInvite getInvite(String inviteCode) {
 		return MidasInviteDAO.retrieveByInviteCode(inviteCode);
+	}
+	
+	@Override
+	public MidasLibrary getLibrary(MidasUser u, Date since) {
+		MidasLibrary lib = MidasLibraryDAO.getLibrary(u.getUserId());
+		if(since != null && lib != null) {
+			Iterator<Entry<String, Date>> it = lib.getTracks().entrySet().iterator();
+			while(it.hasNext()) {
+				Entry<String, Date> e = it.next();
+				if(since.after(e.getValue()))
+					it.remove();
+			}
+		}
+		return lib;
+	}
+	
+	@Override
+	public void putLibrary(MidasLibrary lib) {
+		MidasLibraryDAO.saveLibrary(lib);
 	}
 	
 	private String generateEmailCode(String email) {

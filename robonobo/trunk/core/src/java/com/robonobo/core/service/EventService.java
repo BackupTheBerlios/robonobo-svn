@@ -230,6 +230,16 @@ public class EventService extends AbstractService implements MinaListener {
 		}
 	}
 
+	public void fireLibraryUpdated(long userId, Library lib) {
+		UserPlaylistListener[] arr;
+		synchronized (this) {
+			arr = getUpArr();
+		}
+		for (UserPlaylistListener listener : arr) {
+			listener.libraryUpdated(userId, lib);
+		}
+	}
+
 	public void fireStatusChanged() {
 		RobonoboStatusListener[] arr;
 		synchronized (this) {
@@ -281,7 +291,7 @@ public class EventService extends AbstractService implements MinaListener {
 	public void nodeDisconnected(ConnectedNode node) {
 		if (node.isSupernode()) {
 			if (minaSupernodes == 1) {
-				robonobo.setStatus(RobonoboStatus.NotConnected);
+				rbnb.setStatus(RobonoboStatus.NotConnected);
 				fireStatusChanged();
 			}
 			if(minaSupernodes > 0)
@@ -387,7 +397,7 @@ public class EventService extends AbstractService implements MinaListener {
 	}
 
 	public void receptionConnsChanged(String streamId) {
-		DownloadingTrack d = robonobo.getDownloadService().getDownload(streamId);
+		DownloadingTrack d = rbnb.getDownloadService().getDownload(streamId);
 		if(d != null)
 			fireTrackUpdated(streamId);
 	}

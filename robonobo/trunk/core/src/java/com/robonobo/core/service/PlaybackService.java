@@ -43,10 +43,10 @@ public class PlaybackService extends AbstractService implements AudioPlayerListe
 
 	@Override
 	public void startup() throws Exception {
-		event = robonobo.getEventService();
-		tracks = robonobo.getTrackService();
-		download = robonobo.getDownloadService();
-		mina = robonobo.getMina();
+		event = rbnb.getEventService();
+		tracks = rbnb.getTrackService();
+		download = rbnb.getDownloadService();
+		mina = rbnb.getMina();
 	}
 
 	@Override
@@ -120,7 +120,7 @@ public class PlaybackService extends AbstractService implements AudioPlayerListe
 		// If we already have some of this stream, start playing it straight
 		// away, otherwise ask it to notify us when it gets data, and start
 		// playing
-		Stream s = robonobo.getMetadataService().getStream(currentStreamId);
+		Stream s = rbnb.getMetadataService().getStream(currentStreamId);
 		if (bufferedEnough(s, pb))
 			startPlaying(s, pb);
 		else {
@@ -140,7 +140,7 @@ public class PlaybackService extends AbstractService implements AudioPlayerListe
 	 * have enough data, and start playing if so
 	 */
 	public void gotPage(final PageBuffer pb, long pageNum) {
-		Stream s = robonobo.getMetadataService().getStream(currentStreamId);
+		Stream s = rbnb.getMetadataService().getStream(currentStreamId);
 		if (currentStreamId.equals(pb.getStreamId())) {
 			if (bufferedEnough(s, pb)) {
 				pb.removeListener(this);
@@ -284,7 +284,7 @@ public class PlaybackService extends AbstractService implements AudioPlayerListe
 		String myErr = "Got playback error while playing " + errStreamId + ": " + error;
 		log.debug(myErr);
 		// If we are downloading this, stop at once, it's fux0red
-		DownloadingTrack d = robonobo.getDbService().getDownload(errStreamId);
+		DownloadingTrack d = rbnb.getDbService().getDownload(errStreamId);
 		if (d != null) {
 			try {
 				download.deleteDownload(errStreamId);

@@ -15,7 +15,7 @@ import com.robonobo.spi.RuntimeService;
 abstract public class AbstractService implements RuntimeService {
 	boolean running = false;
 	Map deps = new HashMap();
-	RobonoboInstance robonobo;
+	RobonoboInstance rbnb;
 	Log log = LogFactory.getLog(getClass());
 
 	public AbstractService() {
@@ -23,11 +23,11 @@ abstract public class AbstractService implements RuntimeService {
 	}
 
 	protected RobonoboInstance getRobonobo() {
-		return robonobo;
+		return rbnb;
 	}
 
 	public void setRobonobo(Robonobo robonobo) {
-		this.robonobo = (RobonoboInstance) robonobo;
+		this.rbnb = (RobonoboInstance) robonobo;
 	}
 
 	protected void addHardDependency(String need) {

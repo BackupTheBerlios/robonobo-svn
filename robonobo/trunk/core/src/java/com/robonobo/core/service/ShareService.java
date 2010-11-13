@@ -58,13 +58,13 @@ public class ShareService extends AbstractService {
 
 	@Override
 	public void startup() throws Exception {
-		db = robonobo.getDbService();
-		event = robonobo.getEventService();
-		users = robonobo.getUsersService();
-		storage = robonobo.getStorageService();
-		metadata = robonobo.getMetadataService();
-		playback = robonobo.getPlaybackService();
-		mina = robonobo.getMina();
+		db = rbnb.getDbService();
+		event = rbnb.getEventService();
+		users = rbnb.getUsersService();
+		storage = rbnb.getStorageService();
+		metadata = rbnb.getMetadataService();
+		playback = rbnb.getPlaybackService();
+		mina = rbnb.getMina();
 		// Keep track of our stream ids, everything else loaded on-demand from the db
 		shareStreamIds = db.getShares();
 		watchDirTask = getRobonobo().getExecutor().scheduleWithFixedDelay(new WatchDirChecker(), WATCHDIR_INITIAL_WAIT, WATCHDIR_CHECK_FREQ, TimeUnit.SECONDS);
@@ -88,7 +88,7 @@ public class ShareService extends AbstractService {
 		PageBuffer pb;
 		try {
 			pb = storage.createPageBufForBroadcast(sh.getStream(), sh.getFile());
-			FormatSupportProvider fsp = robonobo.getFormatService().getFormatSupportProvider(s.getMimeType());
+			FormatSupportProvider fsp = rbnb.getFormatService().getFormatSupportProvider(s.getMimeType());
 			if (fsp == null)
 				throw new IOException("No FSP available for the mimeType " + s.getMimeType());
 			log.debug("Paginating " + dataFile.getAbsolutePath());
@@ -101,6 +101,7 @@ public class ShareService extends AbstractService {
 		synchronized (this) {
 			shareStreamIds.add(s.getStreamId());
 		}
+		rbnb.getLibraryService().addToLibrary(streamId);
 		startShare(streamId, pb);
 		event.fireTrackUpdated(s.getStreamId());
 		users.checkPlaylistsForNewShare(sh);
@@ -133,6 +134,7 @@ public class ShareService extends AbstractService {
 		synchronized (this) {
 			shareStreamIds.remove(streamId);
 		}
+		rbnb.getLibraryService().delFromLibrary(streamId);
 		event.fireTrackUpdated(streamId);
 	}
 

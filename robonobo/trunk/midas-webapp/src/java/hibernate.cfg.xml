@@ -28,6 +28,7 @@
         <mapping resource="com/robonobo/midas/model/MidasUser.hbm.xml"/>
         <mapping resource="com/robonobo/midas/model/MidasInvite.hbm.xml"/>	
         <mapping resource="com/robonobo/midas/model/MidasFriendRequest.hbm.xml"/>	
+        <mapping resource="com/robonobo/midas/model/MidasLibrary.hbm.xml"/>	
 
 		<!-- Listeners to allow hibernate search to do its thing -->
 		<event type="post-update">

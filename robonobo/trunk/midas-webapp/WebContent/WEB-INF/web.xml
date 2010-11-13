@@ -38,9 +38,14 @@
 	</servlet>
 	
 	<servlet>
+		<servlet-name>midas-library</servlet-name>
+		<servlet-class>com.robonobo.midas.servlet.LibraryServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	
+	<servlet>
 		<servlet-name>midas-share-playlist</servlet-name>
 		<servlet-class>com.robonobo.midas.servlet.SharePlaylistServlet</servlet-class>
-        <load-on-startup>1</load-on-startup>
         <init-param>
         	<param-name>smtpServer</param-name>
         	<param-value>localhost</param-value>
@@ -65,6 +70,7 @@
         	<param-name>fromRoboEmail</param-name>
         	<param-value>mailmonkey@robonobo.com</param-value>
         </init-param>
+        <load-on-startup>1</load-on-startup>
 	</servlet>
 	
 	<servlet>
@@ -92,6 +98,11 @@
 	<servlet-mapping>
 		<servlet-name>midas-users</servlet-name>
 		<url-pattern>/users/*</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+		<servlet-name>midas-library</servlet-name>
+		<url-pattern>/library/*</url-pattern>
 	</servlet-mapping>
 	
 	<servlet-mapping>

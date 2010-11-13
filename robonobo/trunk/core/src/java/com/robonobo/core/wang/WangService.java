@@ -16,8 +16,7 @@ import com.robonobo.core.api.CurrencyClient;
 import com.robonobo.core.api.CurrencyException;
 import com.robonobo.core.api.StreamVelocity;
 import com.robonobo.core.api.UserPlaylistListener;
-import com.robonobo.core.api.model.Playlist;
-import com.robonobo.core.api.model.User;
+import com.robonobo.core.api.model.*;
 import com.robonobo.core.api.proto.CoreApi.Node;
 import com.robonobo.core.service.AbstractService;
 import com.robonobo.wang.WangException;
@@ -201,6 +200,10 @@ public class WangService extends AbstractService implements CurrencyClient {
 		}
 
 		public void userChanged(User u) {
+			// Do nothing
+		}
+		
+		public void libraryUpdated(long userId, Library lib) {
 			// Do nothing
 		}
 	}

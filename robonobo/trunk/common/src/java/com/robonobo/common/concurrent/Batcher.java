@@ -68,6 +68,6 @@ public abstract class Batcher<T> extends CatchingRunnable {
 	/**
 	 * Called when it's time to batch up the objects.
 	 */
-	protected abstract void runBatch(Collection<T> objs);
+	protected abstract void runBatch(Collection<T> objs) throws Exception;
 
 }
