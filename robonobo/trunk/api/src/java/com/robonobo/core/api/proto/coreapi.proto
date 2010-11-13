@@ -60,7 +60,7 @@ message PlaylistMsg {
 }
 
 message LibraryTrackMsg {
-	required StreamMsg stream = 1;
+	required string stream_id = 1;
 	optional int64 added_date = 2;
 }
 
