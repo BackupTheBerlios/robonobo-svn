@@ -3454,12 +3454,12 @@ public final class CoreApi {
       return com.robonobo.core.api.proto.CoreApi.internal_static_coreapi_LibraryTrackMsg_fieldAccessorTable;
     }
     
-    // required .coreapi.StreamMsg stream = 1;
-    public static final int STREAM_FIELD_NUMBER = 1;
-    private boolean hasStream;
-    private com.robonobo.core.api.proto.CoreApi.StreamMsg stream_;
-    public boolean hasStream() { return hasStream; }
-    public com.robonobo.core.api.proto.CoreApi.StreamMsg getStream() { return stream_; }
+    // required string stream_id = 1;
+    public static final int STREAM_ID_FIELD_NUMBER = 1;
+    private boolean hasStreamId;
+    private java.lang.String streamId_ = "";
+    public boolean hasStreamId() { return hasStreamId; }
+    public java.lang.String getStreamId() { return streamId_; }
     
     // optional int64 added_date = 2;
     public static final int ADDED_DATE_FIELD_NUMBER = 2;
@@ -3469,19 +3469,17 @@ public final class CoreApi {
     public long getAddedDate() { return addedDate_; }
     
     private void initFields() {
-      stream_ = com.robonobo.core.api.proto.CoreApi.StreamMsg.getDefaultInstance();
     }
     public final boolean isInitialized() {
-      if (!hasStream) return false;
-      if (!getStream().isInitialized()) return false;
+      if (!hasStreamId) return false;
       return true;
     }
     
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
-      if (hasStream()) {
-        output.writeMessage(1, getStream());
+      if (hasStreamId()) {
+        output.writeString(1, getStreamId());
       }
       if (hasAddedDate()) {
         output.writeInt64(2, getAddedDate());
@@ -3495,9 +3493,9 @@ public final class CoreApi {
       if (size != -1) return size;
     
       size = 0;
-      if (hasStream()) {
+      if (hasStreamId()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, getStream());
+          .computeStringSize(1, getStreamId());
       }
       if (hasAddedDate()) {
         size += com.google.protobuf.CodedOutputStream
@@ -3661,8 +3659,8 @@ public final class CoreApi {
       
       public Builder mergeFrom(com.robonobo.core.api.proto.CoreApi.LibraryTrackMsg other) {
         if (other == com.robonobo.core.api.proto.CoreApi.LibraryTrackMsg.getDefaultInstance()) return this;
-        if (other.hasStream()) {
-          mergeStream(other.getStream());
+        if (other.hasStreamId()) {
+          setStreamId(other.getStreamId());
         }
         if (other.hasAddedDate()) {
           setAddedDate(other.getAddedDate());
@@ -3693,12 +3691,7 @@ public final class CoreApi {
               break;
             }
             case 10: {
-              com.robonobo.core.api.proto.CoreApi.StreamMsg.Builder subBuilder = com.robonobo.core.api.proto.CoreApi.StreamMsg.newBuilder();
-              if (hasStream()) {
-                subBuilder.mergeFrom(getStream());
-              }
-              input.readMessage(subBuilder, extensionRegistry);
-              setStream(subBuilder.buildPartial());
+              setStreamId(input.readString());
               break;
             }
             case 16: {
@@ -3710,40 +3703,24 @@ public final class CoreApi {
       }
       
       
-      // required .coreapi.StreamMsg stream = 1;
-      public boolean hasStream() {
-        return result.hasStream();
+      // required string stream_id = 1;
+      public boolean hasStreamId() {
+        return result.hasStreamId();
       }
-      public com.robonobo.core.api.proto.CoreApi.StreamMsg getStream() {
-        return result.getStream();
+      public java.lang.String getStreamId() {
+        return result.getStreamId();
       }
-      public Builder setStream(com.robonobo.core.api.proto.CoreApi.StreamMsg value) {
+      public Builder setStreamId(java.lang.String value) {
         if (value == null) {
-          throw new NullPointerException();
-        }
-        result.hasStream = true;
-        result.stream_ = value;
+    throw new NullPointerException();
+  }
+  result.hasStreamId = true;
+        result.streamId_ = value;
         return this;
       }
-      public Builder setStream(com.robonobo.core.api.proto.CoreApi.StreamMsg.Builder builderForValue) {
-        result.hasStream = true;
-        result.stream_ = builderForValue.build();
-        return this;
-      }
-      public Builder mergeStream(com.robonobo.core.api.proto.CoreApi.StreamMsg value) {
-        if (result.hasStream() &&
-            result.stream_ != com.robonobo.core.api.proto.CoreApi.StreamMsg.getDefaultInstance()) {
-          result.stream_ =
-            com.robonobo.core.api.proto.CoreApi.StreamMsg.newBuilder(result.stream_).mergeFrom(value).buildPartial();
-        } else {
-          result.stream_ = value;
-        }
-        result.hasStream = true;
-        return this;
-      }
-      public Builder clearStream() {
-        result.hasStream = false;
-        result.stream_ = com.robonobo.core.api.proto.CoreApi.StreamMsg.getDefaultInstance();
+      public Builder clearStreamId() {
+        result.hasStreamId = false;
+        result.streamId_ = getDefaultInstance().getStreamId();
         return this;
       }
       
@@ -5697,21 +5674,20 @@ public final class CoreApi {
       "st_id\030\n \003(\t\"\220\001\n\013PlaylistMsg\022\n\n\002id\030\001 \002(\t\022" +
       "\r\n\005title\030\002 \002(\t\022\026\n\010announce\030\003 \001(\010:\004true\022\024" +
       "\n\014updated_date\030\004 \001(\003\022\023\n\013description\030\005 \001(",
-      "\t\022\021\n\tstream_id\030\006 \003(\t\022\020\n\010owner_id\030\007 \003(\003\"I" +
-      "\n\017LibraryTrackMsg\022\"\n\006stream\030\001 \002(\0132\022.core" +
-      "api.StreamMsg\022\022\n\nadded_date\030\002 \001(\003\"5\n\nLib" +
-      "raryMsg\022\'\n\005track\030\001 \003(\0132\030.coreapi.Library" +
-      "TrackMsg\"\200\001\n\tInviteMsg\022\021\n\tinvite_id\030\001 \002(" +
-      "\003\022\r\n\005email\030\002 \002(\t\022\023\n\013invite_code\030\003 \002(\t\022\024\n" +
-      "\014updated_date\030\004 \001(\003\022\023\n\013playlist_id\030\005 \003(\t" +
-      "\022\021\n\tfriend_id\030\006 \003(\003\"\232\001\n\020FriendRequestMsg" +
-      "\022\031\n\021friend_request_id\030\001 \002(\003\022\024\n\014requestor" +
-      "_id\030\002 \002(\003\022\024\n\014requestee_id\030\003 \002(\003\022\024\n\014reque",
-      "st_code\030\004 \002(\t\022\024\n\014updated_date\030\005 \001(\003\022\023\n\013p" +
-      "laylist_id\030\006 \003(\t\"N\n\016SearchResponse\022\023\n\013fi" +
-      "rstResult\030\001 \002(\005\022\024\n\014totalResults\030\002 \002(\005\022\021\n" +
-      "\tobject_id\030\003 \003(\tB&\n\033com.robonobo.core.ap" +
-      "i.protoB\007CoreApi"
+      "\t\022\021\n\tstream_id\030\006 \003(\t\022\020\n\010owner_id\030\007 \003(\003\"8" +
+      "\n\017LibraryTrackMsg\022\021\n\tstream_id\030\001 \002(\t\022\022\n\n" +
+      "added_date\030\002 \001(\003\"5\n\nLibraryMsg\022\'\n\005track\030" +
+      "\001 \003(\0132\030.coreapi.LibraryTrackMsg\"\200\001\n\tInvi" +
+      "teMsg\022\021\n\tinvite_id\030\001 \002(\003\022\r\n\005email\030\002 \002(\t\022" +
+      "\023\n\013invite_code\030\003 \002(\t\022\024\n\014updated_date\030\004 \001" +
+      "(\003\022\023\n\013playlist_id\030\005 \003(\t\022\021\n\tfriend_id\030\006 \003" +
+      "(\003\"\232\001\n\020FriendRequestMsg\022\031\n\021friend_reques" +
+      "t_id\030\001 \002(\003\022\024\n\014requestor_id\030\002 \002(\003\022\024\n\014requ" +
+      "estee_id\030\003 \002(\003\022\024\n\014request_code\030\004 \002(\t\022\024\n\014",
+      "updated_date\030\005 \001(\003\022\023\n\013playlist_id\030\006 \003(\t\"" +
+      "N\n\016SearchResponse\022\023\n\013firstResult\030\001 \002(\005\022\024" +
+      "\n\014totalResults\030\002 \002(\005\022\021\n\tobject_id\030\003 \003(\tB" +
+      "&\n\033com.robonobo.core.api.protoB\007CoreApi"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -5779,7 +5755,7 @@ public final class CoreApi {
           internal_static_coreapi_LibraryTrackMsg_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_coreapi_LibraryTrackMsg_descriptor,
-              new java.lang.String[] { "Stream", "AddedDate", },
+              new java.lang.String[] { "StreamId", "AddedDate", },
               com.robonobo.core.api.proto.CoreApi.LibraryTrackMsg.class,
               com.robonobo.core.api.proto.CoreApi.LibraryTrackMsg.Builder.class);
           internal_static_coreapi_LibraryMsg_descriptor =
