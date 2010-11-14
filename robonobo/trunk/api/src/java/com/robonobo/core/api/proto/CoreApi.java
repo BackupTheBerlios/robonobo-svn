@@ -3781,8 +3781,15 @@ public final class CoreApi {
       return com.robonobo.core.api.proto.CoreApi.internal_static_coreapi_LibraryMsg_fieldAccessorTable;
     }
     
-    // repeated .coreapi.LibraryTrackMsg track = 1;
-    public static final int TRACK_FIELD_NUMBER = 1;
+    // optional int64 user_id = 1;
+    public static final int USER_ID_FIELD_NUMBER = 1;
+    private boolean hasUserId;
+    private long userId_ = 0L;
+    public boolean hasUserId() { return hasUserId; }
+    public long getUserId() { return userId_; }
+    
+    // repeated .coreapi.LibraryTrackMsg track = 2;
+    public static final int TRACK_FIELD_NUMBER = 2;
     private java.util.List<com.robonobo.core.api.proto.CoreApi.LibraryTrackMsg> track_ =
       java.util.Collections.emptyList();
     public java.util.List<com.robonobo.core.api.proto.CoreApi.LibraryTrackMsg> getTrackList() {
@@ -3805,8 +3812,11 @@ public final class CoreApi {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
+      if (hasUserId()) {
+        output.writeInt64(1, getUserId());
+      }
       for (com.robonobo.core.api.proto.CoreApi.LibraryTrackMsg element : getTrackList()) {
-        output.writeMessage(1, element);
+        output.writeMessage(2, element);
       }
       getUnknownFields().writeTo(output);
     }
@@ -3817,9 +3827,13 @@ public final class CoreApi {
       if (size != -1) return size;
     
       size = 0;
+      if (hasUserId()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(1, getUserId());
+      }
       for (com.robonobo.core.api.proto.CoreApi.LibraryTrackMsg element : getTrackList()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(1, element);
+          .computeMessageSize(2, element);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -3983,6 +3997,9 @@ public final class CoreApi {
       
       public Builder mergeFrom(com.robonobo.core.api.proto.CoreApi.LibraryMsg other) {
         if (other == com.robonobo.core.api.proto.CoreApi.LibraryMsg.getDefaultInstance()) return this;
+        if (other.hasUserId()) {
+          setUserId(other.getUserId());
+        }
         if (!other.track_.isEmpty()) {
           if (result.track_.isEmpty()) {
             result.track_ = new java.util.ArrayList<com.robonobo.core.api.proto.CoreApi.LibraryTrackMsg>();
@@ -4014,7 +4031,11 @@ public final class CoreApi {
               }
               break;
             }
-            case 10: {
+            case 8: {
+              setUserId(input.readInt64());
+              break;
+            }
+            case 18: {
               com.robonobo.core.api.proto.CoreApi.LibraryTrackMsg.Builder subBuilder = com.robonobo.core.api.proto.CoreApi.LibraryTrackMsg.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
               addTrack(subBuilder.buildPartial());
@@ -4025,7 +4046,25 @@ public final class CoreApi {
       }
       
       
-      // repeated .coreapi.LibraryTrackMsg track = 1;
+      // optional int64 user_id = 1;
+      public boolean hasUserId() {
+        return result.hasUserId();
+      }
+      public long getUserId() {
+        return result.getUserId();
+      }
+      public Builder setUserId(long value) {
+        result.hasUserId = true;
+        result.userId_ = value;
+        return this;
+      }
+      public Builder clearUserId() {
+        result.hasUserId = false;
+        result.userId_ = 0L;
+        return this;
+      }
+      
+      // repeated .coreapi.LibraryTrackMsg track = 2;
       public java.util.List<com.robonobo.core.api.proto.CoreApi.LibraryTrackMsg> getTrackList() {
         return java.util.Collections.unmodifiableList(result.track_);
       }
@@ -5676,18 +5715,19 @@ public final class CoreApi {
       "\n\014updated_date\030\004 \001(\003\022\023\n\013description\030\005 \001(",
       "\t\022\021\n\tstream_id\030\006 \003(\t\022\020\n\010owner_id\030\007 \003(\003\"8" +
       "\n\017LibraryTrackMsg\022\021\n\tstream_id\030\001 \002(\t\022\022\n\n" +
-      "added_date\030\002 \001(\003\"5\n\nLibraryMsg\022\'\n\005track\030" +
-      "\001 \003(\0132\030.coreapi.LibraryTrackMsg\"\200\001\n\tInvi" +
-      "teMsg\022\021\n\tinvite_id\030\001 \002(\003\022\r\n\005email\030\002 \002(\t\022" +
-      "\023\n\013invite_code\030\003 \002(\t\022\024\n\014updated_date\030\004 \001" +
-      "(\003\022\023\n\013playlist_id\030\005 \003(\t\022\021\n\tfriend_id\030\006 \003" +
-      "(\003\"\232\001\n\020FriendRequestMsg\022\031\n\021friend_reques" +
-      "t_id\030\001 \002(\003\022\024\n\014requestor_id\030\002 \002(\003\022\024\n\014requ" +
-      "estee_id\030\003 \002(\003\022\024\n\014request_code\030\004 \002(\t\022\024\n\014",
-      "updated_date\030\005 \001(\003\022\023\n\013playlist_id\030\006 \003(\t\"" +
-      "N\n\016SearchResponse\022\023\n\013firstResult\030\001 \002(\005\022\024" +
-      "\n\014totalResults\030\002 \002(\005\022\021\n\tobject_id\030\003 \003(\tB" +
-      "&\n\033com.robonobo.core.api.protoB\007CoreApi"
+      "added_date\030\002 \001(\003\"F\n\nLibraryMsg\022\017\n\007user_i" +
+      "d\030\001 \001(\003\022\'\n\005track\030\002 \003(\0132\030.coreapi.Library" +
+      "TrackMsg\"\200\001\n\tInviteMsg\022\021\n\tinvite_id\030\001 \002(" +
+      "\003\022\r\n\005email\030\002 \002(\t\022\023\n\013invite_code\030\003 \002(\t\022\024\n" +
+      "\014updated_date\030\004 \001(\003\022\023\n\013playlist_id\030\005 \003(\t" +
+      "\022\021\n\tfriend_id\030\006 \003(\003\"\232\001\n\020FriendRequestMsg" +
+      "\022\031\n\021friend_request_id\030\001 \002(\003\022\024\n\014requestor" +
+      "_id\030\002 \002(\003\022\024\n\014requestee_id\030\003 \002(\003\022\024\n\014reque",
+      "st_code\030\004 \002(\t\022\024\n\014updated_date\030\005 \001(\003\022\023\n\013p" +
+      "laylist_id\030\006 \003(\t\"N\n\016SearchResponse\022\023\n\013fi" +
+      "rstResult\030\001 \002(\005\022\024\n\014totalResults\030\002 \002(\005\022\021\n" +
+      "\tobject_id\030\003 \003(\tB&\n\033com.robonobo.core.ap" +
+      "i.protoB\007CoreApi"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -5763,7 +5803,7 @@ public final class CoreApi {
           internal_static_coreapi_LibraryMsg_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_coreapi_LibraryMsg_descriptor,
-              new java.lang.String[] { "Track", },
+              new java.lang.String[] { "UserId", "Track", },
               com.robonobo.core.api.proto.CoreApi.LibraryMsg.class,
               com.robonobo.core.api.proto.CoreApi.LibraryMsg.Builder.class);
           internal_static_coreapi_InviteMsg_descriptor =
