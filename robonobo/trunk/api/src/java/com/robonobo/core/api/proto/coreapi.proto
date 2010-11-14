@@ -65,7 +65,8 @@ message LibraryTrackMsg {
 }
 
 message LibraryMsg {
-	repeated LibraryTrackMsg track = 1;
+	optional int64 user_id = 1;
+	repeated LibraryTrackMsg track = 2;
 }
 
 message InviteMsg {
