@@ -10,6 +10,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.robonobo.common.exceptions.SeekInnerCalmException;
+import com.robonobo.core.api.model.Library;
 import com.robonobo.core.api.proto.CoreApi.LibraryMsg;
 import com.robonobo.midas.model.MidasLibrary;
 import com.robonobo.midas.model.MidasUser;
@@ -39,7 +41,7 @@ public class LibraryServlet extends MidasServlet {
 			Date since = null;
 			if(req.getParameter("since") != null)
 				since = new Date(Long.parseLong(req.getParameter("since")));
-			MidasLibrary lib = service.getLibrary(reqUser, since);
+			Library lib = service.getLibrary(reqUser, since);
 			if (lib == null)
 				lib = new MidasLibrary();
 			writeToOutput(lib.toMsg(), resp);
@@ -66,8 +68,8 @@ public class LibraryServlet extends MidasServlet {
 		LibraryMsg.Builder b = LibraryMsg.newBuilder();
 		readFromInput(b, req);
 		LibraryMsg msg = b.build();
-		MidasLibrary newLib = new MidasLibrary(msg);
-		MidasLibrary currentLib = service.getLibrary(authUser, null);
+		Library newLib = new MidasLibrary(msg);
+		Library currentLib = service.getLibrary(authUser, null);
 		String verb = getVerb(req);
 		if ("add".equals(verb)) {
 			if (currentLib == null) {
@@ -95,12 +97,16 @@ public class LibraryServlet extends MidasServlet {
 	private long getUserId(HttpServletRequest req) {
 		Pattern p = Pattern.compile("/(\\d+)");
 		Matcher m = p.matcher(req.getPathInfo());
+		if(!m.matches())
+			throw new SeekInnerCalmException();
 		return Long.parseLong(m.group(1));
 	}
 
 	private String getVerb(HttpServletRequest req) {
 		Pattern p = Pattern.compile("/\\d+/(\\w+)");
 		Matcher m = p.matcher(req.getPathInfo());
+		if(!m.matches())
+			return null;
 		return m.group(1);
 	}
 }
