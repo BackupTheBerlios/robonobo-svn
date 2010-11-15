@@ -5,6 +5,7 @@ import java.util.Map.Entry;
 
 import org.apache.commons.collections.MapIterator;
 
+import com.robonobo.core.api.model.Library;
 import com.robonobo.core.api.model.Playlist;
 import com.robonobo.midas.model.*;
 import com.twmacinta.util.MD5;
@@ -207,9 +208,12 @@ public class LocalMidasService implements MidasService {
 	}
 	
 	@Override
-	public MidasLibrary getLibrary(MidasUser u, Date since) {
-		MidasLibrary lib = MidasLibraryDAO.getLibrary(u.getUserId());
-		if(since != null && lib != null) {
+	public Library getLibrary(MidasUser u, Date since) {
+		Library lib = MidasLibraryDAO.getLibrary(u.getUserId());
+		if(lib == null)
+			return null;
+		lib.setUserId(u.getUserId());
+		if(since != null) {
 			Iterator<Entry<String, Date>> it = lib.getTracks().entrySet().iterator();
 			while(it.hasNext()) {
 				Entry<String, Date> e = it.next();
@@ -221,7 +225,7 @@ public class LocalMidasService implements MidasService {
 	}
 	
 	@Override
-	public void putLibrary(MidasLibrary lib) {
+	public void putLibrary(Library lib) {
 		MidasLibraryDAO.saveLibrary(lib);
 	}
 	

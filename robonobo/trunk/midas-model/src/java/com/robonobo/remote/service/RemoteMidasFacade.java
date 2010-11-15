@@ -3,6 +3,7 @@ package com.robonobo.remote.service;
 import java.util.*;
 
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.robonobo.core.api.model.Library;
 import com.robonobo.core.api.proto.CoreApi.FriendRequestMsg;
 import com.robonobo.core.api.proto.CoreApi.InviteMsg;
 import com.robonobo.core.api.proto.CoreApi.PlaylistMsg;
@@ -142,12 +143,12 @@ public class RemoteMidasFacade extends JbossRemotingFacade implements MidasServi
 	}
 	
 	@Override
-	public MidasLibrary getLibrary(MidasUser u, Date since) {
+	public Library getLibrary(MidasUser u, Date since) {
 		// We don't do library remoting yet
 		return null;
 	}
 	@Override
-	public void putLibrary(MidasLibrary lib) {
+	public void putLibrary(Library lib) {
 		// We don't do library remoting yet
 	}
 	

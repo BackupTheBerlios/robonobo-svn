@@ -2,6 +2,7 @@ package com.robonobo.remote.service;
 
 import java.util.*;
 
+import com.robonobo.core.api.model.Library;
 import com.robonobo.midas.model.*;
 
 public interface MidasService {
@@ -62,7 +63,7 @@ public interface MidasService {
 	/**
 	 * @param since Pass null to get the whole library
 	 */
-	public MidasLibrary getLibrary(MidasUser u, Date since);
+	public Library getLibrary(MidasUser u, Date since);
 	
-	public void putLibrary(MidasLibrary lib);
+	public void putLibrary(Library lib);
 }
