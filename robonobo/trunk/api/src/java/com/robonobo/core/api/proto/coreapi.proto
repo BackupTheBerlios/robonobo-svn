@@ -93,3 +93,12 @@ message SearchResponse {
 	repeated string object_id = 3;
 }
 
+message UserConfigItem {
+	required string item_name;
+	required string item_value;
+}
+
+message UserConfig {
+	required int64 user_id;
+	repeated UserConfigItem item;
+}
