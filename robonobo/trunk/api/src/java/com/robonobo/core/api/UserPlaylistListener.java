@@ -9,5 +9,5 @@ public interface UserPlaylistListener {
 	public void loggedIn();
 	public void userChanged(User u);
 	public void playlistChanged(Playlist p);
-	public void libraryUpdated(long userId, Library lib);
+	public void libraryUpdated(Library lib);
 }
