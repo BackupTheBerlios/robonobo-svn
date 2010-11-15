@@ -15,8 +15,7 @@ import com.robonobo.common.swing.SortableTreeNode;
 import com.robonobo.common.swing.SortedTreeModel;
 import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.UserPlaylistListener;
-import com.robonobo.core.api.model.Playlist;
-import com.robonobo.core.api.model.User;
+import com.robonobo.core.api.model.*;
 import com.robonobo.gui.model.PlaylistTreeNode;
 
 public class MyPlaylistsTreeModel extends SortedTreeModel implements UserPlaylistListener {
@@ -62,6 +61,12 @@ public class MyPlaylistsTreeModel extends SortedTreeModel implements UserPlaylis
 		});
 	}
 
+	@Override
+	public void libraryUpdated(Library lib) {
+		// TODO Auto-generated method stub
+		
+	}
+	
 	public void userChanged(final User u) {
 		if(controller.getMyUser().equals(u)) {
 			// Check to see if any playlists have been deleted

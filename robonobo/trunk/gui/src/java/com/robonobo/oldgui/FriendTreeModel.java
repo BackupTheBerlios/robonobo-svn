@@ -21,8 +21,7 @@ import com.robonobo.common.swing.SortableTreeNode;
 import com.robonobo.common.swing.SortedTreeModel;
 import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.UserPlaylistListener;
-import com.robonobo.core.api.model.Playlist;
-import com.robonobo.core.api.model.User;
+import com.robonobo.core.api.model.*;
 import com.robonobo.gui.model.FriendTreeNode;
 import com.robonobo.gui.model.PlaylistTreeNode;
 
@@ -144,6 +143,10 @@ class FriendTreeModel extends SortedTreeModel implements UserPlaylistListener {
 		});
 	}
 
+	@Override
+	public void libraryUpdated(Library lib) {
+		// Do nothing
+	}
 	public TreePath getPlaylistTreePath(String playlistId) {
 		// NB If the playlist is in the tree more than once (eg shared
 		// playlist), this will select the first instance only...

@@ -18,8 +18,7 @@ import org.jdesktop.swingx.renderer.DefaultListRenderer;
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.Platform;
 import com.robonobo.core.api.UserPlaylistListener;
-import com.robonobo.core.api.model.Playlist;
-import com.robonobo.core.api.model.User;
+import com.robonobo.core.api.model.*;
 import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.model.PlaylistListModel;
@@ -121,6 +120,11 @@ public class PlaylistList extends LeftSidebarList implements UserPlaylistListene
 		});
 	}
 
+	@Override
+	public void libraryUpdated(Library lib) {
+		// Do nothing
+	}
+	
 	@Override
 	protected void itemSelected(int index) {
 		PlaylistListModel m = (PlaylistListModel) getModel();

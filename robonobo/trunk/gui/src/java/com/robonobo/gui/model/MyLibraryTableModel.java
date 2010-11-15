@@ -10,8 +10,8 @@ import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.model.*;
 
 @SuppressWarnings("serial")
-public class MyMusicLibraryTableModel extends FreeformTrackListTableModel  {
-	public MyMusicLibraryTableModel(RobonoboController controller) {
+public class MyLibraryTableModel extends FreeformTrackListTableModel  {
+	public MyLibraryTableModel(RobonoboController controller) {
 		super(controller);
 		// If everything's started already before we get here, load it now
 		if (controller.haveAllTransfersStarted())

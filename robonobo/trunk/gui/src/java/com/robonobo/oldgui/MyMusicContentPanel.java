@@ -25,7 +25,7 @@ import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.model.DownloadingTrack;
 import com.robonobo.core.api.model.SharedTrack;
 import com.robonobo.core.api.model.Track;
-import com.robonobo.gui.model.MyMusicLibraryTableModel;
+import com.robonobo.gui.model.MyLibraryTableModel;
 
 @SuppressWarnings("serial")
 public class MyMusicContentPanel extends ContentPanel {
@@ -35,14 +35,14 @@ public class MyMusicContentPanel extends ContentPanel {
 	private MainButtonBar mainBtnBar;
 	private SearchPanel searchPanel;
 	private TrackListTablePanel tablePanel;
-	private MyMusicLibraryTableModel tableModel;
+	private MyLibraryTableModel tableModel;
 
 	public MyMusicContentPanel(final RobonoboFrame frame) {
 		super(frame);
 		this.controller = frame.getController();
 		double[][] cellSizen = { { 10, TableLayout.FILL, 10 }, { 10, 70, 10, 30, 10, TableLayout.FILL } };
 		setLayout(new TableLayout(cellSizen));
-		tableModel = new MyMusicLibraryTableModel(controller);
+		tableModel = new MyLibraryTableModel(controller);
 		KeyAdapter keyListener = new KeyAdapter() {
 			public void keyPressed(KeyEvent e) {
 				// Spacebar == play/pause

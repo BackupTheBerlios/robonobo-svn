@@ -18,10 +18,7 @@ import javax.swing.tree.*;
 import com.robonobo.core.api.model.User;
 import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.frames.RobonoboFrame;
-import com.robonobo.gui.model.FriendTreeModel;
-import com.robonobo.gui.model.FriendTreeNode;
-import com.robonobo.gui.model.PlaylistTreeNode;
-import com.robonobo.gui.model.SelectableTreeNode;
+import com.robonobo.gui.model.*;
 import com.robonobo.gui.panels.LeftSidebar;
 
 @SuppressWarnings("serial")
@@ -31,7 +28,7 @@ public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
 
 	LeftSidebar sideBar;
 	RobonoboFrame frame;
-	ImageIcon rootIcon, friendIcon, playlistIcon;
+	ImageIcon rootIcon, friendIcon, playlistIcon, libraryIcon;
 	Font normalFont, boldFont;
 
 	public FriendTree(final LeftSidebar sideBar, RobonoboFrame frame) {
@@ -49,6 +46,7 @@ public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
 		rootIcon = createImageIcon("/img/icon/friends.png", null);
 		friendIcon = createImageIcon("/img/icon/friend.png", null);
 		playlistIcon = createImageIcon("/img/icon/playlist.png", null);
+		libraryIcon = createImageIcon("/img/icon/home.png", null);
 
 		setCellRenderer(new CellRenderer());
 		setSelectionModel(new SelectionModel());
@@ -84,6 +82,9 @@ public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
 		setSelectionPath(getModel().getPlaylistTreePath(playlistId));
 	}
 
+	public void selectForLibrary(long userId) {
+		setSelectionPath(getModel().getLibraryTreePath(userId));
+	}
 	private class CellRenderer extends DefaultTreeCellRenderer {
 		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded,
 				boolean leaf, int row, boolean hasFocus) {
@@ -97,6 +98,17 @@ public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
 				lbl.setPreferredSize(MAX_PLAYLIST_SZ);
 				PlaylistTreeNode ptn = (PlaylistTreeNode) node;
 				int unseen = ptn.getNumUnseenTracks();
+				if (unseen > 0) {
+					lbl.setText("[" + unseen + "] " + lbl.getText());
+					lbl.setFont(boldFont);
+				} else
+					lbl.setFont(normalFont);
+			} else if(node instanceof LibraryTreeNode) {
+				lbl.setIcon(libraryIcon);
+				lbl.setMaximumSize(MAX_PLAYLIST_SZ);
+				lbl.setPreferredSize(MAX_PLAYLIST_SZ);
+				LibraryTreeNode ltn = (LibraryTreeNode) node;
+				int unseen = ltn.getNumUnseenTracks();
 				if (unseen > 0) {
 					lbl.setText("[" + unseen + "] " + lbl.getText());
 					lbl.setFont(boldFont);

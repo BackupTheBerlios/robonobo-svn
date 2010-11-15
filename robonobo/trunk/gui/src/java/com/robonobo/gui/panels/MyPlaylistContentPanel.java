@@ -122,6 +122,11 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 	}
 
 	@Override
+	public void libraryUpdated(Library lib) {
+		// Do nothing
+	}
+	
+	@Override
 	public void playlistChanged(Playlist p) {
 		if (p.equals(getModel().getPlaylist())) {
 			getModel().setPlaylist(p);

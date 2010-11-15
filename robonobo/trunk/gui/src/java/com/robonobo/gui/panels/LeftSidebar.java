@@ -24,7 +24,7 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 	List<LeftSidebarComponent> sideBarComps = new ArrayList<LeftSidebarComponent>();
 	RobonoboFrame frame;
 	private ActiveSearchList activeSearchList;
-	private MyMusicSelector myMusic;
+	private MyLibrarySelector myMusic;
 	private TaskListSelector taskList;
 	private boolean showTasks = false;
 	private NewPlaylistSelector newPlaylist;
@@ -60,7 +60,7 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 		sideBarPanel.add(friendTree);
 		sideBarComps.add(friendTree);
 
-		myMusic = new MyMusicSelector(this, frame);
+		myMusic = new MyLibrarySelector(this, frame);
 		sideBarPanel.add(myMusic);
 		sideBarComps.add(myMusic);
 
@@ -121,6 +121,9 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 				playlistList.selectPlaylist(p);
 			else
 				friendTree.selectForPlaylist(plId);
+		} else if(cpn.startsWith("library/")) {
+			long uid = Long.parseLong(cpn.substring("library/".length()));
+			friendTree.selectForLibrary(uid);
 		} else
 			log.error("Couldn't select content panel: "+cpn);
 	}
@@ -160,6 +163,7 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 	@Override
 	public void userChanged(User u) {
 		// Do nothing
+		// TODO When we have a panel for friends, create it here
 	}
 
 	@Override
@@ -184,6 +188,13 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 				frame.getMainPanel().addContentPanel(panelName, new MyPlaylistContentPanel(frame, p, pc));
 			}
 		}
-
+	}
+	
+	@Override
+	public void libraryUpdated(Library lib) {
+		String panelName = "library/"+lib.getUserId();
+		ContentPanel lPanel = frame.getMainPanel().getContentPanel(panelName);
+		if(lPanel == null)
+			frame.getMainPanel().addContentPanel(panelName, new FriendLibraryContentPanel(frame, lib));
 	}
 }

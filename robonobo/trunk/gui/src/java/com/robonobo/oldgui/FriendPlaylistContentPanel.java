@@ -18,11 +18,7 @@ import org.debian.tablelayout.TableLayout;
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.UserPlaylistListener;
-import com.robonobo.core.api.model.CloudTrack;
-import com.robonobo.core.api.model.Playlist;
-import com.robonobo.core.api.model.PlaylistConfig;
-import com.robonobo.core.api.model.Track;
-import com.robonobo.core.api.model.User;
+import com.robonobo.core.api.model.*;
 import com.robonobo.gui.model.PlaylistTableModel;
 
 @SuppressWarnings("serial")
@@ -108,6 +104,12 @@ public class FriendPlaylistContentPanel extends ContentPanel implements UserPlay
 	public void userChanged(User u) {
 		// Do nothing
 	}
+	
+	@Override
+	public void libraryUpdated(Library lib) {
+		// Do nothing
+	}
+	
 	
 	public void playlistChanged(Playlist p) {
 		if(p.equals(this.p)) {

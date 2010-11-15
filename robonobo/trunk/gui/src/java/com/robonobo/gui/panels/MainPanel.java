@@ -25,7 +25,7 @@ public class MainPanel extends JPanel {
 	}
 	
 	private void addDefaultContentPanels() {
-		addContentPanel("mymusiclibrary", new MyMusicLibraryContentPanel(frame));
+		addContentPanel("mymusiclibrary", new MyLibraryContentPanel(frame));
 		addContentPanel("newplaylist", new NewPlaylistContentPanel(frame));
 		addContentPanel("tasklist", new TaskListContentPanel(frame));
 	}

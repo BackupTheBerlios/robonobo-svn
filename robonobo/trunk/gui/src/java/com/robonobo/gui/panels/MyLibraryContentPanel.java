@@ -15,13 +15,13 @@ import org.debian.tablelayout.TableLayout;
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.Platform;
 import com.robonobo.gui.frames.RobonoboFrame;
-import com.robonobo.gui.model.MyMusicLibraryTableModel;
+import com.robonobo.gui.model.MyLibraryTableModel;
 
 @SuppressWarnings("serial")
-public class MyMusicLibraryContentPanel extends ContentPanel {
+public class MyLibraryContentPanel extends ContentPanel {
 
-	public MyMusicLibraryContentPanel(RobonoboFrame frame) {
-		super(frame, new MyMusicLibraryTableModel(frame.getController()));
+	public MyLibraryContentPanel(RobonoboFrame frame) {
+		super(frame, new MyLibraryTableModel(frame.getController()));
 		tabPane.insertTab("library", null, new MyLibraryTabPanel(), null, 0);
 		tabPane.setSelectedIndex(0);
 	}

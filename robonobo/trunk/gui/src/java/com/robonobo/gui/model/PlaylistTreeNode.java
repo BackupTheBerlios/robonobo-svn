@@ -26,10 +26,6 @@ public class PlaylistTreeNode extends SelectableTreeNode {
 		numUnseenTracks = frame.getController().numUnseenTracks(p);
 	}
 
-	public int compareTo(PlaylistTreeNode o) {
-		return playlist.getTitle().compareTo(o.getPlaylist().getTitle());
-	}
-
 	public Playlist getPlaylist() {
 		return playlist;
 	}

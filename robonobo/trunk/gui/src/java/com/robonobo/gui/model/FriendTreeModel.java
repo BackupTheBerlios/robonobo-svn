@@ -22,8 +22,7 @@ import com.robonobo.common.swing.SortableTreeNode;
 import com.robonobo.common.swing.SortedTreeModel;
 import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.UserPlaylistListener;
-import com.robonobo.core.api.model.Playlist;
-import com.robonobo.core.api.model.User;
+import com.robonobo.core.api.model.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 
 @SuppressWarnings("serial")
@@ -32,6 +31,7 @@ public class FriendTreeModel extends SortedTreeModel implements UserPlaylistList
 	RobonoboFrame frame;
 	RobonoboController controller;
 	Map<Long, FriendTreeNode> friendNodes = new HashMap<Long, FriendTreeNode>();
+	Map<Long, LibraryTreeNode> libNodes = new HashMap<Long, LibraryTreeNode>();
 	Map<Long, Map<String, PlaylistTreeNode>> playlistNodes = new HashMap<Long, Map<String, PlaylistTreeNode>>();
 	Log log = LogFactory.getLog(getClass());
 	SelectableTreeNode myRoot;
@@ -75,6 +75,7 @@ public class FriendTreeModel extends SortedTreeModel implements UserPlaylistList
 				}
 			});
 		} else if (controller.getMyUser().getFriendIds().contains(u.getUserId())) {
+			// It's a friend
 			SwingUtilities.invokeLater(new CatchingRunnable() {
 				public void doRun() throws Exception {
 					synchronized (FriendTreeModel.this) {
@@ -132,6 +133,28 @@ public class FriendTreeModel extends SortedTreeModel implements UserPlaylistList
 		});
 	}
 
+	@Override
+	public void libraryUpdated(final Library lib) {
+		SwingUtilities.invokeLater(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				synchronized (FriendTreeModel.this) {
+					LibraryTreeNode ltn = libNodes.get(lib.getUserId());
+					if(ltn == null) {
+						FriendTreeNode ftn = friendNodes.get(lib.getUserId());
+						if(ftn == null) {
+							log.error("ERROR: library updated for userId "+lib.getUserId()+", but there is no friend tree node");
+							return;
+						}
+						ltn = new LibraryTreeNode(frame, lib);
+						insertNodeSorted(ftn, ltn);
+					} else
+						ltn.setLib(lib);
+					firePathToRootChanged(ltn);
+				}
+			}
+		});
+	}
+	
 	public TreePath getPlaylistTreePath(String playlistId) {
 		// NB If the playlist is in the tree more than once (eg shared
 		// playlist), this will select the first instance only...
@@ -141,6 +164,12 @@ public class FriendTreeModel extends SortedTreeModel implements UserPlaylistList
 					return new TreePath(getPathToRoot(ptns.get(playlistId)));
 			}
 		}
+		return null;
+	}
+	
+	public synchronized TreePath getLibraryTreePath(long uid) {
+		if(libNodes.containsKey(uid))
+			return new TreePath(getPathToRoot(libNodes.get(uid)));
 		return null;
 	}
 	

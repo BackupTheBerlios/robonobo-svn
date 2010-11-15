@@ -19,11 +19,7 @@ import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.UserPlaylistListener;
-import com.robonobo.core.api.model.CloudTrack;
-import com.robonobo.core.api.model.Playlist;
-import com.robonobo.core.api.model.PlaylistConfig;
-import com.robonobo.core.api.model.Track;
-import com.robonobo.core.api.model.User;
+import com.robonobo.core.api.model.*;
 import com.robonobo.gui.model.PlaylistTableModel;
 
 @SuppressWarnings("serial")
@@ -177,6 +173,12 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 		// Do nothing
 	}
 
+	@Override
+	public void libraryUpdated(Library lib) {
+		// TODO Auto-generated method stub
+		
+	}
+	
 	public void userChanged(User u) {
 		// Do nothing
 	}

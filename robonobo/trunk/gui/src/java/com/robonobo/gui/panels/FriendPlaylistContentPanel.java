@@ -50,6 +50,11 @@ public class FriendPlaylistContentPanel extends ContentPanel implements UserPlay
 	}
 
 	@Override
+	public void libraryUpdated(Library lib) {
+		// Do nothing
+	}
+	
+	@Override
 	public void playlistChanged(Playlist p) {
 		if(p.equals(this.p)) {
 			// TODO Left over from old GUI - is this needed?

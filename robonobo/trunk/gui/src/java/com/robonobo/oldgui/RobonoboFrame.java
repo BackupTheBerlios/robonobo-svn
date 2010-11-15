@@ -33,10 +33,7 @@ import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.RobonoboStatus;
 import com.robonobo.core.api.UserPlaylistListener;
-import com.robonobo.core.api.model.Playlist;
-import com.robonobo.core.api.model.SharedTrack;
-import com.robonobo.core.api.model.Stream;
-import com.robonobo.core.api.model.User;
+import com.robonobo.core.api.model.*;
 import com.robonobo.gui.GUIUtils;
 import com.robonobo.gui.panels.LoginPanel;
 import com.robonobo.gui.preferences.PrefDialog;
@@ -371,6 +368,12 @@ public class RobonoboFrame extends JFrame implements UserPlaylistListener {
 		// Do nothing
 	}
 
+	@Override
+	public void libraryUpdated(Library lib) {
+		// TODO Auto-generated method stub
+		
+	}
+	
 	public void playlistChanged(Playlist p) {
 		// Do nothing
 	}

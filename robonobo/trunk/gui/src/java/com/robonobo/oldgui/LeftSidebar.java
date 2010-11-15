@@ -19,9 +19,7 @@ import org.apache.commons.logging.LogFactory;
 import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.core.api.UserPlaylistListener;
-import com.robonobo.core.api.model.Playlist;
-import com.robonobo.core.api.model.PlaylistConfig;
-import com.robonobo.core.api.model.User;
+import com.robonobo.core.api.model.*;
 import com.robonobo.oldgui.GroupButtonGroup.SelectListener;
 
 public class LeftSidebar extends JPanel implements UserPlaylistListener {
@@ -202,6 +200,11 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 		// frame.getContentHolder().addContentPanel(panelName, new
 		// UserContentPanel(frame, u, false));
 		// }
+	}
+	
+	@Override
+	public void libraryUpdated(Library lib) {
+		// Do nothing
 	}
 	
 	public GroupButtonGroup getBtnGroup() {
