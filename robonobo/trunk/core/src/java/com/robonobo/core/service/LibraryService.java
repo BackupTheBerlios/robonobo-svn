@@ -53,6 +53,10 @@ public class LibraryService extends AbstractService implements UserPlaylistListe
 	@Override
 	public void shutdown() throws Exception {
 		updateTask.cancel(true);
+		// We might have some pending library updates - do them now
+		addB.run();
+		delB.run();
+		
 	}
 
 	public synchronized Library getLibrary(long userId) {
@@ -107,9 +111,9 @@ public class LibraryService extends AbstractService implements UserPlaylistListe
 			libsLoaded = true;
 			rbnb.getExecutor().execute(new CatchingRunnable() {
 				public void doRun() throws Exception {
-					LibraryMsg.Builder b = LibraryMsg.newBuilder();
 					MetadataServerConfig msc = usrs.getMsc();
 					for (long friendId : usrs.getMyUser().getFriendIds()) {
+						LibraryMsg.Builder b = LibraryMsg.newBuilder();
 						try {
 							rbnb.getSerializationManager().getObjectFromUrl(b, msc.getLibraryUrl(friendId, null));
 						} catch (IOException e) {
@@ -188,6 +192,8 @@ public class LibraryService extends AbstractService implements UserPlaylistListe
 
 		@Override
 		protected void runBatch(Collection<LibraryTrack> tracks) throws Exception {
+			if(tracks.size() == 0)
+				return;
 			Library lib = new Library();
 			for (LibraryTrack t : tracks) {
 				lib.getTracks().put(t.streamId, t.dateAdded);
@@ -205,6 +211,8 @@ public class LibraryService extends AbstractService implements UserPlaylistListe
 
 		@Override
 		protected void runBatch(Collection<String> streamIds) throws Exception {
+			if(streamIds.size() == 0)
+				return;
 			Library lib = new Library();
 			for (String sid : streamIds) {
 				lib.getTracks().put(sid, null);

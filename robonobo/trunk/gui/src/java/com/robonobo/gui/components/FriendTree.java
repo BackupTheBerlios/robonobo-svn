@@ -153,6 +153,8 @@ public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
 				TreeNode child = n.getChildAt(i);
 				if(child instanceof PlaylistTreeNode)
 					unseen += ((PlaylistTreeNode)child).getNumUnseenTracks();
+				else if(child instanceof LibraryTreeNode)
+					unseen += ((LibraryTreeNode)child).getNumUnseenTracks();
 				else
 					unseen += getTotalUnseen(child);
 			}

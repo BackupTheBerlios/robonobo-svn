@@ -38,11 +38,6 @@ public class FriendTreeNode extends SelectableTreeNode {
 	}
 
 	@Override
-	public PlaylistTreeNode getChildAt(int index) {
-		return (PlaylistTreeNode) super.getChildAt(index);
-	}
-
-	@Override
 	public int compareTo(SortableTreeNode o) {
 		FriendTreeNode other = (FriendTreeNode) o;
 		return friend.getFriendlyName().compareTo(other.getFriend().getFriendlyName());

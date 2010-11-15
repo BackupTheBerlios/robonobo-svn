@@ -39,7 +39,7 @@ public class LibraryServlet extends MidasServlet {
 			resp.setContentType("application/data");
 			log.info("Returning library for " + reqUser.getEmail() + " to " + authUser.getEmail());
 			Date since = null;
-			if(req.getParameter("since") != null)
+			if (req.getParameter("since") != null)
 				since = new Date(Long.parseLong(req.getParameter("since")));
 			Library lib = service.getLibrary(reqUser, since);
 			if (lib == null)
@@ -52,14 +52,17 @@ public class LibraryServlet extends MidasServlet {
 	}
 
 	/**
-	 * To add to the library: /library/<user-id>/add To delete from the library: /library/<user-id>/del Expects a
-	 * serialized LibraryMsg in the request body with the streams being added/deleted
+	 * To add to the library: /library/<user-id>/add
 	 * 
-	 * NB we do both these via POST rather than using PUT & DELETE as tomcat doesn't pass through a request body in the
+	 * To delete from the library: /library/<user-id>/del
+	 * 
+	 * Expects a serialized LibraryMsg in the request body with the streams being added/deleted
+	 * 
+	 * NB we do both these via PUT rather than using PUT & DELETE as tomcat doesn't pass through a request body in the
 	 * DELETE
 	 */
 	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		MidasUser authUser = getAuthUser(req);
 		if (authUser == null || authUser.getUserId() != getUserId(req)) {
 			send401(req, resp);
@@ -81,23 +84,24 @@ public class LibraryServlet extends MidasServlet {
 				}
 				service.putLibrary(currentLib);
 			}
-			log.info("User "+authUser.getEmail()+" added "+newLib.getTracks().size()+" tracks to their library");
-		} else if("del".equals(verb)) {
-			if(currentLib != null) {
+			log.info("User " + authUser.getEmail() + " added " + newLib.getTracks().size() + " tracks to their library");
+		} else if ("del".equals(verb)) {
+			if (currentLib != null) {
 				for (String sid : newLib.getTracks().keySet()) {
 					currentLib.getTracks().remove(sid);
 				}
 				service.putLibrary(currentLib);
 			}
-			log.info("User "+authUser.getEmail()+" removed "+newLib.getTracks().size()+" tracks from their library");
+			log.info("User " + authUser.getEmail() + " removed " + newLib.getTracks().size()
+					+ " tracks from their library");
 		} else
 			send404(req, resp);
 	}
 
 	private long getUserId(HttpServletRequest req) {
-		Pattern p = Pattern.compile("/(\\d+)");
+		Pattern p = Pattern.compile("/(\\d+).*");
 		Matcher m = p.matcher(req.getPathInfo());
-		if(!m.matches())
+		if (!m.matches())
 			throw new SeekInnerCalmException();
 		return Long.parseLong(m.group(1));
 	}
@@ -105,7 +109,7 @@ public class LibraryServlet extends MidasServlet {
 	private String getVerb(HttpServletRequest req) {
 		Pattern p = Pattern.compile("/\\d+/(\\w+)");
 		Matcher m = p.matcher(req.getPathInfo());
-		if(!m.matches())
+		if (!m.matches())
 			return null;
 		return m.group(1);
 	}

@@ -11,7 +11,7 @@
  	    <map name="tracks" cascade="all">
         	<key column="id" />
         	<index column="streamId" type="string"/>
-        	<element column="dateAdded" type="date"/>
+        	<element column="dateAdded" type="timestamp"/>
         </map>
     </class>
 </hibernate-mapping>

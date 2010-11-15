@@ -2,6 +2,8 @@ package com.robonobo.gui.model;
 
 import java.awt.datatransfer.Transferable;
 
+import javax.swing.tree.TreeNode;
+
 import com.robonobo.common.swing.SortableTreeNode;
 
 @SuppressWarnings("serial")

@@ -102,7 +102,8 @@ public class SerializationManager {
 			int statusCode = client.executeMethod(get);
 			switch (statusCode) {
 			case 200:
-				bldr.mergeFrom(get.getResponseBody());
+				byte[] bodBytes = get.getResponseBody();
+				bldr.mergeFrom(bodBytes);
 				break;
 			case 500:
 				throw new IOException("Unable to get object from url '"+url+"', server said: " + get.getResponseBodyAsString());
