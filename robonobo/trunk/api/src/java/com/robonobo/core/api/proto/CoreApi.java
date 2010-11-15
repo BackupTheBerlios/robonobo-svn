@@ -5624,6 +5624,711 @@ public final class CoreApi {
     // @@protoc_insertion_point(class_scope:coreapi.SearchResponse)
   }
   
+  public static final class UserConfigItem extends
+      com.google.protobuf.GeneratedMessage {
+    // Use UserConfigItem.newBuilder() to construct.
+    private UserConfigItem() {
+      initFields();
+    }
+    private UserConfigItem(boolean noInit) {}
+    
+    private static final UserConfigItem defaultInstance;
+    public static UserConfigItem getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public UserConfigItem getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.robonobo.core.api.proto.CoreApi.internal_static_coreapi_UserConfigItem_descriptor;
+    }
+    
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.robonobo.core.api.proto.CoreApi.internal_static_coreapi_UserConfigItem_fieldAccessorTable;
+    }
+    
+    // required string item_name = 1;
+    public static final int ITEM_NAME_FIELD_NUMBER = 1;
+    private boolean hasItemName;
+    private java.lang.String itemName_ = "";
+    public boolean hasItemName() { return hasItemName; }
+    public java.lang.String getItemName() { return itemName_; }
+    
+    // required string item_value = 2;
+    public static final int ITEM_VALUE_FIELD_NUMBER = 2;
+    private boolean hasItemValue;
+    private java.lang.String itemValue_ = "";
+    public boolean hasItemValue() { return hasItemValue; }
+    public java.lang.String getItemValue() { return itemValue_; }
+    
+    private void initFields() {
+    }
+    public final boolean isInitialized() {
+      if (!hasItemName) return false;
+      if (!hasItemValue) return false;
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (hasItemName()) {
+        output.writeString(1, getItemName());
+      }
+      if (hasItemValue()) {
+        output.writeString(2, getItemValue());
+      }
+      getUnknownFields().writeTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      if (hasItemName()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeStringSize(1, getItemName());
+      }
+      if (hasItemValue()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeStringSize(2, getItemValue());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    public static com.robonobo.core.api.proto.CoreApi.UserConfigItem parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UserConfigItem parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UserConfigItem parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UserConfigItem parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UserConfigItem parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UserConfigItem parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UserConfigItem parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UserConfigItem parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UserConfigItem parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UserConfigItem parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(com.robonobo.core.api.proto.CoreApi.UserConfigItem prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> {
+      private com.robonobo.core.api.proto.CoreApi.UserConfigItem result;
+      
+      // Construct using com.robonobo.core.api.proto.CoreApi.UserConfigItem.newBuilder()
+      private Builder() {}
+      
+      private static Builder create() {
+        Builder builder = new Builder();
+        builder.result = new com.robonobo.core.api.proto.CoreApi.UserConfigItem();
+        return builder;
+      }
+      
+      protected com.robonobo.core.api.proto.CoreApi.UserConfigItem internalGetResult() {
+        return result;
+      }
+      
+      public Builder clear() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "Cannot call clear() after build().");
+        }
+        result = new com.robonobo.core.api.proto.CoreApi.UserConfigItem();
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(result);
+      }
+      
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.robonobo.core.api.proto.CoreApi.UserConfigItem.getDescriptor();
+      }
+      
+      public com.robonobo.core.api.proto.CoreApi.UserConfigItem getDefaultInstanceForType() {
+        return com.robonobo.core.api.proto.CoreApi.UserConfigItem.getDefaultInstance();
+      }
+      
+      public boolean isInitialized() {
+        return result.isInitialized();
+      }
+      public com.robonobo.core.api.proto.CoreApi.UserConfigItem build() {
+        if (result != null && !isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return buildPartial();
+      }
+      
+      private com.robonobo.core.api.proto.CoreApi.UserConfigItem buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        if (!isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return buildPartial();
+      }
+      
+      public com.robonobo.core.api.proto.CoreApi.UserConfigItem buildPartial() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "build() has already been called on this Builder.");
+        }
+        com.robonobo.core.api.proto.CoreApi.UserConfigItem returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.robonobo.core.api.proto.CoreApi.UserConfigItem) {
+          return mergeFrom((com.robonobo.core.api.proto.CoreApi.UserConfigItem)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+      
+      public Builder mergeFrom(com.robonobo.core.api.proto.CoreApi.UserConfigItem other) {
+        if (other == com.robonobo.core.api.proto.CoreApi.UserConfigItem.getDefaultInstance()) return this;
+        if (other.hasItemName()) {
+          setItemName(other.getItemName());
+        }
+        if (other.hasItemValue()) {
+          setItemValue(other.getItemValue());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder(
+            this.getUnknownFields());
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              this.setUnknownFields(unknownFields.build());
+              return this;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                this.setUnknownFields(unknownFields.build());
+                return this;
+              }
+              break;
+            }
+            case 10: {
+              setItemName(input.readString());
+              break;
+            }
+            case 18: {
+              setItemValue(input.readString());
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      // required string item_name = 1;
+      public boolean hasItemName() {
+        return result.hasItemName();
+      }
+      public java.lang.String getItemName() {
+        return result.getItemName();
+      }
+      public Builder setItemName(java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  result.hasItemName = true;
+        result.itemName_ = value;
+        return this;
+      }
+      public Builder clearItemName() {
+        result.hasItemName = false;
+        result.itemName_ = getDefaultInstance().getItemName();
+        return this;
+      }
+      
+      // required string item_value = 2;
+      public boolean hasItemValue() {
+        return result.hasItemValue();
+      }
+      public java.lang.String getItemValue() {
+        return result.getItemValue();
+      }
+      public Builder setItemValue(java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  result.hasItemValue = true;
+        result.itemValue_ = value;
+        return this;
+      }
+      public Builder clearItemValue() {
+        result.hasItemValue = false;
+        result.itemValue_ = getDefaultInstance().getItemValue();
+        return this;
+      }
+      
+      // @@protoc_insertion_point(builder_scope:coreapi.UserConfigItem)
+    }
+    
+    static {
+      defaultInstance = new UserConfigItem(true);
+      com.robonobo.core.api.proto.CoreApi.internalForceInit();
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:coreapi.UserConfigItem)
+  }
+  
+  public static final class UserConfig extends
+      com.google.protobuf.GeneratedMessage {
+    // Use UserConfig.newBuilder() to construct.
+    private UserConfig() {
+      initFields();
+    }
+    private UserConfig(boolean noInit) {}
+    
+    private static final UserConfig defaultInstance;
+    public static UserConfig getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public UserConfig getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.robonobo.core.api.proto.CoreApi.internal_static_coreapi_UserConfig_descriptor;
+    }
+    
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.robonobo.core.api.proto.CoreApi.internal_static_coreapi_UserConfig_fieldAccessorTable;
+    }
+    
+    // required int64 user_id = 1;
+    public static final int USER_ID_FIELD_NUMBER = 1;
+    private boolean hasUserId;
+    private long userId_ = 0L;
+    public boolean hasUserId() { return hasUserId; }
+    public long getUserId() { return userId_; }
+    
+    // repeated .coreapi.UserConfigItem item = 2;
+    public static final int ITEM_FIELD_NUMBER = 2;
+    private java.util.List<com.robonobo.core.api.proto.CoreApi.UserConfigItem> item_ =
+      java.util.Collections.emptyList();
+    public java.util.List<com.robonobo.core.api.proto.CoreApi.UserConfigItem> getItemList() {
+      return item_;
+    }
+    public int getItemCount() { return item_.size(); }
+    public com.robonobo.core.api.proto.CoreApi.UserConfigItem getItem(int index) {
+      return item_.get(index);
+    }
+    
+    private void initFields() {
+    }
+    public final boolean isInitialized() {
+      if (!hasUserId) return false;
+      for (com.robonobo.core.api.proto.CoreApi.UserConfigItem element : getItemList()) {
+        if (!element.isInitialized()) return false;
+      }
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (hasUserId()) {
+        output.writeInt64(1, getUserId());
+      }
+      for (com.robonobo.core.api.proto.CoreApi.UserConfigItem element : getItemList()) {
+        output.writeMessage(2, element);
+      }
+      getUnknownFields().writeTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      if (hasUserId()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(1, getUserId());
+      }
+      for (com.robonobo.core.api.proto.CoreApi.UserConfigItem element : getItemList()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, element);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    public static com.robonobo.core.api.proto.CoreApi.UserConfig parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UserConfig parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UserConfig parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UserConfig parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UserConfig parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UserConfig parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UserConfig parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UserConfig parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UserConfig parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UserConfig parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(com.robonobo.core.api.proto.CoreApi.UserConfig prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> {
+      private com.robonobo.core.api.proto.CoreApi.UserConfig result;
+      
+      // Construct using com.robonobo.core.api.proto.CoreApi.UserConfig.newBuilder()
+      private Builder() {}
+      
+      private static Builder create() {
+        Builder builder = new Builder();
+        builder.result = new com.robonobo.core.api.proto.CoreApi.UserConfig();
+        return builder;
+      }
+      
+      protected com.robonobo.core.api.proto.CoreApi.UserConfig internalGetResult() {
+        return result;
+      }
+      
+      public Builder clear() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "Cannot call clear() after build().");
+        }
+        result = new com.robonobo.core.api.proto.CoreApi.UserConfig();
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(result);
+      }
+      
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.robonobo.core.api.proto.CoreApi.UserConfig.getDescriptor();
+      }
+      
+      public com.robonobo.core.api.proto.CoreApi.UserConfig getDefaultInstanceForType() {
+        return com.robonobo.core.api.proto.CoreApi.UserConfig.getDefaultInstance();
+      }
+      
+      public boolean isInitialized() {
+        return result.isInitialized();
+      }
+      public com.robonobo.core.api.proto.CoreApi.UserConfig build() {
+        if (result != null && !isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return buildPartial();
+      }
+      
+      private com.robonobo.core.api.proto.CoreApi.UserConfig buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        if (!isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return buildPartial();
+      }
+      
+      public com.robonobo.core.api.proto.CoreApi.UserConfig buildPartial() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "build() has already been called on this Builder.");
+        }
+        if (result.item_ != java.util.Collections.EMPTY_LIST) {
+          result.item_ =
+            java.util.Collections.unmodifiableList(result.item_);
+        }
+        com.robonobo.core.api.proto.CoreApi.UserConfig returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.robonobo.core.api.proto.CoreApi.UserConfig) {
+          return mergeFrom((com.robonobo.core.api.proto.CoreApi.UserConfig)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+      
+      public Builder mergeFrom(com.robonobo.core.api.proto.CoreApi.UserConfig other) {
+        if (other == com.robonobo.core.api.proto.CoreApi.UserConfig.getDefaultInstance()) return this;
+        if (other.hasUserId()) {
+          setUserId(other.getUserId());
+        }
+        if (!other.item_.isEmpty()) {
+          if (result.item_.isEmpty()) {
+            result.item_ = new java.util.ArrayList<com.robonobo.core.api.proto.CoreApi.UserConfigItem>();
+          }
+          result.item_.addAll(other.item_);
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder(
+            this.getUnknownFields());
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              this.setUnknownFields(unknownFields.build());
+              return this;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                this.setUnknownFields(unknownFields.build());
+                return this;
+              }
+              break;
+            }
+            case 8: {
+              setUserId(input.readInt64());
+              break;
+            }
+            case 18: {
+              com.robonobo.core.api.proto.CoreApi.UserConfigItem.Builder subBuilder = com.robonobo.core.api.proto.CoreApi.UserConfigItem.newBuilder();
+              input.readMessage(subBuilder, extensionRegistry);
+              addItem(subBuilder.buildPartial());
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      // required int64 user_id = 1;
+      public boolean hasUserId() {
+        return result.hasUserId();
+      }
+      public long getUserId() {
+        return result.getUserId();
+      }
+      public Builder setUserId(long value) {
+        result.hasUserId = true;
+        result.userId_ = value;
+        return this;
+      }
+      public Builder clearUserId() {
+        result.hasUserId = false;
+        result.userId_ = 0L;
+        return this;
+      }
+      
+      // repeated .coreapi.UserConfigItem item = 2;
+      public java.util.List<com.robonobo.core.api.proto.CoreApi.UserConfigItem> getItemList() {
+        return java.util.Collections.unmodifiableList(result.item_);
+      }
+      public int getItemCount() {
+        return result.getItemCount();
+      }
+      public com.robonobo.core.api.proto.CoreApi.UserConfigItem getItem(int index) {
+        return result.getItem(index);
+      }
+      public Builder setItem(int index, com.robonobo.core.api.proto.CoreApi.UserConfigItem value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        result.item_.set(index, value);
+        return this;
+      }
+      public Builder setItem(int index, com.robonobo.core.api.proto.CoreApi.UserConfigItem.Builder builderForValue) {
+        result.item_.set(index, builderForValue.build());
+        return this;
+      }
+      public Builder addItem(com.robonobo.core.api.proto.CoreApi.UserConfigItem value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        if (result.item_.isEmpty()) {
+          result.item_ = new java.util.ArrayList<com.robonobo.core.api.proto.CoreApi.UserConfigItem>();
+        }
+        result.item_.add(value);
+        return this;
+      }
+      public Builder addItem(com.robonobo.core.api.proto.CoreApi.UserConfigItem.Builder builderForValue) {
+        if (result.item_.isEmpty()) {
+          result.item_ = new java.util.ArrayList<com.robonobo.core.api.proto.CoreApi.UserConfigItem>();
+        }
+        result.item_.add(builderForValue.build());
+        return this;
+      }
+      public Builder addAllItem(
+          java.lang.Iterable<? extends com.robonobo.core.api.proto.CoreApi.UserConfigItem> values) {
+        if (result.item_.isEmpty()) {
+          result.item_ = new java.util.ArrayList<com.robonobo.core.api.proto.CoreApi.UserConfigItem>();
+        }
+        super.addAll(values, result.item_);
+        return this;
+      }
+      public Builder clearItem() {
+        result.item_ = java.util.Collections.emptyList();
+        return this;
+      }
+      
+      // @@protoc_insertion_point(builder_scope:coreapi.UserConfig)
+    }
+    
+    static {
+      defaultInstance = new UserConfig(true);
+      com.robonobo.core.api.proto.CoreApi.internalForceInit();
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:coreapi.UserConfig)
+  }
+  
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_coreapi_EndPoint_descriptor;
   private static
@@ -5684,6 +6389,16 @@ public final class CoreApi {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_coreapi_SearchResponse_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_coreapi_UserConfigItem_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_coreapi_UserConfigItem_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_coreapi_UserConfig_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_coreapi_UserConfig_fieldAccessorTable;
   
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -5726,8 +6441,11 @@ public final class CoreApi {
       "st_code\030\004 \002(\t\022\024\n\014updated_date\030\005 \001(\003\022\023\n\013p" +
       "laylist_id\030\006 \003(\t\"N\n\016SearchResponse\022\023\n\013fi" +
       "rstResult\030\001 \002(\005\022\024\n\014totalResults\030\002 \002(\005\022\021\n" +
-      "\tobject_id\030\003 \003(\tB&\n\033com.robonobo.core.ap" +
-      "i.protoB\007CoreApi"
+      "\tobject_id\030\003 \003(\t\"7\n\016UserConfigItem\022\021\n\tit" +
+      "em_name\030\001 \002(\t\022\022\n\nitem_value\030\002 \002(\t\"D\n\nUse" +
+      "rConfig\022\017\n\007user_id\030\001 \002(\003\022%\n\004item\030\002 \003(\0132\027" +
+      ".coreapi.UserConfigItemB&\n\033com.robonobo." +
+      "core.api.protoB\007CoreApi"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -5830,6 +6548,22 @@ public final class CoreApi {
               new java.lang.String[] { "FirstResult", "TotalResults", "ObjectId", },
               com.robonobo.core.api.proto.CoreApi.SearchResponse.class,
               com.robonobo.core.api.proto.CoreApi.SearchResponse.Builder.class);
+          internal_static_coreapi_UserConfigItem_descriptor =
+            getDescriptor().getMessageTypes().get(12);
+          internal_static_coreapi_UserConfigItem_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_coreapi_UserConfigItem_descriptor,
+              new java.lang.String[] { "ItemName", "ItemValue", },
+              com.robonobo.core.api.proto.CoreApi.UserConfigItem.class,
+              com.robonobo.core.api.proto.CoreApi.UserConfigItem.Builder.class);
+          internal_static_coreapi_UserConfig_descriptor =
+            getDescriptor().getMessageTypes().get(13);
+          internal_static_coreapi_UserConfig_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_coreapi_UserConfig_descriptor,
+              new java.lang.String[] { "UserId", "Item", },
+              com.robonobo.core.api.proto.CoreApi.UserConfig.class,
+              com.robonobo.core.api.proto.CoreApi.UserConfig.Builder.class);
           return null;
         }
       };
