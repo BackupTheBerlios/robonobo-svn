@@ -32,8 +32,8 @@ import com.robonobo.core.api.proto.CoreApi.PlaylistMsg;
 import com.robonobo.core.api.proto.CoreApi.UserMsg;
 
 /**
- * Managers users (me and my friends) and associated playlists. We pull everything down via http on startup (and update it periodically); nothing is persisted
- * locally
+ * Managers users (me and my friends) and associated playlists. We pull everything down via http on startup (and update
+ * it periodically); nothing is persisted locally
  */
 @SuppressWarnings("unchecked")
 public class UserService extends AbstractService {
@@ -41,8 +41,8 @@ public class UserService extends AbstractService {
 	private User me;
 	MetadataServerConfig msc;
 	/**
-	 * We keep users and playlists in a hashmap, and look them up on demand. This is because they are being updated asynchronously, and so if we kept pointers,
-	 * they'd go out of date.
+	 * We keep users and playlists in a hashmap, and look them up on demand. This is because they are being updated
+	 * asynchronously, and so if we kept pointers, they'd go out of date.
 	 */
 	private Map<String, User> usersByEmail = Collections.synchronizedMap(new HashMap<String, User>());
 	private Map<Long, User> usersById = Collections.synchronizedMap(new HashMap<Long, User>());
@@ -54,13 +54,13 @@ public class UserService extends AbstractService {
 	public UserService() {
 		addHardDependency("core.metadata");
 		addHardDependency("core.storage");
-		addHardDependency("core.library");
 	}
 
 	@Override
 	public void startup() throws Exception {
 		int updateFreq = rbnb.getConfig().getUserUpdateFrequency();
-		updateTask = rbnb.getExecutor().scheduleAtFixedRate(new UpdateChecker(), updateFreq, updateFreq, TimeUnit.SECONDS);
+		updateTask = rbnb.getExecutor().scheduleAtFixedRate(new UpdateChecker(), updateFreq, updateFreq,
+				TimeUnit.SECONDS);
 	}
 
 	public String getName() {
@@ -136,7 +136,7 @@ public class UserService extends AbstractService {
 	public MetadataServerConfig getMsc() {
 		return msc;
 	}
-	
+
 	public void updateMyUser(User u) throws IOException {
 		if (u.getEmail() != me.getEmail()) {
 			throw new SeekInnerCalmException();
@@ -208,7 +208,8 @@ public class UserService extends AbstractService {
 		rbnb.getEventService().fireUserChanged(me);
 	}
 
-	public void sharePlaylist(Playlist p, Set<Long> friendIds, Set<String> emails) throws IOException, RobonoboException {
+	public void sharePlaylist(Playlist p, Set<Long> friendIds, Set<String> emails) throws IOException,
+			RobonoboException {
 		rbnb.getSerializationManager().hitUrl(msc.getSharePlaylistUrl(p.getPlaylistId(), friendIds, emails));
 		List<User> friends = new ArrayList<User>(friendIds.size());
 		for (Long friendId : friendIds) {
@@ -253,16 +254,11 @@ public class UserService extends AbstractService {
 		Playlist currentP = playlists.get(playlistId);
 		final Playlist updatedP = getUpdatedPlaylist(playlistId);
 		PlaylistConfig pc = rbnb.getDbService().getPlaylistConfig(playlistId);
-		boolean autoDownload = (pc != null) && "true".equalsIgnoreCase(pc.getItem("autoDownload"));
-		// Make sure we have copies of all streams
-		if (autoDownload) {
-			for (String streamId : updatedP.getStreamIds()) {
-				Track t = rbnb.getTrackService().getTrack(streamId);
-				if (t instanceof CloudTrack)
-					rbnb.getDownloadService().addDownload(streamId);
-			}
-		}
 		if (currentP == null || currentP.getUpdated() == null || updatedP.getUpdated().after(currentP.getUpdated())) {
+			// Make sure we have copies of all streams
+			for (String sid : updatedP.getStreamIds()) {
+				rbnb.getMetadataService().getStream(sid);
+			}
 			playlists.put(playlistId, updatedP);
 			if (me.getPlaylistIds().contains(updatedP.getPlaylistId())) {
 				if (currentP != null)
@@ -270,6 +266,13 @@ public class UserService extends AbstractService {
 				myPlaylistsByTitle.put(updatedP.getTitle(), updatedP.getPlaylistId());
 			}
 			rbnb.getEventService().firePlaylistChanged(updatedP);
+		}
+		if (((pc != null) && "true".equalsIgnoreCase(pc.getItem("autoDownload")))) {
+			for (String streamId : updatedP.getStreamIds()) {
+				Track t = rbnb.getTrackService().getTrack(streamId);
+				if (t instanceof CloudTrack)
+					rbnb.getDownloadService().addDownload(streamId);
+			}
 		}
 		if (pc != null && "true".equalsIgnoreCase(pc.getItem("iTunesExport"))) {
 			final List<User> contUsers = new ArrayList<User>();
@@ -401,16 +404,15 @@ public class UserService extends AbstractService {
 			}
 			rbnb.getEventService().fireUserChanged(u);
 			for (String playlistId : u.getPlaylistIds()) {
-				// For shared playlists, don't hit the server again if we already have it - but fire the playlist changed event so it's added to the friend tree
+				// For shared playlists, don't hit the server again if we already have it - but fire the playlist
+				// changed event so it's added to the friend tree
 				// for this user
 				Playlist p = getPlaylist(playlistId);
-				if(p == null)
+				if (p == null)
 					checkPlaylistUpdate(playlistId);
 				else
 					rbnb.getEventService().firePlaylistChanged(p);
 			}
-			if(me.getFriendIds().contains(userId))
-				rbnb.getLibraryService().fetchLibrary(userId);
 		}
 	}
 

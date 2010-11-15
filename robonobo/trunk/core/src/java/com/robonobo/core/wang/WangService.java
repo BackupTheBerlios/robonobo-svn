@@ -1,7 +1,6 @@
 package com.robonobo.core.wang;
 
-import static com.robonobo.common.util.TimeUtil.now;
-import static com.robonobo.common.util.TimeUtil.timeInFuture;
+import static com.robonobo.common.util.TimeUtil.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,10 +11,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
-import com.robonobo.core.api.CurrencyClient;
-import com.robonobo.core.api.CurrencyException;
-import com.robonobo.core.api.StreamVelocity;
-import com.robonobo.core.api.UserPlaylistListener;
+import com.robonobo.core.api.*;
 import com.robonobo.core.api.model.*;
 import com.robonobo.core.api.proto.CoreApi.Node;
 import com.robonobo.core.service.AbstractService;
@@ -204,6 +200,10 @@ public class WangService extends AbstractService implements CurrencyClient {
 		}
 		
 		public void libraryUpdated(long userId, Library lib) {
+			// Do nothing
+		}
+		
+		public void libraryUpdated(Library lib) {
 			// Do nothing
 		}
 	}

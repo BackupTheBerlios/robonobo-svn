@@ -21,14 +21,7 @@ import org.apache.commons.logging.LogFactory;
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.api.*;
 import com.robonobo.core.api.config.RobonoboConfig;
-import com.robonobo.core.api.model.CloudTrack;
-import com.robonobo.core.api.model.DownloadingTrack;
-import com.robonobo.core.api.model.Playlist;
-import com.robonobo.core.api.model.PlaylistConfig;
-import com.robonobo.core.api.model.SharedTrack;
-import com.robonobo.core.api.model.Stream;
-import com.robonobo.core.api.model.Track;
-import com.robonobo.core.api.model.User;
+import com.robonobo.core.api.model.*;
 import com.robonobo.core.wang.WangListener;
 import com.robonobo.mina.external.ConnectedNode;
 import com.robonobo.mina.external.FoundSourceListener;
@@ -501,8 +494,16 @@ public class RobonoboController {
 		return inst.getDbService().numUnseenTracks(p);
 	}
 
+	public int numUnseenTracks(Library lib) {
+		return inst.getDbService().numUnseenTracks(lib);
+	}
+	
 	public void markAllAsSeen(Playlist p) {
 		inst.getDbService().markAllAsSeen(p);
+	}
+	
+	public void markAllAsSeen(Library lib)  {
+		inst.getDbService().markAllAsSeen(lib);
 	}
 	
 	/**
