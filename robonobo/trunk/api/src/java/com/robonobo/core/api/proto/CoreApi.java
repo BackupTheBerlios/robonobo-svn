@@ -5955,31 +5955,31 @@ public final class CoreApi {
     // @@protoc_insertion_point(class_scope:coreapi.UserConfigItem)
   }
   
-  public static final class UserConfig extends
+  public static final class UserConfigMsg extends
       com.google.protobuf.GeneratedMessage {
-    // Use UserConfig.newBuilder() to construct.
-    private UserConfig() {
+    // Use UserConfigMsg.newBuilder() to construct.
+    private UserConfigMsg() {
       initFields();
     }
-    private UserConfig(boolean noInit) {}
+    private UserConfigMsg(boolean noInit) {}
     
-    private static final UserConfig defaultInstance;
-    public static UserConfig getDefaultInstance() {
+    private static final UserConfigMsg defaultInstance;
+    public static UserConfigMsg getDefaultInstance() {
       return defaultInstance;
     }
     
-    public UserConfig getDefaultInstanceForType() {
+    public UserConfigMsg getDefaultInstanceForType() {
       return defaultInstance;
     }
     
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return com.robonobo.core.api.proto.CoreApi.internal_static_coreapi_UserConfig_descriptor;
+      return com.robonobo.core.api.proto.CoreApi.internal_static_coreapi_UserConfigMsg_descriptor;
     }
     
     protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return com.robonobo.core.api.proto.CoreApi.internal_static_coreapi_UserConfig_fieldAccessorTable;
+      return com.robonobo.core.api.proto.CoreApi.internal_static_coreapi_UserConfigMsg_fieldAccessorTable;
     }
     
     // required int64 user_id = 1;
@@ -6042,41 +6042,41 @@ public final class CoreApi {
       return size;
     }
     
-    public static com.robonobo.core.api.proto.CoreApi.UserConfig parseFrom(
+    public static com.robonobo.core.api.proto.CoreApi.UserConfigMsg parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return newBuilder().mergeFrom(data).buildParsed();
     }
-    public static com.robonobo.core.api.proto.CoreApi.UserConfig parseFrom(
+    public static com.robonobo.core.api.proto.CoreApi.UserConfigMsg parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return newBuilder().mergeFrom(data, extensionRegistry)
                .buildParsed();
     }
-    public static com.robonobo.core.api.proto.CoreApi.UserConfig parseFrom(byte[] data)
+    public static com.robonobo.core.api.proto.CoreApi.UserConfigMsg parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return newBuilder().mergeFrom(data).buildParsed();
     }
-    public static com.robonobo.core.api.proto.CoreApi.UserConfig parseFrom(
+    public static com.robonobo.core.api.proto.CoreApi.UserConfigMsg parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return newBuilder().mergeFrom(data, extensionRegistry)
                .buildParsed();
     }
-    public static com.robonobo.core.api.proto.CoreApi.UserConfig parseFrom(java.io.InputStream input)
+    public static com.robonobo.core.api.proto.CoreApi.UserConfigMsg parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return newBuilder().mergeFrom(input).buildParsed();
     }
-    public static com.robonobo.core.api.proto.CoreApi.UserConfig parseFrom(
+    public static com.robonobo.core.api.proto.CoreApi.UserConfigMsg parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return newBuilder().mergeFrom(input, extensionRegistry)
                .buildParsed();
     }
-    public static com.robonobo.core.api.proto.CoreApi.UserConfig parseDelimitedFrom(java.io.InputStream input)
+    public static com.robonobo.core.api.proto.CoreApi.UserConfigMsg parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       Builder builder = newBuilder();
       if (builder.mergeDelimitedFrom(input)) {
@@ -6085,7 +6085,7 @@ public final class CoreApi {
         return null;
       }
     }
-    public static com.robonobo.core.api.proto.CoreApi.UserConfig parseDelimitedFrom(
+    public static com.robonobo.core.api.proto.CoreApi.UserConfigMsg parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -6096,12 +6096,12 @@ public final class CoreApi {
         return null;
       }
     }
-    public static com.robonobo.core.api.proto.CoreApi.UserConfig parseFrom(
+    public static com.robonobo.core.api.proto.CoreApi.UserConfigMsg parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return newBuilder().mergeFrom(input).buildParsed();
     }
-    public static com.robonobo.core.api.proto.CoreApi.UserConfig parseFrom(
+    public static com.robonobo.core.api.proto.CoreApi.UserConfigMsg parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -6111,25 +6111,25 @@ public final class CoreApi {
     
     public static Builder newBuilder() { return Builder.create(); }
     public Builder newBuilderForType() { return newBuilder(); }
-    public static Builder newBuilder(com.robonobo.core.api.proto.CoreApi.UserConfig prototype) {
+    public static Builder newBuilder(com.robonobo.core.api.proto.CoreApi.UserConfigMsg prototype) {
       return newBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() { return newBuilder(this); }
     
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder> {
-      private com.robonobo.core.api.proto.CoreApi.UserConfig result;
+      private com.robonobo.core.api.proto.CoreApi.UserConfigMsg result;
       
-      // Construct using com.robonobo.core.api.proto.CoreApi.UserConfig.newBuilder()
+      // Construct using com.robonobo.core.api.proto.CoreApi.UserConfigMsg.newBuilder()
       private Builder() {}
       
       private static Builder create() {
         Builder builder = new Builder();
-        builder.result = new com.robonobo.core.api.proto.CoreApi.UserConfig();
+        builder.result = new com.robonobo.core.api.proto.CoreApi.UserConfigMsg();
         return builder;
       }
       
-      protected com.robonobo.core.api.proto.CoreApi.UserConfig internalGetResult() {
+      protected com.robonobo.core.api.proto.CoreApi.UserConfigMsg internalGetResult() {
         return result;
       }
       
@@ -6138,7 +6138,7 @@ public final class CoreApi {
           throw new IllegalStateException(
             "Cannot call clear() after build().");
         }
-        result = new com.robonobo.core.api.proto.CoreApi.UserConfig();
+        result = new com.robonobo.core.api.proto.CoreApi.UserConfigMsg();
         return this;
       }
       
@@ -6148,24 +6148,24 @@ public final class CoreApi {
       
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return com.robonobo.core.api.proto.CoreApi.UserConfig.getDescriptor();
+        return com.robonobo.core.api.proto.CoreApi.UserConfigMsg.getDescriptor();
       }
       
-      public com.robonobo.core.api.proto.CoreApi.UserConfig getDefaultInstanceForType() {
-        return com.robonobo.core.api.proto.CoreApi.UserConfig.getDefaultInstance();
+      public com.robonobo.core.api.proto.CoreApi.UserConfigMsg getDefaultInstanceForType() {
+        return com.robonobo.core.api.proto.CoreApi.UserConfigMsg.getDefaultInstance();
       }
       
       public boolean isInitialized() {
         return result.isInitialized();
       }
-      public com.robonobo.core.api.proto.CoreApi.UserConfig build() {
+      public com.robonobo.core.api.proto.CoreApi.UserConfigMsg build() {
         if (result != null && !isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return buildPartial();
       }
       
-      private com.robonobo.core.api.proto.CoreApi.UserConfig buildParsed()
+      private com.robonobo.core.api.proto.CoreApi.UserConfigMsg buildParsed()
           throws com.google.protobuf.InvalidProtocolBufferException {
         if (!isInitialized()) {
           throw newUninitializedMessageException(
@@ -6174,7 +6174,7 @@ public final class CoreApi {
         return buildPartial();
       }
       
-      public com.robonobo.core.api.proto.CoreApi.UserConfig buildPartial() {
+      public com.robonobo.core.api.proto.CoreApi.UserConfigMsg buildPartial() {
         if (result == null) {
           throw new IllegalStateException(
             "build() has already been called on this Builder.");
@@ -6183,22 +6183,22 @@ public final class CoreApi {
           result.item_ =
             java.util.Collections.unmodifiableList(result.item_);
         }
-        com.robonobo.core.api.proto.CoreApi.UserConfig returnMe = result;
+        com.robonobo.core.api.proto.CoreApi.UserConfigMsg returnMe = result;
         result = null;
         return returnMe;
       }
       
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.robonobo.core.api.proto.CoreApi.UserConfig) {
-          return mergeFrom((com.robonobo.core.api.proto.CoreApi.UserConfig)other);
+        if (other instanceof com.robonobo.core.api.proto.CoreApi.UserConfigMsg) {
+          return mergeFrom((com.robonobo.core.api.proto.CoreApi.UserConfigMsg)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
       
-      public Builder mergeFrom(com.robonobo.core.api.proto.CoreApi.UserConfig other) {
-        if (other == com.robonobo.core.api.proto.CoreApi.UserConfig.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.robonobo.core.api.proto.CoreApi.UserConfigMsg other) {
+        if (other == com.robonobo.core.api.proto.CoreApi.UserConfigMsg.getDefaultInstance()) return this;
         if (other.hasUserId()) {
           setUserId(other.getUserId());
         }
@@ -6317,16 +6317,16 @@ public final class CoreApi {
         return this;
       }
       
-      // @@protoc_insertion_point(builder_scope:coreapi.UserConfig)
+      // @@protoc_insertion_point(builder_scope:coreapi.UserConfigMsg)
     }
     
     static {
-      defaultInstance = new UserConfig(true);
+      defaultInstance = new UserConfigMsg(true);
       com.robonobo.core.api.proto.CoreApi.internalForceInit();
       defaultInstance.initFields();
     }
     
-    // @@protoc_insertion_point(class_scope:coreapi.UserConfig)
+    // @@protoc_insertion_point(class_scope:coreapi.UserConfigMsg)
   }
   
   private static com.google.protobuf.Descriptors.Descriptor
@@ -6395,10 +6395,10 @@ public final class CoreApi {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_coreapi_UserConfigItem_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
-    internal_static_coreapi_UserConfig_descriptor;
+    internal_static_coreapi_UserConfigMsg_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
-      internal_static_coreapi_UserConfig_fieldAccessorTable;
+      internal_static_coreapi_UserConfigMsg_fieldAccessorTable;
   
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -6442,10 +6442,10 @@ public final class CoreApi {
       "laylist_id\030\006 \003(\t\"N\n\016SearchResponse\022\023\n\013fi" +
       "rstResult\030\001 \002(\005\022\024\n\014totalResults\030\002 \002(\005\022\021\n" +
       "\tobject_id\030\003 \003(\t\"7\n\016UserConfigItem\022\021\n\tit" +
-      "em_name\030\001 \002(\t\022\022\n\nitem_value\030\002 \002(\t\"D\n\nUse" +
-      "rConfig\022\017\n\007user_id\030\001 \002(\003\022%\n\004item\030\002 \003(\0132\027" +
-      ".coreapi.UserConfigItemB&\n\033com.robonobo." +
-      "core.api.protoB\007CoreApi"
+      "em_name\030\001 \002(\t\022\022\n\nitem_value\030\002 \002(\t\"G\n\rUse" +
+      "rConfigMsg\022\017\n\007user_id\030\001 \002(\003\022%\n\004item\030\002 \003(" +
+      "\0132\027.coreapi.UserConfigItemB&\n\033com.robono" +
+      "bo.core.api.protoB\007CoreApi"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -6556,14 +6556,14 @@ public final class CoreApi {
               new java.lang.String[] { "ItemName", "ItemValue", },
               com.robonobo.core.api.proto.CoreApi.UserConfigItem.class,
               com.robonobo.core.api.proto.CoreApi.UserConfigItem.Builder.class);
-          internal_static_coreapi_UserConfig_descriptor =
+          internal_static_coreapi_UserConfigMsg_descriptor =
             getDescriptor().getMessageTypes().get(13);
-          internal_static_coreapi_UserConfig_fieldAccessorTable = new
+          internal_static_coreapi_UserConfigMsg_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
-              internal_static_coreapi_UserConfig_descriptor,
+              internal_static_coreapi_UserConfigMsg_descriptor,
               new java.lang.String[] { "UserId", "Item", },
-              com.robonobo.core.api.proto.CoreApi.UserConfig.class,
-              com.robonobo.core.api.proto.CoreApi.UserConfig.Builder.class);
+              com.robonobo.core.api.proto.CoreApi.UserConfigMsg.class,
+              com.robonobo.core.api.proto.CoreApi.UserConfigMsg.Builder.class);
           return null;
         }
       };
