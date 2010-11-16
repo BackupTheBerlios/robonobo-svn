@@ -77,7 +77,7 @@ public class RobonoboConsole extends CatchingRunnable {
 	}
 
 	private void printPrompt() {
-		out.print("robo > ");
+		out.print("rbnb > ");
 	}
 
 	public RobonoboController getController() {

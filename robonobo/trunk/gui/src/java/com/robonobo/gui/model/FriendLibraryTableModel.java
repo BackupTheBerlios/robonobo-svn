@@ -32,7 +32,7 @@ public class FriendLibraryTableModel extends FreeformTrackListTableModel impleme
 	}
 	
 	@Override
-	public void libraryUpdated(Library lib) {
+	public void libraryChanged(Library lib) {
 		synchronized (this) {
 			streams.clear();
 			streamIndices.clear();
@@ -119,6 +119,11 @@ public class FriendLibraryTableModel extends FreeformTrackListTableModel impleme
 
 	@Override
 	public void playlistChanged(Playlist p) {
+		// Do nothing
+	}
+	
+	@Override
+	public void userConfigChanged(UserConfig cfg) {
 		// Do nothing
 	}
 }

@@ -228,6 +228,16 @@ public class LocalMidasService implements MidasService {
 	public void putLibrary(Library lib) {
 		MidasLibraryDAO.saveLibrary(lib);
 	}
+
+	@Override
+	public MidasUserConfig getUserConfig(MidasUser u) {
+		return MidasUserConfigDAO.getUserConfig(u.getUserId());
+	}
+	
+	@Override
+	public void putUserConfig(MidasUserConfig config) {
+		MidasUserConfigDAO.saveUserConfig(config);
+	}
 	
 	private String generateEmailCode(String email) {
 		MD5 hash = new MD5();

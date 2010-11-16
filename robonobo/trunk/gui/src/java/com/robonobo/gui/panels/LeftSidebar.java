@@ -191,10 +191,15 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 	}
 	
 	@Override
-	public void libraryUpdated(Library lib) {
+	public void libraryChanged(Library lib) {
 		String panelName = "library/"+lib.getUserId();
 		ContentPanel lPanel = frame.getMainPanel().getContentPanel(panelName);
 		if(lPanel == null)
 			frame.getMainPanel().addContentPanel(panelName, new FriendLibraryContentPanel(frame, lib));
+	}
+	
+	@Override
+	public void userConfigChanged(UserConfig cfg) {
+		// Do nothing
 	}
 }

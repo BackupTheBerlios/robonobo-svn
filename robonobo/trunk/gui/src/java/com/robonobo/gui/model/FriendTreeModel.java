@@ -134,7 +134,7 @@ public class FriendTreeModel extends SortedTreeModel implements UserPlaylistList
 	}
 
 	@Override
-	public void libraryUpdated(final Library lib) {
+	public void libraryChanged(final Library lib) {
 		SwingUtilities.invokeLater(new CatchingRunnable() {
 			public void doRun() throws Exception {
 				synchronized (FriendTreeModel.this) {
@@ -153,6 +153,11 @@ public class FriendTreeModel extends SortedTreeModel implements UserPlaylistList
 				}
 			}
 		});
+	}
+	
+	@Override
+	public void userConfigChanged(UserConfig cfg) {
+		// Do nothing
 	}
 	
 	public TreePath getPlaylistTreePath(String playlistId) {

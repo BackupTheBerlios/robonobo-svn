@@ -369,7 +369,7 @@ public class RobonoboFrame extends JFrame implements UserPlaylistListener {
 	}
 
 	@Override
-	public void libraryUpdated(Library lib) {
+	public void libraryChanged(Library lib) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -380,5 +380,11 @@ public class RobonoboFrame extends JFrame implements UserPlaylistListener {
 
 	public void userChanged(User u) {
 		// Do nothing
+	}
+
+	@Override
+	public void userConfigChanged(UserConfig cfg) {
+		// TODO Auto-generated method stub
+		
 	}
 }

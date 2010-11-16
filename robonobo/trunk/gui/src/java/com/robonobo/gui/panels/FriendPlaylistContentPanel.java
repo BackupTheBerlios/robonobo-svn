@@ -50,16 +50,22 @@ public class FriendPlaylistContentPanel extends ContentPanel implements UserPlay
 	}
 
 	@Override
-	public void libraryUpdated(Library lib) {
+	public void libraryChanged(Library lib) {
 		// Do nothing
 	}
-	
+
+	@Override
+	public void userConfigChanged(UserConfig cfg) {
+		// Do nothing
+	}
+
 	@Override
 	public void playlistChanged(Playlist p) {
-		if(p.equals(this.p)) {
+		if (p.equals(this.p)) {
 			// TODO Left over from old GUI - is this needed?
-			if(p.getOwnerIds().contains(frame.getController().getMyUser().getUserId())) {
-				log.debug("DEBUG: not updating playlist content panel for playlist '"+p.getTitle()+"' - I am an owner!");
+			if (p.getOwnerIds().contains(frame.getController().getMyUser().getUserId())) {
+				log.debug("DEBUG: not updating playlist content panel for playlist '" + p.getTitle()
+						+ "' - I am an owner!");
 				return;
 			}
 			this.p = p;
@@ -73,9 +79,9 @@ public class FriendPlaylistContentPanel extends ContentPanel implements UserPlay
 
 	void updateFields() {
 		titleField.setText(p.getTitle());
-		descField.setText("<html>"+TextUtil.escapeHtml(p.getDescription())+"</html>");
+		descField.setText("<html>" + TextUtil.escapeHtml(p.getDescription()) + "</html>");
 	}
-	
+
 	class PlaylistDetailsPanel extends JPanel {
 		public PlaylistDetailsPanel() {
 			double[][] cellSizen = { { 5, 150, 5, 250, 5, TableLayout.FILL, 5 },
@@ -97,12 +103,12 @@ public class FriendPlaylistContentPanel extends ContentPanel implements UserPlay
 			add(descField, "1,5,3,5");
 
 			updateFields();
-			
+
 			add(new OptsPanel(), "5,1,5,5");
 			add(new ButtonsPanel(), "5,7");
 		}
 	}
-	
+
 	class OptsPanel extends JPanel {
 		public OptsPanel() {
 			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -119,7 +125,7 @@ public class FriendPlaylistContentPanel extends ContentPanel implements UserPlay
 			options.put("autoDownload", autoDownloadCB);
 			autoDownloadCB.addActionListener(al);
 			add(autoDownloadCB);
-			
+
 			if (Platform.getPlatform().iTunesAvailable()) {
 				iTunesCB = new JCheckBox("Export playlist to iTunes");
 				iTunesCB.setFont(RoboFont.getFont(12, true));
@@ -134,7 +140,7 @@ public class FriendPlaylistContentPanel extends ContentPanel implements UserPlay
 	class ButtonsPanel extends JPanel {
 		public ButtonsPanel() {
 			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-			
+
 			saveBtn = new JButton("SAVE");
 			saveBtn.setFont(RoboFont.getFont(12, true));
 			saveBtn.addActionListener(new ActionListener() {
@@ -161,7 +167,7 @@ public class FriendPlaylistContentPanel extends ContentPanel implements UserPlay
 				}
 			});
 			saveBtn.setEnabled(false);
-			add(saveBtn);			
+			add(saveBtn);
 		}
 	}
 

@@ -203,11 +203,17 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 	}
 	
 	@Override
-	public void libraryUpdated(Library lib) {
+	public void libraryChanged(Library lib) {
 		// Do nothing
 	}
 	
 	public GroupButtonGroup getBtnGroup() {
 		return btnGroup;
+	}
+
+	@Override
+	public void userConfigChanged(UserConfig cfg) {
+		// TODO Auto-generated method stub
+		
 	}
 }

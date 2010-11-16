@@ -47,7 +47,7 @@ public class PlaylistList extends LeftSidebarList implements UserPlaylistListene
 	public PlaylistListModel getModel() {
 		return (PlaylistListModel) super.getModel();
 	}
-	
+
 	public void selectPlaylist(final Playlist p) {
 		invokeLater(new CatchingRunnable() {
 			public void doRun() throws Exception {
@@ -69,28 +69,28 @@ public class PlaylistList extends LeftSidebarList implements UserPlaylistListene
 	public void userChanged(final User u) {
 		invokeLater(new CatchingRunnable() {
 			public void doRun() throws Exception {
-				if(u.getUserId() != frame.getController().getMyUser().getUserId())
+				if (u.getUserId() != frame.getController().getMyUser().getUserId())
 					return;
-				
+
 				Playlist selP = (getSelectedIndex() < 0) ? null : getModel().getPlaylistAt(getSelectedIndex());
 				boolean selPGone = false;
-				
+
 				// Check for removed playlists
 				List<Playlist> toRm = new ArrayList<Playlist>();
 				for (Playlist p : getModel()) {
-					if(!u.getPlaylistIds().contains(p.getPlaylistId()))
+					if (!u.getPlaylistIds().contains(p.getPlaylistId()))
 						toRm.add(p);
 				}
 				for (Playlist p : toRm) {
-					if(p.equals(selP))
+					if (p.equals(selP))
 						selPGone = true;
 					getModel().remove(p);
 				}
-				
+
 				// Removing items might have buggered up the selection, so put it back.
 				// If the selected playlist has gone, then go to my library
-				if(selP != null) {
-					if(selPGone)
+				if (selP != null) {
+					if (selPGone)
 						frame.getLeftSidebar().selectMyMusic();
 					else {
 						int idx = getModel().getPlaylistIndex(selP);
@@ -111,7 +111,7 @@ public class PlaylistList extends LeftSidebarList implements UserPlaylistListene
 					boolean needReselect = p.equals(selP);
 					getModel().remove(p);
 					getModel().insertSorted(p);
-					if(needReselect) {
+					if (needReselect) {
 						int idx = getModel().getPlaylistIndex(p);
 						setSelectedIndex(idx);
 					}
@@ -121,10 +121,15 @@ public class PlaylistList extends LeftSidebarList implements UserPlaylistListene
 	}
 
 	@Override
-	public void libraryUpdated(Library lib) {
+	public void libraryChanged(Library lib) {
 		// Do nothing
 	}
-	
+
+	@Override
+	public void userConfigChanged(UserConfig cfg) {
+		// Do nothing
+	}
+
 	@Override
 	protected void itemSelected(int index) {
 		PlaylistListModel m = (PlaylistListModel) getModel();
@@ -159,7 +164,7 @@ public class PlaylistList extends LeftSidebarList implements UserPlaylistListene
 			return lbl;
 		}
 	}
-	
+
 	class DnDHandler extends TransferHandler {
 		@Override
 		public boolean canImport(JComponent comp, DataFlavor[] transferFlavors) {
@@ -169,11 +174,11 @@ public class PlaylistList extends LeftSidebarList implements UserPlaylistListene
 			}
 			return Platform.getPlatform().canDnDImport(transferFlavors);
 		}
-		
+
 		@Override
 		public boolean importData(JComponent comp, Transferable t) {
 			Playlist p = getModel().getPlaylistAt(getSelectedIndex());
-			String cpName = "playlist/"+p.getPlaylistId();
+			String cpName = "playlist/" + p.getPlaylistId();
 			ContentPanel cp = frame.getMainPanel().getContentPanel(cpName);
 			return cp.importData(comp, t);
 		}

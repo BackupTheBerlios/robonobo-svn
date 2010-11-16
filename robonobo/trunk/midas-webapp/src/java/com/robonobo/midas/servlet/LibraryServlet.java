@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.core.api.model.Library;
+import com.robonobo.core.api.model.UserConfig;
 import com.robonobo.core.api.proto.CoreApi.LibraryMsg;
 import com.robonobo.midas.model.MidasLibrary;
 import com.robonobo.midas.model.MidasUser;
@@ -37,14 +38,23 @@ public class LibraryServlet extends MidasServlet {
 		boolean allowed = (authUid == reqUid || authUser.getFriendIds().contains(reqUid));
 		if (allowed) {
 			resp.setContentType("application/data");
-			log.info("Returning library for " + reqUser.getEmail() + " to " + authUser.getEmail());
-			Date since = null;
-			if (req.getParameter("since") != null)
-				since = new Date(Long.parseLong(req.getParameter("since")));
-			Library lib = service.getLibrary(reqUser, since);
-			if (lib == null)
-				lib = new MidasLibrary();
-			writeToOutput(lib.toMsg(), resp);
+			// If the user has disabled library sharing, just send them an empty library
+			UserConfig cfg = service.getUserConfig(reqUser);
+			if (cfg != null && "false".equals(cfg.getItems().get("sharelibrary"))) {
+				log.info("Returning blank library for " + reqUser.getEmail() + " to " + authUser.getEmail());
+				Library lib = new Library();
+				lib.setUserId(reqUid);
+				writeToOutput(lib.toMsg(), resp);
+			} else {
+				log.info("Returning library for " + reqUser.getEmail() + " to " + authUser.getEmail());
+				Date since = null;
+				if (req.getParameter("since") != null)
+					since = new Date(Long.parseLong(req.getParameter("since")));
+				Library lib = service.getLibrary(reqUser, since);
+				if (lib == null)
+					lib = new MidasLibrary();
+				writeToOutput(lib.toMsg(), resp);
+			}
 		} else {
 			send401(req, resp);
 			return;

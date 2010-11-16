@@ -174,7 +174,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 	}
 
 	@Override
-	public void libraryUpdated(Library lib) {
+	public void libraryChanged(Library lib) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -225,6 +225,12 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 				dloadBtn.setEnabled(activeDl);
 			}
 		}
+	}
+
+	@Override
+	public void userConfigChanged(UserConfig cfg) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

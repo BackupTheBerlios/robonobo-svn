@@ -144,7 +144,7 @@ class FriendTreeModel extends SortedTreeModel implements UserPlaylistListener {
 	}
 
 	@Override
-	public void libraryUpdated(Library lib) {
+	public void libraryChanged(Library lib) {
 		// Do nothing
 	}
 	public TreePath getPlaylistTreePath(String playlistId) {
@@ -162,5 +162,11 @@ class FriendTreeModel extends SortedTreeModel implements UserPlaylistListener {
 	@Override
 	public SortableTreeNode getRoot() {
 		return (SortableTreeNode) super.getRoot();
+	}
+
+	@Override
+	public void userConfigChanged(UserConfig cfg) {
+		// TODO Auto-generated method stub
+		
 	}
 }

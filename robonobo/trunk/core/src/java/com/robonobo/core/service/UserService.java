@@ -22,13 +22,9 @@ import com.robonobo.common.serialization.SerializationManager;
 import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.RobonoboStatus;
 import com.robonobo.core.api.config.MetadataServerConfig;
-import com.robonobo.core.api.model.CloudTrack;
-import com.robonobo.core.api.model.Playlist;
-import com.robonobo.core.api.model.PlaylistConfig;
-import com.robonobo.core.api.model.SharedTrack;
-import com.robonobo.core.api.model.Track;
-import com.robonobo.core.api.model.User;
+import com.robonobo.core.api.model.*;
 import com.robonobo.core.api.proto.CoreApi.PlaylistMsg;
+import com.robonobo.core.api.proto.CoreApi.UserConfigMsg;
 import com.robonobo.core.api.proto.CoreApi.UserMsg;
 
 /**
@@ -110,6 +106,7 @@ public class UserService extends AbstractService {
 					rbnb.getEventService().fireLoggedIn();
 					UserLookerUpper ulu = new UserLookerUpper(me);
 					ulu.doRun();
+					lookupUserConfig();
 				}
 			});
 			if (rbnb.getMina().isConnectedToSupernode()) {
@@ -123,6 +120,28 @@ public class UserService extends AbstractService {
 		}
 	}
 
+	private void lookupUserConfig() throws IOException {
+		UserConfigMsg.Builder b = UserConfigMsg.newBuilder();
+		rbnb.getSerializationManager().getObjectFromUrl(b, msc.getUserConfigUrl(me.getUserId()));
+		UserConfig cfg = new UserConfig(b.build());
+		rbnb.getEventService().fireUserConfigChanged(cfg);
+	}
+	
+	public void saveUserConfigItem(String itemName, String itemValue) {
+		if(me == null) {
+			log.error("Error: tried to save user config, but I am not logged in");
+			return;
+		}
+		UserConfig cfg = new UserConfig();
+		cfg.setUserId(me.getUserId());
+		cfg.getItems().put(itemName, itemValue);
+		try {
+			rbnb.getSerializationManager().putObjectToUrl(cfg.toMsg(), msc.getUserConfigUrl(me.getUserId()));
+		} catch (IOException e) {
+			log.error("Erro saving user config", e);
+		}
+	}
+	
 	public boolean isLoggedIn() {
 		return me != null;
 	}

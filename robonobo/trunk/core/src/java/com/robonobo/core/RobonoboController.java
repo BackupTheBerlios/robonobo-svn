@@ -474,6 +474,10 @@ public class RobonoboController {
 		inst.getDbService().putPlaylistConfig(pc);
 	}
 
+	public void saveUserConfigItem(String itemName, String itemVal) {
+		inst.getUsersService().saveUserConfigItem(itemName, itemVal);
+	}
+	
 	public void runTask(Task t) {
 		inst.getTaskService().runTask(t);
 	}

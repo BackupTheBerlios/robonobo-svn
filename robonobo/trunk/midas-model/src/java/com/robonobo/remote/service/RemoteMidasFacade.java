@@ -152,6 +152,17 @@ public class RemoteMidasFacade extends JbossRemotingFacade implements MidasServi
 		// We don't do library remoting yet
 	}
 	
+	@Override
+	public MidasUserConfig getUserConfig(MidasUser u) {
+		// No remote user config
+		return null;
+	}
+	
+	@Override
+	public void putUserConfig(MidasUserConfig config) {
+		// No remote user config
+	}
+
 	private MidasPlaylist playlistFromByteArr(byte[] arr) {
 		if (arr == null)
 			return null;

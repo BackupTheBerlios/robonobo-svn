@@ -106,11 +106,15 @@ public class FriendPlaylistContentPanel extends ContentPanel implements UserPlay
 	}
 	
 	@Override
-	public void libraryUpdated(Library lib) {
+	public void libraryChanged(Library lib) {
 		// Do nothing
 	}
 	
-	
+	@Override
+	public void userConfigChanged(UserConfig cfg) {
+		// TODO Auto-generated method stub
+		
+	}
 	public void playlistChanged(Playlist p) {
 		if(p.equals(this.p)) {
 			if(p.getOwnerIds().contains(controller.getMyUser().getUserId()))

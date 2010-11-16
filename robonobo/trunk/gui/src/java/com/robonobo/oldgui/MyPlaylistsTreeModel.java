@@ -62,7 +62,7 @@ public class MyPlaylistsTreeModel extends SortedTreeModel implements UserPlaylis
 	}
 
 	@Override
-	public void libraryUpdated(Library lib) {
+	public void libraryChanged(Library lib) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -123,5 +123,11 @@ public class MyPlaylistsTreeModel extends SortedTreeModel implements UserPlaylis
 	public TreePath getNewPlaylistTreePath() {
 //		return new TreePath(getPathToRoot(newPlaylistNode));
 		return null;
+	}
+
+	@Override
+	public void userConfigChanged(UserConfig cfg) {
+		// TODO Auto-generated method stub
+		
 	}
 }

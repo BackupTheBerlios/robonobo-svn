@@ -203,7 +203,12 @@ public class WangService extends AbstractService implements CurrencyClient {
 			// Do nothing
 		}
 		
-		public void libraryUpdated(Library lib) {
+		public void libraryChanged(Library lib) {
+			// Do nothing
+		}
+		
+		@Override
+		public void userConfigChanged(UserConfig cfg) {
 			// Do nothing
 		}
 	}

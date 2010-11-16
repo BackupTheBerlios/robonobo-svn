@@ -236,7 +236,17 @@ public class EventService extends AbstractService implements MinaListener {
 			arr = getUpArr();
 		}
 		for (UserPlaylistListener listener : arr) {
-			listener.libraryUpdated(lib);
+			listener.libraryChanged(lib);
+		}
+	}
+
+	public void fireUserConfigChanged(UserConfig cfg) {
+		UserPlaylistListener[] arr;
+		synchronized (this) {
+			arr = getUpArr();
+		}
+		for (UserPlaylistListener listener : arr) {
+			listener.userConfigChanged(cfg);
 		}
 	}
 

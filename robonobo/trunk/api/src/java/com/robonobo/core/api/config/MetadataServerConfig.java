@@ -85,4 +85,8 @@ public class MetadataServerConfig implements Serializable {
 	public String getLibraryDelUrl(long userId) {
 		return baseUrl + "library/"+userId+"/del";
 	}
+	
+	public String getUserConfigUrl(long userId) {
+		return baseUrl + "userconfig/"+userId;
+	}
 }

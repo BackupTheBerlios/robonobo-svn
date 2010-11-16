@@ -44,6 +44,12 @@
 	</servlet>
 	
 	<servlet>
+		<servlet-name>midas-userconfig</servlet-name>
+		<servlet-class>com.robonobo.midas.servlet.UserConfigServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	
+	<servlet>
 		<servlet-name>midas-share-playlist</servlet-name>
 		<servlet-class>com.robonobo.midas.servlet.SharePlaylistServlet</servlet-class>
         <init-param>
@@ -103,6 +109,11 @@
 	<servlet-mapping>
 		<servlet-name>midas-library</servlet-name>
 		<url-pattern>/library/*</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+		<servlet-name>midas-userconfig</servlet-name>
+		<url-pattern>/userconfig/*</url-pattern>
 	</servlet-mapping>
 	
 	<servlet-mapping>

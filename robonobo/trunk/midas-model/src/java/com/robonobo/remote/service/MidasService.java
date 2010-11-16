@@ -66,4 +66,8 @@ public interface MidasService {
 	public Library getLibrary(MidasUser u, Date since);
 	
 	public void putLibrary(Library lib);
+	
+	public MidasUserConfig getUserConfig(MidasUser u);
+	
+	public void putUserConfig(MidasUserConfig config);
 }
