@@ -64,7 +64,6 @@ public class ControlConnection implements PushDataReceiver {
 
 	public static final int NETWORK_READ_SIZE = 2048;
 	private ByteBufferInputStream incoming;
-	private int msgNameLength = -1;
 	private String msgName = null;
 	private int serialMsgLength = -1;
 
@@ -222,13 +221,11 @@ public class ControlConnection implements PushDataReceiver {
 	 * @syncpriority 60
 	 */
 	private synchronized void sendMessage(String msgName, GeneratedMessage msg, boolean checkReady) throws Exception {
-		// We send the message name length, then message name, then message
-		// length, then msg
+		// We send the message name, then null byte, then message length, then msg
 		// Send it all in one go to minimise the number of pkts that get sent
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		byte[] msgNameBytes = msgName.getBytes();
-		baos.write(Dlugosz.encode(msgNameBytes.length).array());
-		baos.write(msgNameBytes);
+		baos.write(msgName.getBytes());
+		baos.write(0);
 		baos.write(Dlugosz.encode(msg.getSerializedSize()).array());
 		msg.writeTo(baos);
 		// This can be called by other threads before the connection's
@@ -560,12 +557,12 @@ public class ControlConnection implements PushDataReceiver {
 	}
 
 	/**
-	 * We read data in four states. 1. Read a Dlugosz number - this is the length of the msg name 2. Read the msg name as a string 3. Read a Dlugosz number -
-	 * this is the length of the serialized msg 4. Read the serialized msg as a byte array
+	 * We read data in 3 states. 1. Read the msg name as a string, null terminated 2. Read a Dlugosz number -
+	 * this is the length of the serialized msg 3. Read the serialized msg as a byte array
 	 */
 	public void receiveData(ByteBuffer buf, Object ignoreMe) throws IOException {
 		incoming.addBuffer(buf);
-		// Now we see what we can read
+		// Now we see what we can see
 		boolean finished = false;
 		do {
 			if (serialMsgLength >= 0) {
@@ -581,9 +578,9 @@ public class ControlConnection implements PushDataReceiver {
 					incoming.setPretendEof(serialMsgLength);
 					GeneratedMessage msg = handler.parse(msgName, incoming);
 					incoming.clearPretendEof();
-					MessageHolder msgHolder = new MessageHolder(msgName, msg, ControlConnection.this, TimeUtil.now());
+					MessageHolder msgHolder = new MessageHolder(msgName, msg, this, TimeUtil.now());
 					handleMessage(handler, msgHolder);
-					serialMsgLength = msgNameLength = -1;
+					serialMsgLength = -1;
 					msgName = null;
 				} else
 					finished = true;
@@ -593,18 +590,13 @@ public class ControlConnection implements PushDataReceiver {
 					serialMsgLength = (int) Dlugosz.readLong(incoming);
 				} else
 					finished = true;
-			} else if (msgNameLength >= 0) {
-				// We're reading our msg name
-				if (incoming.available() >= msgNameLength) {
-					byte[] arr = new byte[msgNameLength];
-					incoming.read(arr);
-					msgName = new String(arr);
-				} else
-					finished = true;
 			} else {
-				// We're reading our msg name length
-				if (Dlugosz.startsWithCompleteNum(incoming)) {
-					msgNameLength = (int) Dlugosz.readLong(incoming);
+				// We're reading our msg name - look for a null-terminated string
+				int strSz = incoming.locateNullByte();
+				if(strSz >= 0) {
+					byte[] arr = new byte[strSz+1]; // Read the null itself too
+					incoming.read(arr);
+					msgName = new String(arr, 0, strSz);
 				} else
 					finished = true;
 			}

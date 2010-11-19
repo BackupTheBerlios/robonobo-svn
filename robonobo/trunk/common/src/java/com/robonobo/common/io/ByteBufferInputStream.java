@@ -89,6 +89,32 @@ public class ByteBufferInputStream extends InputStream implements PeekableInputS
 		}
 	}
 
+	/**
+	 * Returns the number of bytes before a null byte is located in the stream, or -1 if no null byte is available
+	 * @return
+	 */
+	public int locateNullByte() {
+		lock.lock();
+		try {
+			int result = 0;
+			for(int i=currentBuf.position();i<currentBuf.limit();i++) {
+				if(currentBuf.get(i) == 0)
+					return result;
+				result++;
+			}
+			for (ByteBuffer buf : queuedBufs) {
+				for(int i=0;i<buf.limit();i++) {
+					if(buf.get(i) == 0)
+						return result;
+					result++;
+				}
+			}
+			return -1;
+		} finally {
+			lock.unlock();
+		}
+	}
+	
 	@Override
 	public int read(byte[] b) throws IOException {
 		return read(b, 0, b.length);
