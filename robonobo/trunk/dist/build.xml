@@ -76,7 +76,7 @@
 		<exec executable="./build-dmg.sh">
 			<arg value="${tmp.dir}/dmg-skel"/>
 			<arg value="robonobo ${version}"/>
-			<arg value="10000"/>
+			<arg value="20000"/>
 			<arg value="${dist.dir}/robonobo-${version}.dmg"/>
 		</exec>
 	</target>
