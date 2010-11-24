@@ -52,7 +52,7 @@ message UserMsg {
 message PlaylistMsg {
 	required int64 id = 1;
 	required string title = 2;
-	optional bool announce = 3 [default = true];
+	required string visibility = 3;
 	optional int64 updated_date = 4;
 	optional string description = 5;
 	repeated string stream_id = 6;
