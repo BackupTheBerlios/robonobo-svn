@@ -2178,15 +2178,15 @@ public final class CoreApi {
       return friendId_.get(index);
     }
     
-    // repeated string playlist_id = 10;
+    // repeated int64 playlist_id = 10;
     public static final int PLAYLIST_ID_FIELD_NUMBER = 10;
-    private java.util.List<java.lang.String> playlistId_ =
+    private java.util.List<java.lang.Long> playlistId_ =
       java.util.Collections.emptyList();
-    public java.util.List<java.lang.String> getPlaylistIdList() {
+    public java.util.List<java.lang.Long> getPlaylistIdList() {
       return playlistId_;
     }
     public int getPlaylistIdCount() { return playlistId_.size(); }
-    public java.lang.String getPlaylistId(int index) {
+    public long getPlaylistId(int index) {
       return playlistId_.get(index);
     }
     
@@ -2229,8 +2229,8 @@ public final class CoreApi {
       for (long element : getFriendIdList()) {
         output.writeInt64(9, element);
       }
-      for (java.lang.String element : getPlaylistIdList()) {
-        output.writeString(10, element);
+      for (long element : getPlaylistIdList()) {
+        output.writeInt64(10, element);
       }
       getUnknownFields().writeTo(output);
     }
@@ -2284,9 +2284,9 @@ public final class CoreApi {
       }
       {
         int dataSize = 0;
-        for (java.lang.String element : getPlaylistIdList()) {
+        for (long element : getPlaylistIdList()) {
           dataSize += com.google.protobuf.CodedOutputStream
-            .computeStringSizeNoTag(element);
+            .computeInt64SizeNoTag(element);
         }
         size += dataSize;
         size += 1 * getPlaylistIdList().size();
@@ -2489,7 +2489,7 @@ public final class CoreApi {
         }
         if (!other.playlistId_.isEmpty()) {
           if (result.playlistId_.isEmpty()) {
-            result.playlistId_ = new java.util.ArrayList<java.lang.String>();
+            result.playlistId_ = new java.util.ArrayList<java.lang.Long>();
           }
           result.playlistId_.addAll(other.playlistId_);
         }
@@ -2563,8 +2563,17 @@ public final class CoreApi {
               input.popLimit(limit);
               break;
             }
+            case 80: {
+              addPlaylistId(input.readInt64());
+              break;
+            }
             case 82: {
-              addPlaylistId(input.readString());
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              while (input.getBytesUntilLimit() > 0) {
+                addPlaylistId(input.readInt64());
+              }
+              input.popLimit(limit);
               break;
             }
           }
@@ -2765,37 +2774,31 @@ public final class CoreApi {
         return this;
       }
       
-      // repeated string playlist_id = 10;
-      public java.util.List<java.lang.String> getPlaylistIdList() {
+      // repeated int64 playlist_id = 10;
+      public java.util.List<java.lang.Long> getPlaylistIdList() {
         return java.util.Collections.unmodifiableList(result.playlistId_);
       }
       public int getPlaylistIdCount() {
         return result.getPlaylistIdCount();
       }
-      public java.lang.String getPlaylistId(int index) {
+      public long getPlaylistId(int index) {
         return result.getPlaylistId(index);
       }
-      public Builder setPlaylistId(int index, java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  result.playlistId_.set(index, value);
+      public Builder setPlaylistId(int index, long value) {
+        result.playlistId_.set(index, value);
         return this;
       }
-      public Builder addPlaylistId(java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  if (result.playlistId_.isEmpty()) {
-          result.playlistId_ = new java.util.ArrayList<java.lang.String>();
+      public Builder addPlaylistId(long value) {
+        if (result.playlistId_.isEmpty()) {
+          result.playlistId_ = new java.util.ArrayList<java.lang.Long>();
         }
         result.playlistId_.add(value);
         return this;
       }
       public Builder addAllPlaylistId(
-          java.lang.Iterable<? extends java.lang.String> values) {
+          java.lang.Iterable<? extends java.lang.Long> values) {
         if (result.playlistId_.isEmpty()) {
-          result.playlistId_ = new java.util.ArrayList<java.lang.String>();
+          result.playlistId_ = new java.util.ArrayList<java.lang.Long>();
         }
         super.addAll(values, result.playlistId_);
         return this;
@@ -2844,12 +2847,12 @@ public final class CoreApi {
       return com.robonobo.core.api.proto.CoreApi.internal_static_coreapi_PlaylistMsg_fieldAccessorTable;
     }
     
-    // required string id = 1;
+    // required int64 id = 1;
     public static final int ID_FIELD_NUMBER = 1;
     private boolean hasId;
-    private java.lang.String id_ = "";
+    private long id_ = 0L;
     public boolean hasId() { return hasId; }
-    public java.lang.String getId() { return id_; }
+    public long getId() { return id_; }
     
     // required string title = 2;
     public static final int TITLE_FIELD_NUMBER = 2;
@@ -2915,7 +2918,7 @@ public final class CoreApi {
                         throws java.io.IOException {
       getSerializedSize();
       if (hasId()) {
-        output.writeString(1, getId());
+        output.writeInt64(1, getId());
       }
       if (hasTitle()) {
         output.writeString(2, getTitle());
@@ -2946,7 +2949,7 @@ public final class CoreApi {
       size = 0;
       if (hasId()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeStringSize(1, getId());
+          .computeInt64Size(1, getId());
       }
       if (hasTitle()) {
         size += com.google.protobuf.CodedOutputStream
@@ -3200,8 +3203,8 @@ public final class CoreApi {
               }
               break;
             }
-            case 10: {
-              setId(input.readString());
+            case 8: {
+              setId(input.readInt64());
               break;
             }
             case 18: {
@@ -3242,24 +3245,21 @@ public final class CoreApi {
       }
       
       
-      // required string id = 1;
+      // required int64 id = 1;
       public boolean hasId() {
         return result.hasId();
       }
-      public java.lang.String getId() {
+      public long getId() {
         return result.getId();
       }
-      public Builder setId(java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  result.hasId = true;
+      public Builder setId(long value) {
+        result.hasId = true;
         result.id_ = value;
         return this;
       }
       public Builder clearId() {
         result.hasId = false;
-        result.id_ = getDefaultInstance().getId();
+        result.id_ = 0L;
         return this;
       }
       
@@ -6425,7 +6425,7 @@ public final class CoreApi {
       "_left\030\004 \001(\005\022\020\n\010password\030\005 \001(\t\022\023\n\013descrip" +
       "tion\030\006 \001(\t\022\021\n\timage_url\030\007 \001(\t\022\024\n\014updated" +
       "_date\030\010 \001(\003\022\021\n\tfriend_id\030\t \003(\003\022\023\n\013playli" +
-      "st_id\030\n \003(\t\"\220\001\n\013PlaylistMsg\022\n\n\002id\030\001 \002(\t\022" +
+      "st_id\030\n \003(\003\"\220\001\n\013PlaylistMsg\022\n\n\002id\030\001 \002(\003\022" +
       "\r\n\005title\030\002 \002(\t\022\026\n\010announce\030\003 \001(\010:\004true\022\024" +
       "\n\014updated_date\030\004 \001(\003\022\023\n\013description\030\005 \001(",
       "\t\022\021\n\tstream_id\030\006 \003(\t\022\020\n\010owner_id\030\007 \003(\003\"8" +
