@@ -74,7 +74,7 @@ message InviteMsg {
 	required string email = 2;
 	required string invite_code = 3;
 	optional int64 updated_date = 4;
-	repeated string playlist_id = 5;
+	repeated int64 playlist_id = 5;
 	repeated int64 friend_id = 6;
 }
 
@@ -84,7 +84,7 @@ message FriendRequestMsg {
 	required int64 requestee_id = 3;
 	required string request_code = 4;
 	optional int64 updated_date = 5;
-	repeated string playlist_id = 6;
+	repeated int64 playlist_id = 6;
 }
 
 message SearchResponse {
