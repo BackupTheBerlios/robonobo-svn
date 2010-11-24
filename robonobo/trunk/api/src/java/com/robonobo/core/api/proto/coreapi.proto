@@ -46,11 +46,11 @@ message UserMsg {
 	optional string image_url = 7;
 	optional int64 updated_date = 8;
 	repeated int64 friend_id = 9;
-	repeated string playlist_id = 10;
+	repeated int64 playlist_id = 10;
 }
 
 message PlaylistMsg {
-	required string id = 1;
+	required int64 id = 1;
 	required string title = 2;
 	optional bool announce = 3 [default = true];
 	optional int64 updated_date = 4;
