@@ -4182,15 +4182,15 @@ public final class CoreApi {
     public boolean hasUpdatedDate() { return hasUpdatedDate; }
     public long getUpdatedDate() { return updatedDate_; }
     
-    // repeated string playlist_id = 5;
+    // repeated int64 playlist_id = 5;
     public static final int PLAYLIST_ID_FIELD_NUMBER = 5;
-    private java.util.List<java.lang.String> playlistId_ =
+    private java.util.List<java.lang.Long> playlistId_ =
       java.util.Collections.emptyList();
-    public java.util.List<java.lang.String> getPlaylistIdList() {
+    public java.util.List<java.lang.Long> getPlaylistIdList() {
       return playlistId_;
     }
     public int getPlaylistIdCount() { return playlistId_.size(); }
-    public java.lang.String getPlaylistId(int index) {
+    public long getPlaylistId(int index) {
       return playlistId_.get(index);
     }
     
@@ -4230,8 +4230,8 @@ public final class CoreApi {
       if (hasUpdatedDate()) {
         output.writeInt64(4, getUpdatedDate());
       }
-      for (java.lang.String element : getPlaylistIdList()) {
-        output.writeString(5, element);
+      for (long element : getPlaylistIdList()) {
+        output.writeInt64(5, element);
       }
       for (long element : getFriendIdList()) {
         output.writeInt64(6, element);
@@ -4263,9 +4263,9 @@ public final class CoreApi {
       }
       {
         int dataSize = 0;
-        for (java.lang.String element : getPlaylistIdList()) {
+        for (long element : getPlaylistIdList()) {
           dataSize += com.google.protobuf.CodedOutputStream
-            .computeStringSizeNoTag(element);
+            .computeInt64SizeNoTag(element);
         }
         size += dataSize;
         size += 1 * getPlaylistIdList().size();
@@ -4459,7 +4459,7 @@ public final class CoreApi {
         }
         if (!other.playlistId_.isEmpty()) {
           if (result.playlistId_.isEmpty()) {
-            result.playlistId_ = new java.util.ArrayList<java.lang.String>();
+            result.playlistId_ = new java.util.ArrayList<java.lang.Long>();
           }
           result.playlistId_.addAll(other.playlistId_);
         }
@@ -4510,8 +4510,17 @@ public final class CoreApi {
               setUpdatedDate(input.readInt64());
               break;
             }
+            case 40: {
+              addPlaylistId(input.readInt64());
+              break;
+            }
             case 42: {
-              addPlaylistId(input.readString());
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              while (input.getBytesUntilLimit() > 0) {
+                addPlaylistId(input.readInt64());
+              }
+              input.popLimit(limit);
               break;
             }
             case 48: {
@@ -4610,37 +4619,31 @@ public final class CoreApi {
         return this;
       }
       
-      // repeated string playlist_id = 5;
-      public java.util.List<java.lang.String> getPlaylistIdList() {
+      // repeated int64 playlist_id = 5;
+      public java.util.List<java.lang.Long> getPlaylistIdList() {
         return java.util.Collections.unmodifiableList(result.playlistId_);
       }
       public int getPlaylistIdCount() {
         return result.getPlaylistIdCount();
       }
-      public java.lang.String getPlaylistId(int index) {
+      public long getPlaylistId(int index) {
         return result.getPlaylistId(index);
       }
-      public Builder setPlaylistId(int index, java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  result.playlistId_.set(index, value);
+      public Builder setPlaylistId(int index, long value) {
+        result.playlistId_.set(index, value);
         return this;
       }
-      public Builder addPlaylistId(java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  if (result.playlistId_.isEmpty()) {
-          result.playlistId_ = new java.util.ArrayList<java.lang.String>();
+      public Builder addPlaylistId(long value) {
+        if (result.playlistId_.isEmpty()) {
+          result.playlistId_ = new java.util.ArrayList<java.lang.Long>();
         }
         result.playlistId_.add(value);
         return this;
       }
       public Builder addAllPlaylistId(
-          java.lang.Iterable<? extends java.lang.String> values) {
+          java.lang.Iterable<? extends java.lang.Long> values) {
         if (result.playlistId_.isEmpty()) {
-          result.playlistId_ = new java.util.ArrayList<java.lang.String>();
+          result.playlistId_ = new java.util.ArrayList<java.lang.Long>();
         }
         super.addAll(values, result.playlistId_);
         return this;
@@ -4758,15 +4761,15 @@ public final class CoreApi {
     public boolean hasUpdatedDate() { return hasUpdatedDate; }
     public long getUpdatedDate() { return updatedDate_; }
     
-    // repeated string playlist_id = 6;
+    // repeated int64 playlist_id = 6;
     public static final int PLAYLIST_ID_FIELD_NUMBER = 6;
-    private java.util.List<java.lang.String> playlistId_ =
+    private java.util.List<java.lang.Long> playlistId_ =
       java.util.Collections.emptyList();
-    public java.util.List<java.lang.String> getPlaylistIdList() {
+    public java.util.List<java.lang.Long> getPlaylistIdList() {
       return playlistId_;
     }
     public int getPlaylistIdCount() { return playlistId_.size(); }
-    public java.lang.String getPlaylistId(int index) {
+    public long getPlaylistId(int index) {
       return playlistId_.get(index);
     }
     
@@ -4798,8 +4801,8 @@ public final class CoreApi {
       if (hasUpdatedDate()) {
         output.writeInt64(5, getUpdatedDate());
       }
-      for (java.lang.String element : getPlaylistIdList()) {
-        output.writeString(6, element);
+      for (long element : getPlaylistIdList()) {
+        output.writeInt64(6, element);
       }
       getUnknownFields().writeTo(output);
     }
@@ -4832,9 +4835,9 @@ public final class CoreApi {
       }
       {
         int dataSize = 0;
-        for (java.lang.String element : getPlaylistIdList()) {
+        for (long element : getPlaylistIdList()) {
           dataSize += com.google.protobuf.CodedOutputStream
-            .computeStringSizeNoTag(element);
+            .computeInt64SizeNoTag(element);
         }
         size += dataSize;
         size += 1 * getPlaylistIdList().size();
@@ -5018,7 +5021,7 @@ public final class CoreApi {
         }
         if (!other.playlistId_.isEmpty()) {
           if (result.playlistId_.isEmpty()) {
-            result.playlistId_ = new java.util.ArrayList<java.lang.String>();
+            result.playlistId_ = new java.util.ArrayList<java.lang.Long>();
           }
           result.playlistId_.addAll(other.playlistId_);
         }
@@ -5067,8 +5070,17 @@ public final class CoreApi {
               setUpdatedDate(input.readInt64());
               break;
             }
+            case 48: {
+              addPlaylistId(input.readInt64());
+              break;
+            }
             case 50: {
-              addPlaylistId(input.readString());
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              while (input.getBytesUntilLimit() > 0) {
+                addPlaylistId(input.readInt64());
+              }
+              input.popLimit(limit);
               break;
             }
           }
@@ -5169,37 +5181,31 @@ public final class CoreApi {
         return this;
       }
       
-      // repeated string playlist_id = 6;
-      public java.util.List<java.lang.String> getPlaylistIdList() {
+      // repeated int64 playlist_id = 6;
+      public java.util.List<java.lang.Long> getPlaylistIdList() {
         return java.util.Collections.unmodifiableList(result.playlistId_);
       }
       public int getPlaylistIdCount() {
         return result.getPlaylistIdCount();
       }
-      public java.lang.String getPlaylistId(int index) {
+      public long getPlaylistId(int index) {
         return result.getPlaylistId(index);
       }
-      public Builder setPlaylistId(int index, java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  result.playlistId_.set(index, value);
+      public Builder setPlaylistId(int index, long value) {
+        result.playlistId_.set(index, value);
         return this;
       }
-      public Builder addPlaylistId(java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  if (result.playlistId_.isEmpty()) {
-          result.playlistId_ = new java.util.ArrayList<java.lang.String>();
+      public Builder addPlaylistId(long value) {
+        if (result.playlistId_.isEmpty()) {
+          result.playlistId_ = new java.util.ArrayList<java.lang.Long>();
         }
         result.playlistId_.add(value);
         return this;
       }
       public Builder addAllPlaylistId(
-          java.lang.Iterable<? extends java.lang.String> values) {
+          java.lang.Iterable<? extends java.lang.Long> values) {
         if (result.playlistId_.isEmpty()) {
-          result.playlistId_ = new java.util.ArrayList<java.lang.String>();
+          result.playlistId_ = new java.util.ArrayList<java.lang.Long>();
         }
         super.addAll(values, result.playlistId_);
         return this;
@@ -6434,12 +6440,12 @@ public final class CoreApi {
       "d\030\001 \001(\003\022\'\n\005track\030\002 \003(\0132\030.coreapi.Library" +
       "TrackMsg\"\200\001\n\tInviteMsg\022\021\n\tinvite_id\030\001 \002(" +
       "\003\022\r\n\005email\030\002 \002(\t\022\023\n\013invite_code\030\003 \002(\t\022\024\n" +
-      "\014updated_date\030\004 \001(\003\022\023\n\013playlist_id\030\005 \003(\t" +
+      "\014updated_date\030\004 \001(\003\022\023\n\013playlist_id\030\005 \003(\003" +
       "\022\021\n\tfriend_id\030\006 \003(\003\"\232\001\n\020FriendRequestMsg" +
       "\022\031\n\021friend_request_id\030\001 \002(\003\022\024\n\014requestor" +
       "_id\030\002 \002(\003\022\024\n\014requestee_id\030\003 \002(\003\022\024\n\014reque",
       "st_code\030\004 \002(\t\022\024\n\014updated_date\030\005 \001(\003\022\023\n\013p" +
-      "laylist_id\030\006 \003(\t\"N\n\016SearchResponse\022\023\n\013fi" +
+      "laylist_id\030\006 \003(\003\"N\n\016SearchResponse\022\023\n\013fi" +
       "rstResult\030\001 \002(\005\022\024\n\014totalResults\030\002 \002(\005\022\021\n" +
       "\tobject_id\030\003 \003(\t\"7\n\016UserConfigItem\022\021\n\tit" +
       "em_name\030\001 \002(\t\022\022\n\nitem_value\030\002 \002(\t\"G\n\rUse" +
