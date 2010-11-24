@@ -2861,12 +2861,12 @@ public final class CoreApi {
     public boolean hasTitle() { return hasTitle; }
     public java.lang.String getTitle() { return title_; }
     
-    // optional bool announce = 3 [default = true];
-    public static final int ANNOUNCE_FIELD_NUMBER = 3;
-    private boolean hasAnnounce;
-    private boolean announce_ = true;
-    public boolean hasAnnounce() { return hasAnnounce; }
-    public boolean getAnnounce() { return announce_; }
+    // required string visibility = 3;
+    public static final int VISIBILITY_FIELD_NUMBER = 3;
+    private boolean hasVisibility;
+    private java.lang.String visibility_ = "";
+    public boolean hasVisibility() { return hasVisibility; }
+    public java.lang.String getVisibility() { return visibility_; }
     
     // optional int64 updated_date = 4;
     public static final int UPDATED_DATE_FIELD_NUMBER = 4;
@@ -2911,6 +2911,7 @@ public final class CoreApi {
     public final boolean isInitialized() {
       if (!hasId) return false;
       if (!hasTitle) return false;
+      if (!hasVisibility) return false;
       return true;
     }
     
@@ -2923,8 +2924,8 @@ public final class CoreApi {
       if (hasTitle()) {
         output.writeString(2, getTitle());
       }
-      if (hasAnnounce()) {
-        output.writeBool(3, getAnnounce());
+      if (hasVisibility()) {
+        output.writeString(3, getVisibility());
       }
       if (hasUpdatedDate()) {
         output.writeInt64(4, getUpdatedDate());
@@ -2955,9 +2956,9 @@ public final class CoreApi {
         size += com.google.protobuf.CodedOutputStream
           .computeStringSize(2, getTitle());
       }
-      if (hasAnnounce()) {
+      if (hasVisibility()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(3, getAnnounce());
+          .computeStringSize(3, getVisibility());
       }
       if (hasUpdatedDate()) {
         size += com.google.protobuf.CodedOutputStream
@@ -3157,8 +3158,8 @@ public final class CoreApi {
         if (other.hasTitle()) {
           setTitle(other.getTitle());
         }
-        if (other.hasAnnounce()) {
-          setAnnounce(other.getAnnounce());
+        if (other.hasVisibility()) {
+          setVisibility(other.getVisibility());
         }
         if (other.hasUpdatedDate()) {
           setUpdatedDate(other.getUpdatedDate());
@@ -3211,8 +3212,8 @@ public final class CoreApi {
               setTitle(input.readString());
               break;
             }
-            case 24: {
-              setAnnounce(input.readBool());
+            case 26: {
+              setVisibility(input.readString());
               break;
             }
             case 32: {
@@ -3284,21 +3285,24 @@ public final class CoreApi {
         return this;
       }
       
-      // optional bool announce = 3 [default = true];
-      public boolean hasAnnounce() {
-        return result.hasAnnounce();
+      // required string visibility = 3;
+      public boolean hasVisibility() {
+        return result.hasVisibility();
       }
-      public boolean getAnnounce() {
-        return result.getAnnounce();
+      public java.lang.String getVisibility() {
+        return result.getVisibility();
       }
-      public Builder setAnnounce(boolean value) {
-        result.hasAnnounce = true;
-        result.announce_ = value;
+      public Builder setVisibility(java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  result.hasVisibility = true;
+        result.visibility_ = value;
         return this;
       }
-      public Builder clearAnnounce() {
-        result.hasAnnounce = false;
-        result.announce_ = true;
+      public Builder clearVisibility() {
+        result.hasVisibility = false;
+        result.visibility_ = getDefaultInstance().getVisibility();
         return this;
       }
       
@@ -6431,27 +6435,27 @@ public final class CoreApi {
       "_left\030\004 \001(\005\022\020\n\010password\030\005 \001(\t\022\023\n\013descrip" +
       "tion\030\006 \001(\t\022\021\n\timage_url\030\007 \001(\t\022\024\n\014updated" +
       "_date\030\010 \001(\003\022\021\n\tfriend_id\030\t \003(\003\022\023\n\013playli" +
-      "st_id\030\n \003(\003\"\220\001\n\013PlaylistMsg\022\n\n\002id\030\001 \002(\003\022" +
-      "\r\n\005title\030\002 \002(\t\022\026\n\010announce\030\003 \001(\010:\004true\022\024" +
-      "\n\014updated_date\030\004 \001(\003\022\023\n\013description\030\005 \001(",
-      "\t\022\021\n\tstream_id\030\006 \003(\t\022\020\n\010owner_id\030\007 \003(\003\"8" +
-      "\n\017LibraryTrackMsg\022\021\n\tstream_id\030\001 \002(\t\022\022\n\n" +
-      "added_date\030\002 \001(\003\"F\n\nLibraryMsg\022\017\n\007user_i" +
-      "d\030\001 \001(\003\022\'\n\005track\030\002 \003(\0132\030.coreapi.Library" +
-      "TrackMsg\"\200\001\n\tInviteMsg\022\021\n\tinvite_id\030\001 \002(" +
-      "\003\022\r\n\005email\030\002 \002(\t\022\023\n\013invite_code\030\003 \002(\t\022\024\n" +
-      "\014updated_date\030\004 \001(\003\022\023\n\013playlist_id\030\005 \003(\003" +
-      "\022\021\n\tfriend_id\030\006 \003(\003\"\232\001\n\020FriendRequestMsg" +
-      "\022\031\n\021friend_request_id\030\001 \002(\003\022\024\n\014requestor" +
-      "_id\030\002 \002(\003\022\024\n\014requestee_id\030\003 \002(\003\022\024\n\014reque",
-      "st_code\030\004 \002(\t\022\024\n\014updated_date\030\005 \001(\003\022\023\n\013p" +
-      "laylist_id\030\006 \003(\003\"N\n\016SearchResponse\022\023\n\013fi" +
-      "rstResult\030\001 \002(\005\022\024\n\014totalResults\030\002 \002(\005\022\021\n" +
-      "\tobject_id\030\003 \003(\t\"7\n\016UserConfigItem\022\021\n\tit" +
-      "em_name\030\001 \002(\t\022\022\n\nitem_value\030\002 \002(\t\"G\n\rUse" +
-      "rConfigMsg\022\017\n\007user_id\030\001 \002(\003\022%\n\004item\030\002 \003(" +
-      "\0132\027.coreapi.UserConfigItemB&\n\033com.robono" +
-      "bo.core.api.protoB\007CoreApi"
+      "st_id\030\n \003(\003\"\214\001\n\013PlaylistMsg\022\n\n\002id\030\001 \002(\003\022" +
+      "\r\n\005title\030\002 \002(\t\022\022\n\nvisibility\030\003 \002(\t\022\024\n\014up" +
+      "dated_date\030\004 \001(\003\022\023\n\013description\030\005 \001(\t\022\021\n",
+      "\tstream_id\030\006 \003(\t\022\020\n\010owner_id\030\007 \003(\003\"8\n\017Li" +
+      "braryTrackMsg\022\021\n\tstream_id\030\001 \002(\t\022\022\n\nadde" +
+      "d_date\030\002 \001(\003\"F\n\nLibraryMsg\022\017\n\007user_id\030\001 " +
+      "\001(\003\022\'\n\005track\030\002 \003(\0132\030.coreapi.LibraryTrac" +
+      "kMsg\"\200\001\n\tInviteMsg\022\021\n\tinvite_id\030\001 \002(\003\022\r\n" +
+      "\005email\030\002 \002(\t\022\023\n\013invite_code\030\003 \002(\t\022\024\n\014upd" +
+      "ated_date\030\004 \001(\003\022\023\n\013playlist_id\030\005 \003(\003\022\021\n\t" +
+      "friend_id\030\006 \003(\003\"\232\001\n\020FriendRequestMsg\022\031\n\021" +
+      "friend_request_id\030\001 \002(\003\022\024\n\014requestor_id\030" +
+      "\002 \002(\003\022\024\n\014requestee_id\030\003 \002(\003\022\024\n\014request_c",
+      "ode\030\004 \002(\t\022\024\n\014updated_date\030\005 \001(\003\022\023\n\013playl" +
+      "ist_id\030\006 \003(\003\"N\n\016SearchResponse\022\023\n\013firstR" +
+      "esult\030\001 \002(\005\022\024\n\014totalResults\030\002 \002(\005\022\021\n\tobj" +
+      "ect_id\030\003 \003(\t\"7\n\016UserConfigItem\022\021\n\titem_n" +
+      "ame\030\001 \002(\t\022\022\n\nitem_value\030\002 \002(\t\"G\n\rUserCon" +
+      "figMsg\022\017\n\007user_id\030\001 \002(\003\022%\n\004item\030\002 \003(\0132\027." +
+      "coreapi.UserConfigItemB&\n\033com.robonobo.c" +
+      "ore.api.protoB\007CoreApi"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -6511,7 +6515,7 @@ public final class CoreApi {
           internal_static_coreapi_PlaylistMsg_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_coreapi_PlaylistMsg_descriptor,
-              new java.lang.String[] { "Id", "Title", "Announce", "UpdatedDate", "Description", "StreamId", "OwnerId", },
+              new java.lang.String[] { "Id", "Title", "Visibility", "UpdatedDate", "Description", "StreamId", "OwnerId", },
               com.robonobo.core.api.proto.CoreApi.PlaylistMsg.class,
               com.robonobo.core.api.proto.CoreApi.PlaylistMsg.Builder.class);
           internal_static_coreapi_LibraryTrackMsg_descriptor =
