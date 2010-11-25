@@ -11,7 +11,7 @@ public class FriendRequest {
 	long requestorId;
 	long requesteeId;
 	String requestCode;
-	Set<String> playlistIds = new HashSet<String>();
+	Set<Long> playlistIds = new HashSet<Long>();
 	Date updated;
 
 	public FriendRequest() {
@@ -71,11 +71,11 @@ public class FriendRequest {
 		this.requestCode = requestCode;
 	}
 
-	public Set<String> getPlaylistIds() {
+	public Set<Long> getPlaylistIds() {
 		return playlistIds;
 	}
 
-	public void setPlaylistIds(Set<String> playlistIds) {
+	public void setPlaylistIds(Set<Long> playlistIds) {
 		this.playlistIds = playlistIds;
 	}
 

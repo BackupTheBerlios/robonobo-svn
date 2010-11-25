@@ -12,8 +12,8 @@ public class RobonoboConfig implements Serializable {
 	String extraServices = "";
 	/** Comma-sep list of name:class pairs */
 	String extraConfigs = "mina:com.robonobo.mina.external.MinaConfig,wang:com.robonobo.core.wang.RobonoboWangConfig,gui:com.robonobo.gui.GuiConfig";
-	String sonarServerUrl = "http://robonobo.com/sonar/";
-	String metadataServerUrl = "http://robonobo.com/midas/";
+	String sonarServerUrl = "http://sonar.robonobo.com/";
+	String metadataServerUrl = "http://midas.robonobo.com/";
 	String metadataServerUsername;
 	String metadataServerPassword;
 	String bugReportUrl = "http://developer.berlios.de/bugs/?group_id=11593";
@@ -31,6 +31,7 @@ public class RobonoboConfig implements Serializable {
 	String gatewayCfgMode = "auto";
 	boolean agreedToEula = false;
 	boolean allowLoopbackAddress = false;
+	String playlistUrlBase = "http://rbnb.co/p/";
 
 	public RobonoboConfig() {
 	}
@@ -225,5 +226,13 @@ public class RobonoboConfig implements Serializable {
 
 	public void setAllowLoopbackAddress(boolean allowLoopbackAddress) {
 		this.allowLoopbackAddress = allowLoopbackAddress;
+	}
+
+	public String getPlaylistUrlBase() {
+		return playlistUrlBase;
+	}
+
+	public void setPlaylistUrlBase(String playlistUrlBase) {
+		this.playlistUrlBase = playlistUrlBase;
 	}
 }

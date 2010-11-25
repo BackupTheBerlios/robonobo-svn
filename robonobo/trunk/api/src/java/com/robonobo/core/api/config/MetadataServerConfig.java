@@ -4,6 +4,10 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
 
+import javax.swing.plaf.TextUI;
+
+import com.robonobo.common.util.TextUtil;
+
 import static com.robonobo.common.util.TextUtil.*;
 
 public class MetadataServerConfig implements Serializable {
@@ -19,21 +23,13 @@ public class MetadataServerConfig implements Serializable {
 		this.baseUrl = baseUrl;
 	}
 
-	public String getPlaylistUrl(String playlistId) {
-		return baseUrl + "playlists/" + playlistId;
+	public String getPlaylistUrl(long playlistId) {
+		return baseUrl + "playlists/" + Long.toHexString(playlistId);
 	}
 
-	public String getSendPlaylistUrl(String playlistId, long friendId) {
-		return baseUrl + "share-playlist/send?plid="+playlistId+"&friendid="+friendId;
-	}
-	
-	public String getSendPlaylistUrl(String playlistId, String email) {
-		return baseUrl + "share-playlist/send?plid="+playlistId+"&email="+urlEncode(email);
-	}
-	
-	public String getSharePlaylistUrl(String playlistId, Set<Long> friendIds, Set<String> emails) {
+	public String getSharePlaylistUrl(long playlistId, Set<Long> friendIds, Set<String> emails) {
 		StringBuffer sb = new StringBuffer(baseUrl).append("share-playlist/share?plid=");
-		sb.append(playlistId);
+		sb.append(Long.toHexString(playlistId));
 		if(friendIds.size() > 0) {
 			sb.append("&friendids=");
 			boolean first=true;
@@ -42,7 +38,7 @@ public class MetadataServerConfig implements Serializable {
 					first = false;
 				else
 					sb.append(",");
-				sb.append(String.valueOf(friendId));
+				sb.append(Long.toHexString(friendId));
 			}
 		}
 		if(emails.size() > 0) {
@@ -68,7 +64,7 @@ public class MetadataServerConfig implements Serializable {
 	}
 	
 	public String getUserUrl(long userId) {
-		return baseUrl + "users/byid/" + userId;
+		return baseUrl + "users/byid/" + Long.toHexString(userId);
 	}
 	
 	public String getLibraryUrl(long userId, Date since) {
@@ -79,11 +75,11 @@ public class MetadataServerConfig implements Serializable {
 	}
 	
 	public String getLibraryAddUrl(long userId) {
-		return baseUrl + "library/"+userId+"/add";
+		return baseUrl + "library/"+Long.toHexString(userId)+"/add";
 	}
 	
 	public String getLibraryDelUrl(long userId) {
-		return baseUrl + "library/"+userId+"/del";
+		return baseUrl + "library/"+Long.toHexString(userId)+"/del";
 	}
 	
 	public String getUserConfigUrl(long userId) {

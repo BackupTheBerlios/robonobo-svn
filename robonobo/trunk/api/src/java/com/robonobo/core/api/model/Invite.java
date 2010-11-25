@@ -11,7 +11,7 @@ public class Invite {
 	String email;
 	String inviteCode;
 	Date updated;
-	Set<String> playlistIds = new HashSet<String>();
+	Set<Long> playlistIds = new HashSet<Long>();
 	Set<Long> friendIds = new HashSet<Long>();
 
 	public Invite() {
@@ -71,11 +71,11 @@ public class Invite {
 		this.updated = updated;
 	}
 
-	public Set<String> getPlaylistIds() {
+	public Set<Long> getPlaylistIds() {
 		return playlistIds;
 	}
 
-	public void setPlaylistIds(Set<String> playlistIds) {
+	public void setPlaylistIds(Set<Long> playlistIds) {
 		this.playlistIds = playlistIds;
 	}
 

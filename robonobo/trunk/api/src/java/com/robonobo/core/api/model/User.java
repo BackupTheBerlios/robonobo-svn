@@ -18,7 +18,7 @@ public class User implements Serializable {
 	Date updated;
 	int invitesLeft;
 	Set<Long> friendIds = new HashSet<Long>();
-	Set<String> playlistIds = new HashSet<String>();
+	Set<Long> playlistIds = new HashSet<Long>();
 
 	public User() {
 	}
@@ -153,11 +153,11 @@ public class User implements Serializable {
 		this.friendIds = friendIds;
 	}
 
-	public Set<String> getPlaylistIds() {
+	public Set<Long> getPlaylistIds() {
 		return playlistIds;
 	}
 
-	public void setPlaylistIds(Set<String> playlistIds) {
+	public void setPlaylistIds(Set<Long> playlistIds) {
 		this.playlistIds = playlistIds;
 	}
 	

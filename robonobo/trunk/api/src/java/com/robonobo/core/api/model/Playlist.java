@@ -6,15 +6,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.core.api.proto.CoreApi.PlaylistMsg;
 
 public class Playlist implements Comparable<Playlist> {
+	public static final String VIS_ALL = "all";
+	public static final String VIS_FRIENDS = "friends";
+	public static final String VIS_ME = "me";
+	
 	String title;
 	Date updated;
 	List<String> streamIds = new ArrayList<String>();
 	String description;
-	String playlistId;
-	boolean announce = true;
+	long playlistId;
+	String visibility = VIS_FRIENDS;
 	Set<Long> ownerIds = new HashSet<Long>();
 	
 	public Playlist() {
@@ -25,7 +30,10 @@ public class Playlist implements Comparable<Playlist> {
 		title = msg.getTitle();
 		updated = new Date(msg.getUpdatedDate());
 		description = msg.getDescription();
-		announce = msg.getAnnounce();
+		String vis = msg.getVisibility();
+		if((!vis.equals(VIS_ALL)) && (!vis.equals(VIS_FRIENDS)) && (!vis.equals(VIS_ME)))
+			throw new SeekInnerCalmException("invalid visibility: "+vis);
+		visibility = vis;
 		streamIds.addAll(msg.getStreamIdList());
 		ownerIds.addAll(msg.getOwnerIdList());
 	}
@@ -38,7 +46,7 @@ public class Playlist implements Comparable<Playlist> {
 			b.setUpdatedDate(updated.getTime());
 		if(description != null)
 			b.setDescription(description);
-		b.setAnnounce(announce);
+		b.setVisibility(visibility);
 		b.addAllStreamId(streamIds);
 		b.addAllOwnerId(ownerIds);
 		return b.build();
@@ -49,7 +57,7 @@ public class Playlist implements Comparable<Playlist> {
 		description = p.description;
 		playlistId = p.playlistId;
 		updated = p.updated;
-		announce = p.announce;
+		visibility = p.visibility;
 		streamIds.clear();
 		streamIds.addAll(p.getStreamIds());
 	}
@@ -60,9 +68,7 @@ public class Playlist implements Comparable<Playlist> {
 		if(!(obj instanceof Playlist))
 			return false;
 		Playlist p = (Playlist) obj;
-		if(playlistId == null)
-			return (p.playlistId == null);
-		return playlistId.equals(p.playlistId);
+		return playlistId == p.getPlaylistId();
 	}
 
 	@Override
@@ -70,7 +76,7 @@ public class Playlist implements Comparable<Playlist> {
 		return title.compareTo(o.getTitle());
 	}
 	
-	public String getPlaylistId() {
+	public long getPlaylistId() {
 		return playlistId;
 	}
 
@@ -87,11 +93,11 @@ public class Playlist implements Comparable<Playlist> {
 	}
 
 	public int hashCode() {
-		return getClass().getName().hashCode() ^ getPlaylistId().hashCode();
+		return (int) (getClass().getName().hashCode() ^ getPlaylistId());
 	}
 
-	public void setPlaylistId(String channelId) {
-		this.playlistId = channelId;
+	public void setPlaylistId(long playlistId) {
+		this.playlistId = playlistId;
 	}
 
 	public void setDescription(String description) {
@@ -127,14 +133,14 @@ public class Playlist implements Comparable<Playlist> {
 		this.streamIds = streamIds;
 	}
 
-	public boolean getAnnounce() {
-		return announce;
+	public String getVisibility() {
+		return visibility;
 	}
-
-	public void setAnnounce(boolean announce) {
-		this.announce = announce;
+	
+	public void setVisibility(String visibility) {
+		this.visibility = visibility;
 	}
-
+	
 	public Set<Long> getOwnerIds() {
 		return ownerIds;
 	}

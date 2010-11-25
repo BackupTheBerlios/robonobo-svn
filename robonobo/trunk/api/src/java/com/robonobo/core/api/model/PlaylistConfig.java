@@ -9,7 +9,7 @@ import java.util.Map;
  *
  */
 public class PlaylistConfig {
-	private String playlistId;
+	private long playlistId ;
 	private Map<String, String> items = new HashMap<String, String>();
 	
 	public PlaylistConfig() {
@@ -31,11 +31,11 @@ public class PlaylistConfig {
 		items.put(key, value);
 	}
 	
-	public String getPlaylistId() {
+	public long getPlaylistId() {
 		return playlistId;
 	}
 
-	public void setPlaylistId(String playlistId) {
+	public void setPlaylistId(long playlistId) {
 		this.playlistId = playlistId;
 	}
 }
