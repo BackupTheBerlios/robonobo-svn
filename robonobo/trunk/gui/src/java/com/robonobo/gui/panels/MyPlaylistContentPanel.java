@@ -3,8 +3,8 @@ package com.robonobo.gui.panels;
 import static com.robonobo.common.util.TextUtil.*;
 
 import java.awt.ComponentOrientation;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
+import java.awt.Toolkit;
+import java.awt.datatransfer.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
@@ -17,28 +17,32 @@ import org.debian.tablelayout.TableLayout;
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.common.util.FileUtil;
-import com.robonobo.common.util.TextUtil;
+import com.robonobo.console.cmds.playlist;
 import com.robonobo.core.Platform;
-import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.UserPlaylistListener;
 import com.robonobo.core.api.model.*;
+import com.robonobo.gui.RoboColor;
 import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.dialogs.SharePlaylistDialog;
 import com.robonobo.gui.frames.RobonoboFrame;
-import com.robonobo.gui.model.*;
+import com.robonobo.gui.model.PlaylistTableModel;
+import com.robonobo.gui.model.StreamTransfer;
 import com.robonobo.gui.tasks.ImportFilesTask;
 
 @SuppressWarnings("serial")
 public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylistListener {
 	protected PlaylistConfig pc;
 	protected JTextField titleField;
+	protected JTextField urlField;
 	protected JTextArea descField;
 	protected JButton saveBtn;
 	protected JButton shareBtn;
 	protected JButton delBtn;
-	protected JCheckBox friendsCB;
 	protected JCheckBox iTunesCB;
+	protected JRadioButton visMeBtn;
+	protected JRadioButton visFriendsBtn;
+	protected JRadioButton visAllBtn;
 	protected Map<String, JCheckBox> options = new HashMap<String, JCheckBox>();
 
 	public MyPlaylistContentPanel(RobonoboFrame frame, Playlist p, PlaylistConfig pc) {
@@ -137,7 +141,15 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			getModel().setPlaylist(p);
 			titleField.setText(p.getTitle());
 			descField.setText(p.getDescription());
-			friendsCB.setSelected(p.getAnnounce());
+			String vis = p.getVisibility();
+			if(vis.equals(Playlist.VIS_ALL))
+				visAllBtn.setSelected(true);
+			else if(vis.equals(Playlist.VIS_FRIENDS))
+				visFriendsBtn.setSelected(true);
+			else if(vis.equals(Playlist.VIS_ME))
+				visMeBtn.setSelected(true);
+			else
+				throw new SeekInnerCalmException("invalid visibility "+vis);
 			PlaylistTableModel ptm = (PlaylistTableModel) trackList.getModel();
 			ptm.update(p, true);
 		}
@@ -213,10 +225,11 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 		}
 	}
 	
-	class PlaylistDetailsPanel extends JPanel {
+	class PlaylistDetailsPanel extends JPanel implements ClipboardOwner {
+
 		public PlaylistDetailsPanel() {
-			double[][] cellSizen = { { 5, 35, 5, 365, 20, TableLayout.FILL, 5 },
-					{ 5, 25, 0, 25, 0, TableLayout.FILL, 5, 30, 5 } };
+			double[][] cellSizen = { { 5, 35, 5, 280, 5, 95, 10, 180, 5, TableLayout.FILL, 5 },
+					{ 5, 25, 5, 25, 25, 0, TableLayout.FILL, 5, 30, 5 } };
 			setLayout(new TableLayout(cellSizen));
 
 			KeyListener kl = new KeyAdapter() {
@@ -232,23 +245,48 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			titleField = new JTextField(p.getTitle());
 			titleField.setFont(RoboFont.getFont(11, false));
 			titleField.addKeyListener(kl);
-			add(titleField, "3,1");
+			add(titleField, "3,1,5,1");
 
+			JLabel urlLbl = new JLabel("URL:");
+			urlLbl.setFont(RoboFont.getFont(13, false));
+			add(urlLbl, "1,3");
+			String urlBase = frame.getController().getConfig().getPlaylistUrlBase();
+			String urlText = (p.getPlaylistId() > 0) ? urlBase + Long.toHexString(p.getPlaylistId()) : "(none)";
+			urlField = new JTextField(urlText);
+			urlField.setFont(RoboFont.getFont(11, false));
+			urlField.setEnabled(false);
+			add(urlField, "3,3");
+			JButton copyBtn = new JButton("Copy URL");
+			copyBtn.setFont(RoboFont.getFont(11, true));
+			copyBtn.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					Clipboard c = Toolkit.getDefaultToolkit().getSystemClipboard();
+					StringSelection s = new StringSelection(urlField.getText());
+					c.setContents(s, PlaylistDetailsPanel.this);
+				}
+			});
+			add(copyBtn, "5,3");
+			
 			JLabel descLbl = new JLabel("Description:");
 			descLbl.setFont(RoboFont.getFont(13, false));
-			add(descLbl, "1,3,3,3");
+			add(descLbl, "1,4,5,4");
 			descField = new JTextArea(p.getDescription());
 			descField.setFont(RoboFont.getFont(11, false));
 			descField.addKeyListener(kl);
-			add(new JScrollPane(descField), "1,5,3,7");
-
-			add(new OptsPanel(), "5,1,5,5");
-			add(new ButtonsPanel(), "5,7");
+			add(new JScrollPane(descField), "1,6,5,8");
+			add(new VisPanel(), "7,1,7,6");
+			add(new OptsPanel(), "9,1,9,6");
+			add(new ButtonsPanel(), "7,8,9,8");
+		}
+		
+		@Override
+		public void lostOwnership(Clipboard clipboard, Transferable contents) {
+			// Do nothing
 		}
 	}
 
-	class OptsPanel extends JPanel {
-		public OptsPanel() {
+	class VisPanel extends JPanel {
+		public VisPanel() {
 			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
 			ActionListener al = new ActionListener() {
@@ -257,16 +295,50 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 				}
 			};
 
-			friendsCB = new JCheckBox("Let friends see this playlist");
-			friendsCB.setFont(RoboFont.getFont(12, true));
-			friendsCB.setSelected(getModel().getPlaylist().getAnnounce());
-			friendsCB.addActionListener(al);
-			add(friendsCB);
+			JLabel visLbl = new JLabel("Who can see this playlist?");
+			visLbl.setFont(RoboFont.getFont(12, true));
+			add(visLbl);
 			add(Box.createVerticalStrut(5));
-
+			ButtonGroup bg = new ButtonGroup();
+			// TODO multiple owners?
+			Playlist p = getModel().getPlaylist();
+			String vis = p.getVisibility();
+			visMeBtn = new JRadioButton("Just me");
+			visMeBtn.setFont(RoboFont.getFont(12, false));
+			visMeBtn.addActionListener(al);
+			if(vis.equals(Playlist.VIS_ME))
+				visMeBtn.setSelected(true);
+			bg.add(visMeBtn);
+			add(visMeBtn);
+			visFriendsBtn = new JRadioButton("Friends");
+			visFriendsBtn.setFont(RoboFont.getFont(12, false));
+			visFriendsBtn.addActionListener(al);
+			if(vis.equals(Playlist.VIS_FRIENDS))
+				visFriendsBtn.setSelected(true);
+			bg.add(visFriendsBtn);
+			add(visFriendsBtn);
+			visAllBtn = new JRadioButton("Everyone");
+			visAllBtn.setFont(RoboFont.getFont(12, false));
+			visAllBtn.addActionListener(al);
+			if(vis.equals(Playlist.VIS_ALL))
+				visAllBtn.setSelected(true);
+			bg.add(visAllBtn);
+			add(visAllBtn);
+		}
+	}
+	
+	class OptsPanel extends JPanel {
+		public OptsPanel() {
+			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+			add(Box.createVerticalStrut(20));
+			ActionListener al = new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					saveBtn.setEnabled(detailsChanged());
+				}
+			};
 			if (Platform.getPlatform().iTunesAvailable()) {
 				iTunesCB = new JCheckBox("Export playlist to iTunes");
-				iTunesCB.setFont(RoboFont.getFont(12, true));
+				iTunesCB.setFont(RoboFont.getFont(12, false));
 				iTunesCB.setSelected("true".equalsIgnoreCase(pc.getItem("iTunesExport")));
 				options.put("iTunesExport", iTunesCB);
 				iTunesCB.addActionListener(al);
@@ -316,7 +388,13 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			saveBtn.setFont(RoboFont.getFont(12, true));
 			saveBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					getModel().getPlaylist().setAnnounce(friendsCB.isSelected());
+					Playlist p = getModel().getPlaylist();
+					if(visAllBtn.isSelected())
+						p.setVisibility(Playlist.VIS_ALL);
+					else if(visFriendsBtn.isSelected())
+						p.setVisibility(Playlist.VIS_FRIENDS);
+					else if(visMeBtn.isSelected())
+						p.setVisibility(Playlist.VIS_ME);
 					pc.getItems().clear();
 					for (String opt : options.keySet()) {
 						JCheckBox cb = options.get(opt);

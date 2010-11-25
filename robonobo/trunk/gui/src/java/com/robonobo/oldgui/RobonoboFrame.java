@@ -257,7 +257,7 @@ public class RobonoboFrame extends JFrame implements UserPlaylistListener {
 				Playlist p = controller.getMyPlaylistByTitle(pName);
 				if (p == null) {
 					p = new Playlist();
-					p.setPlaylistId(UUIDGenerator.getInstance().generateRandomBasedUUID(new SecureRandom()).toString());
+//					p.setPlaylistId(UUIDGenerator.getInstance().generateRandomBasedUUID(new SecureRandom()).toString());
 					p.setTitle(pName);
 					p.getOwnerIds().add(controller.getMyUser().getUserId());
 					List<File> tracks = itPls.get(pName);

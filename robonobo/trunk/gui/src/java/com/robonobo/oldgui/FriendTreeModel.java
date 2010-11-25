@@ -129,7 +129,7 @@ class FriendTreeModel extends SortedTreeModel implements UserPlaylistListener {
 							PlaylistTreeNode ptn = playlistNodes.get(friendId).get(p.getPlaylistId());
 							if(ptn == null) {
 //								ptn = new PlaylistTreeNode(p, frame, font, MAX_FRIEND_PLAYLIST_TITLE_WIDTH);
-								playlistNodes.get(friendId).put(p.getPlaylistId(), ptn);
+//								playlistNodes.get(friendId).put(p.getPlaylistId(), ptn);
 								insertNodeSorted(ftn, ptn);
 							} else {
 								ptn.setPlaylist(p);

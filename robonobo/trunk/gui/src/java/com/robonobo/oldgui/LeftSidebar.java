@@ -135,14 +135,14 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 	}
 
 	public void selectMyPlaylist(Playlist p) {
-		if (p.getPlaylistId() == null)
-			selectNewPlaylist();
-		else
-			myPlaylistsTree.selectPlaylist(p.getPlaylistId());
+//		if (p.getPlaylistId() == null)
+//			selectNewPlaylist();
+//		else
+//			myPlaylistsTree.selectPlaylist(p.getPlaylistId());
 	}
 
 	public void selectFriendPlaylist(Playlist p) {
-		friendsTree.selectPlaylist(p.getPlaylistId());
+//		friendsTree.selectPlaylist(p.getPlaylistId());
 	}
 	
 	public void reopenMyPlaylistsTree() {

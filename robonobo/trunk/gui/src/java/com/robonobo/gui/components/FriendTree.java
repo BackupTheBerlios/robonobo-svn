@@ -78,7 +78,7 @@ public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
 		((SelectionModel) getSelectionModel()).reallyClearSelection();
 	}
 
-	public void selectForPlaylist(String playlistId) {
+	public void selectForPlaylist(Long playlistId) {
 		setSelectionPath(getModel().getPlaylistTreePath(playlistId));
 	}
 

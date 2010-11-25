@@ -71,7 +71,6 @@ public class ImportITunesTask extends Task {
 			Playlist p = control.getMyPlaylistByTitle(pName);
 			if (p == null) {
 				p = new Playlist();
-				p.setPlaylistId(UUIDGenerator.getInstance().generateRandomBasedUUID(new SecureRandom()).toString());
 				p.setTitle(pName);
 				p.getOwnerIds().add(control.getMyUser().getUserId());
 				List<File> tracks = itPls.get(pName);

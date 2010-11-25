@@ -114,7 +114,7 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 			activeSearchList.selectForQuery(cpn.substring("search/".length()));
 		else if(cpn.startsWith("playlist/")) {
 			// Playlist might be one of mine or it might be a friend's
-			String plId = cpn.substring("playlist/".length());
+			long plId = Long.parseLong(cpn.substring("playlist/".length()));
 			Playlist p = frame.getController().getPlaylist(plId);
 			User me = frame.getController().getMyUser();
 			if(me.getPlaylistIds().contains(plId))

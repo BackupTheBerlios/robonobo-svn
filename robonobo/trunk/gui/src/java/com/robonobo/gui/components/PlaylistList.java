@@ -105,7 +105,7 @@ public class PlaylistList extends LeftSidebarList implements UserPlaylistListene
 	public void playlistChanged(final Playlist p) {
 		invokeLater(new CatchingRunnable() {
 			public void doRun() throws Exception {
-				String plId = p.getPlaylistId();
+				Long plId = p.getPlaylistId();
 				if (frame.getController().getMyUser().getPlaylistIds().contains(plId)) {
 					Playlist selP = (getSelectedIndex() < 0) ? null : getModel().getPlaylistAt(getSelectedIndex());
 					boolean needReselect = p.equals(selP);

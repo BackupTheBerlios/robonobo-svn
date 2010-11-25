@@ -97,7 +97,7 @@ public class MyPlaylistsTreeModel extends SortedTreeModel implements UserPlaylis
 						if(ptn == null) {
 							// New playlist
 //							ptn = new PlaylistTreeNode(p, frame, font, MAX_MY_PLAYLIST_TITLE_WIDTH);
-							playlistNodes.put(p.getPlaylistId(), ptn);
+//							playlistNodes.put(p.getPlaylistId(), ptn);
 							insertNodeSorted(getRoot(), ptn);
 						} else {
 							// Updated playlist

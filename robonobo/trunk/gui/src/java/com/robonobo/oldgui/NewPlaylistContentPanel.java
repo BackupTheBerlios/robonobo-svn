@@ -25,7 +25,7 @@ public class NewPlaylistContentPanel extends MyPlaylistContentPanel {
 			public void doRun() throws Exception {
 				// Create the new playlist in midas
 				try {
-					p.setPlaylistId(UUIDGenerator.getInstance().generateRandomBasedUUID(new SecureRandom()).toString());
+//					p.setPlaylistId(UUIDGenerator.getInstance().generateRandomBasedUUID(new SecureRandom()).toString());
 					p.getOwnerIds().add(controller.getMyUser().getUserId());
 					pc.setPlaylistId(p.getPlaylistId());
 					controller.putPlaylistConfig(pc);

@@ -32,7 +32,7 @@ public class FriendTreeModel extends SortedTreeModel implements UserPlaylistList
 	RobonoboController controller;
 	Map<Long, FriendTreeNode> friendNodes = new HashMap<Long, FriendTreeNode>();
 	Map<Long, LibraryTreeNode> libNodes = new HashMap<Long, LibraryTreeNode>();
-	Map<Long, Map<String, PlaylistTreeNode>> playlistNodes = new HashMap<Long, Map<String, PlaylistTreeNode>>();
+	Map<Long, Map<Long, PlaylistTreeNode>> playlistNodes = new HashMap<Long, Map<Long, PlaylistTreeNode>>();
 	Log log = LogFactory.getLog(getClass());
 	SelectableTreeNode myRoot;
 
@@ -82,9 +82,9 @@ public class FriendTreeModel extends SortedTreeModel implements UserPlaylistList
 						if (friendNodes.containsKey(u.getUserId())) {
 							FriendTreeNode ftn = friendNodes.get(u.getUserId());
 							// Already have this friend - check to see if any playlists have been deleted
-							Iterator<Entry<String, PlaylistTreeNode>> iter = playlistNodes.get(u.getUserId()).entrySet().iterator();
+							Iterator<Entry<Long, PlaylistTreeNode>> iter = playlistNodes.get(u.getUserId()).entrySet().iterator();
 							while(iter.hasNext()) {
-								Entry<String, PlaylistTreeNode> entry = iter.next();
+								Entry<Long, PlaylistTreeNode> entry = iter.next();
 								if(!u.getPlaylistIds().contains(entry.getKey())) {
 									PlaylistTreeNode ptn = entry.getValue();
 									removeNodeFromParent(ptn);
@@ -98,7 +98,7 @@ public class FriendTreeModel extends SortedTreeModel implements UserPlaylistList
 							// New friend node
 							FriendTreeNode ftn = new FriendTreeNode(u);
 							friendNodes.put(u.getUserId(), ftn);
-							playlistNodes.put(u.getUserId(), new HashMap<String, PlaylistTreeNode>());
+							playlistNodes.put(u.getUserId(), new HashMap<Long, PlaylistTreeNode>());
 							insertNodeSorted(getRoot(), ftn);
 						}
 					}
@@ -160,11 +160,11 @@ public class FriendTreeModel extends SortedTreeModel implements UserPlaylistList
 		// Do nothing
 	}
 	
-	public TreePath getPlaylistTreePath(String playlistId) {
+	public TreePath getPlaylistTreePath(Long playlistId) {
 		// NB If the playlist is in the tree more than once (eg shared
 		// playlist), this will select the first instance only...
 		synchronized (this) {
-			for (Map<String, PlaylistTreeNode> ptns : playlistNodes.values()) {
+			for (Map<Long, PlaylistTreeNode> ptns : playlistNodes.values()) {
 				if(ptns.containsKey(playlistId))
 					return new TreePath(getPathToRoot(ptns.get(playlistId)));
 			}

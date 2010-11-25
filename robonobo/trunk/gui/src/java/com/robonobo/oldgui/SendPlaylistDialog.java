@@ -134,29 +134,29 @@ public class SendPlaylistDialog extends JDialog implements KeyListener {
 				public void actionPerformed(ActionEvent e) {
 					frame.getController().getExecutor().execute(new CatchingRunnable() {
 						public void doRun() throws Exception {
-							if (exisFriendRb.isSelected()) {
-								User friend = ((UserWrapper) friendCombo.getSelectedItem()).u;
-								long friendId = friend.getUserId();
-								try {
-									controller.sendPlaylist(p, friendId);
-									frame.updateStatus("Playlist sent to " + friend.getFriendlyName(), 5, 30);
-									frame.getLeftSidebar().selectMyMusic();
-								} catch (RobonoboException ex) {
-									log.error("Caught exception sending playlist", ex);
-									frame.updateStatus("Error sending playlist: " + ex.getMessage(), 10, 30);
-								}
-							} else if (newFriendRb.isSelected()) {
-								String email = emailField.getText();
-								try {
-									controller.sendPlaylist(p, email);
-									frame.updateStatus("Playlist sent to " + email, 5, 30);
-									frame.getLeftSidebar().selectMyMusic();
-								} catch (RobonoboException ex) {
-									log.error("Caught exception sending playlist", ex);
-									frame.updateStatus("Error sending playlist: " + ex.getMessage(), 10, 30);
-								}
-							} else
-								throw new SeekInnerCalmException();
+//							if (exisFriendRb.isSelected()) {
+//								User friend = ((UserWrapper) friendCombo.getSelectedItem()).u;
+//								long friendId = friend.getUserId();
+//								try {
+//									controller.sendPlaylist(p, friendId);
+//									frame.updateStatus("Playlist sent to " + friend.getFriendlyName(), 5, 30);
+//									frame.getLeftSidebar().selectMyMusic();
+//								} catch (RobonoboException ex) {
+//									log.error("Caught exception sending playlist", ex);
+//									frame.updateStatus("Error sending playlist: " + ex.getMessage(), 10, 30);
+//								}
+//							} else if (newFriendRb.isSelected()) {
+//								String email = emailField.getText();
+//								try {
+//									controller.sendPlaylist(p, email);
+//									frame.updateStatus("Playlist sent to " + email, 5, 30);
+//									frame.getLeftSidebar().selectMyMusic();
+//								} catch (RobonoboException ex) {
+//									log.error("Caught exception sending playlist", ex);
+//									frame.updateStatus("Error sending playlist: " + ex.getMessage(), 10, 30);
+//								}
+//							} else
+//								throw new SeekInnerCalmException();
 						}
 					});
 					SendPlaylistDialog.this.setVisible(false);

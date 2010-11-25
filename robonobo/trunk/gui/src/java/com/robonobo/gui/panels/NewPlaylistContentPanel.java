@@ -31,7 +31,6 @@ public class NewPlaylistContentPanel extends MyPlaylistContentPanel {
 			public void doRun() throws Exception {
 				// Create the new playlist in midas
 				try {
-					p.setPlaylistId(UUIDGenerator.getInstance().generateRandomBasedUUID(new SecureRandom()).toString());
 					p.getOwnerIds().add(control.getMyUser().getUserId());
 					pc.setPlaylistId(p.getPlaylistId());
 					control.putPlaylistConfig(pc);
@@ -50,7 +49,7 @@ public class NewPlaylistContentPanel extends MyPlaylistContentPanel {
 						Playlist newP = new Playlist();
 						titleField.setText("");
 						descField.setText("");
-						friendsCB.setSelected(p.getAnnounce());
+//						friendsCB.setSelected(p.getAnnounce());
 						if(iTunesCB != null)
 							iTunesCB.setSelected(false);
 						getModel().setPlaylist(newP);

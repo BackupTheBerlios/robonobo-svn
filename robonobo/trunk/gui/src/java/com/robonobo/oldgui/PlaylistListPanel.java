@@ -28,18 +28,18 @@ public class PlaylistListPanel extends JPanel {
 			});
 			add(newPlaylistLbl);
 		}
-		for (String playlistId : user.getPlaylistIds()) {
-			// TODO This needs to be fixed, playlist might not be loaded yet
-			final Playlist fp = frame.getController().getPlaylist(playlistId);
-			JLabel plLbl = new JLabel(fp.getTitle());
-//			plLbl.setForeground(Platform.getPlatform().getLinkColor());
-			plLbl.addMouseListener(new MouseAdapter() {
-				public void mouseClicked(MouseEvent e) {
-					frame.getContentHolder().bringPanelToFront("playlist-"+fp.getPlaylistId());
-				}
-			});
-			add(plLbl);
-		}
+//		for (String playlistId : user.getPlaylistIds()) {
+//			// TODO This needs to be fixed, playlist might not be loaded yet
+//			final Playlist fp = frame.getController().getPlaylist(playlistId);
+//			JLabel plLbl = new JLabel(fp.getTitle());
+////			plLbl.setForeground(Platform.getPlatform().getLinkColor());
+//			plLbl.addMouseListener(new MouseAdapter() {
+//				public void mouseClicked(MouseEvent e) {
+//					frame.getContentHolder().bringPanelToFront("playlist-"+fp.getPlaylistId());
+//				}
+//			});
+//			add(plLbl);
+//		}
 	}
 	
 

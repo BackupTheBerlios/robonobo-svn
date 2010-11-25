@@ -74,7 +74,7 @@ public class MyPlaylistDetailsPanel extends JPanel {
 		p = myContentPanel.p;
 		titleField.setText(p.getTitle());
 		descArea.setText(p.getDescription());
-		friendsCheckBox.setSelected(p.getAnnounce());
+//		friendsCheckBox.setSelected(p.getAnnounce());
 	}
 	
 	String getPlaylistTitle() {
@@ -104,7 +104,7 @@ public class MyPlaylistDetailsPanel extends JPanel {
 			};
 
 			friendsCheckBox = new JCheckBox("Let friends see this playlist");
-			friendsCheckBox.setSelected(p.getAnnounce());
+//			friendsCheckBox.setSelected(p.getAnnounce());
 			friendsCheckBox.addActionListener(actL);
 			add(friendsCheckBox);
 
@@ -139,7 +139,7 @@ public class MyPlaylistDetailsPanel extends JPanel {
 			saveBtn = new JButton("Save changes");
 			saveBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent evt) {
-					myContentPanel.p.setAnnounce(friendsCheckBox.isSelected());
+//					myContentPanel.p.setAnnounce(friendsCheckBox.isSelected());
 					myContentPanel.pc.getItems().clear();
 					for (String opt : options.keySet()) {
 						JCheckBox cb = options.get(opt);
