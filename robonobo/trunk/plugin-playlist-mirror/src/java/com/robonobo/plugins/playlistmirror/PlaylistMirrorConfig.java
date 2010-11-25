@@ -8,7 +8,6 @@ public class PlaylistMirrorConfig implements Serializable {
 	String connectionUrl;
 	String connectionUsername;
 	String connectionPassword;
-	String playlistIdRegex = "^.*$";
 	/** Secs */
 	int checkFrequency = 60;
 	/**
@@ -54,14 +53,6 @@ public class PlaylistMirrorConfig implements Serializable {
 
 	public void setConnectionPassword(String connectionPassword) {
 		this.connectionPassword = connectionPassword;
-	}
-
-	public String getPlaylistIdRegex() {
-		return playlistIdRegex;
-	}
-
-	public void setPlaylistIdRegex(String playlistIdRegex) {
-		this.playlistIdRegex = playlistIdRegex;
 	}
 
 	public int getCheckFrequency() {

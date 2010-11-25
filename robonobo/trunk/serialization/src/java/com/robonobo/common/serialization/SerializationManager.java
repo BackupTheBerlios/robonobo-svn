@@ -120,6 +120,10 @@ public class SerializationManager {
 	}
 
 	public void putObjectToUrl(GeneratedMessage msg, String url) throws IOException {
+		putObjectToUrl(msg, url, null);
+	}
+	
+	public void putObjectToUrl(GeneratedMessage msg, String url, AbstractMessage.Builder bldr) throws IOException {
 		log.debug("Putting object to "+url);
 		PutMethod put = new PutMethod(url);
 		try {
@@ -130,6 +134,10 @@ public class SerializationManager {
 			int statusCode = client.executeMethod(put);
 			switch (statusCode) {
 			case 200:
+				if(bldr != null) {
+					byte[] bodBytes = put.getResponseBody();
+					bldr.mergeFrom(bodBytes);
+				}
 				return;
 			default:
 				throw new IOException("Server replied with status " + statusCode + ": " + put.getResponseBodyAsString());

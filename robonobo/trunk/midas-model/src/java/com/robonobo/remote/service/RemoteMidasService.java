@@ -200,7 +200,7 @@ public class RemoteMidasService implements ServerInvocationHandler {
 	}
 
 	private Object getPlaylistById(RemoteCall params) {
-		String plId = (String) params.getArg();
+		Long plId = (Long) params.getArg();
 		return localService.getPlaylistById(plId).toMsg().toByteArray();
 	}
 

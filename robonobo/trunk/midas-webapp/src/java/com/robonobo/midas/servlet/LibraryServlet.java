@@ -109,11 +109,11 @@ public class LibraryServlet extends MidasServlet {
 	}
 
 	private long getUserId(HttpServletRequest req) {
-		Pattern p = Pattern.compile("/(\\d+).*");
+		Pattern p = Pattern.compile("/([0-9a-eA-E]+).*");
 		Matcher m = p.matcher(req.getPathInfo());
 		if (!m.matches())
 			throw new SeekInnerCalmException();
-		return Long.parseLong(m.group(1));
+		return Long.parseLong(m.group(1), 16);
 	}
 
 	private String getVerb(HttpServletRequest req) {

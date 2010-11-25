@@ -16,7 +16,7 @@
         
         <set name="playlistIds" table="playlistIdsInFriendRequest" lazy="false">
         	<key column="friendRequestId"/>
-        	<element column="playlistId" type="string"/>
+        	<element column="playlistId" type="long"/>
         </set>
     </class>
 </hibernate-mapping>

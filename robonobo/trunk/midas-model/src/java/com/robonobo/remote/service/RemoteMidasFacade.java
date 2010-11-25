@@ -3,6 +3,7 @@ package com.robonobo.remote.service;
 import java.util.*;
 
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.core.api.model.Library;
 import com.robonobo.core.api.proto.CoreApi.FriendRequestMsg;
 import com.robonobo.core.api.proto.CoreApi.InviteMsg;
@@ -33,11 +34,17 @@ public class RemoteMidasFacade extends JbossRemotingFacade implements MidasServi
 		invoke("deleteStream", stream.toMsg().toByteArray(), null);
 	}
 
-	public MidasPlaylist getPlaylistById(String playlistId) {
+	public MidasPlaylist getPlaylistById(long playlistId) {
 		byte[] arr = (byte[]) invoke("getPlaylistById", playlistId, null);
 		return playlistFromByteArr(arr);
 	}
 
+	@Override
+	public MidasPlaylist newPlaylist(MidasPlaylist playlist) {
+		// Don't do newPlaylist remotely
+		throw new SeekInnerCalmException();
+	}
+	
 	public MidasStream getStreamById(String streamId) {
 		byte[] arr = (byte[]) invoke("getStreamById", streamId, null);
 		return streamFromByteArr(arr);

@@ -15,7 +15,7 @@
         
         <set name="playlistIds" table="playlistIdsInInvite" lazy="false">
         	<key column="friendRequestId"/>
-        	<element column="playlistId" type="string"/>
+        	<element column="playlistId" type="long"/>
         </set>
         <set name="friendIds" table="friendIdsInInvite" lazy="false">
         	<key column="friendRequestId"/>

@@ -51,7 +51,7 @@ public class UserServlet extends MidasServlet {
 		String lookupVal = pathEles[pathEles.length - 1];
 		MidasUser targetU = null;
 		if("byid".equalsIgnoreCase(lookupType))
-			targetU = service.getUserById(Long.parseLong(lookupVal));
+			targetU = service.getUserById(Long.parseLong(lookupVal, 16));
 		else if("byemail".equalsIgnoreCase(lookupType))
 			targetU = service.getUserByEmail(TextUtil.urlDecode(lookupVal));
 		return targetU;

@@ -18,6 +18,7 @@ import com.robonobo.remote.service.MidasService;
 
 public class UserConfigServlet extends MidasServlet {
 	private MidasService service = LocalMidasService.getInstance();
+	private Pattern userIdPattern = Pattern.compile("/([0-9a-eA-E]+).*");
 	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -58,10 +59,9 @@ public class UserConfigServlet extends MidasServlet {
 	}
 	
 	private long getUserId(HttpServletRequest req) {
-		Pattern p = Pattern.compile("/(\\d+).*");
-		Matcher m = p.matcher(req.getPathInfo());
+		Matcher m = userIdPattern.matcher(req.getPathInfo());
 		if (!m.matches())
 			throw new SeekInnerCalmException();
-		return Long.parseLong(m.group(1));
+		return Long.parseLong(m.group(1), 16);
 	}
 }

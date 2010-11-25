@@ -1,15 +1,16 @@
 package com.robonobo.midas.servlet;
 
-import static com.robonobo.common.util.TimeUtil.now;
+import static com.robonobo.common.util.TimeUtil.*;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.common.util.TimeUtil;
 import com.robonobo.core.api.model.User;
 import com.robonobo.core.api.proto.CoreApi.PlaylistMsg;
@@ -19,11 +20,13 @@ import com.robonobo.remote.service.LocalMidasService;
 import com.robonobo.remote.service.MidasService;
 
 public class PlaylistServlet extends MidasServlet {
+	private Pattern playlistIdPattern = Pattern.compile("/([0-9a-eA-E]+).*");
+
 	private MidasService service = LocalMidasService.getInstance();
 	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		String playlistId = getPlaylistId(req);
+		long playlistId = getPlaylistId(req);
 		MidasPlaylist p = service.getPlaylistById(playlistId);
 		if (p == null) {
 			send404(req, resp);
@@ -42,13 +45,12 @@ public class PlaylistServlet extends MidasServlet {
 				allowed = true;
 				break;
 			}
-			if (p.getAnnounce()) {
-				User owner = service.getUserById(ownerId);
-				for (Long friendId : owner.getFriendIds()) {
-					if (u.getUserId() == friendId) {
-						allowed = true;
-						break ownerLoop;
-					}
+			// TODO check playlist visibility
+			User owner = service.getUserById(ownerId);
+			for (Long friendId : owner.getFriendIds()) {
+				if (u.getUserId() == friendId) {
+					allowed = true;
+					break ownerLoop;
 				}
 			}
 		}
@@ -68,8 +70,8 @@ public class PlaylistServlet extends MidasServlet {
 			send401(req, resp);
 			return;
 		}
-		String playlistId = getPlaylistId(req);
-		MidasPlaylist currentP = service.getPlaylistById(playlistId);
+		long playlistId = getPlaylistId(req);
+		MidasPlaylist currentP = (playlistId <= 0) ? null : service.getPlaylistById(playlistId);
 		PlaylistMsg.Builder pBldr = PlaylistMsg.newBuilder();
 		readFromInput(pBldr, req);
 		PlaylistMsg pMsg = pBldr.build();
@@ -78,9 +80,9 @@ public class PlaylistServlet extends MidasServlet {
 			// New playlist
 			mp.getOwnerIds().clear();
 			mp.getOwnerIds().add(u.getUserId());
-			mp.setUpdated(TimeUtil.now());
-			service.savePlaylist(mp);
-			u.getPlaylistIds().add(playlistId);
+			mp.setUpdated(now());
+			mp = service.newPlaylist(mp);
+			u.getPlaylistIds().add(mp.getPlaylistId());
 			u.setUpdated(now());
 			service.saveUser(u);
 			writeToOutput(mp.toMsg(), resp);
@@ -102,7 +104,7 @@ public class PlaylistServlet extends MidasServlet {
 
 	@Override
 	protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		String playlistId = getPlaylistId(req);
+		long playlistId = getPlaylistId(req);
 		MidasUser u = getAuthUser(req);
 		MidasPlaylist p = service.getPlaylistById(playlistId);
 		if (p == null)
@@ -130,7 +132,10 @@ public class PlaylistServlet extends MidasServlet {
 		}
 	}
 
-	private String getPlaylistId(HttpServletRequest req) {
-		return req.getPathInfo().replaceFirst("/", "");
+	private long getPlaylistId(HttpServletRequest req) {
+		Matcher m = playlistIdPattern.matcher(req.getPathInfo());
+		if (!m.matches())
+			throw new SeekInnerCalmException();
+		return Long.parseLong(m.group(1), 16);
 	}
 }

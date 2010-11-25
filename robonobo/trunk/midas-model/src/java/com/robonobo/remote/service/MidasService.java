@@ -24,8 +24,13 @@ public interface MidasService {
 
 	public void deleteUser(long userId);
 	
-	public MidasPlaylist getPlaylistById(String playlistId);
+	public MidasPlaylist getPlaylistById(long playlistId);
 
+	/**
+	 * Returns the playlist with the playlistId set
+	 */
+	public MidasPlaylist newPlaylist(MidasPlaylist playlist);
+	
 	public void savePlaylist(MidasPlaylist playlist);
 
 	public void deletePlaylist(MidasPlaylist playlist);

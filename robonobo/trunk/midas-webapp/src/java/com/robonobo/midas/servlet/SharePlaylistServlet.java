@@ -53,8 +53,10 @@ public class SharePlaylistServlet extends MidasServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		String playlistId = req.getParameter("plid");
-		if (playlistId == null) {
+		long playlistId;
+		try {
+			playlistId = Long.parseLong(req.getParameter("plid"), 16);
+		} catch (NumberFormatException e) {
 			send404(req, resp);
 			return;
 		}
@@ -78,7 +80,7 @@ public class SharePlaylistServlet extends MidasServlet {
 	}
 
 	/**
-	 * share-playlist/share?plid=12345&friendids=23456,34567,45678[&emails=foo@bar .com,baz@quuz.com]
+	 * share-playlist/share?plid=1c0d&friendids=45ed,34567,45678[&emails=foo@bar.com,baz@quuz.com]
 	 * 
 	 * @throws IOException
 	 * @throws ServletException
@@ -119,7 +121,8 @@ public class SharePlaylistServlet extends MidasServlet {
 		// Check we have enough invites
 		if (inviteEmails.size() > 0) {
 			// Client should have checked this already, so just chuck an error
-			log.error("User "+u.getEmail()+" tried to share playlist "+p.getTitle()+", but has insufficient invites");
+			log.error("User " + u.getEmail() + " tried to share playlist " + p.getTitle()
+					+ ", but has insufficient invites");
 			if (inviteEmails.size() > u.getInvitesLeft())
 				throw new ServletException("Not enough invites left!");
 			u.setInvitesLeft(u.getInvitesLeft() - inviteEmails.size());
@@ -127,7 +130,7 @@ public class SharePlaylistServlet extends MidasServlet {
 		}
 		// Users specified via user id must already be friends
 		for (String friendIdStr : friendIds) {
-			long friendId = Long.parseLong(friendIdStr);
+			long friendId = Long.parseLong(friendIdStr, 16);
 			if (!u.getFriendIds().contains(friendId)) {
 				send401(req, resp);
 				return;
@@ -145,8 +148,9 @@ public class SharePlaylistServlet extends MidasServlet {
 		// Existing friends - add them as playlist owners, and send them a
 		// notification
 		for (MidasUser friend : newPlaylistUsers) {
-			if(log.isDebugEnabled())
-				log.debug("User "+u.getEmail()+" sharing playlist "+p.getTitle()+" with existing friend "+friend.getEmail());
+			if (log.isDebugEnabled())
+				log.debug("User " + u.getEmail() + " sharing playlist " + p.getTitle() + " with existing friend "
+						+ friend.getEmail());
 			friend.getPlaylistIds().add(p.getPlaylistId());
 			friend.setUpdated(getUpdatedDate(friend.getUpdated()));
 			p.getOwnerIds().add(friend.getUserId());
@@ -157,15 +161,17 @@ public class SharePlaylistServlet extends MidasServlet {
 		service.savePlaylist(p);
 		// New friends
 		for (MidasUser newFriend : newFriends) {
-			if(log.isDebugEnabled())
-				log.debug("User "+u.getEmail()+" sharing playlist "+p.getTitle()+" with new friend "+newFriend.getEmail());
+			if (log.isDebugEnabled())
+				log.debug("User " + u.getEmail() + " sharing playlist " + p.getTitle() + " with new friend "
+						+ newFriend.getEmail());
 			MidasFriendRequest friendReq = service.createOrUpdateFriendRequest(u, newFriend, p);
 			sendFriendRequest(friendReq, u, newFriend, p);
 		}
 		// Invites
 		for (String invitee : inviteEmails) {
-			if(log.isDebugEnabled())
-				log.debug("User "+u.getEmail()+" sharing playlist "+p.getTitle()+" with invited robonobo user "+invitee);
+			if (log.isDebugEnabled())
+				log.debug("User " + u.getEmail() + " sharing playlist " + p.getTitle() + " with invited robonobo user "
+						+ invitee);
 			MidasInvite invite = service.createOrUpdateInvite(invitee, u, p);
 			sendInvite(invite, u, p);
 		}
@@ -181,7 +187,8 @@ public class SharePlaylistServlet extends MidasServlet {
 			bod.append("Description: ").append(p.getDescription());
 		bod.append("\n\nTo launch robonobo and see this playlist, go to " + roboLaunchUrl);
 		bod.append("\n\n(from robonobo mailmonkey)\n");
-		mailService.sendMail(fromRoboName, fromRoboEmail, toUser.getFriendlyName(), toUser.getEmail(), fromUser.getFriendlyName(), fromUser.getEmail(), subject, bod.toString());
+		mailService.sendMail(fromRoboName, fromRoboEmail, toUser.getFriendlyName(), toUser.getEmail(),
+				fromUser.getFriendlyName(), fromUser.getEmail(), subject, bod.toString());
 	}
 
 	protected void sendFriendRequest(MidasFriendRequest req, User fromUser, User toUser, Playlist p) throws IOException {
@@ -196,7 +203,8 @@ public class SharePlaylistServlet extends MidasServlet {
 		bod.append(friendReqUrlBase).append(req.getRequestCode());
 		bod.append("\n\nCopy and paste this into your browser if clicking does not work.  To ignore this request, just delete this email.");
 		bod.append("\n\n(from robonobo mailmonkey)\n");
-		mailService.sendMail(fromRoboName, fromRoboEmail, toUser.getFriendlyName(), toUser.getEmail(), fromUser.getFriendlyName(), fromUser.getEmail(), subject, bod.toString());
+		mailService.sendMail(fromRoboName, fromRoboEmail, toUser.getFriendlyName(), toUser.getEmail(),
+				fromUser.getFriendlyName(), fromUser.getEmail(), subject, bod.toString());
 	}
 
 	protected void sendInvite(MidasInvite invite, User fromUser, Playlist p) throws IOException {
@@ -211,6 +219,7 @@ public class SharePlaylistServlet extends MidasServlet {
 		bod.append(inviteUrlBase).append(invite.getInviteCode());
 		bod.append("\n\nCopy and paste this into your browser if clicking does not work.  To ignore this invitation, just delete this email.");
 		bod.append("\n\n(from robonobo mailmonkey)\n");
-		mailService.sendMail(fromRoboName, fromRoboEmail, null, invite.getEmail(), fromUser.getFriendlyName(), fromUser.getEmail(), subject, bod.toString());
+		mailService.sendMail(fromRoboName, fromRoboEmail, null, invite.getEmail(), fromUser.getFriendlyName(),
+				fromUser.getEmail(), subject, bod.toString());
 	}
 }

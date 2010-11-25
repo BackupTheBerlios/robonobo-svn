@@ -5,6 +5,7 @@ import java.util.Map.Entry;
 
 import org.apache.commons.collections.MapIterator;
 
+import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.core.api.model.Library;
 import com.robonobo.core.api.model.Playlist;
 import com.robonobo.midas.model.*;
@@ -24,7 +25,8 @@ import static com.robonobo.common.util.TimeUtil.*;
  */
 public class LocalMidasService implements MidasService {
 	private static LocalMidasService instance;
-
+	private long lastPlaylistId = -1;
+	
 	public static LocalMidasService getInstance() {
 		if (instance == null)
 			instance = new LocalMidasService();
@@ -64,11 +66,12 @@ public class LocalMidasService implements MidasService {
 			result = new MidasUser(targetU);
 			result.getFriendIds().clear();
 			result.setInvitesLeft(0);
-			Iterator<String> iter = result.getPlaylistIds().iterator();
+			Iterator<Long> iter = result.getPlaylistIds().iterator();
 			while (iter.hasNext()) {
 				Playlist p = MidasPlaylistDAO.loadPlaylist(iter.next());
-				if (!p.getAnnounce())
-					iter.remove();
+				// TODO Check playlist visibility
+//				if (!p.getAnnounce())
+//					iter.remove();
 			}
 		} else
 			result = null;
@@ -83,7 +86,7 @@ public class LocalMidasService implements MidasService {
 	public void deleteUser(long userId) {
 		MidasUser u = MidasUserDAO.retrieveById(userId);
 		// Go through all their playlists - if they are the only owner, delete it, otherwise remove them from the owners list
-		for (String plId : u.getPlaylistIds()) {
+		for (Long plId : u.getPlaylistIds()) {
 			MidasPlaylist p = MidasPlaylistDAO.loadPlaylist(plId);
 			p.getOwnerIds().remove(userId);
 			if(p.getOwnerIds().size() == 0)
@@ -106,11 +109,32 @@ public class LocalMidasService implements MidasService {
 		MidasUserDAO.delete(u);
 	}
 	
-	public MidasPlaylist getPlaylistById(String playlistId) {
+	public MidasPlaylist getPlaylistById(long playlistId) {
 		return MidasPlaylistDAO.loadPlaylist(playlistId);
 	}
 
+	@Override
+	public MidasPlaylist newPlaylist(MidasPlaylist playlist) {
+		if(playlist.getPlaylistId() > 0)
+			throw new SeekInnerCalmException("newPlaylist called with non-new playlist!");
+		long newPlaylistId;
+		synchronized (this) {
+			if(lastPlaylistId <= 0)
+				lastPlaylistId = MidasPlaylistDAO.getHighestPlaylistId();
+			if(lastPlaylistId == Long.MAX_VALUE)
+				throw new SeekInnerCalmException("playlist ids wrapped!"); // Unlikely
+			else
+				lastPlaylistId++;
+			newPlaylistId = lastPlaylistId;
+		}
+		playlist.setPlaylistId(newPlaylistId);
+		savePlaylist(playlist);
+		return playlist;
+	}
+	
 	public void savePlaylist(MidasPlaylist playlist) {
+		if(playlist.getPlaylistId() <= 0)
+			throw new SeekInnerCalmException("playlist id is not set");
 		MidasPlaylistDAO.savePlaylist(playlist);
 	}
 
@@ -175,7 +199,7 @@ public class LocalMidasService implements MidasService {
 		MidasUser requestee = MidasUserDAO.retrieveById(req.getRequesteeId());
 		if(requestee == null)
 			return "Requested user "+req.getRequesteeId()+" not found";
-		for (String plId : req.getPlaylistIds()) {
+		for (Long plId : req.getPlaylistIds()) {
 			MidasPlaylist p = MidasPlaylistDAO.loadPlaylist(plId);
 			p.getOwnerIds().add(requestee.getUserId());
 			MidasPlaylistDAO.savePlaylist(p);

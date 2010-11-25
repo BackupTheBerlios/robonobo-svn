@@ -41,7 +41,6 @@ public class PlaylistMirrorPlugin extends AbstractService {
 	SessionFactory sessionFactory;
 	Future<?> checkerTask;
 	Date lastCheckTime = null;
-	Pattern playlistIdPat;
 	Map<String, Integer> delayDeleteShares = new HashMap<String, Integer>();
 
 	public PlaylistMirrorPlugin() {
@@ -64,7 +63,6 @@ public class PlaylistMirrorPlugin extends AbstractService {
 			log.error("Error: no playlistMirror.cfg defined in robonobo");
 			return;
 		}
-		playlistIdPat = Pattern.compile(cfg.playlistIdRegex);
 		if (cfg.connectionUrl == null || cfg.connectionDriverClass == null || cfg.connectionDialect == null
 				|| cfg.connectionUsername == null || cfg.connectionPassword == null) {
 			log.error("Error: playlist mirror plugin not configured - you must specify values in playlistMirror.cfg");
@@ -127,25 +125,23 @@ public class PlaylistMirrorPlugin extends AbstractService {
 			List<MidasPlaylist> playlists = crit.list();
 			log.debug("Found "+playlists.size()+" updated playlists");
 			for (MidasPlaylist p : playlists) {
-				if (playlistIdPat.matcher(p.getPlaylistId()).matches()) {
-					log.info("Mirroring playlist " + p.getTitle() + " (" + p.getPlaylistId() + ")");
-					for (String streamId : p.getStreamIds()) {
-						Track t = getRobonobo().getTrackService().getTrack(streamId);
-						if(t instanceof CloudTrack) {
-							getRobonobo().getDownloadService().addDownload(streamId);
-							// If this is in our list, delete the share after a
-							// while (so when the monitor offers it, we download
-							// it again)
-							if (delayDeleteShares.containsKey(streamId)) {
-								final String delSid = streamId;
-								Integer delaySecs = delayDeleteShares.get(streamId);
-								log.debug("Scheduling delete of "+streamId+" to run in "+delaySecs+"s");
-								getRobonobo().getExecutor().schedule(new CatchingRunnable() {
-									public void doRun() throws Exception {
-										delayedDeleteShare(delSid);
-									}
-								}, delaySecs, TimeUnit.SECONDS);
-							}
+				log.info("Mirroring playlist " + p.getTitle() + " (" + p.getPlaylistId() + ")");
+				for (String streamId : p.getStreamIds()) {
+					Track t = getRobonobo().getTrackService().getTrack(streamId);
+					if(t instanceof CloudTrack) {
+						getRobonobo().getDownloadService().addDownload(streamId);
+						// If this is in our list, delete the share after a
+						// while (so when the monitor offers it, we download
+						// it again)
+						if (delayDeleteShares.containsKey(streamId)) {
+							final String delSid = streamId;
+							Integer delaySecs = delayDeleteShares.get(streamId);
+							log.debug("Scheduling delete of "+streamId+" to run in "+delaySecs+"s");
+							getRobonobo().getExecutor().schedule(new CatchingRunnable() {
+								public void doRun() throws Exception {
+									delayedDeleteShare(delSid);
+								}
+							}, delaySecs, TimeUnit.SECONDS);
 						}
 					}
 				}
