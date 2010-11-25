@@ -8,5 +8,6 @@ public class Updater {
 	 * - add gui config to robonoboconfig
 	 * - add playlist_seen_sids table to dbservice
 	 * - add date_started column to shares table in dbservice
+	 * - dbservice: playlist id changed to bigint - delete everything from the table
 	 */
 }

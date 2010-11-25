@@ -42,8 +42,8 @@ public class UserService extends AbstractService {
 	 */
 	private Map<String, User> usersByEmail = Collections.synchronizedMap(new HashMap<String, User>());
 	private Map<Long, User> usersById = Collections.synchronizedMap(new HashMap<Long, User>());
-	private Map<String, Playlist> playlists = Collections.synchronizedMap(new HashMap<String, Playlist>());
-	private Map<String, String> myPlaylistsByTitle = Collections.synchronizedMap(new HashMap<String, String>());
+	private Map<Long, Playlist> playlists = Collections.synchronizedMap(new HashMap<Long, Playlist>());
+	private Map<String, Long> myPlaylistIdsByTitle = Collections.synchronizedMap(new HashMap<String, Long>());
 	private ScheduledFuture updateTask;
 	private ReentrantLock userUpdateLock = new ReentrantLock();
 
@@ -95,7 +95,7 @@ public class UserService extends AbstractService {
 			usersByEmail.clear();
 			usersById.clear();
 			playlists.clear();
-			myPlaylistsByTitle.clear();
+			myPlaylistIdsByTitle.clear();
 			usersByEmail.put(email, tryUser);
 			usersById.put(tryUser.getUserId(), tryUser);
 			this.msc = msc;
@@ -175,19 +175,23 @@ public class UserService extends AbstractService {
 	}
 
 	public void addOrUpdatePlaylist(Playlist newP) throws IOException, RobonoboException {
-		rbnb.getSerializationManager().putObjectToUrl(newP.toMsg(), msc.getPlaylistUrl(newP.getPlaylistId()));
-		Playlist origP = playlists.get(newP.getPlaylistId());
-		if (origP == null) {
+		String playlistUrl = msc.getPlaylistUrl(newP.getPlaylistId());
+		if(newP.getPlaylistId() <= 0) {
+			// New playlist - the server will send it back with the playlist id set
+			PlaylistMsg.Builder bldr = PlaylistMsg.newBuilder();
+			rbnb.getSerializationManager().putObjectToUrl(newP.toMsg(), playlistUrl, bldr);
+			Playlist updatedP = new Playlist(bldr.build());
 			// Grab a new copy of my user, it'll have the new playlist in it
 			checkUserUpdate(me, false);
-		}
-		// Check that the server has our update
-		checkPlaylistUpdate(newP.getPlaylistId());
+			// Fire this playlist as being updated
+			rbnb.getEventService().firePlaylistChanged(updatedP);
+		} else
+			rbnb.getSerializationManager().putObjectToUrl(newP.toMsg(), playlistUrl);			
 	}
 
 	public void nukePlaylist(Playlist pl) throws IOException, RobonoboException {
 		rbnb.getSerializationManager().deleteObjectAtUrl(msc.getPlaylistUrl(pl.getPlaylistId()));
-		myPlaylistsByTitle.remove(pl.getTitle());
+		myPlaylistIdsByTitle.remove(pl.getTitle());
 		// Get a new copy of my user without this playlist
 		checkUserUpdate(me, false);
 		// If we were sharing this with any of our friends, update it so that we
@@ -211,22 +215,6 @@ public class UserService extends AbstractService {
 		}
 	}
 
-	public void sendPlaylist(Playlist p, long toUserId) throws IOException {
-		rbnb.getSerializationManager().hitUrl(msc.getSendPlaylistUrl(p.getPlaylistId(), toUserId));
-		// This playlist will be removed from my list - just remove it
-		// locally, don't bother to hit the server again
-		me.getPlaylistIds().remove(p.getPlaylistId());
-		rbnb.getEventService().fireUserChanged(me);
-	}
-
-	public void sendPlaylist(Playlist p, String email) throws IOException {
-		rbnb.getSerializationManager().hitUrl(msc.getSendPlaylistUrl(p.getPlaylistId(), email));
-		// This playlist will be removed from my list - just remove it
-		// locally, don't bother to hit the server again
-		me.getPlaylistIds().remove(p.getPlaylistId());
-		rbnb.getEventService().fireUserChanged(me);
-	}
-
 	public void sharePlaylist(Playlist p, Set<Long> friendIds, Set<String> emails) throws IOException,
 			RobonoboException {
 		rbnb.getSerializationManager().hitUrl(msc.getSharePlaylistUrl(p.getPlaylistId(), friendIds, emails));
@@ -245,12 +233,12 @@ public class UserService extends AbstractService {
 		return usersById.get(userId);
 	}
 
-	public synchronized Playlist getPlaylist(String playlistId) {
+	public synchronized Playlist getPlaylist(long playlistId) {
 		return playlists.get(playlistId);
 	}
 
 	public synchronized Playlist getMyPlaylistByTitle(String title) {
-		String plId = myPlaylistsByTitle.get(title);
+		Long plId = myPlaylistIdsByTitle.get(title);
 		if (plId == null)
 			return null;
 		return getPlaylist(plId);
@@ -262,14 +250,14 @@ public class UserService extends AbstractService {
 		return new User(ub.build());
 	}
 
-	private Playlist getUpdatedPlaylist(String playlistId) throws IOException {
+	private Playlist getUpdatedPlaylist(long playlistId) throws IOException {
 		String playlistUrl = msc.getPlaylistUrl(playlistId);
 		PlaylistMsg.Builder pb = PlaylistMsg.newBuilder();
 		rbnb.getSerializationManager().getObjectFromUrl(pb, playlistUrl);
 		return new Playlist(pb.build());
 	}
 
-	public void checkPlaylistUpdate(String playlistId) throws IOException, RobonoboException {
+	public void checkPlaylistUpdate(long playlistId) throws IOException, RobonoboException {
 		Playlist currentP = playlists.get(playlistId);
 		final Playlist updatedP = getUpdatedPlaylist(playlistId);
 		PlaylistConfig pc = rbnb.getDbService().getPlaylistConfig(playlistId);
@@ -281,8 +269,8 @@ public class UserService extends AbstractService {
 			playlists.put(playlistId, updatedP);
 			if (me.getPlaylistIds().contains(updatedP.getPlaylistId())) {
 				if (currentP != null)
-					myPlaylistsByTitle.remove(currentP.getTitle());
-				myPlaylistsByTitle.put(updatedP.getTitle(), updatedP.getPlaylistId());
+					myPlaylistIdsByTitle.remove(currentP.getTitle());
+				myPlaylistIdsByTitle.put(updatedP.getTitle(), updatedP.getPlaylistId());
 			}
 			rbnb.getEventService().firePlaylistChanged(updatedP);
 		}
@@ -320,7 +308,7 @@ public class UserService extends AbstractService {
 		final Map<User, List<Playlist>> contPls = new HashMap<User, List<Playlist>>();
 		synchronized (this) {
 			for (User u : usersById.values()) {
-				for (String plId : u.getPlaylistIds()) {
+				for (Long plId : u.getPlaylistIds()) {
 					PlaylistConfig pc = getRobonobo().getDbService().getPlaylistConfig(plId);
 					if ("true".equalsIgnoreCase(pc.getItem("iTunesExport"))) {
 						if (!contPls.containsKey(u))
@@ -358,7 +346,7 @@ public class UserService extends AbstractService {
 			rbnb.getEventService().fireUserChanged(newU);
 		}
 		if (cascade) {
-			for (String playlistId : newU.getPlaylistIds()) {
+			for (Long playlistId : newU.getPlaylistIds()) {
 				checkPlaylistUpdate(playlistId);
 			}
 		}
@@ -371,7 +359,7 @@ public class UserService extends AbstractService {
 	 * @throws IOException
 	 */
 	private void checkUserUpdate(Collection<User> users) throws IOException, RobonoboException {
-		Set<String> playlistsToCheck = new HashSet<String>();
+		Set<Long> playlistsToCheck = new HashSet<Long>();
 		for (User u : users) {
 			User newU = getUpdatedUser(u.getUserId());
 			if ((newU.getUpdated() == null && u.getUpdated() == null) || newU.getUpdated().after(u.getUpdated())) {
@@ -385,11 +373,11 @@ public class UserService extends AbstractService {
 				}
 				rbnb.getEventService().fireUserChanged(newU);
 			}
-			for (String playlistId : newU.getPlaylistIds()) {
+			for (Long playlistId : newU.getPlaylistIds()) {
 				playlistsToCheck.add(playlistId);
 			}
 		}
-		for (String playlistId : playlistsToCheck) {
+		for (Long playlistId : playlistsToCheck) {
 			checkPlaylistUpdate(playlistId);
 		}
 	}
@@ -422,7 +410,7 @@ public class UserService extends AbstractService {
 				}
 			}
 			rbnb.getEventService().fireUserChanged(u);
-			for (String playlistId : u.getPlaylistIds()) {
+			for (Long playlistId : u.getPlaylistIds()) {
 				// For shared playlists, don't hit the server again if we already have it - but fire the playlist
 				// changed event so it's added to the friend tree
 				// for this user

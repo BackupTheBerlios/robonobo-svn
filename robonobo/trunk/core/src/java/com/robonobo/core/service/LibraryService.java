@@ -99,7 +99,7 @@ public class LibraryService extends AbstractService implements UserPlaylistListe
 				gotEveryone = false;
 				break nextFriend;
 			}
-			for (String plId : friend.getPlaylistIds()) {
+			for (Long plId : friend.getPlaylistIds()) {
 				Playlist pl = usrs.getPlaylist(plId);
 				if (pl == null) {
 					gotEveryone = false;

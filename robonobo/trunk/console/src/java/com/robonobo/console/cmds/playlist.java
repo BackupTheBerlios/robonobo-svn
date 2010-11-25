@@ -25,7 +25,7 @@ public class playlist implements ConsoleCommand {
 		out.println("'playlist list [mine|<email>]' lists playlists\n"
 				+ "'playlist show [mine|<email>] <title>' lists the tracks in the specified playlist\n"
 				+ "'playlist autodl [mine|<email>] <title> [true|false]' turns auto-downloading on or off for the playlist\n"
-				+ "'playlist public <title> [true|false]' makes my playlist public or not\n"
+				+ "'playlist vis <title> [all|me|friends]' sets my playlist visibility\n"
 				+ "'playlist create <title> <desc>' creates a playlist\n"
 				+ "'playlist delete <title>' deletes playlist\n"
 				+ "'playlist add <title> <streamid>' adds a share to the playlist\n"
@@ -45,8 +45,8 @@ public class playlist implements ConsoleCommand {
 			doShow(control, args, out);
 		else if (args[0].equals("autodl"))
 			doAutoDl(control, args, out);
-		else if (args[0].equals("public"))
-			doPublic(control, args, out);
+		else if (args[0].equals("vis"))
+			doVis(control, args, out);
 		else if (args[0].equals("create"))
 			doCreate(control, args, out);
 		else if (args[0].equals("delete"))
@@ -67,7 +67,6 @@ public class playlist implements ConsoleCommand {
 			return;
 		}
 		Playlist p = new Playlist();
-		p.setPlaylistId(UUIDGenerator.getInstance().generateRandomBasedUUID(new SecureRandom()).toString());
 		p.setTitle(args[1]);
 		p.setDescription(args[2]);
 		p.getOwnerIds().add(control.getMyUser().getUserId());
@@ -113,7 +112,7 @@ public class playlist implements ConsoleCommand {
 			out.println("Stream id '" + args[2] + "' is not in playlist '" + p.getTitle() + "'");
 	}
 
-	private void doPublic(RobonoboController control, String[] args, PrintWriter out) throws Exception {
+	private void doVis(RobonoboController control, String[] args, PrintWriter out) throws Exception {
 		if (args.length < 3) {
 			printHelp(out);
 			return;
@@ -123,7 +122,7 @@ public class playlist implements ConsoleCommand {
 			out.println("No such playlist '" + args[1] + "'");
 			return;
 		}
-		p.setAnnounce(args[2].equalsIgnoreCase("true"));
+		p.setVisibility(args[2]);
 		control.addOrUpdatePlaylist(p);
 	}
 
@@ -201,7 +200,7 @@ public class playlist implements ConsoleCommand {
 		if (u.getPlaylistIds().size() == 0)
 			out.println("No playlists for user " + u.getEmail());
 		else {
-			for (String plId : u.getPlaylistIds()) {
+			for (Long plId : u.getPlaylistIds()) {
 				Playlist p = control.getPlaylist(plId);
 				if (p != null)
 					out.println("Title: '" + p.getTitle() + "', Desc: " + p.getDescription());
@@ -247,7 +246,7 @@ public class playlist implements ConsoleCommand {
 	}
 
 	private Playlist getNamedPlaylist(RobonoboController control, User u, String plTitle) {
-		for (String playlistId : u.getPlaylistIds()) {
+		for (Long playlistId : u.getPlaylistIds()) {
 			Playlist p = control.getPlaylist(playlistId);
 			if (p.getTitle().equals(plTitle))
 				return p;

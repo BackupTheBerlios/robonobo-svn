@@ -395,7 +395,7 @@ public class RobonoboController {
 		return inst.getUsersService().getUser(userId);
 	}
 
-	public Playlist getPlaylist(String playlistId) {
+	public Playlist getPlaylist(long playlistId) {
 		return inst.getUsersService().getPlaylist(playlistId);
 	}
 
@@ -426,22 +426,6 @@ public class RobonoboController {
 		}
 	}
 
-	public void sendPlaylist(Playlist p, long toUserId) throws RobonoboException {
-		try {
-			inst.getUsersService().sendPlaylist(p, toUserId);
-		} catch (IOException e) {
-			throw new RobonoboException(e);
-		}
-	}
-
-	public void sendPlaylist(Playlist p, String email) throws RobonoboException {
-		try {
-			inst.getUsersService().sendPlaylist(p, email);
-		} catch (IOException e) {
-			throw new RobonoboException(e);
-		}
-	}
-
 	public void sharePlaylist(Playlist p, Set<Long> friendIds, Set<String> emails) throws RobonoboException {
 		try {
 			inst.getUsersService().sharePlaylist(p, friendIds, emails);
@@ -458,7 +442,7 @@ public class RobonoboController {
 		}
 	}
 
-	public void checkPlaylistUpdate(String playlistId) throws RobonoboException {
+	public void checkPlaylistUpdate(long playlistId) throws RobonoboException {
 		try {
 			inst.getUsersService().checkPlaylistUpdate(playlistId);
 		} catch (IOException e) {
@@ -466,7 +450,7 @@ public class RobonoboController {
 		}
 	}
 
-	public PlaylistConfig getPlaylistConfig(String playlistId) {
+	public PlaylistConfig getPlaylistConfig(long playlistId) {
 		return inst.getDbService().getPlaylistConfig(playlistId);
 	}
 

@@ -28,10 +28,10 @@
 			<key>CFBundleURLIconFile</key>
 			<string>robonobo.icns</string>
 			<key>CFBundleURLName</key>
-			<string>robonobo file</string>
+			<string>robonobo action</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>robo</string>
+				<string>rbnb</string>
 			</array>
 		</dict>
 	</array>
