@@ -2,7 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/common"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/common-hibernate"/>
 	<classpathentry exported="true" kind="lib" path="lib/ejb3-persistence.jar">
 		<attributes>
 			<attribute name="org.eclipse.jst.component.dependency" value="../"/>
@@ -81,5 +80,6 @@
 			<attribute name="owner.project.facets" value="java"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry combineaccessrules="false" kind="src" path="/common-webapps"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

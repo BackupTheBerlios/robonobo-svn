@@ -8,10 +8,10 @@
 		<project>echostream-midas-model</project>
 		<project>common-xmlservlet</project>
 		<project>common-servlets</project>
-		<project>common-hibernate</project>
 		<project>serialization</project>
 		<project>api</project>
 		<project>common</project>
+		<project>common-webapps</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

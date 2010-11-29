@@ -5,7 +5,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/mina"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/api"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/serialization"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/common-hibernate"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/common-servlets"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6">
 		<attributes>
@@ -13,5 +12,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="/common/lib/protobuf-java-2.3.0.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/common-webapps"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
