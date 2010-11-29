@@ -2,57 +2,33 @@
 <web-app id="sonar-1.0" version="2.4"
 	xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
-	<display-name>sonar | echo location service</display-name>
+	<display-name>sonar</display-name>
 
-	<!-- servlets -->
-	<servlet>
-		<servlet-name>sonar-main</servlet-name>
-		<servlet-class>com.robonobo.sonar.SonarServlet</servlet-class>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-
-	<servlet>
-		<servlet-name>sonar-ipdetect</servlet-name>
-		<servlet-class>com.robonobo.sonar.IPDetectServlet</servlet-class>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-
-	<!--  filters  -->
+	<!-- Enables clean URLs e.g. /welcome instead of /app/welcome -->
 	<filter>
-		<filter-name>persistence-filter</filter-name>
-		<filter-class>com.robonobo.common.persistence.PersistenceFilter</filter-class>
+		<filter-name>UrlRewriteFilter</filter-name>
+		<filter-class>org.tuckey.web.filters.urlrewrite.UrlRewriteFilter</filter-class>
 	</filter>
 
-	<filter>
-		<filter-name>cleanup-filter</filter-name>
-		<filter-class>com.robonobo.sonar.CleanupFilter</filter-class>
+	<filter-mapping>
+		<filter-name>UrlRewriteFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<servlet>
+		<servlet-name>spring</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
 		<init-param>
-			<param-name>delete-older-than</param-name>
-			<param-value>300000</param-value>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>
+				/WEB-INF/spring/app.xml
+			</param-value>
 		</init-param>
-	</filter>
-	
-	<!--  filter mappings -->
-	<!-- NOTE: PERSISTENCE FILTER MUST ALWAYS BE FIRST -->
-	<filter-mapping>
-		<filter-name>persistence-filter</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
-
-	<filter-mapping>
-		<filter-name>cleanup-filter</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
-
-	<!-- servlet mappings -->
-	<servlet-mapping>
-		<servlet-name>sonar-ipdetect</servlet-name>
-		<url-pattern>/ipdetect</url-pattern>
-	</servlet-mapping>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
 
 	<servlet-mapping>
-		<servlet-name>sonar-main</servlet-name>
-		<url-pattern>/</url-pattern>
+		<servlet-name>spring</servlet-name>
+		<url-pattern>/app/*</url-pattern>
 	</servlet-mapping>
-
 </web-app>

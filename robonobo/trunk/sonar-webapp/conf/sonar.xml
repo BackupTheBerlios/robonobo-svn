@@ -21,4 +21,5 @@
             maxIdle="8"
             maxWait="-1"
             />
+  <Parameter name="maxNodeAgeMs" value="300000" override="true"/>
 </Context>
