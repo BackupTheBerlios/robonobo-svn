@@ -1,13 +1,13 @@
 package com.robonobo.midas.search;
 
+import java.io.IOException;
+
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.search.FullTextQuery;
-import org.hibernate.search.FullTextSession;
-import org.hibernate.search.Search;
+import org.hibernate.search.*;
+import org.springframework.stereotype.Service;
 
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.common.persistence.PersistenceManager;
@@ -15,16 +15,21 @@ import com.robonobo.core.api.proto.CoreApi.SearchResponse;
 import com.robonobo.midas.model.MidasStream;
 import com.robonobo.midas.model.MidasStreamAttribute;
 
-public class SearchFacade {
+@Service("searchService")
+public class SearchServiceImpl implements SearchService {
 	// TODO: Put this in a config file somewhere
 	public static final int MAX_SEARCH_RESULTS = 100;
 	private QueryParser queryParser;
 
-	public SearchFacade() {
+	public SearchServiceImpl() {
 		queryParser = new QueryParser("title", new StandardAnalyzer());
 	}
 
-	public SearchResponse search(String searchType, String queryStr, int firstResult) throws SearchException {
+	/* (non-Javadoc)
+	 * @see com.robonobo.midas.search.SearchService#search(java.lang.String, java.lang.String, int)
+	 */
+	@Override
+	public SearchResponse search(String searchType, String queryStr, int firstResult) throws IOException {
 		if(!searchType.equals("stream"))
 			throw new SeekInnerCalmException();
 		Session session = PersistenceManager.currentSession();
@@ -34,7 +39,7 @@ public class SearchFacade {
 		try {
 			luceneQuery = queryParser.parse(buildLuceneQuery(queryStr));
 		} catch (ParseException e) {
-			throw new SearchException(e);
+			throw new IOException(e);
 		}
 		
 		// Create hibernate search query

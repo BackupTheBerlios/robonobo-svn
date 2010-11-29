@@ -1,130 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app id="midas-1.0" version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
-	<display-name>MixIndex Discovery and Announcement Service</display-name>
-      
-    <!-- Filters -->
-  	<filter>
-		<filter-name>persistence-filter</filter-name>
-		<filter-class>com.robonobo.common.persistence.PersistenceFilter</filter-class>
-	</filter>
-		
-	<!-- Servlets -->
-	<servlet>
-		<servlet-name>midas-streams</servlet-name>
-		<servlet-class>com.robonobo.midas.servlet.StreamServlet</servlet-class>
-		<init-param>
-			<param-name>images-dir</param-name>
-			<param-value>robonoboImageStore</param-value>
-		</init-param>
-        <load-on-startup>1</load-on-startup>
-	</servlet>
-		
-	<servlet>
-		<servlet-name>midas-remoting</servlet-name>
-		<servlet-class>com.robonobo.midas.servlet.RemotingServlet</servlet-class>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-	
-	<servlet>
-		<servlet-name>midas-search</servlet-name>
-		<servlet-class>com.robonobo.midas.servlet.SearchServlet</servlet-class>
-        <load-on-startup>1</load-on-startup>
-	</servlet>
-	
-	<servlet>
-		<servlet-name>midas-playlists</servlet-name>
-		<servlet-class>com.robonobo.midas.servlet.PlaylistServlet</servlet-class>
-        <load-on-startup>1</load-on-startup>
-	</servlet>
-	
-	<servlet>
-		<servlet-name>midas-library</servlet-name>
-		<servlet-class>com.robonobo.midas.servlet.LibraryServlet</servlet-class>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-	
-	<servlet>
-		<servlet-name>midas-userconfig</servlet-name>
-		<servlet-class>com.robonobo.midas.servlet.UserConfigServlet</servlet-class>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-	
-	<servlet>
-		<servlet-name>midas-share-playlist</servlet-name>
-		<servlet-class>com.robonobo.midas.servlet.SharePlaylistServlet</servlet-class>
-        <init-param>
-        	<param-name>smtpServer</param-name>
-        	<param-value>localhost</param-value>
-        </init-param>
-        <init-param>
-        	<param-name>roboLaunchUrl</param-name>
-        	<param-value>http://robonobo.com/website/launch</param-value>
-        </init-param>
-        <init-param>
-        	<param-name>inviteUrlBase</param-name>
-        	<param-value>http://robonobo.com/website/invite/</param-value>
-        </init-param>
-        <init-param>
-        	<param-name>friendReqUrlBase</param-name>
-        	<param-value>http://robonobo.com/website/friendrequest/</param-value>
-        </init-param>
-        <init-param>
-        	<param-name>fromRoboName</param-name>
-        	<param-value>robonobo playlists</param-value>
-        </init-param>
-        <init-param>
-        	<param-name>fromRoboEmail</param-name>
-        	<param-value>mailmonkey@robonobo.com</param-value>
-        </init-param>
-        <load-on-startup>1</load-on-startup>
-	</servlet>
-	
-	<servlet>
-		<servlet-name>midas-users</servlet-name>
-		<servlet-class>com.robonobo.midas.servlet.UserServlet</servlet-class>
-        <load-on-startup>1</load-on-startup>
-	</servlet>
-	
-	<!-- Servlet mappings -->
-	<servlet-mapping>
-		<servlet-name>midas-streams</servlet-name>
-		<url-pattern>/streams/*</url-pattern>
-	</servlet-mapping>
-	
-	<servlet-mapping>
-		<servlet-name>midas-playlists</servlet-name>
-		<url-pattern>/playlists/*</url-pattern>
-	</servlet-mapping>
-	
-	<servlet-mapping>
-		<servlet-name>midas-share-playlist</servlet-name>
-		<url-pattern>/share-playlist/*</url-pattern>
-	</servlet-mapping>
-	
-	<servlet-mapping>
-		<servlet-name>midas-users</servlet-name>
-		<url-pattern>/users/*</url-pattern>
-	</servlet-mapping>
-	
-	<servlet-mapping>
-		<servlet-name>midas-library</servlet-name>
-		<url-pattern>/library/*</url-pattern>
-	</servlet-mapping>
-	
-	<servlet-mapping>
-		<servlet-name>midas-userconfig</servlet-name>
-		<url-pattern>/userconfig/*</url-pattern>
-	</servlet-mapping>
-	
-	<servlet-mapping>
-		<servlet-name>midas-search</servlet-name>
-		<url-pattern>/search</url-pattern>
-	</servlet-mapping>
+	<display-name>midas</display-name>
 
-	<!--  filter mapping -->
-	<!-- NOTE: PERSISTENCE FILTER MUST COME FIRST -->
+	<!-- Enables clean URLs e.g. /welcome instead of /app/welcome -->
+	<filter>
+		<filter-name>UrlRewriteFilter</filter-name>
+		<filter-class>org.tuckey.web.filters.urlrewrite.UrlRewriteFilter</filter-class>
+	</filter>
+
 	<filter-mapping>
-		<filter-name>persistence-filter</filter-name>
+		<filter-name>UrlRewriteFilter</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
+
+	<servlet>
+		<servlet-name>spring</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>
+				/WEB-INF/spring/app.xml
+			</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>spring</servlet-name>
+		<url-pattern>/app/*</url-pattern>
+	</servlet-mapping>
 </web-app>

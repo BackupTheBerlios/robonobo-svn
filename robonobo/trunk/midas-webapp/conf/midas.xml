@@ -27,5 +27,5 @@
   <!-- Remoting Details so other webapps can talk to us -->
   <Parameter name="remoteMidasListenURL" value="socket://127.0.0.1:10123" override="true"/>
   <Parameter name="remoteMidasSecret" value="" override="true"/>
-  
+  <Parameter name="smtpServer" value="127.0.0.1" override="true"/>
 </Context>
