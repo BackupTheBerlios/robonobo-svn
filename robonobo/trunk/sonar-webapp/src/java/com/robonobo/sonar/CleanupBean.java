@@ -9,8 +9,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.transaction.support.*;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
 
@@ -30,22 +29,31 @@ public class CleanupBean implements InitializingBean, DisposableBean {
 		transTemplate = new TransactionTemplate(transactionManager);
 		// Clean the db on startup
 		log.info("Purging all nodes from db");
-		transTemplate.execute(new TransactionCallback<Object>() {
-			public Object doInTransaction(TransactionStatus ts) {
-				nodeDao.deleteAllNodes();
-				return null;
+		transTemplate.execute(new TransactionCallbackWithoutResult() {
+			protected void doInTransactionWithoutResult(TransactionStatus ts) {
+				// By default, the transactiontemplate only rolls back for RuntimeExceptions, and I can't figure out how
+				// to change this...
+				try {
+					nodeDao.deleteAllNodes();
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
 			}
 		});
-		
 		thread = new Thread(new CatchingRunnable() {
 			public void doRun() throws Exception {
 				while (true) {
 					Thread.sleep(appCfg.getMaxNodeAge());
 					log.debug("Cleanup Bean running");
-					transTemplate.execute(new TransactionCallback<Object>() {
-						public Object doInTransaction(TransactionStatus ts) {
-							nodeDao.deleteNodesOlderThan(appCfg.getMaxNodeAge());
-							return null;
+					transTemplate.execute(new TransactionCallbackWithoutResult() {
+						protected void doInTransactionWithoutResult(TransactionStatus ts) {
+							// By default, the transactiontemplate only rolls back for RuntimeExceptions, and I can't figure out how
+							// to change this...
+							try {
+								nodeDao.deleteNodesOlderThan(appCfg.getMaxNodeAge());
+							} catch (Exception e) {
+								throw new RuntimeException(e);
+							}
 						}
 					});
 				}

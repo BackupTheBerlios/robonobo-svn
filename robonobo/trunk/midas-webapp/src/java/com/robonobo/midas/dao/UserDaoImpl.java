@@ -2,11 +2,11 @@ package com.robonobo.midas.dao;
 
 import java.util.List;
 
-import org.hibernate.*;
+import org.hibernate.Criteria;
+import org.hibernate.Query;
 import org.hibernate.criterion.Expression;
 import org.springframework.stereotype.Repository;
 
-import com.robonobo.common.persistence.PersistenceManager;
 import com.robonobo.midas.model.MidasUser;
 
 @Repository("userDao")

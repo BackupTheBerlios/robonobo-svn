@@ -10,9 +10,15 @@ import org.apache.commons.logging.LogFactory;
 import org.jboss.remoting.*;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.transport.Connector;
+import org.jgroups.persistence.PersistenceManager;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
-import com.robonobo.common.persistence.PersistenceManager;
 import com.robonobo.common.remote.RemoteCall;
 import com.robonobo.core.api.proto.CoreApi.FriendRequestMsg;
 import com.robonobo.core.api.proto.CoreApi.PlaylistMsg;
@@ -27,9 +33,13 @@ import com.robonobo.remote.service.MidasService;
  * @author macavity
  * 
  */
-public class RemoteMidasService implements ServerInvocationHandler {
+public class RemoteMidasService implements ServerInvocationHandler, InitializingBean, DisposableBean {
 	@Autowired
 	MidasService midas;
+	@Autowired
+	PlatformTransactionManager transactionManager;
+	TransactionTemplate transTemplate;
+	
 	Connector connector;
 	String secret;
 	Log log = LogFactory.getLog(getClass());
@@ -40,15 +50,22 @@ public class RemoteMidasService implements ServerInvocationHandler {
 	 */
 	public RemoteMidasService(String url, String secret) throws Exception {
 		this.secret = secret;
-		log.info("Starting remote midas service on " + url);
+		log.info("Settin up remote midas service on " + url);
 		InvokerLocator locator = new InvokerLocator(url);
 		connector = new Connector();
 		connector.setInvokerLocator(locator.getLocatorURI());
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		transTemplate = new TransactionTemplate(transactionManager);
+		log.info("Starting remote midas service");
 		connector.start();
 		connector.addInvocationHandler("midas", this);
 	}
-
-	public void shutdown() {
+	
+	@Override
+	public void destroy() throws Exception {
 		log.info("Stopping remote midas service");
 		connector.stop();
 	}
@@ -59,75 +76,75 @@ public class RemoteMidasService implements ServerInvocationHandler {
 			log.error("Remote invocation with parameter " + obj.getClass().getName());
 			throw new IllegalArgumentException("Invalid param");
 		}
-		RemoteCall params = (RemoteCall) obj;
+		final RemoteCall params = (RemoteCall) obj;
 		if (!secret.equals(params.getSecret())) {
 			log.error("Remote invocation with invalid secret '" + params.getSecret() + "'");
 			throw new IllegalArgumentException("Invalid secret");
 		}
-		PersistenceManager.createSession();
-		boolean gotError = false;
-		try {
-			String method = params.getMethodName();
-			if (method.equals("getUserByEmail")) {
-				return getUserByEmail(params);
-			} else if (method.equals("getUserById")) {
-				return getUserById(params);
-			} else if (method.equals("saveUser")) {
-				saveUser(params);
-				return null;
-			} else if (method.equals("getUserAsVisibleBy")) {
-				return getUserAsVisibleBy(params);
-			} else if (method.equals("getPlaylistById")) {
-				return getPlaylistById(params);
-			} else if (method.equals("savePlaylist")) {
-				savePlaylist(params);
-				return null;
-			} else if (method.equals("deletePlaylist")) {
-				deletePlaylist(params);
-				return null;
-			} else if (method.equals("getStreamById")) {
-				return getStreamById(params);
-			} else if (method.equals("saveStream")) {
-				saveStream(params);
-				return null;
-			} else if (method.equals("deleteStream")) {
-				deleteStream(params);
-				return null;
-			} else if (method.equals("countUsers")) {
-				return countUsers();
-			} else if (method.equals("createUser")) {
-				return createUser(params);
-			} else if (method.equals("getAllUsers")) {
-				return getAllUsers();
-			} else if(method.equals("deleteUser")) {
-				deleteUser(params);
-				return null;
-			} else if (method.equals("createOrUpdateFriendRequest")) {
-				return createOrUpdateFriendRequest(params);
-			} else if(method.equals("getFriendRequest")) {
-				return getFriendRequest(params);
-			} else if(method.equals("getPendingFriendRequests")) {
-				return getPendingFriendRequests(params);
-			} else if(method.equals("ignoreFriendRequest")) {
-				ignoreFriendRequest(params);
-				return null;
-			} else if (method.equals("acceptFriendRequest")) {
-				return acceptFriendRequest(params);
-			} else if (method.equals("createOrUpdateInvite")) {
-				return createOrUpdateInvite(params);
-			} else if(method.equals("deleteInvite")) {
-				deleteInvite(params);
-				return null;
-			} else if(method.equals("getInvite")) {
-				return getInvite(params);
-			} else
-				throw new IllegalArgumentException("Invalid method");
-		} catch (Exception e) {
-			gotError = true;
-			throw new Exception(e);
-		} finally {
-			PersistenceManager.closeSession(gotError);
-		}
+		final String method = params.getMethodName();
+		// Make sure everything happens inside a transaction
+		return transTemplate.execute(new TransactionCallback<Object>() {
+			public Object doInTransaction(TransactionStatus ts) {
+				try {
+					if (method.equals("getUserByEmail")) {
+						return getUserByEmail(params);
+					} else if (method.equals("getUserById")) {
+						return getUserById(params);
+					} else if (method.equals("saveUser")) {
+						saveUser(params);
+						return null;
+					} else if (method.equals("getUserAsVisibleBy")) {
+						return getUserAsVisibleBy(params);
+					} else if (method.equals("getPlaylistById")) {
+						return getPlaylistById(params);
+					} else if (method.equals("savePlaylist")) {
+						savePlaylist(params);
+						return null;
+					} else if (method.equals("deletePlaylist")) {
+						deletePlaylist(params);
+						return null;
+					} else if (method.equals("getStreamById")) {
+						return getStreamById(params);
+					} else if (method.equals("saveStream")) {
+						saveStream(params);
+						return null;
+					} else if (method.equals("deleteStream")) {
+						deleteStream(params);
+						return null;
+					} else if (method.equals("countUsers")) {
+						return countUsers();
+					} else if (method.equals("createUser")) {
+						return createUser(params);
+					} else if (method.equals("getAllUsers")) {
+						return getAllUsers();
+					} else if(method.equals("deleteUser")) {
+						deleteUser(params);
+						return null;
+					} else if (method.equals("createOrUpdateFriendRequest")) {
+						return createOrUpdateFriendRequest(params);
+					} else if(method.equals("getFriendRequest")) {
+						return getFriendRequest(params);
+					} else if(method.equals("getPendingFriendRequests")) {
+						return getPendingFriendRequests(params);
+					} else if(method.equals("ignoreFriendRequest")) {
+						ignoreFriendRequest(params);
+						return null;
+					} else if (method.equals("acceptFriendRequest")) {
+						return acceptFriendRequest(params);
+					} else if (method.equals("createOrUpdateInvite")) {
+						return createOrUpdateInvite(params);
+					} else if(method.equals("deleteInvite")) {
+						deleteInvite(params);
+						return null;
+					} else if(method.equals("getInvite")) {
+						return getInvite(params);
+					} else
+						throw new IllegalArgumentException("Invalid method");
+				} catch(Exception e) {
+					throw new RuntimeException(e);
+				}
+			}
+		});
 	}	
 
 	private String acceptFriendRequest(RemoteCall params) throws IOException {

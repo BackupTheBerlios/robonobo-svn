@@ -6,11 +6,12 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.hibernate.search.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.robonobo.common.exceptions.SeekInnerCalmException;
-import com.robonobo.common.persistence.PersistenceManager;
 import com.robonobo.core.api.proto.CoreApi.SearchResponse;
 import com.robonobo.midas.model.MidasStream;
 import com.robonobo.midas.model.MidasStreamAttribute;
@@ -20,6 +21,8 @@ public class SearchServiceImpl implements SearchService {
 	// TODO: Put this in a config file somewhere
 	public static final int MAX_SEARCH_RESULTS = 100;
 	private QueryParser queryParser;
+	@Autowired
+	private SessionFactory sessionFactory;
 
 	public SearchServiceImpl() {
 		queryParser = new QueryParser("title", new StandardAnalyzer());
@@ -32,7 +35,7 @@ public class SearchServiceImpl implements SearchService {
 	public SearchResponse search(String searchType, String queryStr, int firstResult) throws IOException {
 		if(!searchType.equals("stream"))
 			throw new SeekInnerCalmException();
-		Session session = PersistenceManager.currentSession();
+		Session session = sessionFactory.getCurrentSession();
 		FullTextSession searchSession = Search.createFullTextSession(session);
 		
 		org.apache.lucene.search.Query luceneQuery;
