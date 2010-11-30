@@ -7,6 +7,7 @@
 	<target name="compile-all">
 		<ant dir="../common" inheritall="false" target="compile-all"/>
 		<ant dir="../api" inheritall="false" target="compile-all"/>
+		<ant dir="../common-hibernate" inheritall="false" target="compile-all"/>
 		<ant dir="../common-servlets" inheritall="false" target="compile-all"/>
 		<ant dir="../serialization" inheritall="false" target="compile-all"/>
 		<ant dir="../midas-model" inheritall="false" target="compile-all"/>
@@ -16,6 +17,7 @@
 		<javac source="1.5" target="1.5" srcdir="src/java" destdir="target/classes" debug="on" 
 		includes="**/*.java,**/*.properties,**/*.xml">
 			<classpath>
+				<pathelement path="../common-hibernate/target/classes"/>
 				<pathelement path="../common-servlets/target/classes"/>
 				<pathelement path="../api/target/classes"/>
 				<pathelement path="../serialization/target/classes"/>
@@ -27,7 +29,7 @@
 				<fileset dir="../common-servlets/lib">
 					<include name="**/*.jar"/>
 				</fileset>
-				<fileset dir="../common-webapps/lib">
+				<fileset dir="../common-hibernate/lib">
 					<include name="**/*.jar"/>
 				</fileset>
 				<fileset dir="../common/lib">
@@ -52,11 +54,12 @@
 			<fileset dir="WebContent">
 				<exclude name="**/context.xml"/>
 			</fileset>
-			<lib dir="../common-webapps/lib"/>
+			<lib dir="../common-hibernate/lib"/>
 			<lib dir="../common-servlets/lib"/>
 			<lib dir="../common/lib"/>
 			<lib dir="../midas-model/lib"/>
 			<classes dir="target/classes"/>
+			<classes dir="../common-hibernate/target/classes"/>
 			<classes dir="../common-servlets/target/classes"/>
 			<classes dir="../serialization/target/classes"/>
 			<classes dir="../common/target/classes"/>
