@@ -1,25 +1,29 @@
-package com.robonobo.wang.server;
+package com.robonobo.wang.server.dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import static org.springframework.jdbc.datasource.DataSourceUtils.*;
+
+import java.sql.*;
+
+import javax.sql.DataSource;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import com.robonobo.common.util.TextUtil;
 
-public class DoubleSpendDAOImpl implements DoubleSpendDAO {
+@Repository("doubleSpendDao")
+public class DoubleSpendDAOImpl implements DoubleSpendDao {
 	private static final String CHECK_SQL = "SELECT count(*) FROM doublespend WHERE coin_hash = ?";
 	private static final String ADD_SQL = "INSERT INTO doublespend (coin_hash) VALUES (?)";
 
-	private DbMgr dbMgr;
-
-	public DoubleSpendDAOImpl() {
-	}
-
+	@Autowired
+	private DataSource dataSource;
+	
+	@Override
 	public boolean isDoubleSpend(String coinId) throws DAOException {
 		long coinIdHash = TextUtil.longHash(coinId);
 		try {
-			Connection conn = dbMgr.getConnection();
+			Connection conn = getConnection(dataSource);
 			PreparedStatement ps = conn.prepareStatement(CHECK_SQL);
 			ps.setLong(1, coinIdHash);
 			ResultSet rs = ps.executeQuery();
@@ -31,19 +35,16 @@ public class DoubleSpendDAOImpl implements DoubleSpendDAO {
 		}
 	}
 
+	@Override
 	public void add(String coinId) throws DAOException {
 		long coinIdHash = TextUtil.longHash(coinId);
 		try {
-			Connection conn = dbMgr.getConnection();
+			Connection conn = getConnection(dataSource);
 			PreparedStatement ps = conn.prepareStatement(ADD_SQL);
 			ps.setLong(1, coinIdHash);
 			ps.executeUpdate();
 		} catch (SQLException e) {
 			throw new DAOException(e);
 		}
-	}
-
-	public void setDbMgr(DbMgr dbMgr) {
-		this.dbMgr = dbMgr;
 	}
 }

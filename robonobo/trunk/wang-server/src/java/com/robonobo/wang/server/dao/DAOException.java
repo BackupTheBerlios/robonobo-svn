@@ -1,4 +1,4 @@
-package com.robonobo.wang.server;
+package com.robonobo.wang.server.dao;
 
 public class DAOException extends Exception {
 

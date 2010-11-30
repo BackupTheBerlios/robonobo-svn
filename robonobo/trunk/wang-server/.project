@@ -3,9 +3,9 @@
 	<name>wang-server</name>
 	<comment></comment>
 	<projects>
+		<project>midas-model</project>
 		<project>common</project>
 		<project>wang-client</project>
-		<project>midas-model</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

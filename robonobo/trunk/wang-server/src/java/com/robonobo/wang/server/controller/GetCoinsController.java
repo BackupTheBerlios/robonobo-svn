@@ -1,33 +1,40 @@
-package com.robonobo.wang.server;
+package com.robonobo.wang.server.controller;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.robonobo.wang.beans.BlindedCoin;
-import com.robonobo.wang.beans.CoinRequestPublic;
-import com.robonobo.wang.beans.DenominationPrivate;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.robonobo.wang.beans.*;
 import com.robonobo.wang.client.LucreFacade;
 import com.robonobo.wang.proto.WangProtocol.BlindedCoinListMsg;
+import com.robonobo.wang.proto.WangProtocol.BlindedCoinListMsg.Status;
 import com.robonobo.wang.proto.WangProtocol.CoinRequestListMsg;
 import com.robonobo.wang.proto.WangProtocol.CoinRequestMsg;
-import com.robonobo.wang.proto.WangProtocol.BlindedCoinListMsg.Status;
+import com.robonobo.wang.server.UserAccount;
+import com.robonobo.wang.server.dao.DAOException;
+import com.robonobo.wang.server.dao.DenominationDao;
 
-public class GetCoinsServlet extends WangServlet {
+@Controller
+public class GetCoinsController extends BaseController implements InitializingBean {
+	@Autowired
+	private DenominationDao denominationDao;
 	private LucreFacade lucre;
 	private Map<Integer, DenominationPrivate> denomPrivs;
 
 	@Override
-	public void init() throws ServletException {
-		super.init();
+	public void afterPropertiesSet() throws Exception {
 		lucre = new LucreFacade();
 		try {
-			List<DenominationPrivate> denoms = denomDao.getDenomsPrivate();
+			List<DenominationPrivate> denoms = denominationDao.getDenomsPrivate();
 			denomPrivs = new HashMap<Integer, DenominationPrivate>();
 			for (DenominationPrivate denom : denoms) {
 				denomPrivs.put(denom.getDenom(), denom);
@@ -37,8 +44,9 @@ public class GetCoinsServlet extends WangServlet {
 		}
 	}
 
-	@Override
-	protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	@Transactional(rollbackFor=Exception.class)
+	@RequestMapping(value="/getCoins")
+	public void getCoins(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		UserAccount user = getAuthUser(req, resp);
 		if (user == null) {
 			send401(req, resp);
@@ -68,7 +76,7 @@ public class GetCoinsServlet extends WangServlet {
 				uaDao.putUserAccount(lockUser);
 			}
 		} catch (DAOException e) {
-			throw new ServletException(e);
+			throw new IOException(e);
 		}
 		writeToOutput(blBldr.build(), resp);
 		resp.setStatus(HttpServletResponse.SC_OK);

@@ -1,34 +1,42 @@
-package com.robonobo.wang.server;
+package com.robonobo.wang.server.controller;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestMapping;
+
 import com.robonobo.wang.beans.Coin;
-import com.robonobo.wang.beans.CoinList;
 import com.robonobo.wang.beans.DenominationPrivate;
 import com.robonobo.wang.client.LucreFacade;
 import com.robonobo.wang.proto.WangProtocol.CoinListMsg;
 import com.robonobo.wang.proto.WangProtocol.CoinMsg;
 import com.robonobo.wang.proto.WangProtocol.DepositStatusMsg;
 import com.robonobo.wang.proto.WangProtocol.DepositStatusMsg.Status;
+import com.robonobo.wang.server.UserAccount;
+import com.robonobo.wang.server.dao.*;
 
-public class DepositCoinsServlet extends WangServlet {
+@Controller
+public class DepositCoinsController extends BaseController implements InitializingBean {
+	@Autowired
+	private DenominationDao denominationDao;
+	@Autowired
+	private DoubleSpendDao doubleSpendDao;
 	private LucreFacade lucre;
 	private Map<Integer, DenominationPrivate> denomPrivs;
 
 	@Override
-	public void init() throws ServletException {
-		super.init();
+	public void afterPropertiesSet() throws Exception {
 		lucre = new LucreFacade();
 		try {
-			List<DenominationPrivate> denoms = denomDao.getDenomsPrivate();
+			List<DenominationPrivate> denoms = denominationDao.getDenomsPrivate();
 			denomPrivs = new HashMap<Integer, DenominationPrivate>();
 			for (DenominationPrivate denom : denoms) {
 				denomPrivs.put(denom.getDenom(), denom);
@@ -38,8 +46,9 @@ public class DepositCoinsServlet extends WangServlet {
 		}
 	}
 
-	@Override
-	protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	@RequestMapping(value = "/depositCoins")
+	@Transactional(rollbackFor=Exception.class)
+	public void depositCoins(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		UserAccount user = getAuthUser(req, resp);
 		if (user == null) {
 			send401(req, resp);
@@ -58,7 +67,7 @@ public class DepositCoinsServlet extends WangServlet {
 				DenominationPrivate denom = denomPrivs.get(coinMsg.getDenom());
 				Coin coin = new Coin(coinMsg);
 				if (denom == null)
-					throw new ServletException("Malformed coin, no denomination");
+					throw new IOException("Malformed coin, no denomination");
 				if (!lucre.verifyCoin(denom, coin) || doubleSpendDao.isDoubleSpend(coinMsg.getCoinId())) {
 					dBldr.setStatus(Status.Error);
 					dBldr.addBadCoinId(coinMsg.getCoinId());
@@ -71,19 +80,19 @@ public class DepositCoinsServlet extends WangServlet {
 				for (String coinId : deposCoins) {
 					doubleSpendDao.add(coinId);
 				}
-				log.info("User " + user.getEmail() + " deposited " + deposCoins + " coins worth " + WANG_CHAR
+				log.info("User " + user.getEmail() + " deposited " + deposCoins.size() + " coins worth " + WANG_CHAR
 						+ coinValue);
 				try {
 					UserAccount lockUser = uaDao.getAndLockUserAccount(user.getEmail());
 					lockUser.setBalance(lockUser.getBalance() + coinValue);
 					uaDao.putUserAccount(lockUser);
 				} catch (DAOException e) {
-					throw new ServletException(e);
+					throw new IOException(e);
 				}
 			} else
 				log.warn("User " + user.getEmail() + " got bad coin error while attempting to deposit coins");
 		} catch (DAOException e) {
-			throw new ServletException(e);
+			throw new IOException(e);
 		}
 		writeToOutput(dBldr.build(), resp);
 		resp.setStatus(HttpServletResponse.SC_OK);

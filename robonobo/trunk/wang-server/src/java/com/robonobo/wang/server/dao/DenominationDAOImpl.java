@@ -1,30 +1,35 @@
-package com.robonobo.wang.server;
+package com.robonobo.wang.server.dao;
+
+import static org.springframework.jdbc.datasource.DataSourceUtils.*;
 
 import java.math.BigInteger;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.sql.DataSource;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import com.robonobo.wang.beans.DenominationPrivate;
 import com.robonobo.wang.beans.DenominationPublic;
 
-public class DenominationDAOImpl implements DenominationDAO {
+@Repository("denominationDao")
+public class DenominationDAOImpl implements DenominationDao {
 	private static final String GET_DENOMS_SQL = "SELECT * FROM denomination";
 	static final String DELETE_DENOMS_SQL = "DELETE FROM denomination";
 	static final String INSERT_DENOM_SQL = "INSERT INTO denomination (id, denom, generator, prime, public_key, private_key) VALUES (?, ?, ?, ?, ?, ?)";
-	DbMgr dbMgr;
+	@Autowired
+	private DataSource dataSource;
 	private Log log = LogFactory.getLog(getClass());
 
+	@Override
 	public List<DenominationPublic> getDenomsPublic() throws DAOException {
 		try {
-			Connection conn = dbMgr.getConnection();
+			Connection conn = getConnection(dataSource);
 			Statement s = conn.createStatement();
 			ResultSet rs = s.executeQuery(GET_DENOMS_SQL);
 			List<DenominationPublic> result = new ArrayList<DenominationPublic>();
@@ -37,9 +42,10 @@ public class DenominationDAOImpl implements DenominationDAO {
 		}
 	}
 
+	@Override
 	public List<DenominationPrivate> getDenomsPrivate() throws DAOException {
 		try {
-			Connection conn = dbMgr.getConnection();
+			Connection conn = getConnection(dataSource);
 			Statement s = conn.createStatement();
 			ResultSet rs = s.executeQuery(GET_DENOMS_SQL);
 			List<DenominationPrivate> result = new ArrayList<DenominationPrivate>();
@@ -52,9 +58,10 @@ public class DenominationDAOImpl implements DenominationDAO {
 		}
 	}
 
+	@Override
 	public void deleteAllDenoms() throws DAOException {
 		try {
-			Connection conn = dbMgr.getConnection();
+			Connection conn = getConnection(dataSource);
 			Statement s = conn.createStatement();
 			s.executeUpdate(DELETE_DENOMS_SQL);
 		} catch (SQLException e) {
@@ -63,9 +70,10 @@ public class DenominationDAOImpl implements DenominationDAO {
 
 	}
 
+	@Override
 	public void putDenom(DenominationPrivate denom) throws DAOException {
 		try {
-			Connection conn = dbMgr.getConnection();
+			Connection conn = getConnection(dataSource);
 			PreparedStatement ps = conn.prepareStatement(INSERT_DENOM_SQL);
 			ps.setInt(1, denom.getPrivateKey().hashCode());
 			ps.setInt(2, denom.getDenom());
@@ -96,9 +104,5 @@ public class DenominationDAOImpl implements DenominationDAO {
 		DenominationPrivate result = new DenominationPrivate(gen, prime, pubKey, priKey);
 		result.setDenom(rs.getInt("denom"));
 		return result;
-	}
-
-	public void setDbMgr(DbMgr dbMgr) {
-		this.dbMgr = dbMgr;
 	}
 }

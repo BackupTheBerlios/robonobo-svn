@@ -4,14 +4,19 @@ import javax.management.MBeanServer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jboss.remoting.InvocationRequest;
-import org.jboss.remoting.InvokerLocator;
-import org.jboss.remoting.ServerInvocationHandler;
-import org.jboss.remoting.ServerInvoker;
+import org.jboss.remoting.*;
 import org.jboss.remoting.callback.InvokerCallbackHandler;
 import org.jboss.remoting.transport.Connector;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.robonobo.common.remote.RemoteCall;
+import com.robonobo.wang.server.dao.UserAccountDao;
 
 /**
  * The server end of a remote wang service (client end is RemoteWangFacade in
@@ -20,26 +25,34 @@ import com.robonobo.common.remote.RemoteCall;
  * @author macavity
  * 
  */
-public class RemoteWangService implements ServerInvocationHandler {
-	Connector connector;
-	String secret;
-	DbMgr dbMgr;
-	UserAccountDAO uaDao;
-	Log log = LogFactory.getLog(getClass());
+public class RemoteWangService implements ServerInvocationHandler, InitializingBean, DisposableBean {
+	private Connector connector;
+	private String secret;
+	@Autowired
+	private UserAccountDao uaDao;
+	@Autowired
+	private PlatformTransactionManager transactionManager;
+	private TransactionTemplate transTemplate;
+	private Log log = LogFactory.getLog(getClass());
 
 	public RemoteWangService(String url, String secret) throws Exception {
 		this.secret = secret;
-		uaDao = SpringServlet.getInstance().getUserAccountDAO();
-		dbMgr = SpringServlet.getInstance().getDbMgr();
-		log.info("Starting remote wang service on " + url);
+		log.info("Setting up remote wang service on " + url);
 		InvokerLocator locator = new InvokerLocator(url);
 		connector = new Connector();
 		connector.setInvokerLocator(locator.getLocatorURI());
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		transTemplate = new TransactionTemplate(transactionManager);
+		log.info("Starting remote wang service");
 		connector.start();
 		connector.addInvocationHandler("wang", this);
 	}
-
-	public void shutdown() {
+	
+	@Override
+	public void destroy() throws Exception {
 		connector.stop();
 	}
 
@@ -49,50 +62,49 @@ public class RemoteWangService implements ServerInvocationHandler {
 			log.error("Remote invocation with parameter " + obj.getClass().getName());
 			throw new IllegalArgumentException("Invalid param");
 		}
-		RemoteCall params = (RemoteCall) obj;
+		final RemoteCall params = (RemoteCall) obj;
 		if (!secret.equals(params.getSecret())) {
 			log.error("Remote invocation with invalid secret '" + params.getSecret() + "'");
 			throw new IllegalArgumentException("Invalid secret");
 		}
-		String method = params.getMethodName();
+		final String method = params.getMethodName();
 		// Make sure everything happens inside a transaction
-		dbMgr.begin();
-		boolean gotErr = false;
-		try {
-			if (method.equals("getBalance")) {
-				String email = (String) params.getArg();
-				String passwd = (String) params.getExtraArgs().get(0);
-				return getBalance(email, passwd);
-			} else if (method.equals("changePassword")) {
-				String email = (String) params.getArg();
-				String oldPasswd = (String) params.getExtraArgs().get(0);
-				String newPasswd = (String) params.getExtraArgs().get(1);
-				changePassword(email, oldPasswd, newPasswd);
-				return null;
-			} else if (method.equals("countUsers")) {
-				return countUsers();
-			} else if(method.equals("createUser")) {
-				String email = (String) params.getArg();
-				String friendlyName = (String) params.getExtraArgs().get(0);
-				String password = (String) params.getExtraArgs().get(1);
-				createUser(email, friendlyName, password);
-				return null;
-			} else if(method.equals("topUpBalance")) {
-				String email = (String) params.getArg();
-				double amount = Double.parseDouble((String) params.getExtraArgs().get(0));
-				topUpBalance(email, amount);
-				return null;
-			} else
-				throw new IllegalArgumentException("Invalid method");
-		} catch (Exception e) {
-			gotErr = true;
-			throw e;
-		} finally {
-			if (gotErr)
-				dbMgr.rollback();
-			else
-				dbMgr.commit();
-		}
+		return transTemplate.execute(new TransactionCallback<Object>() {
+			@Override
+			public Object doInTransaction(TransactionStatus arg0) {
+				try {
+					if (method.equals("getBalance")) {
+						String email = (String) params.getArg();
+						String passwd = (String) params.getExtraArgs().get(0);
+						return getBalance(email, passwd);
+					} else if (method.equals("changePassword")) {
+						String email = (String) params.getArg();
+						String oldPasswd = (String) params.getExtraArgs().get(0);
+						String newPasswd = (String) params.getExtraArgs().get(1);
+						changePassword(email, oldPasswd, newPasswd);
+						return null;
+					} else if (method.equals("countUsers")) {
+						return countUsers();
+					} else if(method.equals("createUser")) {
+						String email = (String) params.getArg();
+						String friendlyName = (String) params.getExtraArgs().get(0);
+						String password = (String) params.getExtraArgs().get(1);
+						createUser(email, friendlyName, password);
+						return null;
+					} else if(method.equals("topUpBalance")) {
+						String email = (String) params.getArg();
+						double amount = Double.parseDouble((String) params.getExtraArgs().get(0));
+						topUpBalance(email, amount);
+						return null;
+					} else
+						throw new IllegalArgumentException("Invalid method");
+				} catch (Exception e) {
+					// By default, the transactiontemplate only rolls back for RuntimeExceptions, and I can't figure out how
+					// to change this...
+					throw new RuntimeException(e);
+				}
+			}
+		});
 	}
 
 	private void topUpBalance(String email, double amount) throws Exception {
