@@ -174,7 +174,10 @@ public class UserService extends AbstractService {
 		rbnb.getEventService().fireUserChanged(u);
 	}
 
-	public void addOrUpdatePlaylist(Playlist newP) throws IOException, RobonoboException {
+	/**
+	 * Returns the playlist with the playlist id set
+	 */
+	public Playlist addOrUpdatePlaylist(Playlist newP) throws IOException, RobonoboException {
 		String playlistUrl = msc.getPlaylistUrl(newP.getPlaylistId());
 		if(newP.getPlaylistId() <= 0) {
 			// New playlist - the server will send it back with the playlist id set
@@ -185,8 +188,11 @@ public class UserService extends AbstractService {
 			checkUserUpdate(me, false);
 			// Fire this playlist as being updated
 			rbnb.getEventService().firePlaylistChanged(updatedP);
-		} else
-			rbnb.getSerializationManager().putObjectToUrl(newP.toMsg(), playlistUrl);			
+			return updatedP;
+		} else {
+			rbnb.getSerializationManager().putObjectToUrl(newP.toMsg(), playlistUrl);
+			return newP;
+		}
 	}
 
 	public void nukePlaylist(Playlist pl) throws IOException, RobonoboException {

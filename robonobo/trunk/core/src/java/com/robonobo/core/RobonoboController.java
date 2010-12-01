@@ -418,9 +418,9 @@ public class RobonoboController {
 		}
 	}
 
-	public void addOrUpdatePlaylist(Playlist pl) throws RobonoboException {
+	public Playlist addOrUpdatePlaylist(Playlist pl) throws RobonoboException {
 		try {
-			inst.getUsersService().addOrUpdatePlaylist(pl);
+			return inst.getUsersService().addOrUpdatePlaylist(pl);
 		} catch (IOException e) {
 			throw new RobonoboException(e);
 		}

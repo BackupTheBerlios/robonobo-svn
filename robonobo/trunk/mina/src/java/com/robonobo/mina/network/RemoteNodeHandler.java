@@ -24,13 +24,11 @@ public class RemoteNodeHandler implements PushDataReceiver {
 	private MinaInstance mina;
 	private Log log;
 	private PushDataChannel dataChan;
-	private int messageMaxSize;
 	private Attempt handleAttempt;
 	private StreamConnectionFactory connectionFactory;
 	private EndPoint myEp;
 	private EndPoint theirEp;
 	ByteBufferInputStream incoming = new ByteBufferInputStream();
-	private int msgNameLength = -1;
 	private String msgName = null;
 	private int serialMsgLength = -1;
 	private HelloHandler handler;
@@ -53,7 +51,6 @@ public class RemoteNodeHandler implements PushDataReceiver {
 	}
 
 	public void handle() {
-		messageMaxSize = mina.getConfig().getMessageMaxSize();
 		handleAttempt = new HandleAttempt(mina.getConfig().getMessageTimeout());
 		handleAttempt.start();
 		dataChan.setDataReceiver(this);
@@ -68,6 +65,10 @@ public class RemoteNodeHandler implements PushDataReceiver {
 		close();
 	}
 	
+	/**
+	 * We read data in 3 states. 1. Read the msg name as a string, null terminated 2. Read a Dlugosz number -
+	 * this is the length of the serialized msg 3. Read the serialized msg as a byte array
+	 */
 	public void receiveData(ByteBuffer buf, Object ignore) throws IOException {
 		incoming.addBuffer(buf);
 		// Now we see what we can read
@@ -99,26 +100,16 @@ public class RemoteNodeHandler implements PushDataReceiver {
 					serialMsgLength = (int) Dlugosz.readLong(incoming);
 				else
 					finished = true;
-			} else if (msgNameLength >= 0) {
-				// We're reading our msg name
-				if (incoming.available() >= msgNameLength) {
-					byte[] arr = new byte[msgNameLength];
+			} else {
+				// We're reading our msg name - look for a null-terminated string
+				int strSz = incoming.locateNullByte();
+				if(strSz >= 0) {
+					byte[] arr = new byte[strSz+1]; // Read the null itself too
 					incoming.read(arr);
-					msgName = new String(arr);
-					if(!msgName.equals("Hello")) {
-						log.error("Node "+theirEp+" sent invalid first message: "+msgName);
-						close();
-						return;
-					}
+					msgName = new String(arr, 0, strSz);
 				} else
 					finished = true;
-			} else {
-				// We're reading our msg name length
-				if (Dlugosz.startsWithCompleteNum(incoming))
-					msgNameLength = (int) Dlugosz.readLong(incoming);
-				else
-					finished = true;
-			}					
+			}
 		} while (!finished);
 	}
 	

@@ -34,27 +34,26 @@ public class NewPlaylistContentPanel extends MyPlaylistContentPanel {
 					p.getOwnerIds().add(control.getMyUser().getUserId());
 					pc.setPlaylistId(p.getPlaylistId());
 					control.putPlaylistConfig(pc);
-					control.addOrUpdatePlaylist(p);
+					final Playlist updatedP = control.addOrUpdatePlaylist(p);
+					SwingUtilities.invokeLater(new CatchingRunnable() {
+						public void doRun() throws Exception {
+							// A content panel should have been created for the new
+							// playlist - switch to it now
+							frame.getLeftSidebar().selectMyPlaylist(updatedP);
+							// Now that they're not looking, re-init everything with
+							// a new empty playlist
+							Playlist newP = new Playlist();
+							titleField.setText("");
+							descField.setText("");
+							if(iTunesCB != null)
+								iTunesCB.setSelected(false);
+							getModel().setPlaylist(newP);
+						}
+					});
 				} catch (RobonoboException e) {
 					log.error("Error creating playlist", e);
 					return;
 				}
-				SwingUtilities.invokeLater(new CatchingRunnable() {
-					public void doRun() throws Exception {
-						// A content panel should have been created for the new
-						// playlist - switch to it now
-						frame.getLeftSidebar().selectMyPlaylist(p);
-						// Now that they're not looking, re-init everything with
-						// a new empty playlist
-						Playlist newP = new Playlist();
-						titleField.setText("");
-						descField.setText("");
-//						friendsCB.setSelected(p.getAnnounce());
-						if(iTunesCB != null)
-							iTunesCB.setSelected(false);
-						getModel().setPlaylist(newP);
-					}
-				});
 			}
 		});
 	}
