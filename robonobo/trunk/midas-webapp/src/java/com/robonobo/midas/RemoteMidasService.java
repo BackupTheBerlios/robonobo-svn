@@ -19,10 +19,12 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.robonobo.common.remote.RemoteCall;
 import com.robonobo.core.api.proto.CoreApi.FriendRequestMsg;
 import com.robonobo.core.api.proto.CoreApi.PlaylistMsg;
 import com.robonobo.core.api.proto.CoreApi.StreamMsg;
+import com.robonobo.core.api.proto.CoreApi.UserConfigMsg;
 import com.robonobo.core.api.proto.CoreApi.UserMsg;
 import com.robonobo.midas.model.*;
 import com.robonobo.remote.service.MidasService;
@@ -138,6 +140,11 @@ public class RemoteMidasService implements ServerInvocationHandler, Initializing
 						return null;
 					} else if(method.equals("getInvite")) {
 						return getInvite(params);
+					} else if(method.equals("getUserConfig")) {
+						return getUserConfig(params);
+					} else if(method.equals("putUserConfig")) {
+						putUserConfig(params);
+						return null;
 					} else
 						throw new IllegalArgumentException("Invalid method");
 				} catch(Exception e) {
@@ -180,6 +187,17 @@ public class RemoteMidasService implements ServerInvocationHandler, Initializing
 		if(invite == null)
 			return null;
 		return invite.toMsg().toByteArray();
+	}
+	
+	private Object getUserConfig(RemoteCall params) {
+		MidasUser u = midas.getUserById((Long)params.getArg());
+		MidasUserConfig uc = midas.getUserConfig(u);
+		return uc.toMsg().toByteArray();
+	}
+	
+	private void putUserConfig(RemoteCall params) throws IOException {
+		UserConfigMsg ucm = UserConfigMsg.newBuilder().mergeFrom((byte[])params.getArg()).build();
+		midas.putUserConfig(new MidasUserConfig(ucm));
 	}
 	
 	private void deleteStream(RemoteCall params) throws IOException {
@@ -252,7 +270,10 @@ public class RemoteMidasService implements ServerInvocationHandler, Initializing
 
 	private Object getUserById(RemoteCall params) {
 		Long userId = (Long) params.getArg();
-		return midas.getUserById(userId).toMsg(true).toByteArray();
+		MidasUser user = midas.getUserById(userId);
+		if(user == null)
+			return null;
+		return user.toMsg(true).toByteArray();
 	}
 
 	private Object getUserByEmail(RemoteCall params) {

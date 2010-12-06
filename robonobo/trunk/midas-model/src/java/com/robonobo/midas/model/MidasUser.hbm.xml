@@ -15,6 +15,7 @@
         <property name="verified"/>         
         <property name="updated"/>
         <property name="invitesLeft"/>
+        <property name="imgUrl" length="1024"/>
         <set name="playlistIds" table="playlistIdsInUser" lazy="false">
         	<key column="userId"/>
         	<element column="playlistId" type="long"/>

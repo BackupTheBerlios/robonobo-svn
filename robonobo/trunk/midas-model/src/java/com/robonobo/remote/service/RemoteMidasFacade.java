@@ -9,6 +9,7 @@ import com.robonobo.core.api.proto.CoreApi.FriendRequestMsg;
 import com.robonobo.core.api.proto.CoreApi.InviteMsg;
 import com.robonobo.core.api.proto.CoreApi.PlaylistMsg;
 import com.robonobo.core.api.proto.CoreApi.StreamMsg;
+import com.robonobo.core.api.proto.CoreApi.UserConfigMsg;
 import com.robonobo.core.api.proto.CoreApi.UserMsg;
 import com.robonobo.midas.model.*;
 
@@ -152,22 +153,23 @@ public class RemoteMidasFacade extends JbossRemotingFacade implements MidasServi
 	@Override
 	public Library getLibrary(MidasUser u, Date since) {
 		// We don't do library remoting yet
-		return null;
+		throw new SeekInnerCalmException();
 	}
 	@Override
 	public void putLibrary(Library lib) {
 		// We don't do library remoting yet
+		throw new SeekInnerCalmException();
 	}
 	
 	@Override
 	public MidasUserConfig getUserConfig(MidasUser u) {
-		// No remote user config
-		return null;
+		byte[] arr = (byte[]) invoke("getUserConfig", u.getUserId(), null);
+		return userCfgFromByteArr(arr);
 	}
 	
 	@Override
 	public void putUserConfig(MidasUserConfig config) {
-		// No remote user config
+		invoke("putUserConfig", config.toMsg().toByteArray(), null);
 	}
 
 	private MidasPlaylist playlistFromByteArr(byte[] arr) {
@@ -194,6 +196,18 @@ public class RemoteMidasFacade extends JbossRemotingFacade implements MidasServi
 		return new MidasUser(msg);
 	}
 
+	private MidasUserConfig userCfgFromByteArr(byte[] arr) {
+		if(arr == null)
+			return null;
+		UserConfigMsg msg;
+		try {
+			msg = UserConfigMsg.newBuilder().mergeFrom(arr).build();
+		} catch(InvalidProtocolBufferException e) {
+			return null;
+		}
+		return new MidasUserConfig(msg);
+	}
+	
 	private MidasStream streamFromByteArr(byte[] arr) {
 		if (arr == null)
 			return null;

@@ -12,12 +12,12 @@ import com.robonobo.midas.model.MidasUser;
 @Repository("userDao")
 public class UserDaoImpl extends MidasDao implements UserDao {
 	@Override
-	public MidasUser retrieveById(long id) {
+	public MidasUser getById(long id) {
 		return (MidasUser) getSession().get(MidasUser.class, id);
 	}
 
 	@Override
-	public MidasUser retrieveByEmail(String email) {
+	public MidasUser getByEmail(String email) {
 		Criteria c = getSession().createCriteria(MidasUser.class);
 		c.add(Expression.eq("email", email));
 		List<MidasUser> list = c.list();
@@ -29,13 +29,13 @@ public class UserDaoImpl extends MidasDao implements UserDao {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<MidasUser> retrieveAll() {
+	public List<MidasUser> getAll() {
 		return getSession().createCriteria(MidasUser.class).list();
 	}
 	
 	@Override
 	public MidasUser create(MidasUser user) {
-		MidasUser currentU = retrieveByEmail(user.getEmail());
+		MidasUser currentU = getByEmail(user.getEmail());
 		if(currentU != null)
 			throw new IllegalArgumentException("User with email "+user.getEmail()+" already exists");
 		save(user);

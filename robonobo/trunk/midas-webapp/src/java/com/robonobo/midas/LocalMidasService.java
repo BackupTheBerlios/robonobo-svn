@@ -21,6 +21,8 @@ import static com.robonobo.common.util.TimeUtil.*;
 @Service("midas")
 public class LocalMidasService implements MidasService {
 	@Autowired
+	private FacebookService facebook;
+	@Autowired
 	private FriendRequestDao friendRequestDao;
 	@Autowired
 	private InviteDao inviteDao;
@@ -39,15 +41,15 @@ public class LocalMidasService implements MidasService {
 
 	@Transactional(readOnly = true)
 	public List<MidasUser> getAllUsers() {
-		return userDao.retrieveAll();
+		return userDao.getAll();
 	}
 
 	public MidasUser getUserByEmail(String email) {
-		return userDao.retrieveByEmail(email);
+		return userDao.getByEmail(email);
 	}
 
 	public MidasUser getUserById(long userId) {
-		return userDao.retrieveById(userId);
+		return userDao.getById(userId);
 	}
 
 	@Transactional(rollbackFor=Exception.class)
@@ -67,14 +69,14 @@ public class LocalMidasService implements MidasService {
 			result = new MidasUser(targetU);
 		} else if (targetU.getFriendIds().contains(requestor.getUserId())) {
 			result = new MidasUser(targetU);
+			result.setPassword(null);
 			result.getFriendIds().clear();
 			result.setInvitesLeft(0);
 			Iterator<Long> iter = result.getPlaylistIds().iterator();
 			while (iter.hasNext()) {
 				Playlist p = playlistDao.loadPlaylist(iter.next());
-				// TODO Check playlist visibility
-				// if (!p.getAnnounce())
-				// iter.remove();
+				if(p.getVisibility().equals(Playlist.VIS_ME))
+					iter.remove();
 			}
 		} else
 			result = null;
@@ -89,7 +91,7 @@ public class LocalMidasService implements MidasService {
 
 	@Transactional(rollbackFor=Exception.class)
 	public void deleteUser(long userId) {
-		MidasUser u = userDao.retrieveById(userId);
+		MidasUser u = userDao.getById(userId);
 		// Go through all their playlists - if they are the only owner, delete it, otherwise remove them from the owners
 		// list
 		for (Long plId : u.getPlaylistIds()) {
@@ -102,7 +104,7 @@ public class LocalMidasService implements MidasService {
 		}
 		// Go through all their friends, delete this user from their friendids
 		for (long friendId : u.getFriendIds()) {
-			MidasUser friend = userDao.retrieveById(friendId);
+			MidasUser friend = userDao.getById(friendId);
 			friend.getFriendIds().remove(userId);
 			userDao.save(friend);
 		}
@@ -207,10 +209,10 @@ public class LocalMidasService implements MidasService {
 
 	@Transactional(rollbackFor=Exception.class)
 	public String acceptFriendRequest(MidasFriendRequest req) {
-		MidasUser requestor = userDao.retrieveById(req.getRequestorId());
+		MidasUser requestor = userDao.getById(req.getRequestorId());
 		if (requestor == null)
 			return "Requesting user " + req.getRequestorId() + " not found";
-		MidasUser requestee = userDao.retrieveById(req.getRequesteeId());
+		MidasUser requestee = userDao.getById(req.getRequesteeId());
 		if (requestee == null)
 			return "Requested user " + req.getRequesteeId() + " not found";
 		for (Long plId : req.getPlaylistIds()) {
@@ -272,13 +274,23 @@ public class LocalMidasService implements MidasService {
 
 	@Override
 	public MidasUserConfig getUserConfig(MidasUser u) {
-		return userConfigDao.getUserConfig(u.getUserId());
+		MidasUserConfig result = userConfigDao.getUserConfig(u.getUserId());
+		if(result == null) {
+			result = new MidasUserConfig();
+			result.setUserId(u.getUserId());
+		}
+		return result;
 	}
 
 	@Override
 	@Transactional(rollbackFor=Exception.class)
-	public void putUserConfig(MidasUserConfig config) {
-		userConfigDao.saveUserConfig(config);
+	public void putUserConfig(MidasUserConfig newCfg) {
+		// Update friends based on facebook & twitter deets
+		MidasUser mu = userDao.getById(newCfg.getUserId());
+		MidasUserConfig oldCfg = userConfigDao.getUserConfig(newCfg.getUserId());
+		facebook.updateFriends(mu, oldCfg, newCfg);
+		// TODO twitter
+		userConfigDao.saveUserConfig(newCfg);
 	}
 
 	private String generateEmailCode(String email) {

@@ -17,11 +17,16 @@ import org.apache.commons.logging.LogFactory;
 public class MailServiceImpl implements MailService {
 	private Session session;
 	Log log = LogFactory.getLog(getClass());
+	private boolean configured;
 
 	public MailServiceImpl(String smtpServer) {
-		Properties props = System.getProperties();
-		props.put("mail.smtp.host", smtpServer);
-		session = Session.getDefaultInstance(props, null);
+		configured = (smtpServer != null);
+		if (configured) {
+			Properties props = System.getProperties();
+			props.put("mail.smtp.host", smtpServer);
+			session = Session.getDefaultInstance(props, null);
+		} else
+			log.error("SMTP server not configured... no mails will be sent!");
 	}
 
 	public void sendMail(String fromName, String fromEmail, String toName, String toEmail, String subject, String body)
@@ -29,9 +34,12 @@ public class MailServiceImpl implements MailService {
 		sendMail(fromName, fromEmail, toName, toEmail, null, null, subject, body);
 	}
 
-	public void sendMail(
-			String fromName, String fromEmail, String toName, String toEmail, String replyToName, String replyToEmail,
-			String subject, String body) throws IOException {
+	public void sendMail(String fromName, String fromEmail, String toName, String toEmail, String replyToName,
+			String replyToEmail, String subject, String body) throws IOException {
+		if(!configured) {
+			log.error("Not sending mail to "+toEmail+" with subject '"+subject+"' - SMTP server not configured");
+			return;
+		}
 		try {
 			Message msg = new MimeMessage(session);
 			msg.setFrom(new InternetAddress(fromEmail, fromName));
@@ -42,7 +50,7 @@ public class MailServiceImpl implements MailService {
 			msg.setText(body);
 			msg.setSentDate(new Date());
 			msg.setHeader("X-Sent-By", "robonobo MIDAS");
-			if(log.isInfoEnabled()) {
+			if (log.isInfoEnabled()) {
 				StringBuffer sb = new StringBuffer("Sending mail: from '");
 				sb.append(fromName).append("' <");
 				sb.append(fromEmail).append(">, to: '");

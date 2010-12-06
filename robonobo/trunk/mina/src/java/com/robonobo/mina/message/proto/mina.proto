@@ -15,7 +15,6 @@ message AcctClosed {
 }
 
 message AdvEscrow {
-	// Fee is percentage
 	required double fee = 1;
 	required double opening_balance = 2;
 }

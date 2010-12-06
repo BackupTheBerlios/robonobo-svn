@@ -6,11 +6,11 @@ import com.robonobo.midas.model.MidasUser;
 
 public interface UserDao {
 
-	public abstract MidasUser retrieveById(long id);
+	public abstract MidasUser getById(long id);
 
-	public abstract MidasUser retrieveByEmail(String email);
+	public abstract MidasUser getByEmail(String email);
 
-	public abstract List<MidasUser> retrieveAll();
+	public abstract List<MidasUser> getAll();
 
 	public abstract MidasUser create(MidasUser user);
 
