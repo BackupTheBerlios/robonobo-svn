@@ -7,8 +7,8 @@ import java.util.Set;
 
 import com.robonobo.core.api.proto.CoreApi.UserMsg;
 
+@SuppressWarnings("serial")
 public class User implements Serializable {
-	private static final long serialVersionUID = 1L;
 	long userId;
 	String email;
 	String password;

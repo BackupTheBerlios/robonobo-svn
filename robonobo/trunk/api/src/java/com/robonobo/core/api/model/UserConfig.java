@@ -47,4 +47,12 @@ public class UserConfig {
 	public void setItems(Map<String, String> items) {
 		this.items = items;
 	}
+	
+	public String getItem(String key) {
+		return items.get(key);
+	}
+	
+	public void putItem(String key, String value) {
+		items.put(key, value);
+	}
 }
