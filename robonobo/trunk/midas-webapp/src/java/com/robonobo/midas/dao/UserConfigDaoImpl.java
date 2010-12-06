@@ -1,5 +1,7 @@
 package com.robonobo.midas.dao;
 
+import java.util.List;
+
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
@@ -23,6 +25,15 @@ public class UserConfigDaoImpl extends MidasDao implements UserConfigDao {
 		return (MidasUserConfig) q.uniqueResult();
 	}
 	
+	@Override
+	@SuppressWarnings("unchecked")
+	public List<MidasUserConfig> getUserConfigsWithKey(String key) {
+		String hql = "from MidasUserConfig uc where uc.items[:pKey] != null";
+		Session s = getSession();
+		Query q = s.createQuery(hql);
+		q.setString("pKey", key);
+		return q.list();
+	}
 	@Override
 	public void saveUserConfig(MidasUserConfig config) { 
 		getSession().saveOrUpdate(config);

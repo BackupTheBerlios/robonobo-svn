@@ -9,4 +9,10 @@ public interface FacebookService {
 	 */
 	public abstract void updateFriends(MidasUser user, MidasUserConfig oldUserCfg, MidasUserConfig newUserCfg);
 
+	public abstract String getFacebookVerifyTok();
+
+	public abstract MidasUserConfig getUserConfigByFacebookId(String fbId);
+
+	public abstract void updateFacebookName(String fbId, String newName);
+
 }

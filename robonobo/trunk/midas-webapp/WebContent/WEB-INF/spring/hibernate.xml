@@ -60,6 +60,9 @@
 	</bean>
 
 	<!-- All transactions are declared on the service class using annotations  -->
-	<tx:annotation-driven />
+	<!-- proxy-target-class is required otherwise methods can't have both @Transactional 
+		and @RequestMapping - the @Transactional produces a proxy class which doesn't 
+		keep annotations -->
+	<tx:annotation-driven proxy-target-class="true" />
 
 </beans>

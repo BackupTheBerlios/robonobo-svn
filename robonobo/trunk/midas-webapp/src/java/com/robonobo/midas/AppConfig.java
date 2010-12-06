@@ -15,7 +15,7 @@ public class AppConfig implements ServletContextAware {
 
 	@Bean
 	public RemoteMidasService remoteMidas() throws Exception {
-		String url = sc.getInitParameter("remoteMidasListenURL");
+		String url = sc.getInitParameter("remoteMidasListenUrl");
 		String sekrit = sc.getInitParameter("remoteMidasSecret");
 		return new RemoteMidasService(url, sekrit);
 	}
@@ -26,27 +26,39 @@ public class AppConfig implements ServletContextAware {
 		return new MailServiceImpl(smtpServer);
 	}
 
-	public String getLaunchUrl() {
-		return sc.getInitParameter("launchUrl");
-		
+	public String getInitParam(String name) {
+		return sc.getInitParameter(name);
 	}
 	
-	public String getInviteUrlBase() {
-		return sc.getInitParameter("inviteUrlBase");
-	}
-	
-	public String getFriendReqUrlBase() {
-		return sc.getInitParameter("friendReqUrlBase");
-	}
-	
-	public String getFromName() {
-		return sc.getInitParameter("fromName");
-	}
-	
-	public String getFromEmail() {
-		return sc.getInitParameter("fromEmail");
-	}
-
+//	public String getLaunchUrl() {
+//		return sc.getInitParameter("launchUrl");
+//		
+//	}
+//	
+//	public String getInviteUrlBase() {
+//		return sc.getInitParameter("inviteUrlBase");
+//	}
+//	
+//	public String getFriendReqUrlBase() {
+//		return sc.getInitParameter("friendReqUrlBase");
+//	}
+//	
+//	public String getFromName() {
+//		return sc.getInitParameter("fromName");
+//	}
+//	
+//	public String getFromEmail() {
+//		return sc.getInitParameter("fromEmail");
+//	}
+//
+//	public String getFacebookCallbackUrl() {
+//		return sc.getInitParameter("facebookCallbackUrl");
+//	}
+//	
+//	public String getFacebookAuthTokenUrl() {
+//		return sc.getInitParameter("facebookAuthTokenUrl");
+//	}
+//	
 	@Override
 	public void setServletContext(ServletContext servC) {
 		sc = servC;

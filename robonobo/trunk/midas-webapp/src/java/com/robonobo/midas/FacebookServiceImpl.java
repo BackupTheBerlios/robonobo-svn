@@ -2,10 +2,17 @@ package com.robonobo.midas;
 
 import static com.robonobo.common.util.TimeUtil.*;
 
-import java.util.Date;
+import java.io.IOException;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -15,15 +22,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.restfb.*;
 import com.restfb.types.User;
+import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.api.model.UserConfig;
 import com.robonobo.midas.dao.UserConfigDao;
 import com.robonobo.midas.dao.UserDao;
 import com.robonobo.midas.model.MidasUser;
 import com.robonobo.midas.model.MidasUserConfig;
 import com.robonobo.remote.service.MidasService;
+import com.twmacinta.util.MD5;
 
 @Service("facebook")
 public class FacebookServiceImpl implements InitializingBean, FacebookService {
+	@Autowired
+	AppConfig appConfig;
 	@Autowired
 	UserConfigDao userConfigDao;
 	@Autowired
@@ -34,11 +45,15 @@ public class FacebookServiceImpl implements InitializingBean, FacebookService {
 	static final long MIN_MS_BETWEEN_FB_HITS = 1000;
 	Lock rateLimitLock = new ReentrantLock(true);
 	Date lastHitFBTime = new Date(0);
+	String facebookVerifyTok;
 
 	public void afterPropertiesSet() throws Exception {
-		// TODO Sort out real-time API connection - post our list of subscriptions
-		// TODO Kick off background thread to hit all our facebook-connected users' details and make sure they're
-		// current
+		Random rand = new Random();
+		MD5 flarp = new MD5();
+		flarp.Update(rand.nextInt());
+		facebookVerifyTok = flarp.asHex();
+		subscribeToFBUpdates();
+		getUpdatedFBInfoForAllUsers();
 	}
 
 	/**
@@ -85,6 +100,84 @@ public class FacebookServiceImpl implements InitializingBean, FacebookService {
 			userDao.save(user);
 	}
 
+	@Override
+	@Transactional(rollbackFor=Exception.class)
+	public void updateFacebookName(String fbId, String newName) {
+		MidasUserConfig muc = userConfigDao.getUserConfig("facebookId", fbId);
+		if(muc == null)
+			return;
+		MidasUser user = midas.getUserById(muc.getUserId());
+		if(user.getFriendlyName().equals(newName))
+			return;
+		// We only update the user's name if their old name was the same as their facebook name
+		if(user.getFriendlyName().equals(muc.getItem("facebookName"))) {
+			user.setFriendlyName(newName);
+			midas.saveUser(user);
+		}
+		muc.putItem("facebookName", newName);
+		midas.putUserConfig(muc);
+	
+	}
+	
+	@Override
+	public MidasUserConfig getUserConfigByFacebookId(String fbId) {
+		return userConfigDao.getUserConfig("facebookId", fbId);
+	}
+	
+	@Override
+	public String getFacebookVerifyTok() {
+		return facebookVerifyTok;
+	}
+	
+	protected void subscribeToFBUpdates() throws IOException {
+		log.info("Getting facebook oauth token for realtime updates");
+		HttpClient httpCli = new HttpClient();
+		GetMethod get = new GetMethod(appConfig.getInitParam("facebookAuthTokenUrl"));
+		httpCli.executeMethod(get);
+		Pattern fbAccessTokPattern = Pattern.compile("^access_token=(.*)$");
+		Matcher m = fbAccessTokPattern.matcher(get.getResponseBodyAsString());
+		if(!m.matches())
+			throw new IOException("Facebook returned invalid body for access token request: "+get.getResponseBodyAsString());
+		String accessTok = m.group(1);
+		String subsUrl = appConfig.getInitParam("facebookSubscriptionsUrl") + "?access_token="+accessTok;
+		PostMethod post = new PostMethod(subsUrl);
+		post.addParameter("object", "user");
+		post.addParameter("fields", "name,friends");
+		post.addParameter("callback_url", appConfig.getInitParam("facebookCallbackUrl"));
+		post.addParameter("verify_token", facebookVerifyTok);
+		log.info("Subscribing to Facebook realtime updates");
+		httpCli.executeMethod(post);
+		if(post.getStatusCode() != HttpStatus.SC_OK)
+			throw new IOException("Facebook returned unexpected status code for subscription: "+post.getStatusCode()+", with body: "+post.getResponseBodyAsString());
+		log.info("Facebook subscription updated ok");
+	}
+	
+	protected void getUpdatedFBInfoForAllUsers() {
+		Thread t = new Thread(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				// Wait for a minute to let everything settle down
+				Thread.sleep(60000L);
+				log.info("Getting updated facebook info for all users");
+				List<MidasUserConfig> fbUserCfgs = userConfigDao.getUserConfigsWithKey("facebookId");
+				for (MidasUserConfig userCfg : fbUserCfgs) {
+					FacebookClient fbCli = new RateLimitFBClient(userCfg.getItem("facebookAccessToken"));
+					User fbUser;
+					try {
+						fbUser = fbCli.fetchObject("me", User.class, Parameter.with("fields", "name"));
+					} catch (FacebookException e) {
+						throw new IOException(e);
+					}
+					String name = fbUser.getName();
+					updateFacebookName(userCfg.getItem("facebookId"), name);
+					MidasUser user = midas.getUserById(userCfg.getUserId());
+					updateFriends(user, null, userCfg);
+				}
+				log.info("Finished getting updated facebook info");
+			}
+		});
+		t.start();
+	}
+	
 	// rateLimitLock is fair, so threads will queue up here waiting to be allowed to hit fb
 	protected void rateLimit() {
 		rateLimitLock.lock();

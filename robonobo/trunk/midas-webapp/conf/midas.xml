@@ -25,7 +25,10 @@
             />
 
   <!-- Remoting Details so other webapps can talk to us -->
-  <Parameter name="remoteMidasListenURL" value="socket://127.0.0.1:10123" override="true"/>
+  <Parameter name="remoteMidasListenUrl" value="socket://127.0.0.1:10123" override="true"/>
   <Parameter name="remoteMidasSecret" value="" override="true"/>
   <Parameter name="smtpServer" value="127.0.0.1" override="true"/>
+  <Parameter name="facebookAuthTokenUrl" value="https://graph.facebook.com/oauth/access_token?client_id=171526759534429&amp;client_secret=EDITME&amp;grant_type=client_credentials" override="true"/>
+  <Parameter name="facebookSubscriptionsUrl" value="http://graph.facebook.com/171526759534429/subscriptions"/>
+  <Parameter name="facebookCallbackUrl" value="http://midas.robonobo.com/fb-callback" override="true"/>
 </Context>

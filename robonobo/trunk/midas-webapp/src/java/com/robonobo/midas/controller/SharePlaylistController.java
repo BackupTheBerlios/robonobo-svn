@@ -148,10 +148,17 @@ public class SharePlaylistController extends BaseController {
 		bod.append("Title: ").append(p.getTitle()).append("\n");
 		if (isNonEmpty(p.getDescription()))
 			bod.append("Description: ").append(p.getDescription());
-		bod.append("\n\nTo launch robonobo and see this playlist, go to " + appConfig.getLaunchUrl());
 		bod.append("\n\n(from robonobo mailmonkey)\n");
-		mail.sendMail(appConfig.getFromName(), appConfig.getFromEmail(), toUser.getFriendlyName(), toUser.getEmail(),
+		mail.sendMail(fromName(), fromEmail(), toUser.getFriendlyName(), toUser.getEmail(),
 				fromUser.getFriendlyName(), fromUser.getEmail(), subject, bod.toString());
+	}
+
+	private String fromEmail() {
+		return appConfig.getInitParam("fromEmail");
+	}
+
+	private String fromName() {
+		return appConfig.getInitParam("fromName");
 	}
 
 	protected void sendFriendRequest(MidasFriendRequest req, User fromUser, User toUser, Playlist p) throws IOException {
@@ -163,10 +170,10 @@ public class SharePlaylistController extends BaseController {
 		if (isNonEmpty(p.getDescription()))
 			bod.append("Description: ").append(p.getDescription());
 		bod.append("\n\nTo add ").append(fromUser.getFriendlyName()).append(" as a friend, click this link:\n\n");
-		bod.append(appConfig.getFriendReqUrlBase()).append(req.getRequestCode());
+		bod.append(appConfig.getInitParam("friendReqUrlBase")).append(req.getRequestCode());
 		bod.append("\n\nCopy and paste this into your browser if clicking does not work.  To ignore this request, just delete this email.");
 		bod.append("\n\n(from robonobo mailmonkey)\n");
-		mail.sendMail(appConfig.getFromName(), appConfig.getFromEmail(), toUser.getFriendlyName(), toUser.getEmail(),
+		mail.sendMail(fromName(), fromEmail(), toUser.getFriendlyName(), toUser.getEmail(),
 				fromUser.getFriendlyName(), fromUser.getEmail(), subject, bod.toString());
 	}
 
@@ -179,10 +186,10 @@ public class SharePlaylistController extends BaseController {
 		if (isNonEmpty(p.getDescription()))
 			bod.append("Description: ").append(p.getDescription()).append("\n");
 		bod.append("\nTo accept the invitation and start using robonobo, click this link:\n\n");
-		bod.append(appConfig.getInviteUrlBase()).append(invite.getInviteCode());
+		bod.append(appConfig.getInitParam("inviteUrlBase")).append(invite.getInviteCode());
 		bod.append("\n\nCopy and paste this into your browser if clicking does not work.  To ignore this invitation, just delete this email.");
 		bod.append("\n\n(from robonobo mailmonkey)\n");
-		mail.sendMail(appConfig.getFromName(), appConfig.getFromEmail(), null, invite.getEmail(), fromUser.getFriendlyName(),
+		mail.sendMail(fromName(), fromEmail(), null, invite.getEmail(), fromUser.getFriendlyName(),
 				fromUser.getEmail(), subject, bod.toString());
 	}
 }
