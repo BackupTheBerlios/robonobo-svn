@@ -47,6 +47,7 @@ public class FacebookController extends BaseController {
 		if(!"user".equals(json.get("object")))
 			throw new IOException("Invalid object in facebook callback: "+json.get("object"));
 		List<Object> changedObjs = (List<Object>) json.get("entry");
+		log.info("Facebook callback received with "+changedObjs.size()+" changed objects");
 		for (Object obj : changedObjs) {
 			Map<String, Object> changedObj = (Map<String, Object>) obj;
 			String fbId = (String) changedObj.get("uid");

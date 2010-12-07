@@ -168,38 +168,46 @@ public class FacebookServiceImpl implements InitializingBean, FacebookService {
 	}
 	
 	protected void subscribeToFBUpdates() throws IOException {
-		String authTokUrl = appConfig.getInitParam("facebookAuthTokenUrl");
+		final String authTokUrl = appConfig.getInitParam("facebookAuthTokenUrl");
 		if(isEmpty(authTokUrl)) {
 			log.info("Not subscribing to realtime updates from facebook, facebookAuthTokenUrl not set");
 			return;
 		}
-		log.info("Getting facebook oauth token for realtime updates");
-		HttpClient httpCli = new HttpClient();
-		GetMethod get = new GetMethod(authTokUrl);
-		httpCli.executeMethod(get);
-		Pattern fbAccessTokPattern = Pattern.compile("^access_token=(.*)$");
-		Matcher m = fbAccessTokPattern.matcher(get.getResponseBodyAsString());
-		if(!m.matches())
-			throw new IOException("Facebook returned invalid body for access token request: "+get.getResponseBodyAsString());
-		String accessTok = m.group(1);
-		String subsUrl = appConfig.getInitParam("facebookSubscriptionsUrl") + "?access_token="+accessTok;
-		PostMethod post = new PostMethod(subsUrl);
-		post.addParameter("object", "user");
-		post.addParameter("fields", "name,friends");
-		post.addParameter("callback_url", appConfig.getInitParam("facebookCallbackUrl"));
-		post.addParameter("verify_token", facebookVerifyTok);
-		log.info("Subscribing to Facebook realtime updates");
-		httpCli.executeMethod(post);
-		if(post.getStatusCode() != HttpStatus.SC_OK)
-			throw new IOException("Facebook returned unexpected status code for subscription: "+post.getStatusCode()+", with body: "+post.getResponseBodyAsString());
-		log.info("Facebook subscription updated ok");
+		Thread t = new Thread(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				// Wait for 60 secs to let everything start - facebook needs the callback url to be there
+				Thread.sleep(90000L);
+
+				log.info("Getting facebook oauth token for realtime updates");
+				HttpClient httpCli = new HttpClient();
+				GetMethod get = new GetMethod(authTokUrl);
+				httpCli.executeMethod(get);
+				Pattern fbAccessTokPattern = Pattern.compile("^access_token=(.*)$");
+				Matcher m = fbAccessTokPattern.matcher(get.getResponseBodyAsString());
+				if(!m.matches())
+					throw new IOException("Facebook returned invalid body for access token request: "+get.getResponseBodyAsString());
+				String accessTok = m.group(1);
+				String subsUrl = appConfig.getInitParam("facebookSubscriptionsUrl") + "?access_token="+accessTok;
+				PostMethod post = new PostMethod(subsUrl);
+				post.addParameter("object", "user");
+				post.addParameter("fields", "name,friends");
+				post.addParameter("callback_url", appConfig.getInitParam("facebookCallbackUrl"));
+				post.addParameter("verify_token", facebookVerifyTok);
+				log.info("Subscribing to Facebook realtime updates");
+				httpCli.executeMethod(post);
+				if(post.getStatusCode() != HttpStatus.SC_OK)
+					throw new IOException("Facebook returned unexpected status code for subscription: "+post.getStatusCode()+", with body: "+post.getResponseBodyAsString());
+				log.info("Facebook subscription updated ok");
+			}
+		});
+		t.start();
 	}
 	
 	protected void getUpdatedFBInfoForAllUsers() {
 		Thread t = new Thread(new CatchingRunnable() {
 			public void doRun() throws Exception {
-				// Wait for a minute to let everything settle down
-				Thread.sleep(60000L);
+				// Wait for 90 secs to let everything settle down
+				Thread.sleep(90000L);
 				log.info("Getting updated facebook info for all users");
 				List<MidasUserConfig> fbUserCfgs = userConfigDao.getUserConfigsWithKey("facebookId");
 				for (MidasUserConfig userCfg : fbUserCfgs) {
