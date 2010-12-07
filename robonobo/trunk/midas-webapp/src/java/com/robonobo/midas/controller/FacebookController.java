@@ -27,7 +27,7 @@ public class FacebookController extends BaseController {
 	ObjectMapper jsonMapper = new ObjectMapper();
 
 	@SuppressWarnings("unchecked")
-	@RequestMapping(value = "/fb-callback", method = RequestMethod.POST)
+	@RequestMapping(value = "/fb-callback")
 	public void facebookCallback(@RequestParam("hub.challenge") String challenge,
 			@RequestParam("hub.verify_token") String verifyToken, 
 			HttpServletRequest req, HttpServletResponse resp) throws IOException {

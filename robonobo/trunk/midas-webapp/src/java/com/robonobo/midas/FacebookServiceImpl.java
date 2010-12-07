@@ -176,7 +176,7 @@ public class FacebookServiceImpl implements InitializingBean, FacebookService {
 		Thread t = new Thread(new CatchingRunnable() {
 			public void doRun() throws Exception {
 				// Wait for 60 secs to let everything start - facebook needs the callback url to be there
-				Thread.sleep(90000L);
+				Thread.sleep(60000L);
 
 				log.info("Getting facebook oauth token for realtime updates");
 				HttpClient httpCli = new HttpClient();
