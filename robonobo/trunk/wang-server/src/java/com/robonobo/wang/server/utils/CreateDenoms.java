@@ -40,7 +40,7 @@ public class CreateDenoms {
 		ApplicationContext appContext = new FileSystemXmlApplicationContext("appContext.xml");
 		PlatformTransactionManager ptm = (PlatformTransactionManager) appContext.getBean("transactionManager");
 		TransactionTemplate transTemplate = new TransactionTemplate(ptm);
-		final DenominationDao denomDao = (DenominationDao) appContext.getBean("denominationDAO");
+		final DenominationDao denomDao = (DenominationDao) appContext.getBean("denominationDao");
 		final LucreFacade lucre = new LucreFacade();
 		// Do everything inside a transaction
 		transTemplate.execute(new TransactionCallbackWithoutResult() {
