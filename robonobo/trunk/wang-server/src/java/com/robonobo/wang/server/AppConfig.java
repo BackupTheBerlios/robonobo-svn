@@ -12,6 +12,9 @@ public class AppConfig implements ServletContextAware {
 	
 	@Bean
 	public RemoteWangService getRemoteWang() throws Exception {
+		// This will be null when we're running the setup script
+		if(sc == null)
+			return null;
 		String listenUrl = sc.getInitParameter("remoteWangListenURL");
 		String sekrit = sc.getInitParameter("remoteWangSecret");
 		return new RemoteWangService(listenUrl, sekrit);
