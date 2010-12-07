@@ -13,7 +13,9 @@
 		includes="**/*.java,**/*.properties,**/*.xml">
 			<classpath>
 				<pathelement path="../common/target/classes"/>
-				<pathelement path="../common-servlets/target/classes"/>				<pathelement path="../wang-client/target/classes"/>
+				<pathelement path="../common-servlets/target/classes"/>				
+				<pathelement path="../common-webapps/target/classes"/>				
+				<pathelement path="../wang-client/target/classes"/>
 				<fileset dir="WebContent/WEB-INF/lib">
 					<include name="**/*.jar"/>
 				</fileset>
@@ -21,6 +23,9 @@
 					<include name="**/*.jar"/>
 				</fileset>
 				<fileset dir="../common-servlets/lib">
+					<include name="**/*.jar"/>
+				</fileset>
+				<fileset dir="../common-webapps/lib">
 					<include name="**/*.jar"/>
 				</fileset>
 			</classpath>
@@ -41,10 +46,12 @@
 			</fileset>
 			<lib dir="../common/lib"/>
 			<lib dir="../common-servlets/lib"/>
+			<lib dir="../common-webapps/lib"/>
 			<lib dir="../midas-model/lib"/>
 			<classes dir="target/classes"/>
 			<classes dir="../common/target/classes"/>
 			<classes dir="../common-servlets/target/classes"/>
+			<classes dir="../common-webapps/target/classes"/>
 			<classes dir="../wang-client/target/classes"/>
 		</war>
 	</target>
