@@ -14,7 +14,7 @@
 			<classpath>
 				<pathelement path="../common/target/classes"/>
 				<pathelement path="../common-servlets/target/classes"/>				
-				<pathelement path="../common-webapps/target/classes"/>				
+				<pathelement path="../common-hibernate/target/classes"/>				
 				<pathelement path="../wang-client/target/classes"/>
 				<fileset dir="WebContent/WEB-INF/lib">
 					<include name="**/*.jar"/>
@@ -25,7 +25,7 @@
 				<fileset dir="../common-servlets/lib">
 					<include name="**/*.jar"/>
 				</fileset>
-				<fileset dir="../common-webapps/lib">
+				<fileset dir="../common-hibernate/lib">
 					<include name="**/*.jar"/>
 				</fileset>
 			</classpath>
@@ -46,12 +46,12 @@
 			</fileset>
 			<lib dir="../common/lib"/>
 			<lib dir="../common-servlets/lib"/>
-			<lib dir="../common-webapps/lib"/>
+			<lib dir="../common-hibernate/lib"/>
 			<lib dir="../midas-model/lib"/>
 			<classes dir="target/classes"/>
 			<classes dir="../common/target/classes"/>
 			<classes dir="../common-servlets/target/classes"/>
-			<classes dir="../common-webapps/target/classes"/>
+			<classes dir="../common-hibernate/target/classes"/>
 			<classes dir="../wang-client/target/classes"/>
 		</war>
 	</target>
