@@ -20,15 +20,17 @@ import com.robonobo.common.util.TimeUtil;
 import com.robonobo.core.api.model.Playlist;
 import com.robonobo.core.api.model.User;
 import com.robonobo.core.api.proto.CoreApi.PlaylistMsg;
+import com.robonobo.midas.FacebookService;
 import com.robonobo.midas.LocalMidasService;
-import com.robonobo.midas.model.MidasPlaylist;
-import com.robonobo.midas.model.MidasUser;
+import com.robonobo.midas.model.*;
 import com.robonobo.remote.service.MidasService;
 
 @Controller
-@RequestMapping("/playlists/{pIdStr}")
 public class PlaylistController extends BaseController {
-	@RequestMapping(method = RequestMethod.GET)
+	@Autowired
+	FacebookService facebook;
+
+	@RequestMapping(value = "/playlists/{pIdStr}", method = RequestMethod.GET)
 	public void getPlaylist(@PathVariable("pIdStr") String pIdStr, HttpServletRequest req, HttpServletResponse resp)
 			throws IOException {
 		long playlistId = Long.parseLong(pIdStr, 16);
@@ -70,7 +72,7 @@ public class PlaylistController extends BaseController {
 		}
 	}
 
-	@RequestMapping(method = RequestMethod.PUT)
+	@RequestMapping(value = "/playlists/{pIdStr}", method = RequestMethod.PUT)
 	@Transactional(rollbackFor = Exception.class)
 	public void putPlaylist(@PathVariable("pIdStr") String pIdStr, HttpServletRequest req, HttpServletResponse resp)
 			throws IOException {
@@ -109,7 +111,7 @@ public class PlaylistController extends BaseController {
 		log.info(u.getEmail() + " updated playlist " + playlistId);
 	}
 
-	@RequestMapping(method = RequestMethod.DELETE)
+	@RequestMapping(value = "/playlists/{pIdStr}", method = RequestMethod.DELETE)
 	@Transactional(rollbackFor = Exception.class)
 	public void deletePlaylist(@PathVariable("pIdStr") String pIdStr, HttpServletRequest req, HttpServletResponse resp)
 			throws IOException {
@@ -138,6 +140,26 @@ public class PlaylistController extends BaseController {
 			u.setUpdated(now());
 			midas.saveUser(u);
 			log.info("Removed user " + u.getEmail() + " from owners of playlist " + playlistId);
+		}
+	}
+
+	@RequestMapping("/playlists/{pIdStr}/post-update")
+	public void postPlaylistUpdate(@PathVariable("pIdStr") String pIdStr, 
+			@RequestParam("service") String service,
+			HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		long playlistId = Long.parseLong(pIdStr, 16);
+		Playlist p = midas.getPlaylistById(playlistId);
+		MidasUser u = getAuthUser(req);
+		if (u == null || !p.getOwnerIds().contains(u.getUserId())) {
+			send401(req, resp);
+			return;
+		}
+		MidasUserConfig muc = midas.getUserConfig(u);
+		
+		if("facebook".equalsIgnoreCase(service))
+			facebook.postPlaylistUpdateToFacebook(muc, p);
+		else if("twitter".equalsIgnoreCase(service)) {
+			// TODO twitter
 		}
 	}
 }

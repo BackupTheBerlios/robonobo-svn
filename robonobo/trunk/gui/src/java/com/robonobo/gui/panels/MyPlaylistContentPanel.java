@@ -228,7 +228,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 	class PlaylistDetailsPanel extends JPanel implements ClipboardOwner {
 
 		public PlaylistDetailsPanel() {
-			double[][] cellSizen = { { 5, 35, 5, 280, 5, 95, 10, 180, 5, TableLayout.FILL, 5 },
+			double[][] cellSizen = { { 5, 35, 5, 190, 5, 40, 5, 40, 5, 95, 10, 180, 5, TableLayout.FILL, 5 },
 					{ 5, 25, 5, 25, 25, 0, TableLayout.FILL, 5, 30, 5 } };
 			setLayout(new TableLayout(cellSizen));
 
@@ -238,14 +238,14 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 					saveBtn.setEnabled(detailsChanged());
 				}
 			};
-			Playlist p = getModel().getPlaylist();
+			final Playlist p = getModel().getPlaylist();
 			JLabel titleLbl = new JLabel("Title:");
 			titleLbl.setFont(RoboFont.getFont(13, false));
 			add(titleLbl, "1,1");
 			titleField = new JTextField(p.getTitle());
 			titleField.setFont(RoboFont.getFont(11, false));
 			titleField.addKeyListener(kl);
-			add(titleField, "3,1,5,1");
+			add(titleField, "3,1,9,1");
 
 			JLabel urlLbl = new JLabel("URL:");
 			urlLbl.setFont(RoboFont.getFont(13, false));
@@ -256,6 +256,25 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			urlField.setFont(RoboFont.getFont(11, false));
 			urlField.setEnabled(false);
 			add(urlField, "3,3");
+			JButton fbBtn = new JButton("FB");
+			// TODO If we are not set up for facebook/twitter, take us to our account page instead...
+			fbBtn.setToolTipText("Post playlist update to facebook");
+			fbBtn.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					frame.getController().postFacebookUpdate(p.getPlaylistId());
+				}
+			});
+			fbBtn.setEnabled(p.getPlaylistId() > 0);
+			add(fbBtn, "5,3");
+			JButton twitBtn = new JButton("T");
+			twitBtn.setToolTipText("Post playlist update to twitter");
+			twitBtn.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					frame.getController().postTwitterUpdate(p.getPlaylistId());	
+				}
+			});
+			twitBtn.setEnabled(p.getPlaylistId() > 0);
+			add(twitBtn, "7,3");
 			JButton copyBtn = new JButton("Copy URL");
 			copyBtn.setFont(RoboFont.getFont(11, true));
 			copyBtn.addActionListener(new ActionListener() {
@@ -265,18 +284,18 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 					c.setContents(s, PlaylistDetailsPanel.this);
 				}
 			});
-			add(copyBtn, "5,3");
+			add(copyBtn, "9,3");
 			
 			JLabel descLbl = new JLabel("Description:");
 			descLbl.setFont(RoboFont.getFont(13, false));
-			add(descLbl, "1,4,5,4");
+			add(descLbl, "1,4,9,4");
 			descField = new JTextArea(p.getDescription());
 			descField.setFont(RoboFont.getFont(11, false));
 			descField.addKeyListener(kl);
-			add(new JScrollPane(descField), "1,6,5,8");
-			add(new VisPanel(), "7,1,7,6");
-			add(new OptsPanel(), "9,1,9,6");
-			add(new ButtonsPanel(), "7,8,9,8");
+			add(new JScrollPane(descField), "1,6,9,8");
+			add(new VisPanel(), "11,1,11,6");
+			add(new OptsPanel(), "13,1,13,6");
+			add(new ButtonsPanel(), "11,8,13,8");
 		}
 		
 		@Override

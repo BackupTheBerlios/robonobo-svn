@@ -1,5 +1,6 @@
 package com.robonobo.midas;
 
+import static com.robonobo.common.util.TextUtil.*;
 import static com.robonobo.common.util.TimeUtil.*;
 
 import java.io.IOException;
@@ -21,8 +22,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.restfb.*;
+import com.restfb.types.FacebookType;
 import com.restfb.types.User;
 import com.robonobo.common.concurrent.CatchingRunnable;
+import com.robonobo.core.api.model.Playlist;
 import com.robonobo.core.api.model.UserConfig;
 import com.robonobo.midas.dao.UserConfigDao;
 import com.robonobo.midas.dao.UserDao;
@@ -129,10 +132,50 @@ public class FacebookServiceImpl implements InitializingBean, FacebookService {
 		return facebookVerifyTok;
 	}
 	
+	@Override
+	public void postPlaylistCreateToFacebook(MidasUserConfig muc, Playlist p) throws IOException {
+		String fbId = muc.getItem("facebookId");
+		if(fbId == null)
+			return;
+		String playlistUrl = appConfig.getInitParam("playlistShortUrlBase") + p.getPlaylistId();
+		String msg = "I created a playlist '"+p.getTitle()+"': "+playlistUrl;
+		postToFacebook(muc, msg);
+	}
+	
+	@Override
+	public void postPlaylistUpdateToFacebook(MidasUserConfig muc, Playlist p) throws IOException {
+		String fbId = muc.getItem("facebookId");
+		if(fbId == null)
+			return;
+		String playlistUrl = appConfig.getInitParam("playlistShortUrlBase") + p.getPlaylistId();
+		String msg = "I updated my playlist '"+p.getTitle()+"': "+playlistUrl;
+		postToFacebook(muc, msg);		
+	}
+	
+	@Override
+	public void postToFacebook(MidasUserConfig muc, String msg) throws IOException {
+		String fbAccessTok = muc.getItem("facebookAccessToken");
+		if(fbAccessTok == null)
+			return;
+		FacebookClient fbCli = new RateLimitFBClient(fbAccessTok);
+		FacebookType response;
+		try {
+			response = fbCli.publish("me/feed", FacebookType.class, Parameter.with("message", msg));
+		} catch (FacebookException e) {
+			throw new IOException(e);
+		}
+		log.debug(response);
+	}
+	
 	protected void subscribeToFBUpdates() throws IOException {
+		String authTokUrl = appConfig.getInitParam("facebookAuthTokenUrl");
+		if(isEmpty(authTokUrl)) {
+			log.info("Not subscribing to realtime updates from facebook, facebookAuthTokenUrl not set");
+			return;
+		}
 		log.info("Getting facebook oauth token for realtime updates");
 		HttpClient httpCli = new HttpClient();
-		GetMethod get = new GetMethod(appConfig.getInitParam("facebookAuthTokenUrl"));
+		GetMethod get = new GetMethod(authTokUrl);
 		httpCli.executeMethod(get);
 		Pattern fbAccessTokPattern = Pattern.compile("^access_token=(.*)$");
 		Matcher m = fbAccessTokPattern.matcher(get.getResponseBodyAsString());

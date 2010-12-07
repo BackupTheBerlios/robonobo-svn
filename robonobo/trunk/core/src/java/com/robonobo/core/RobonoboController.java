@@ -403,6 +403,22 @@ public class RobonoboController {
 		return inst.getUsersService().getMyPlaylistByTitle(title);
 	}
 
+	public void postFacebookUpdate(final long playlistId) {
+		getExecutor().execute(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				inst.getUsersService().postFacebookUpdate(playlistId);				
+			}
+		});
+	}
+	
+	public void postTwitterUpdate(final long playlistId) {
+		getExecutor().execute(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				inst.getUsersService().postTwitterUpdate(playlistId);				
+			}
+		});		
+	}
+	
 	public void checkUsersUpdate() {
 		inst.getUsersService().checkUsersUpdate();
 	}

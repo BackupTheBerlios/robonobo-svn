@@ -1,9 +1,12 @@
 package com.robonobo.midas;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 
 import org.apache.commons.collections.MapIterator;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +24,8 @@ import static com.robonobo.common.util.TimeUtil.*;
 @Service("midas")
 public class LocalMidasService implements MidasService {
 	@Autowired
+	private AppConfig appConfig;
+	@Autowired
 	private FacebookService facebook;
 	@Autowired
 	private FriendRequestDao friendRequestDao;
@@ -36,6 +41,7 @@ public class LocalMidasService implements MidasService {
 	private UserConfigDao userConfigDao;
 	@Autowired
 	private UserDao userDao;
+	Log log = LogFactory.getLog(getClass());
 
 	private long lastPlaylistId = -1;
 
@@ -52,7 +58,7 @@ public class LocalMidasService implements MidasService {
 		return userDao.getById(userId);
 	}
 
-	@Transactional(rollbackFor=Exception.class)
+	@Transactional(rollbackFor = Exception.class)
 	public MidasUser createUser(MidasUser user) {
 		user.setVerified(true);
 		user.setUpdated(now());
@@ -75,7 +81,7 @@ public class LocalMidasService implements MidasService {
 			Iterator<Long> iter = result.getPlaylistIds().iterator();
 			while (iter.hasNext()) {
 				Playlist p = playlistDao.loadPlaylist(iter.next());
-				if(p.getVisibility().equals(Playlist.VIS_ME))
+				if (p.getVisibility().equals(Playlist.VIS_ME))
 					iter.remove();
 			}
 		} else
@@ -84,12 +90,12 @@ public class LocalMidasService implements MidasService {
 		return result;
 	}
 
-	@Transactional(rollbackFor=Exception.class)
+	@Transactional(rollbackFor = Exception.class)
 	public void saveUser(MidasUser user) {
 		userDao.save(user);
 	}
 
-	@Transactional(rollbackFor=Exception.class)
+	@Transactional(rollbackFor = Exception.class)
 	public void deleteUser(long userId) {
 		MidasUser u = userDao.getById(userId);
 		// Go through all their playlists - if they are the only owner, delete it, otherwise remove them from the owners
@@ -121,7 +127,7 @@ public class LocalMidasService implements MidasService {
 		return playlistDao.loadPlaylist(playlistId);
 	}
 
-	@Transactional(rollbackFor=Exception.class)
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public MidasPlaylist newPlaylist(MidasPlaylist playlist) {
 		if (playlist.getPlaylistId() > 0)
@@ -138,17 +144,28 @@ public class LocalMidasService implements MidasService {
 		}
 		playlist.setPlaylistId(newPlaylistId);
 		savePlaylist(playlist);
+		// Announce the playlist to facebook unless it's private
+		if (!playlist.getVisibility().equals(Playlist.VIS_ME)) {
+			long userId = (Long) playlist.getOwnerIds().toArray()[0];
+			MidasUserConfig muc = userConfigDao.getUserConfig(userId);
+			try {
+				facebook.postPlaylistCreateToFacebook(muc, playlist);
+			} catch (IOException e) {
+				log.error("Error posting playlist create to facebook", e);
+			}
+		}
+		// TODO Twitter
 		return playlist;
 	}
 
-	@Transactional(rollbackFor=Exception.class)
+	@Transactional(rollbackFor = Exception.class)
 	public void savePlaylist(MidasPlaylist playlist) {
 		if (playlist.getPlaylistId() <= 0)
 			throw new SeekInnerCalmException("playlist id is not set");
 		playlistDao.savePlaylist(playlist);
 	}
 
-	@Transactional(rollbackFor=Exception.class)
+	@Transactional(rollbackFor = Exception.class)
 	public void deletePlaylist(MidasPlaylist playlist) {
 		playlistDao.deletePlaylist(playlist);
 	}
@@ -157,12 +174,12 @@ public class LocalMidasService implements MidasService {
 		return streamDao.loadStream(streamId);
 	}
 
-	@Transactional(rollbackFor=Exception.class)
+	@Transactional(rollbackFor = Exception.class)
 	public void saveStream(MidasStream stream) {
 		streamDao.saveStream(stream);
 	}
 
-	@Transactional(rollbackFor=Exception.class)
+	@Transactional(rollbackFor = Exception.class)
 	public void deleteStream(MidasStream stream) {
 		streamDao.deleteStream(stream);
 	}
@@ -171,7 +188,7 @@ public class LocalMidasService implements MidasService {
 		return userDao.getUserCount();
 	}
 
-	@Transactional(rollbackFor=Exception.class)
+	@Transactional(rollbackFor = Exception.class)
 	public MidasInvite createOrUpdateInvite(String email, MidasUser friend, MidasPlaylist pl) {
 		MidasInvite result = inviteDao.retrieveByEmail(email);
 		if (result == null) {
@@ -187,7 +204,7 @@ public class LocalMidasService implements MidasService {
 		return result;
 	}
 
-	@Transactional(rollbackFor=Exception.class)
+	@Transactional(rollbackFor = Exception.class)
 	public MidasFriendRequest createOrUpdateFriendRequest(MidasUser requestor, MidasUser requestee, MidasPlaylist pl) {
 		MidasFriendRequest result = friendRequestDao.retrieveByUsers(requestor.getUserId(), requestee.getUserId());
 		if (result == null) {
@@ -207,7 +224,7 @@ public class LocalMidasService implements MidasService {
 		return friendRequestDao.retrieveByRequestCode(requestCode);
 	}
 
-	@Transactional(rollbackFor=Exception.class)
+	@Transactional(rollbackFor = Exception.class)
 	public String acceptFriendRequest(MidasFriendRequest req) {
 		MidasUser requestor = userDao.getById(req.getRequestorId());
 		if (requestor == null)
@@ -229,7 +246,7 @@ public class LocalMidasService implements MidasService {
 		return null;
 	}
 
-	@Transactional(rollbackFor=Exception.class)
+	@Transactional(rollbackFor = Exception.class)
 	public void ignoreFriendRequest(MidasFriendRequest request) {
 		friendRequestDao.delete(request);
 	}
@@ -238,7 +255,7 @@ public class LocalMidasService implements MidasService {
 		return friendRequestDao.retrieveByRequestee(userId);
 	}
 
-	@Transactional(rollbackFor=Exception.class)
+	@Transactional(rollbackFor = Exception.class)
 	public void deleteInvite(String inviteCode) {
 		MidasInvite invite = inviteDao.retrieveByInviteCode(inviteCode);
 		if (invite != null)
@@ -266,7 +283,7 @@ public class LocalMidasService implements MidasService {
 		return lib;
 	}
 
-	@Transactional(rollbackFor=Exception.class)
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public void putLibrary(Library lib) {
 		libraryDao.saveLibrary(lib);
@@ -275,7 +292,7 @@ public class LocalMidasService implements MidasService {
 	@Override
 	public MidasUserConfig getUserConfig(MidasUser u) {
 		MidasUserConfig result = userConfigDao.getUserConfig(u.getUserId());
-		if(result == null) {
+		if (result == null) {
 			result = new MidasUserConfig();
 			result.setUserId(u.getUserId());
 		}
@@ -283,7 +300,7 @@ public class LocalMidasService implements MidasService {
 	}
 
 	@Override
-	@Transactional(rollbackFor=Exception.class)
+	@Transactional(rollbackFor = Exception.class)
 	public void putUserConfig(MidasUserConfig newCfg) {
 		// Update friends based on facebook & twitter deets
 		MidasUser mu = userDao.getById(newCfg.getUserId());

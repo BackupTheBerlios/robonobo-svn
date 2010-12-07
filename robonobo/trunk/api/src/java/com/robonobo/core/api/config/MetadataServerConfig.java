@@ -55,6 +55,14 @@ public class MetadataServerConfig implements Serializable {
 		return sb.toString();
 	}
 	
+	public String getFacebookPlaylistUrl(long playlistId) {
+		return baseUrl + "playlists/" + Long.toHexString(playlistId) + "/post-update?service=facebook";
+	}
+	
+	public String getTwitterPlaylistUrl(long playlistId) {
+		return baseUrl + "playlists/" + Long.toHexString(playlistId) + "/post-update?service=7twitter";
+	}
+	
 	public String getStreamUrl(String streamId) {
 		return baseUrl + "streams/" + streamId;
 	}
@@ -68,7 +76,7 @@ public class MetadataServerConfig implements Serializable {
 	}
 	
 	public String getLibraryUrl(long userId, Date since) {
-		String url = baseUrl + "library/"+userId;
+		String url = baseUrl + "library/"+Long.toHexString(userId);
 		if(since != null)
 			url += "?since="+since.getTime();
 		return url;
@@ -83,6 +91,6 @@ public class MetadataServerConfig implements Serializable {
 	}
 	
 	public String getUserConfigUrl(long userId) {
-		return baseUrl + "userconfig/"+userId;
+		return baseUrl + "userconfig/"+Long.toHexString(userId);
 	}
 }

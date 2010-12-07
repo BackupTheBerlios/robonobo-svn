@@ -231,6 +231,14 @@ public class UserService extends AbstractService {
 		checkUserUpdate(friends);
 	}
 
+	public void postFacebookUpdate(long playlistId) throws IOException {
+		rbnb.getSerializationManager().hitUrl(msc.getFacebookPlaylistUrl(playlistId));
+	}
+	
+	public void postTwitterUpdate(long playlistId) throws IOException {
+		rbnb.getSerializationManager().hitUrl(msc.getTwitterPlaylistUrl(playlistId));
+	}
+
 	public synchronized User getUser(String email) {
 		return usersByEmail.get(email);
 	}
