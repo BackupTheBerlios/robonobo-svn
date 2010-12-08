@@ -208,8 +208,8 @@ public class FacebookServiceImpl implements InitializingBean, FacebookService {
 			public void doRun() throws Exception {
 				// Wait for 90 secs to let everything settle down
 				Thread.sleep(90000L);
-				log.info("Getting updated facebook info for all users");
 				List<MidasUserConfig> fbUserCfgs = userConfigDao.getUserConfigsWithKey("facebookId");
+				log.info("Getting updated facebook info for "+fbUserCfgs.size()+" users");
 				for (MidasUserConfig userCfg : fbUserCfgs) {
 					FacebookClient fbCli = new RateLimitFBClient(userCfg.getItem("facebookAccessToken"));
 					User fbUser;
