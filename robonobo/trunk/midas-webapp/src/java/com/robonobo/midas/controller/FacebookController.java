@@ -28,7 +28,7 @@ public class FacebookController extends BaseController {
 
 	@SuppressWarnings("unchecked")
 	@RequestMapping(value = "/fb-callback")
-	public void facebookCallback(@RequestParam("hub.challenge") String challenge,
+	public void facebookCallback(@RequestParam(value = "hub.challenge", required = false) String challenge,
 			@RequestParam("hub.verify_token") String verifyToken, HttpServletRequest req, HttpServletResponse resp)
 			throws IOException {
 		if (!verifyToken.equals(facebook.getFacebookVerifyTok())) {
@@ -39,7 +39,7 @@ public class FacebookController extends BaseController {
 			return;
 		}
 		// When we first subscribe they send a GET to check the url, after that they send a POST with new data
-		log.info("Facebook callback received with method: "+req.getMethod());
+		log.info("Facebook callback received with method: " + req.getMethod() + "and params: " + req.getParameterMap());
 		if (req.getMethod().equalsIgnoreCase("POST")) {
 			// Parse our json using the wonderful jackson library
 			Map<String, Object> json;
