@@ -2,16 +2,23 @@ package com.robonobo.midas;
 
 import javax.servlet.ServletContext;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.ServletContextAware;
 
+import com.robonobo.common.concurrent.SafetyNet;
+import com.robonobo.common.util.ExceptionEvent;
+import com.robonobo.common.util.ExceptionListener;
 import com.robonobo.remote.service.MailService;
 import com.robonobo.remote.service.MailServiceImpl;
 
 @Configuration
-public class AppConfig implements ServletContextAware {
+public class AppConfig implements ServletContextAware, InitializingBean {
 	private ServletContext sc;
+	Log log = LogFactory.getLog(getClass());
 
 	@Bean
 	public RemoteMidasService remoteMidas() throws Exception {
@@ -29,38 +36,19 @@ public class AppConfig implements ServletContextAware {
 	public String getInitParam(String name) {
 		return sc.getInitParameter(name);
 	}
-	
-//	public String getLaunchUrl() {
-//		return sc.getInitParameter("launchUrl");
-//		
-//	}
-//	
-//	public String getInviteUrlBase() {
-//		return sc.getInitParameter("inviteUrlBase");
-//	}
-//	
-//	public String getFriendReqUrlBase() {
-//		return sc.getInitParameter("friendReqUrlBase");
-//	}
-//	
-//	public String getFromName() {
-//		return sc.getInitParameter("fromName");
-//	}
-//	
-//	public String getFromEmail() {
-//		return sc.getInitParameter("fromEmail");
-//	}
-//
-//	public String getFacebookCallbackUrl() {
-//		return sc.getInitParameter("facebookCallbackUrl");
-//	}
-//	
-//	public String getFacebookAuthTokenUrl() {
-//		return sc.getInitParameter("facebookAuthTokenUrl");
-//	}
-//	
+
 	@Override
 	public void setServletContext(ServletContext servC) {
 		sc = servC;
+	}
+	
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		// Make sure all exceptions from catchingrunnables get logged
+		SafetyNet.addListener(new ExceptionListener() {
+			public void onException(ExceptionEvent e) {
+				log.error("Uncaught exception", e.getException());
+			}
+		});
 	}
 }

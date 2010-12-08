@@ -19,7 +19,11 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.restfb.*;
 import com.restfb.types.FacebookType;
@@ -44,6 +48,8 @@ public class FacebookServiceImpl implements InitializingBean, FacebookService {
 	UserDao userDao;
 	@Autowired
 	MidasService midas;
+	@Autowired
+	PlatformTransactionManager transactionManager;
 	Log log = LogFactory.getLog(getClass());
 	static final long MIN_MS_BETWEEN_FB_HITS = 1000;
 	Lock rateLimitLock = new ReentrantLock(true);
@@ -208,22 +214,28 @@ public class FacebookServiceImpl implements InitializingBean, FacebookService {
 			public void doRun() throws Exception {
 				// Wait for 90 secs to let everything settle down
 				Thread.sleep(90000L);
-				List<MidasUserConfig> fbUserCfgs = userConfigDao.getUserConfigsWithKey("facebookId");
-				log.info("Getting updated facebook info for "+fbUserCfgs.size()+" users");
-				for (MidasUserConfig userCfg : fbUserCfgs) {
-					FacebookClient fbCli = new RateLimitFBClient(userCfg.getItem("facebookAccessToken"));
-					User fbUser;
-					try {
-						fbUser = fbCli.fetchObject("me", User.class, Parameter.with("fields", "name"));
-					} catch (FacebookException e) {
-						throw new IOException(e);
+				TransactionTemplate tt = new TransactionTemplate(transactionManager);
+				tt.execute(new TransactionCallbackWithoutResult() {
+					protected void doInTransactionWithoutResult(TransactionStatus arg0) {
+						List<MidasUserConfig> fbUserCfgs = userConfigDao.getUserConfigsWithKey("facebookId");
+						log.info("Getting updated facebook info for "+fbUserCfgs.size()+" users");
+						for (MidasUserConfig userCfg : fbUserCfgs) {
+							FacebookClient fbCli = new RateLimitFBClient(userCfg.getItem("facebookAccessToken"));
+							User fbUser;
+							try {
+								fbUser = fbCli.fetchObject("me", User.class, Parameter.with("fields", "name"));
+							} catch (FacebookException e) {
+								log.error("Error fetching from facebook", e);
+								return;
+							}
+							String name = fbUser.getName();
+							updateFacebookName(userCfg.getItem("facebookId"), name);
+							MidasUser user = midas.getUserById(userCfg.getUserId());
+							updateFriends(user, null, userCfg);
+						}
+						log.info("Finished getting updated facebook info");
 					}
-					String name = fbUser.getName();
-					updateFacebookName(userCfg.getItem("facebookId"), name);
-					MidasUser user = midas.getUserById(userCfg.getUserId());
-					updateFriends(user, null, userCfg);
-				}
-				log.info("Finished getting updated facebook info");
+				});
 			}
 		});
 		t.start();
