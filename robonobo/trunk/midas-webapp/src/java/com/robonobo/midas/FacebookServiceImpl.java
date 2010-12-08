@@ -229,6 +229,11 @@ public class FacebookServiceImpl implements InitializingBean, FacebookService {
 		t.start();
 	}
 	
+	@Override
+	public FacebookClient getFacebookClient(String accessToken) {
+		return new RateLimitFBClient(accessToken);
+	}
+	
 	// rateLimitLock is fair, so threads will queue up here waiting to be allowed to hit fb
 	protected void rateLimit() {
 		rateLimitLock.lock();

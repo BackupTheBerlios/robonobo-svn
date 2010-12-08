@@ -10,9 +10,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import com.restfb.*;
+import com.restfb.types.User;
 import com.robonobo.midas.FacebookService;
 import com.robonobo.midas.model.MidasUser;
 import com.robonobo.midas.model.MidasUserConfig;
@@ -63,9 +64,16 @@ public class FacebookController extends BaseController {
 				continue;
 			List<Object> changedFields = (List<Object>) changedObj.get("changed_fields");
 			for (Object field : changedFields) {
-				if ("name".equals(field))
-					facebook.updateFacebookName(fbId, (String) field);
-				else if ("friends".equals(field)) {
+				if ("name".equals(field)) {
+					FacebookClient fbCli = facebook.getFacebookClient(muc.getItem("facebookAccessToken"));
+					User fbUser;
+					try {
+						fbUser = fbCli.fetchObject("me", User.class, Parameter.with("fields", "name"));
+					} catch (FacebookException e) {
+						throw new IOException(e);
+					}
+					facebook.updateFacebookName(fbId, fbUser.getName());
+				} else if ("friends".equals(field)) {
 					MidasUser user = midas.getUserById(muc.getUserId());
 					facebook.updateFriends(user, null, muc);
 				}
