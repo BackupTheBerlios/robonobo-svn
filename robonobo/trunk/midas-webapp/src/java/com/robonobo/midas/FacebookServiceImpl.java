@@ -99,10 +99,12 @@ public class FacebookServiceImpl implements InitializingBean, FacebookService {
 			if (uc != null) {
 				long friendId = uc.getUserId();
 				MidasUser friend = userDao.getById(friendId);
-				user.getFriendIds().add(friendId);
-				friend.getFriendIds().add(user.getUserId());
-				userDao.save(friend);
-				changedUser = true;
+				if ((!user.getFriendIds().contains(friendId)) || (!friend.getFriendIds().contains(user.getUserId()))) {
+					user.getFriendIds().add(friendId);
+					friend.getFriendIds().add(user.getUserId());
+					userDao.save(friend);
+					changedUser = true;
+				}
 			}
 		}
 		if (changedUser)
@@ -110,58 +112,58 @@ public class FacebookServiceImpl implements InitializingBean, FacebookService {
 	}
 
 	@Override
-	@Transactional(rollbackFor=Exception.class)
+	@Transactional(rollbackFor = Exception.class)
 	public void updateFacebookName(String fbId, String newName) {
 		MidasUserConfig muc = userConfigDao.getUserConfig("facebookId", fbId);
-		if(muc == null)
+		if (muc == null)
 			return;
 		MidasUser user = midas.getUserById(muc.getUserId());
-		if(user.getFriendlyName().equals(newName))
+		if (user.getFriendlyName().equals(newName))
 			return;
 		// We only update the user's name if their old name was the same as their facebook name
-		if(user.getFriendlyName().equals(muc.getItem("facebookName"))) {
+		if (user.getFriendlyName().equals(muc.getItem("facebookName"))) {
 			user.setFriendlyName(newName);
 			midas.saveUser(user);
 		}
 		muc.putItem("facebookName", newName);
 		midas.putUserConfig(muc);
-	
+
 	}
-	
+
 	@Override
 	public MidasUserConfig getUserConfigByFacebookId(String fbId) {
 		return userConfigDao.getUserConfig("facebookId", fbId);
 	}
-	
+
 	@Override
 	public String getFacebookVerifyTok() {
 		return facebookVerifyTok;
 	}
-	
+
 	@Override
 	public void postPlaylistCreateToFacebook(MidasUserConfig muc, Playlist p) throws IOException {
 		String fbId = muc.getItem("facebookId");
-		if(fbId == null)
+		if (fbId == null)
 			return;
 		String playlistUrl = appConfig.getInitParam("playlistShortUrlBase") + p.getPlaylistId();
-		String msg = "I created a playlist '"+p.getTitle()+"': "+playlistUrl;
+		String msg = "I created a playlist '" + p.getTitle() + "': " + playlistUrl;
 		postToFacebook(muc, msg);
 	}
-	
+
 	@Override
 	public void postPlaylistUpdateToFacebook(MidasUserConfig muc, Playlist p) throws IOException {
 		String fbId = muc.getItem("facebookId");
-		if(fbId == null)
+		if (fbId == null)
 			return;
 		String playlistUrl = appConfig.getInitParam("playlistShortUrlBase") + p.getPlaylistId();
-		String msg = "I updated my playlist '"+p.getTitle()+"': "+playlistUrl;
-		postToFacebook(muc, msg);		
+		String msg = "I updated my playlist '" + p.getTitle() + "': " + playlistUrl;
+		postToFacebook(muc, msg);
 	}
-	
+
 	@Override
 	public void postToFacebook(MidasUserConfig muc, String msg) throws IOException {
 		String fbAccessTok = muc.getItem("facebookAccessToken");
-		if(fbAccessTok == null)
+		if (fbAccessTok == null)
 			return;
 		FacebookClient fbCli = new RateLimitFBClient(fbAccessTok);
 		FacebookType response;
@@ -172,10 +174,10 @@ public class FacebookServiceImpl implements InitializingBean, FacebookService {
 		}
 		log.debug(response);
 	}
-	
+
 	protected void subscribeToFBUpdates() throws IOException {
 		final String authTokUrl = appConfig.getInitParam("facebookAuthTokenUrl");
-		if(isEmpty(authTokUrl)) {
+		if (isEmpty(authTokUrl)) {
 			log.info("Not subscribing to realtime updates from facebook, facebookAuthTokenUrl not set");
 			return;
 		}
@@ -190,10 +192,11 @@ public class FacebookServiceImpl implements InitializingBean, FacebookService {
 				httpCli.executeMethod(get);
 				Pattern fbAccessTokPattern = Pattern.compile("^access_token=(.*)$");
 				Matcher m = fbAccessTokPattern.matcher(get.getResponseBodyAsString());
-				if(!m.matches())
-					throw new IOException("Facebook returned invalid body for access token request: "+get.getResponseBodyAsString());
+				if (!m.matches())
+					throw new IOException("Facebook returned invalid body for access token request: "
+							+ get.getResponseBodyAsString());
 				String accessTok = m.group(1);
-				String subsUrl = appConfig.getInitParam("facebookSubscriptionsUrl") + "?access_token="+accessTok;
+				String subsUrl = appConfig.getInitParam("facebookSubscriptionsUrl") + "?access_token=" + accessTok;
 				PostMethod post = new PostMethod(subsUrl);
 				post.addParameter("object", "user");
 				post.addParameter("fields", "name,friends");
@@ -201,14 +204,15 @@ public class FacebookServiceImpl implements InitializingBean, FacebookService {
 				post.addParameter("verify_token", facebookVerifyTok);
 				log.info("Subscribing to Facebook realtime updates");
 				httpCli.executeMethod(post);
-				if(post.getStatusCode() != HttpStatus.SC_OK)
-					throw new IOException("Facebook returned unexpected status code for subscription: "+post.getStatusCode()+", with body: "+post.getResponseBodyAsString());
+				if (post.getStatusCode() != HttpStatus.SC_OK)
+					throw new IOException("Facebook returned unexpected status code for subscription: "
+							+ post.getStatusCode() + ", with body: " + post.getResponseBodyAsString());
 				log.info("Facebook subscription updated ok");
 			}
 		});
 		t.start();
 	}
-	
+
 	protected void getUpdatedFBInfoForAllUsers() {
 		Thread t = new Thread(new CatchingRunnable() {
 			public void doRun() throws Exception {
@@ -218,7 +222,7 @@ public class FacebookServiceImpl implements InitializingBean, FacebookService {
 				tt.execute(new TransactionCallbackWithoutResult() {
 					protected void doInTransactionWithoutResult(TransactionStatus arg0) {
 						List<MidasUserConfig> fbUserCfgs = userConfigDao.getUserConfigsWithKey("facebookId");
-						log.info("Getting updated facebook info for "+fbUserCfgs.size()+" users");
+						log.info("Getting updated facebook info for " + fbUserCfgs.size() + " users");
 						for (MidasUserConfig userCfg : fbUserCfgs) {
 							FacebookClient fbCli = new RateLimitFBClient(userCfg.getItem("facebookAccessToken"));
 							User fbUser;
@@ -240,12 +244,12 @@ public class FacebookServiceImpl implements InitializingBean, FacebookService {
 		});
 		t.start();
 	}
-	
+
 	@Override
 	public FacebookClient getFacebookClient(String accessToken) {
 		return new RateLimitFBClient(accessToken);
 	}
-	
+
 	// rateLimitLock is fair, so threads will queue up here waiting to be allowed to hit fb
 	protected void rateLimit() {
 		rateLimitLock.lock();
