@@ -39,6 +39,7 @@ public class FacebookController extends BaseController {
 			return;
 		}
 		// When we first subscribe they send a GET to check the url, after that they send a POST with new data
+		log.info("Facebook callback received with method: "+req.getMethod());
 		if (req.getMethod().equalsIgnoreCase("POST")) {
 			// Parse our json using the wonderful jackson library
 			Map<String, Object> json;
