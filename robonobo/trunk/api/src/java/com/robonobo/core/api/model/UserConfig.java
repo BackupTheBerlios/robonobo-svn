@@ -32,6 +32,11 @@ public class UserConfig {
 		return b.build();
 	}
 	
+	public void mergeFrom(UserConfig cfg) {
+		for (String keyName : cfg.items.keySet()) {
+			putItem(keyName, cfg.getItem(keyName));
+		}
+	}
 	public long getUserId() {
 		return userId;
 	}

@@ -197,7 +197,14 @@ public class RemoteMidasService implements ServerInvocationHandler, Initializing
 	
 	private void putUserConfig(RemoteCall params) throws IOException {
 		UserConfigMsg ucm = UserConfigMsg.newBuilder().mergeFrom((byte[])params.getArg()).build();
-		midas.putUserConfig(new MidasUserConfig(ucm));
+		MidasUserConfig newMuc = new MidasUserConfig(ucm);
+		MidasUser u = midas.getUserById(newMuc.getUserId());
+		MidasUserConfig muc = midas.getUserConfig(u);
+		if(muc == null)
+			muc = newMuc;
+		else
+			muc.mergeFrom(newMuc);
+		midas.putUserConfig(muc);
 	}
 	
 	private void deleteStream(RemoteCall params) throws IOException {

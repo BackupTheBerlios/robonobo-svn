@@ -35,7 +35,7 @@ public class UserConfigDaoImpl extends MidasDao implements UserConfigDao {
 		return q.list();
 	}
 	@Override
-	public void saveUserConfig(MidasUserConfig config) { 
+	public void saveUserConfig(MidasUserConfig config) {
 		getSession().saveOrUpdate(config);
 	}
 	
