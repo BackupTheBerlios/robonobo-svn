@@ -218,12 +218,12 @@ public class FacebookServiceImpl implements InitializingBean, FacebookService {
 			public void doRun() throws Exception {
 				// Wait for 90 secs to let everything settle down
 				Thread.sleep(90000L);
+				List<MidasUserConfig> fbUserCfgs = userConfigDao.getUserConfigsWithKey("facebookId");
+				log.info("Getting updated facebook info for " + fbUserCfgs.size() + " users");
 				TransactionTemplate tt = new TransactionTemplate(transactionManager);
-				tt.execute(new TransactionCallbackWithoutResult() {
-					protected void doInTransactionWithoutResult(TransactionStatus arg0) {
-						List<MidasUserConfig> fbUserCfgs = userConfigDao.getUserConfigsWithKey("facebookId");
-						log.info("Getting updated facebook info for " + fbUserCfgs.size() + " users");
-						for (MidasUserConfig userCfg : fbUserCfgs) {
+				for (final MidasUserConfig userCfg : fbUserCfgs) {
+					tt.execute(new TransactionCallbackWithoutResult() {
+						protected void doInTransactionWithoutResult(TransactionStatus arg0) {
 							FacebookClient fbCli = new RateLimitFBClient(userCfg.getItem("facebookAccessToken"));
 							User fbUser;
 							try {
@@ -237,9 +237,9 @@ public class FacebookServiceImpl implements InitializingBean, FacebookService {
 							MidasUser user = midas.getUserById(userCfg.getUserId());
 							updateFriends(user, null, userCfg);
 						}
-						log.info("Finished getting updated facebook info");
-					}
-				});
+					});
+				}
+				log.info("Finished getting updated facebook info");
 			}
 		});
 		t.start();
