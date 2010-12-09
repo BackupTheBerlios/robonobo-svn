@@ -20,8 +20,7 @@ import com.robonobo.common.util.TimeUtil;
 import com.robonobo.core.api.model.Playlist;
 import com.robonobo.core.api.model.User;
 import com.robonobo.core.api.proto.CoreApi.PlaylistMsg;
-import com.robonobo.midas.FacebookService;
-import com.robonobo.midas.LocalMidasService;
+import com.robonobo.midas.*;
 import com.robonobo.midas.model.*;
 import com.robonobo.remote.service.MidasService;
 
@@ -29,6 +28,8 @@ import com.robonobo.remote.service.MidasService;
 public class PlaylistController extends BaseController {
 	@Autowired
 	FacebookService facebook;
+	@Autowired
+	TwitterService twitter;
 
 	@RequestMapping(value = "/playlists/{pIdStr}", method = RequestMethod.GET)
 	public void getPlaylist(@PathVariable("pIdStr") String pIdStr, HttpServletRequest req, HttpServletResponse resp)
@@ -155,11 +156,11 @@ public class PlaylistController extends BaseController {
 			return;
 		}
 		MidasUserConfig muc = midas.getUserConfig(u);
-		
 		if("facebook".equalsIgnoreCase(service))
 			facebook.postPlaylistUpdateToFacebook(muc, p);
-		else if("twitter".equalsIgnoreCase(service)) {
-			// TODO twitter
-		}
+		else if("twitter".equalsIgnoreCase(service))
+			twitter.postPlaylistUpdateToTwitter(muc, p);
+		else
+			log.error("Error: user "+u.getEmail()+" tried to update their playlist to service: '"+service);
 	}
 }

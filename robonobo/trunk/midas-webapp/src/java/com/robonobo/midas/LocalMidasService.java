@@ -28,6 +28,8 @@ public class LocalMidasService implements MidasService {
 	@Autowired
 	private FacebookService facebook;
 	@Autowired
+	private TwitterService twitter;
+	@Autowired
 	private FriendRequestDao friendRequestDao;
 	@Autowired
 	private InviteDao inviteDao;
@@ -154,7 +156,12 @@ public class LocalMidasService implements MidasService {
 				log.error("Error posting playlist create to facebook", e);
 			}
 		}
-		// TODO Twitter
+		// Only announce public playlists to twitter
+		if(playlist.getVisibility().equals(Playlist.VIS_ALL)) {
+			long userId = (Long) playlist.getOwnerIds().toArray()[0];
+			MidasUserConfig muc = userConfigDao.getUserConfig(userId);
+			twitter.postPlaylistCreateToTwitter(muc, playlist);
+		}
 		return playlist;
 	}
 

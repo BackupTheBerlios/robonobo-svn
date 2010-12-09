@@ -60,7 +60,7 @@ public class MetadataServerConfig implements Serializable {
 	}
 	
 	public String getTwitterPlaylistUrl(long playlistId) {
-		return baseUrl + "playlists/" + Long.toHexString(playlistId) + "/post-update?service=7twitter";
+		return baseUrl + "playlists/" + Long.toHexString(playlistId) + "/post-update?service=twitter";
 	}
 	
 	public String getStreamUrl(String streamId) {
