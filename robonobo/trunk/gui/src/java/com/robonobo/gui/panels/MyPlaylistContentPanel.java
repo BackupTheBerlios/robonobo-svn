@@ -228,7 +228,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 	class PlaylistDetailsPanel extends JPanel implements ClipboardOwner {
 
 		public PlaylistDetailsPanel() {
-			double[][] cellSizen = { { 5, 35, 5, 190, 5, 40, 5, 40, 5, 95, 10, 180, 5, TableLayout.FILL, 5 },
+			double[][] cellSizen = { { 5, 35, 5, 215, 5, 30, 5, 30, 5, 90, 10, 180, 5, TableLayout.FILL, 5 },
 					{ 5, 25, 5, 25, 25, 0, TableLayout.FILL, 5, 30, 5 } };
 			setLayout(new TableLayout(cellSizen));
 
@@ -256,7 +256,8 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			urlField.setFont(RoboFont.getFont(11, false));
 			urlField.setEnabled(false);
 			add(urlField, "3,3");
-			JButton fbBtn = new JButton("FB");
+			JButton fbBtn = new JButton(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/facebook.png")));
+			fbBtn.setName("robonobo.small.round.button");
 			// TODO If we are not set up for facebook/twitter, take us to our account page instead...
 			fbBtn.setToolTipText("Post playlist update to facebook");
 			fbBtn.addActionListener(new ActionListener() {
@@ -266,7 +267,8 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			});
 			fbBtn.setEnabled(p.getPlaylistId() > 0);
 			add(fbBtn, "5,3");
-			JButton twitBtn = new JButton("T");
+			JButton twitBtn = new JButton(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/twitter.png")));
+			twitBtn.setName("robonobo.small.round.button");
 			twitBtn.setToolTipText("Post playlist update to twitter");
 			twitBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -276,7 +278,9 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			twitBtn.setEnabled(p.getPlaylistId() > 0);
 			add(twitBtn, "7,3");
 			JButton copyBtn = new JButton("Copy URL");
-			copyBtn.setFont(RoboFont.getFont(11, true));
+			copyBtn.setName("robonobo.small.round.button");
+			copyBtn.setToolTipText("Copy playlist URL to clipboard");
+			copyBtn.setFont(RoboFont.getFont(11, false));
 			copyBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					Clipboard c = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -284,6 +288,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 					c.setContents(s, PlaylistDetailsPanel.this);
 				}
 			});
+			copyBtn.setEnabled(p.getPlaylistId() > 0);
 			add(copyBtn, "9,3");
 			
 			JLabel descLbl = new JLabel("Description:");

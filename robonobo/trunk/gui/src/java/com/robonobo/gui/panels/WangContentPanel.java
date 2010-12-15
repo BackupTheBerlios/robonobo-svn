@@ -55,8 +55,8 @@ public class WangContentPanel extends ContentPanel implements WangListener, User
 		balanceFmt.setMaximumFractionDigits(16);
 		
 		String blurb = "<html>"+
-			"<p>Wang ("+WANG_CHAR+") is the credit you have in the robonobo network. As you share tracks with others, your Wang will increase. As you download tracks, you Wang will shrink.</p>" +
-			"<br><p>If you download tracks in advance using the download button or the 'Download tracks automatically' playlist option, you will use less Wang than if you play the tracks immediately.</p>"+
+			"<p>Wang ("+WANG_CHAR+") is the credit you have in the robonobo network. As you share tracks with others, your Wang will increase. As you download tracks, your Wang will shrink.</p>" +
+			"<br><p>If you download tracks in advance using the download button or the 'Download tracks automatically' playlist option, you will use less Wang than if you play the tracks without downloading them first.</p>"+
 			"<br><p><b>During alpha/beta testing only</b>, you can request an addition to your Wang here:</p>"+
 			"</html>";
 		JLabel blurbLbl = new JLabel(blurb);
