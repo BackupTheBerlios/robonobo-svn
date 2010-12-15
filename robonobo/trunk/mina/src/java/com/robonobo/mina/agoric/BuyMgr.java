@@ -175,7 +175,7 @@ public class BuyMgr {
 		log.error("Error: could not setup account with "+nodeId+" - unknown payment method '"+paymentMethod+"'");
 	}
 
-	private void setupUpfrontAccount(String nodeId, Attempt onAcctCreation) {
+	private void setupUpfrontAccount(final String nodeId, Attempt onAcctCreation) {
 		log.info("Setting up upfront account with node " + nodeId);
 		ControlConnection cc = mina.getCCM().getCCWithId(nodeId);
 		if (cc == null) {
@@ -186,7 +186,7 @@ public class BuyMgr {
 		double cashToSend = mina.getCurrencyClient().getOpeningBalance();
 		byte[] token;
 		try {
-			token = mina.getCurrencyClient().withdrawToken(cashToSend);
+			token = mina.getCurrencyClient().withdrawToken(cashToSend, "Setting up account with node "+nodeId);
 		} catch (CurrencyException e) {
 			log.error("Error withdrawing token of value " + cashToSend + " trying to open account with " + nodeId);
 			onAcctCreation.failed();
@@ -206,7 +206,7 @@ public class BuyMgr {
 			mina.getExecutor().execute(new CatchingRunnable() {
 				public void doRun() throws Exception {
 					log.error("Attempting to return cash for failed openacct");
-					mina.getCurrencyClient().depositToken(tok);
+					mina.getCurrencyClient().depositToken(tok, "Returning cash after failing to open account with node "+nodeId);
 				}
 			});
 		}
@@ -272,7 +272,7 @@ public class BuyMgr {
 			log.error("Received acctclosed from " + nodeId + ", but I have no registered account");
 		else {
 			try {
-				double val = mina.getCurrencyClient().depositToken(currencyToken);
+				double val = mina.getCurrencyClient().depositToken(currencyToken, "Balance returned from node "+nodeId);
 				if ((val - acct.balance) < 0) {
 					// TODO Something more serious here
 					log.error("ERROR: balance mismatch when closing acct with " + nodeId + ": I say " + acct.balance
@@ -527,7 +527,7 @@ public class BuyMgr {
 		if (balance < endsRequired) {
 			byte[] token;
 			try {
-				token = mina.getCurrencyClient().withdrawToken(endsRequired);
+				token = mina.getCurrencyClient().withdrawToken(endsRequired, "Topping up account with node "+fromNodeId);
 			} catch (CurrencyException e) {
 				log.error("Error withdrawing token of value " + endsRequired + " trying to top up account with "
 						+ fromNodeId);

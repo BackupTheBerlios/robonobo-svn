@@ -93,4 +93,8 @@ public class MetadataServerConfig implements Serializable {
 	public String getUserConfigUrl(long userId) {
 		return baseUrl + "userconfig/"+Long.toHexString(userId);
 	}
+	
+	public String getTopUpUrl() {
+		return baseUrl + "users/testing-topup";
+	}
 }

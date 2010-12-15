@@ -126,9 +126,9 @@ public class UserService extends AbstractService {
 		UserConfig cfg = new UserConfig(b.build());
 		rbnb.getEventService().fireUserConfigChanged(cfg);
 	}
-	
+
 	public void saveUserConfigItem(String itemName, String itemValue) {
-		if(me == null) {
+		if (me == null) {
 			log.error("Error: tried to save user config, but I am not logged in");
 			return;
 		}
@@ -138,10 +138,21 @@ public class UserService extends AbstractService {
 		try {
 			rbnb.getSerializationManager().putObjectToUrl(cfg.toMsg(), msc.getUserConfigUrl(me.getUserId()));
 		} catch (IOException e) {
-			log.error("Erro saving user config", e);
+			log.error("Errot saving user config", e);
 		}
 	}
-	
+
+	public void requestTopUp() throws IOException {
+		if (me != null) {
+			try {
+				rbnb.getSerializationManager().hitUrl(msc.getTopUpUrl());
+			} catch (IOException e) {
+				log.error("Error requesting topup", e);
+				throw e;
+			}
+		}
+	}
+
 	public boolean isLoggedIn() {
 		return me != null;
 	}
@@ -179,7 +190,7 @@ public class UserService extends AbstractService {
 	 */
 	public Playlist addOrUpdatePlaylist(Playlist newP) throws IOException, RobonoboException {
 		String playlistUrl = msc.getPlaylistUrl(newP.getPlaylistId());
-		if(newP.getPlaylistId() <= 0) {
+		if (newP.getPlaylistId() <= 0) {
 			// New playlist - the server will send it back with the playlist id set
 			PlaylistMsg.Builder bldr = PlaylistMsg.newBuilder();
 			rbnb.getSerializationManager().putObjectToUrl(newP.toMsg(), playlistUrl, bldr);
@@ -234,7 +245,7 @@ public class UserService extends AbstractService {
 	public void postFacebookUpdate(long playlistId) throws IOException {
 		rbnb.getSerializationManager().hitUrl(msc.getFacebookPlaylistUrl(playlistId));
 	}
-	
+
 	public void postTwitterUpdate(long playlistId) throws IOException {
 		rbnb.getSerializationManager().hitUrl(msc.getTwitterPlaylistUrl(playlistId));
 	}

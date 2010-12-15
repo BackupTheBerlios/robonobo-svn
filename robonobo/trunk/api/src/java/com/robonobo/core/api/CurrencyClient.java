@@ -11,10 +11,10 @@ public interface CurrencyClient {
 
 	public double getOnHandBalance() throws CurrencyException;
 	
-	public byte[] withdrawToken(double value) throws CurrencyException;
+	public byte[] withdrawToken(double value, String narration) throws CurrencyException;
 
 	/** Returns the value of the token */
-	public double depositToken(byte[] token) throws CurrencyException;
+	public double depositToken(byte[] token, String narration) throws CurrencyException;
 
 	/**
 	 * For a stream with the given velocity, what's the maximum we're willing to

@@ -510,6 +510,10 @@ public class RobonoboController {
 		inst.getDbService().markAllAsSeen(lib);
 	}
 	
+	public void requestTopUp() throws IOException {
+		inst.getUsersService().requestTopUp();
+	}
+	
 	/**
 	 * For debugging only
 	 */

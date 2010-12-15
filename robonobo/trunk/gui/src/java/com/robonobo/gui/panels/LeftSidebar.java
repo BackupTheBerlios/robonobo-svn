@@ -80,7 +80,9 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 		spacerPanel.setPreferredSize(new Dimension(200, 5));
 		spacerPanel.setOpaque(false);
 		add(spacerPanel);
-		add(new StatusPanel(frame));
+		StatusPanel statusPnl = new StatusPanel(frame);
+		sideBarComps.add(statusPnl.getBalanceLbl());
+		add(statusPnl);
 		
 		frame.getController().addUserPlaylistListener(this);
 	}
@@ -154,7 +156,7 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 				cmp.relinquishSelection();
 		}
 	}
-
+	
 	@Override
 	public void loggedIn() {
 		// Do nothing

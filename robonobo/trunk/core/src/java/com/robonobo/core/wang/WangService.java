@@ -5,9 +5,13 @@ import static com.robonobo.common.util.TimeUtil.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.doomdark.uuid.UUID;
+import org.doomdark.uuid.UUIDGenerator;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
@@ -62,7 +66,12 @@ public class WangService extends AbstractService implements CurrencyClient {
 			client = new WangClient(config);
 			client.start();
 			clientStarted = true;
-			fireUpdatedBalance();
+			updateBalanceIfNecessary(true);
+			getRobonobo().getExecutor().execute(new CatchingRunnable() {
+				public void doRun() throws Exception {
+					getRobonobo().getEventService().fireWangBalanceChanged(cachedBankBalance);
+				}
+			});			
 		} catch (WangException e) {
 			log.error("Caught exception starting wang client", e);
 		}
@@ -132,7 +141,7 @@ public class WangService extends AbstractService implements CurrencyClient {
 		return client.getOnHandBalance();
 	}
 	
-	public double depositToken(byte[] token) throws CurrencyException {
+	public double depositToken(byte[] token, String narration) throws CurrencyException {
 		try {
 			CoinListMsg coins = CoinListMsg.parseFrom(token);
 			client.putCoins(coins);
@@ -140,39 +149,38 @@ public class WangService extends AbstractService implements CurrencyClient {
 			synchronized (this) {
 				cachedBankBalance += result;
 			}
-			fireUpdatedBalance();
+			fireAccountActivity(result, narration);
 			return result;
 		} catch (WangException e) {
 			throw new CurrencyException(e);
 		} catch (IOException e) {
 			throw new CurrencyException(e);
 		}
-
 	}
 
-	public byte[] withdrawToken(double value) throws CurrencyException {
+	public byte[] withdrawToken(double value, String narration) throws CurrencyException {
 		try {
 			CoinListMsg coins = client.getCoins(value);
 			synchronized (this) {
 				cachedBankBalance -= CoinList.totalValue(coins);
 			}
-			fireUpdatedBalance();
+			fireAccountActivity(0 - value, narration);
 			return coins.toByteArray();
 		} catch (WangException e) {
 			throw new CurrencyException(e);
 		}
 	}
 
-	/** Done in separate thread for responsiveness */ 
-	private void fireUpdatedBalance() {
+	private void fireAccountActivity(final double creditValue, final String narration) {
 		getRobonobo().getExecutor().execute(new CatchingRunnable() {
 			public void doRun() throws Exception {
 				updateBalanceIfNecessary(false);
+				getRobonobo().getEventService().fireWangAccountActivity(creditValue, narration);
 				getRobonobo().getEventService().fireWangBalanceChanged(cachedBankBalance);
 			}
-		});
+		});		
 	}
-
+	
 	private void updateBalanceIfNecessary(boolean forceUpdate) {
 		synchronized (this) {
 			if (forceUpdate || now().after(nextCheckBalanceTime)) {

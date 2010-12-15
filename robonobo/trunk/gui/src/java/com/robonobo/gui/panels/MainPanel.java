@@ -28,6 +28,7 @@ public class MainPanel extends JPanel {
 		addContentPanel("mymusiclibrary", new MyLibraryContentPanel(frame));
 		addContentPanel("newplaylist", new NewPlaylistContentPanel(frame));
 		addContentPanel("tasklist", new TaskListContentPanel(frame));
+		addContentPanel("wang", new WangContentPanel(frame));
 	}
 	
 	public void addContentPanel(String name, ContentPanel panel) {

@@ -1,17 +1,11 @@
 package com.robonobo.gui.panels;
 
-import static com.robonobo.gui.RoboColor.*;
-
 import java.awt.Color;
 import java.awt.Dimension;
-import java.text.NumberFormat;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -22,71 +16,58 @@ import com.robonobo.common.util.FileUtil;
 import com.robonobo.common.util.TextUtil;
 import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.*;
-import com.robonobo.core.wang.WangListener;
 import com.robonobo.gui.RoboFont;
+import com.robonobo.gui.components.BalanceLabel;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.mina.external.ConnectedNode;
 
 @SuppressWarnings("serial")
-public class StatusPanel extends JPanel implements WangListener, RobonoboStatusListener, TransferSpeedListener {
+public class StatusPanel extends JPanel implements RobonoboStatusListener, TransferSpeedListener {
 	Log log = LogFactory.getLog(getClass());
 
 	RobonoboController control;
-	JLabel balanceLabel;
-	NumberFormat balanceFormat;
 	private ImageIcon connFailImg;
 	private ImageIcon connOkImg;
 	private JLabel networkStatusIcon;
 	private JLabel numConnsLbl;
 
 	private JLabel bandwidthLbl;
+
+	private BalanceLabel balanceLbl;
 	
 	public StatusPanel(RobonoboFrame frame) {
 		this.control = frame.getController();
 		setPreferredSize(new Dimension(200, 85));
 		setMaximumSize(new Dimension(200, 85));
-		double[][] cellSizen = { { 10, 32, 5, 100, 10, TableLayout.FILL, 5 }, { 10, 30, 5, 15, 15, 5, TableLayout.FILL} };
+		double[][] cellSizen = { { 1, 9, 32, 5, 110, TableLayout.FILL, 5 }, { 10, 30, 5, 15, 15, 5, TableLayout.FILL} };
 		setLayout(new TableLayout(cellSizen));
 		setName("robonobo.status.panel");
 		setOpaque(true);
 		
-		balanceLabel = new JLabel(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/wang_symbol.png")));
-		balanceLabel.setForeground(ORANGE);
-		balanceLabel.setFont(RoboFont.getFont(22, false));
-		add(balanceLabel, "2,1,3,1,LEFT,CENTER");
-		balanceFormat = NumberFormat.getInstance();
-		balanceFormat.setMaximumFractionDigits(2);
-		balanceFormat.setMinimumFractionDigits(2);
-
-		JLabel queryLabel = new JLabel("?");
-		queryLabel.setForeground(ORANGE);
-		queryLabel.setFont(RoboFont.getFont(12, false));
-		add(queryLabel, "4,1,LEFT,TOP");
+		balanceLbl = new BalanceLabel(frame);
+		add(balanceLbl, "1,1,6,1,CENTER,CENTER");
 
 		connOkImg = new ImageIcon(RobonoboFrame.class.getResource("/img/icon/connection_ok.png"));
 		connFailImg = new ImageIcon(RobonoboFrame.class.getResource("/img/icon/connection_fail.png"));
 		networkStatusIcon = new JLabel(connFailImg);
-		add(networkStatusIcon, "1,3,1,5");
+		add(networkStatusIcon, "2,3,2,5");
 		
 		numConnsLbl = new JLabel("Starting...");
 		numConnsLbl.setFont(RoboFont.getFont(9, false));
 		numConnsLbl.setForeground(Color.WHITE);
-		add(numConnsLbl, "3,3,5,3,LEFT,BOTTOM");
+		add(numConnsLbl, "4,3,5,3,LEFT,BOTTOM");
 
 		bandwidthLbl = new JLabel("");
 		bandwidthLbl.setFont(RoboFont.getFont(9, false));
 		bandwidthLbl.setForeground(Color.WHITE);
-		add(bandwidthLbl, "3,4,5,4,LEFT,BOTTOM");
+		add(bandwidthLbl, "4,4,5,4,LEFT,BOTTOM");
 
 		control.addRobonoboStatusListener(this);
-		control.addWangListener(this);
-		setBalance(0d);
 		updateConnStatus();		
 	}
 
-	@Override
-	public void balanceChanged(final double newBalance) {
-		setBalance(newBalance);
+	public BalanceLabel getBalanceLbl() {
+		return balanceLbl;
 	}
 	
 	@Override
@@ -104,18 +85,6 @@ public class StatusPanel extends JPanel implements WangListener, RobonoboStatusL
 		updateConnStatus();
 	}
 
-	private void setBalance(final double newBalance) {
-		SwingUtilities.invokeLater(new CatchingRunnable() {
-			public void doRun() throws Exception {
-				synchronized (StatusPanel.this) {
-					// TODO Make it red if they have no ends
-					String balanceTxt = balanceFormat.format(newBalance);
-					balanceLabel.setText(balanceTxt);
-				}
-			}
-		});
-	}
-	
 	private void updateConnStatus() {
 		SwingUtilities.invokeLater(new CatchingRunnable() {
 			public void doRun() throws Exception {

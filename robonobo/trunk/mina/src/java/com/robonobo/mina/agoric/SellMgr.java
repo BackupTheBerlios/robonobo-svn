@@ -21,6 +21,7 @@ import com.google.protobuf.ByteString;
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.concurrent.Timeout;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
+import com.robonobo.core.api.CurrencyClient;
 import com.robonobo.core.api.CurrencyException;
 import com.robonobo.core.api.proto.CoreApi.Node;
 import com.robonobo.mina.external.ConnectedNode;
@@ -170,7 +171,8 @@ public class SellMgr {
 	public void topUpAccount(String nodeId, byte[] currencyToken) {
 		double tokVal;
 		try {
-			tokVal = mina.getCurrencyClient().depositToken(currencyToken);
+			CurrencyClient cClient = mina.getCurrencyClient();
+			tokVal = cClient.depositToken(currencyToken, "Account topup from node "+nodeId);
 		} catch (CurrencyException e) {
 			log.error("Error depositing token from " + nodeId, e);
 			return;
@@ -659,7 +661,7 @@ public class SellMgr {
 		bid(nodeId, 0);
 		// Send the remaining balance
 		try {
-			byte[] currencyToken = mina.getCurrencyClient().withdrawToken(acct.balance);
+			byte[] currencyToken = mina.getCurrencyClient().withdrawToken(acct.balance, "Returning remaining balance to node "+nodeId);
 			AcctClosed ac = AcctClosed.newBuilder().setCurrencyToken(ByteString.copyFrom(currencyToken)).build();
 			cc.sendMessage("AcctClosed", ac);
 		} catch (CurrencyException e) {

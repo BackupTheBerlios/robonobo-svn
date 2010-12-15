@@ -320,6 +320,16 @@ public class EventService extends AbstractService implements MinaListener {
 		}
 	}
 	
+	public void fireWangAccountActivity(double creditValue, String narration) {
+		WangListener[] arr;
+		synchronized (this) {
+			arr = getWArr();
+		}
+		for (WangListener listener : arr) {
+			listener.accountActivity(creditValue, narration);
+		}	
+	}
+	
 	public void fireNewTransferSpeeds(Map<String, TransferSpeed> speedsByStream, Map<String, TransferSpeed> speedsByNode) {
 		TransferSpeedListener[] arr;
 		synchronized (this) {

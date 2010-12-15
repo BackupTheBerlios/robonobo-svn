@@ -46,4 +46,10 @@ public class WangPanel extends JPanel implements WangListener {
 			}
 		});
 	}
+	
+	@Override
+	public void accountActivity(double creditValue, String narration) {
+		// TODO Auto-generated method stub
+		
+	}
 }
