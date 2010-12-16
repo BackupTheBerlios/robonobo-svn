@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -104,7 +105,7 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 		titlesPanel.add(albumLbl);
 		final JPanel playerPanel = new JPanel(new BorderLayout(5, 5));
 		add(playerPanel, BorderLayout.EAST);
-		playerPanel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+		playerPanel.setBorder(BorderFactory.createEmptyBorder(8, 8, 0, 8));
 
 		playbackProgress = new PlaybackProgressBar(frame);
 		playbackProgress.lock();
@@ -116,7 +117,7 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 		final JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
 		playerCtrlPanel.add(buttonsPanel, BorderLayout.WEST);
 		buttonsPanel.setOpaque(false);
-
+		
 		prevBtn = new JButton();
 		prevBtn.setName("robonobo.round.button");
 		prevBtn.setIcon(prevIcon);
