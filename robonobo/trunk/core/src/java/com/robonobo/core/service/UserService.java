@@ -202,6 +202,7 @@ public class UserService extends AbstractService {
 			return updatedP;
 		} else {
 			rbnb.getSerializationManager().putObjectToUrl(newP.toMsg(), playlistUrl);
+			rbnb.getEventService().firePlaylistChanged(newP);
 			return newP;
 		}
 	}
