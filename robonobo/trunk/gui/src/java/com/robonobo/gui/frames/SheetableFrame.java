@@ -10,6 +10,7 @@ import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.core.Platform;
+import com.robonobo.gui.RoboColor;
 
 import furbelow.AbstractComponentDecorator;
 
@@ -23,11 +24,12 @@ public class SheetableFrame extends JFrame {
 	}
 
 	public void showSheet(JComponent sheet) {
+		SheetContainer sc = new SheetContainer(sheet);
 		glass.removeAll();
-		double[][] cellSizen = { { TableLayout.FILL, sheet.getPreferredSize().width, TableLayout.FILL },
-				{ sheet.getPreferredSize().height, TableLayout.FILL } };
+		double[][] cellSizen = { { TableLayout.FILL, sc.getPreferredSize().width, TableLayout.FILL },
+				{ sc.getPreferredSize().height, TableLayout.FILL } };
 		glass.setLayout(new TableLayout(cellSizen));
-		glass.add(sheet, "1,0");
+		glass.add(sc, "1,0");
 		glass.setVisible(true);
 	}
 
@@ -45,12 +47,29 @@ public class SheetableFrame extends JFrame {
 		sheet = null;
 	}
 
+	class SheetContainer extends JPanel {
+		public SheetContainer(JComponent sheet) {
+			// Make a 1px dark border and a 5px hatched background around the sheet
+			double[][] cellSizen = { { 3, sheet.getPreferredSize().width, 5 }, { 2, sheet.getPreferredSize().height } };
+			setLayout(new TableLayout(cellSizen));
+			add(sheet, "1,1");
+			Dimension sz = new Dimension(sheet.getPreferredSize().width+8, sheet.getPreferredSize().height+7);
+			setPreferredSize(sz);
+			setOpaque(true);
+			// TODO Apply hatched bg here
+			setBackground(Color.WHITE);
+			setBorder(BorderFactory.createLineBorder(RoboColor.LIGHT_GRAY));
+		}
+	}
+
 	class Dimmer extends AbstractComponentDecorator implements KeyEventDispatcher {
 		public Dimmer() {
 			super(SheetableFrame.this.getLayeredPane());
 			KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(this);
-	        getPainter().addMouseListener(new MouseAdapter() { });
-	        getPainter().addMouseMotionListener(new MouseMotionAdapter() { });
+			getPainter().addMouseListener(new MouseAdapter() {
+			});
+			getPainter().addMouseMotionListener(new MouseMotionAdapter() {
+			});
 		}
 
 		@Override

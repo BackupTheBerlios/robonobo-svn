@@ -1,30 +1,17 @@
 package com.robonobo.oldgui;
 
 import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
+import javax.swing.*;
 
 import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.Platform;
 import com.robonobo.core.api.model.Playlist;
-import com.robonobo.gui.dialogs.SharePlaylistDialog;
 
 public class MyPlaylistDetailsPanel extends JPanel {
 	RobonoboFrame frame;
@@ -160,10 +147,10 @@ public class MyPlaylistDetailsPanel extends JPanel {
 			shareBtn = new JButton("Share...");
 			shareBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					SharePlaylistDialog dialog = null;
+//					SharePlaylistDialog dialog = null;
 //					SharePlaylistDialog dialog = new SharePlaylistDialog(frame, p);
-					dialog.setLocationRelativeTo(frame);
-					dialog.setVisible(true);
+//					dialog.setLocationRelativeTo(frame);
+//					dialog.setVisible(true);
 				}
 			});
 			shareBtn.setEnabled(shareBtnsEnabled());

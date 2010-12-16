@@ -2,7 +2,6 @@ package com.robonobo.gui.platform;
 
 import com.apple.eawt.ApplicationEvent;
 import com.apple.eawt.ApplicationListener;
-import com.robonobo.gui.dialogs.AboutDialog;
 import com.robonobo.gui.frames.RobonoboFrame;
 
 public class MacAppListener implements ApplicationListener {
@@ -13,8 +12,7 @@ public class MacAppListener implements ApplicationListener {
 	}
 
 	public void handleAbout(ApplicationEvent e) {
-		AboutDialog dialog = new AboutDialog(frame);
-		dialog.setVisible(true);
+		frame.showAbout();
 		e.setHandled(true);
 	}
 

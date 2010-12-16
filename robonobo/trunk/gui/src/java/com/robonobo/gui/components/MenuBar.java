@@ -10,7 +10,6 @@ import org.apache.commons.logging.LogFactory;
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.util.NetUtil;
 import com.robonobo.core.Platform;
-import com.robonobo.gui.dialogs.AboutDialog;
 import com.robonobo.gui.frames.RobonoboFrame;
 
 @SuppressWarnings("serial")
@@ -112,8 +111,7 @@ public class MenuBar extends JMenuBar {
 			JMenuItem showAbout = new JMenuItem("About robonobo");
 			showAbout.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					AboutDialog dialog = new AboutDialog(frame);
-					dialog.setVisible(true);
+					frame.showAbout();
 				}
 			});
 			helpMenu.add(showAbout);

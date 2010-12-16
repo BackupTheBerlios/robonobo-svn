@@ -26,7 +26,7 @@ public class EULAFrame extends JFrame {
 		Dimension sz = new Dimension(600, 400);
 		setSize(sz);
 		setPreferredSize(sz);
-		double[][] cellSizen = { { 5, TableLayout.FILL, 80, 5, 80, 5 }, { 5, TableLayout.FILL, 10, 25, 10 } };
+		double[][] cellSizen = { { 5, TableLayout.FILL, 80, 5, 80, 5 }, { 5, TableLayout.FILL, 10, 30, 5 } };
 		setLayout(new TableLayout(cellSizen));
 		setTitle("robonobo license agreement");
 		JTextPane textPane = new JTextPane();
@@ -44,6 +44,7 @@ public class EULAFrame extends JFrame {
 		});
 		add(acceptBtn, "2,3");
 		JButton cancelBtn = new JButton("Cancel");
+		cancelBtn.setName("robonobo.red.button");
 		cancelBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setVisible(false);

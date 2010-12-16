@@ -44,7 +44,7 @@ import com.robonobo.spi.RuntimeService;
  * 
  */
 public class RobonoboInstance implements Robonobo {
-	protected String version = "Unknown";
+	protected String version = "dev-unknown";
 	protected Log log;
 	ScheduledThreadPoolExecutor executor;
 	Map<String, Object> configs = new HashMap<String, Object>();

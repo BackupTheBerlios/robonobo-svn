@@ -1,20 +1,14 @@
 package com.robonobo.oldgui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.io.IOException;
+import java.awt.event.*;
 
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
+import javax.swing.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.Platform;
-import com.robonobo.gui.dialogs.AboutDialog;
 
 public class MenuBar extends JMenuBar {
 	private Log log;
@@ -124,8 +118,8 @@ public class MenuBar extends JMenuBar {
 			showAbout.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 //					AboutDialog dialog = new AboutDialog(frame);
-					AboutDialog dialog = new AboutDialog(null);
-					dialog.setVisible(true);
+//					AboutDialog dialog = new AboutDialog(null);
+//					dialog.setVisible(true);
 				}
 			});
 			helpMenu.add(showAbout);

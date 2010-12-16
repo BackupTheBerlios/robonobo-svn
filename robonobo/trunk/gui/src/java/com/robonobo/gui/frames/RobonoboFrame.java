@@ -38,22 +38,6 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 	private Log log = LogFactory.getLog(RobonoboFrame.class);
 	private GuiConfig guiConfig;
 
-	/**
-	 * For debugging only! Delete me when the GUI is done :-)
-	 */
-	public static void main(String[] args) throws Exception {
-		try {
-			UIManager.setLookAndFeel(new RobonoboLookAndFeel());
-		} catch (UnsupportedLookAndFeelException e) {
-			throw new SeekInnerCalmException(e);
-		}
-		RobonoboController control = new RobonoboController(new String[0]);
-		final JFrame mainFrame = new RobonoboFrame(control, args);
-		mainFrame.setVisible(true);
-		mainFrame.setLocationRelativeTo(null);
-		mainFrame.setVisible(true);
-	}
-
 	public RobonoboFrame(RobonoboController control, String[] args) {
 		this.control = control;
 		this.cmdLineArgs = args;
@@ -215,6 +199,16 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 		});
 	}
 
+	public void showAbout() {
+		SwingUtilities.invokeLater(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				AboutPanel ap = new AboutPanel(RobonoboFrame.this);
+				dim();
+				showSheet(ap);
+			}
+		});
+		
+	}
 	public void showPreferences() {
 		prefDialog.setVisible(true);
 	}

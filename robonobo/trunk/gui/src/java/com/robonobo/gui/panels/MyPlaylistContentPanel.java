@@ -17,14 +17,11 @@ import org.debian.tablelayout.TableLayout;
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.common.util.FileUtil;
-import com.robonobo.console.cmds.playlist;
 import com.robonobo.core.Platform;
 import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.UserPlaylistListener;
 import com.robonobo.core.api.model.*;
-import com.robonobo.gui.RoboColor;
 import com.robonobo.gui.RoboFont;
-import com.robonobo.gui.dialogs.SharePlaylistDialog;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.model.PlaylistTableModel;
 import com.robonobo.gui.model.StreamTransfer;
@@ -93,19 +90,6 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 					pc.setPlaylistId(p.getPlaylistId());
 				} catch (RobonoboException e) {
 					log.error("Error creating playlist", e);
-				}
-			}
-		});
-	}
-
-	protected void deletePlaylist() {
-		frame.getLeftSidebar().selectMyMusic();
-		frame.getController().getExecutor().execute(new CatchingRunnable() {
-			public void doRun() throws Exception {
-				try {
-					frame.getController().nukePlaylist(getModel().getPlaylist());
-				} catch (RobonoboException e) {
-					log.error("Error deleting playlist", e);
 				}
 			}
 		});
@@ -383,11 +367,9 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 				delBtn.setName("robonobo.red.button");
 				delBtn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						int result = JOptionPane.showConfirmDialog(ButtonsPanel.this,
-								"Are you sure you want to delete this playlist?", "Delete this playlist?",
-								JOptionPane.YES_NO_OPTION);
-						if (result == JOptionPane.YES_OPTION)
-							deletePlaylist();
+						DeletePlaylistPanel dPanel = new DeletePlaylistPanel(frame, getModel().getPlaylist());
+						frame.dim();
+						frame.showSheet(dPanel);
 					}
 				});
 				add(delBtn);
@@ -399,9 +381,9 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 				shareBtn.setFont(RoboFont.getFont(12, true));
 				shareBtn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						SharePlaylistDialog dialog = new SharePlaylistDialog(frame, getModel().getPlaylist());
-						dialog.setLocationRelativeTo(frame);
-						dialog.setVisible(true);
+						SharePlaylistPanel shPanel = new SharePlaylistPanel(frame, getModel().getPlaylist());
+						frame.dim();
+						frame.showSheet(shPanel);
 					}
 				});
 				add(shareBtn);
