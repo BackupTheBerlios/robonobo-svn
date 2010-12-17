@@ -19,6 +19,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
+import com.robonobo.common.serialization.SerializationException;
+import com.robonobo.common.serialization.UnauthorizedException;
 import com.robonobo.core.api.*;
 import com.robonobo.core.api.config.RobonoboConfig;
 import com.robonobo.core.api.model.*;
@@ -247,7 +249,7 @@ public class RobonoboController {
 		jobRunner.start();
 		if (inst.getConfig().getMetadataServerUsername() != null) {
 			try {
-				tryLogin(inst.getConfig().getMetadataServerUsername(), inst.getConfig().getMetadataServerPassword());
+				login(inst.getConfig().getMetadataServerUsername(), inst.getConfig().getMetadataServerPassword());
 			} catch (Exception ignore) {
 			}
 		}
@@ -361,10 +363,11 @@ public class RobonoboController {
 	}
 
 	/**
-	 * @return true if login successful, false otherwise
+	 * @throws IOException If server cannot be reached or it throws an unknown error
+	 * @throws UnauthorizedException If the login details are wrong
 	 */
-	public boolean tryLogin(String email, String password) {
-		return inst.getUsersService().tryLogin(email, password);
+	public void login(String email, String password) throws SerializationException, IOException {
+		inst.getUsersService().login(email, password);
 	}
 
 	public User getMyUser() {

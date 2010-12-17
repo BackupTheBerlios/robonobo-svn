@@ -18,6 +18,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
+import com.robonobo.common.serialization.SerializationException;
 import com.robonobo.common.serialization.SerializationManager;
 import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.RobonoboStatus;
@@ -77,12 +78,12 @@ public class UserService extends AbstractService {
 		rbnb.getExecutor().execute(new UpdateChecker());
 	}
 
-	public boolean tryLogin(final String email, final String password) {
+	public void login(final String email, final String password) throws IOException, SerializationException {
 		MetadataServerConfig msc = new MetadataServerConfig(rbnb.getConfig().getMetadataServerUrl());
+		log.info("Attempting login as user " + email);
 		try {
-			log.info("Attempting login as user " + email);
 			UserMsg.Builder ub = UserMsg.newBuilder();
-			// If the details are wrong, this will chuck an exception
+			// If the details are wrong, this will chuck UnauthorizedException
 			SerializationManager sm = rbnb.getSerializationManager();
 			sm.setCreds(email, password);
 			sm.getObjectFromUrl(ub, msc.getUserUrl(email));
@@ -113,14 +114,16 @@ public class UserService extends AbstractService {
 				rbnb.setStatus(RobonoboStatus.Connected);
 				rbnb.getEventService().fireStatusChanged();
 			}
-			return true;
-		} catch (Exception e) {
-			log.error("Error logging in", e);
-			return false;
+		} catch (IOException e) {
+			log.error("Caught exception logging in", e);
+			throw e;
+		} catch (SerializationException e) {
+			log.error("Caught exception logging in", e);
+			throw e;
 		}
 	}
 
-	private void lookupUserConfig() throws IOException {
+	private void lookupUserConfig() throws IOException, SerializationException {
 		UserConfigMsg.Builder b = UserConfigMsg.newBuilder();
 		rbnb.getSerializationManager().getObjectFromUrl(b, msc.getUserConfigUrl(me.getUserId()));
 		UserConfig cfg = new UserConfig(b.build());
@@ -270,13 +273,13 @@ public class UserService extends AbstractService {
 		return getPlaylist(plId);
 	}
 
-	private User getUpdatedUser(long userId) throws IOException {
+	private User getUpdatedUser(long userId) throws IOException, SerializationException {
 		UserMsg.Builder ub = UserMsg.newBuilder();
 		rbnb.getSerializationManager().getObjectFromUrl(ub, msc.getUserUrl(userId));
 		return new User(ub.build());
 	}
 
-	private Playlist getUpdatedPlaylist(long playlistId) throws IOException {
+	private Playlist getUpdatedPlaylist(long playlistId) throws IOException, SerializationException {
 		String playlistUrl = msc.getPlaylistUrl(playlistId);
 		PlaylistMsg.Builder pb = PlaylistMsg.newBuilder();
 		rbnb.getSerializationManager().getObjectFromUrl(pb, playlistUrl);

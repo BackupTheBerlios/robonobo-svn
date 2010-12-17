@@ -51,7 +51,7 @@ public class RobonoboConsole extends CatchingRunnable {
 				continue;
 			String cmdName = args[0];
 			String className = "com.robonobo.console.cmds."+cmdName;
-			Class cmdClass = null;
+			Class cmdClass;
 			try {
 				cmdClass = Class.forName(className);
 			} catch(ClassNotFoundException e) {

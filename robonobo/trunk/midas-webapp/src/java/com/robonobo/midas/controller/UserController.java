@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import com.robonobo.common.util.TextUtil;
 import com.robonobo.core.api.proto.CoreApi.UserMsg;
 import com.robonobo.midas.model.MidasUser;
 import com.robonobo.remote.service.MailService;
@@ -23,25 +22,35 @@ public class UserController extends BaseController {
 	
 	@RequestMapping(value="/users/byid/{uIdStr}", method=RequestMethod.GET)
 	public void getUserById(@PathVariable("uIdStr") String uIdStr, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		MidasUser authUser = getAuthUser(req);
+		if(authUser == null) {
+			send401(req, resp);
+			return;
+		}
 		long uId = Long.parseLong(uIdStr, 16);
-		MidasUser targetU = midas.getUserById(uId);
-		if(targetU == null) {
+		MidasUser targetUser = midas.getUserById(uId);
+		if(targetUser == null) {
 			send404(req, resp);
 			return;
 		}
-		getUser(targetU, req, resp);
+		getUser(targetUser, authUser, req, resp);
 	}
 	
 	@RequestMapping(value="/users/byemail/{email}.{ext}", method=RequestMethod.GET) 
 	public void getUserByEmail(@PathVariable("email") String emailStr, @PathVariable("ext") String ext, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		MidasUser authUser = getAuthUser(req);
+		if(authUser == null) {
+			send401(req, resp);
+			return;
+		}
 		// Spring's habit of chopping off the file extension is rather annoying
 		String email = urlDecode(emailStr)+"."+ext;
-		MidasUser targetU = midas.getUserByEmail(email);
-		if(targetU == null) {
+		MidasUser targetUser = midas.getUserByEmail(email);
+		if(targetUser == null) {
 			send404(req, resp);
 			return;
 		}
-		getUser(targetU, req, resp);
+		getUser(targetUser, authUser, req, resp);
 	}
 	
 	@RequestMapping(value="/users/testing-topup")
@@ -65,15 +74,11 @@ public class UserController extends BaseController {
 		resp.setStatus(HttpServletResponse.SC_OK);
 	}
 	
-	protected void getUser(MidasUser targetUser, HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		MidasUser authUser = getAuthUser(req);
-		if(authUser == null) {
-			send401(req, resp);
-			return;
-		}
+	protected void getUser(MidasUser targetUser, MidasUser authUser, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		MidasUser returnUser = midas.getUserAsVisibleBy(targetUser, authUser);
 		if(returnUser == null) {
-			send401(req, resp);
+			// Send a 404 rather than a 401 here, even though the user exists, to prevent user enumeration
+			send404(req, resp);
 			return;
 		}
 		UserMsg uMsg = returnUser.toMsg(false);

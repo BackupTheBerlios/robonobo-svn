@@ -91,7 +91,7 @@ public class SerializationManager {
 
 	@SuppressWarnings("unchecked")
 	public void getObjectFromUrl(AbstractMessage.Builder bldr, String url)
-			throws IOException {
+			throws IOException, SerializationException {
 		log.debug("Getting object from "+url);
 		GetMethod get = new GetMethod(url);
 		try {
@@ -105,6 +105,10 @@ public class SerializationManager {
 				byte[] bodBytes = get.getResponseBody();
 				bldr.mergeFrom(bodBytes);
 				break;
+			case 404:
+				throw new ResourceNotFoundException("Server could not find resource for "+url);
+			case 401:
+				throw new UnauthorizedException("Server did not allow us to access url "+url+" with supplied credentials");
 			case 500:
 				throw new IOException("Unable to get object from url '"+url+"', server said: " + get.getResponseBodyAsString());
 			default:
