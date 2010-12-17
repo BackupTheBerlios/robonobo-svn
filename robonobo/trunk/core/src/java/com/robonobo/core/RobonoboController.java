@@ -247,12 +247,6 @@ public class RobonoboController {
 	public void start() throws RobonoboException {
 		inst.start();
 		jobRunner.start();
-		if (inst.getConfig().getMetadataServerUsername() != null) {
-			try {
-				login(inst.getConfig().getMetadataServerUsername(), inst.getConfig().getMetadataServerPassword());
-			} catch (Exception ignore) {
-			}
-		}
 	}
 
 	public Track getTrack(String streamId) {

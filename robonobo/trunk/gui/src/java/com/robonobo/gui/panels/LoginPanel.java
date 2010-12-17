@@ -46,6 +46,9 @@ public class LoginPanel extends JPanel implements KeyListener {
 		add(emailLbl, "1,5,r,f");
 		emailField = new JTextField();
 		emailField.addKeyListener(this);
+		String email = frame.getController().getConfig().getMetadataServerUsername();
+		if(email != null)
+			emailField.setText(email);
 		add(emailField, "3,5");
 
 		JLabel pwdLbl = new JLabel("Password:");
@@ -53,6 +56,9 @@ public class LoginPanel extends JPanel implements KeyListener {
 
 		passwordField = new JPasswordField();
 		passwordField.addKeyListener(this);
+		String pwd = frame.getController().getConfig().getMetadataServerPassword();
+		if(pwd != null)
+			passwordField.setText(pwd);
 		add(passwordField, "3,7");
 
 		statusLbl = new JLabel("");
@@ -65,7 +71,15 @@ public class LoginPanel extends JPanel implements KeyListener {
 
 	}
 
-	private void tryLogin() {
+	public JTextField getEmailField() {
+		return emailField;
+	}
+	
+	public JPasswordField getPasswordField() {
+		return passwordField;
+	}
+	
+	public void tryLogin() {
 		emailField.setEnabled(false);
 		passwordField.setEnabled(false);
 		loginBtn.setEnabled(false);
@@ -83,7 +97,7 @@ public class LoginPanel extends JPanel implements KeyListener {
 					statusLbl.setText("Login failed");
 				} catch(Exception e) {
 					statusLbl.setForeground(RoboColor.RED);
-					statusLbl.setText("Server error - see log");
+					statusLbl.setText("Server error");
 				} finally {
 					emailField.setEnabled(true);
 					passwordField.setEnabled(true);

@@ -115,24 +115,25 @@ public class Robonobo {
 	}
 
 	/**
-	 * If this is a cold startup, argControl will be non-null as we need to create a controller to see if they've agreed to the eula. If it's a restart,
-	 * argControl will be null, so we make a new controller
+	 * If this is a cold startup, argControl will be non-null as we need to create a controller to see if they've agreed
+	 * to the eula. If it's a restart, argControl will be null, so we make a new controller
 	 */
-	public static void startup(RobonoboController argControl, String[] args, boolean consoleOnly) throws Exception, InterruptedException {
-		final RobonoboController controller = (argControl == null) ? new RobonoboController(args) : argControl;
+	public static void startup(RobonoboController argControl, String[] args, boolean consoleOnly) throws Exception,
+			InterruptedException {
+		final RobonoboController control = (argControl == null) ? new RobonoboController(args) : argControl;
 		// If there is no Download location set (probably first time through, set it)
 		// Note, we do this here as Platform is not visible inside core
-		if (controller.getConfig().getDownloadDirectory() == null) {
+		if (control.getConfig().getDownloadDirectory() == null) {
 			File dd = Platform.getPlatform().getDefaultDownloadDirectory();
 			dd.mkdirs();
 			String ddPath = dd.getAbsolutePath();
-			controller.getConfig().setDownloadDirectory(ddPath);
+			control.getConfig().setDownloadDirectory(ddPath);
 		}
 
 		// Start the controller and the gui in parallel
 		Thread cThread = new Thread(new CatchingRunnable() {
 			public void doRun() throws Exception {
-				controller.start();
+				control.start();
 			}
 		});
 		cThread.start();
@@ -140,30 +141,18 @@ public class Robonobo {
 		if (consoleOnly) {
 			BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 			PrintWriter out = new PrintWriter(System.out);
-			RobonoboConsole console = new RobonoboConsole("Console", controller, in, out);
+			RobonoboConsole console = new RobonoboConsole("Console", control, in, out);
 			Thread consoleThread = new Thread(console);
 			consoleThread.start();
-			return;
+		} else {
+			final RobonoboFrame frame = new RobonoboFrame(control, args);
+			Platform.getPlatform().initMainWindow(frame);
+			frame.addWindowListener(new WindowAdapter() {
+				public void windowClosing(WindowEvent e) {
+					frame.shutdown();
+				}
+			});
+			frame.setVisible(true);
 		}
-
-		final RobonoboFrame frame = new RobonoboFrame(controller, args);
-		Platform.getPlatform().initMainWindow(frame);
-		frame.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
-				frame.shutdown();
-			}
-		});
-		frame.setVisible(true);
-		// If we have no user, ask for login... otherwise wait until we have
-		// tried to login, and if it fails prompt for details
-//		if (controller.getConfig().getMetadataServerUsername() == null)
-//			frame.showLogin(null);
-
-		// Wait until the controller has started before checking to see
-		// if we've logged in
-		while (controller.getStatus() == RobonoboStatus.Stopped || controller.getStatus() == RobonoboStatus.Starting)
-			Thread.sleep(100);
-		if (controller.getMyUser() == null)
-			frame.showLogin(null);
 	}
 }

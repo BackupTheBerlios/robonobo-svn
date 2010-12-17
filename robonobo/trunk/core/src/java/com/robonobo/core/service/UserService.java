@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.logging.Log;
@@ -47,6 +48,9 @@ public class UserService extends AbstractService {
 	private Map<String, Long> myPlaylistIdsByTitle = Collections.synchronizedMap(new HashMap<String, Long>());
 	private ScheduledFuture updateTask;
 	private ReentrantLock userUpdateLock = new ReentrantLock();
+	private ReentrantLock startupLock = new ReentrantLock();
+	private Condition startupCondition = startupLock.newCondition();
+	private boolean started = false;
 
 	public UserService() {
 		addHardDependency("core.metadata");
@@ -58,6 +62,13 @@ public class UserService extends AbstractService {
 		int updateFreq = rbnb.getConfig().getUserUpdateFrequency();
 		updateTask = rbnb.getExecutor().scheduleAtFixedRate(new UpdateChecker(), updateFreq, updateFreq,
 				TimeUnit.SECONDS);
+		started = true;
+		startupLock.lock();
+		try {
+			startupCondition.signalAll();
+		} finally {
+			startupLock.unlock();
+		}
 	}
 
 	public String getName() {
@@ -79,6 +90,20 @@ public class UserService extends AbstractService {
 	}
 
 	public void login(final String email, final String password) throws IOException, SerializationException {
+		// We get called immediately here, which might be before we've started... wait, if so
+		if (!started) {
+			startupLock.lock();
+			try {
+				try {
+					log.debug("Waiting to login until user service is started");
+					startupCondition.await();
+				} catch (InterruptedException e) {
+					return;
+				}
+			} finally {
+				startupLock.unlock();
+			}
+		}
 		MetadataServerConfig msc = new MetadataServerConfig(rbnb.getConfig().getMetadataServerUrl());
 		log.info("Attempting login as user " + email);
 		try {

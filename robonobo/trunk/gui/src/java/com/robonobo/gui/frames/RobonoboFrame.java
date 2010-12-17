@@ -1,5 +1,8 @@
 package com.robonobo.gui.frames;
 
+import static com.robonobo.common.util.TextUtil.*;
+import static javax.swing.SwingUtilities.*;
+
 import java.awt.Dimension;
 import java.awt.Image;
 import java.io.File;
@@ -15,6 +18,7 @@ import com.robonobo.Robonobo;
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.common.util.FileUtil;
+import com.robonobo.common.util.TextUtil;
 import com.robonobo.core.Platform;
 import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.*;
@@ -64,8 +68,27 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 		if (control.getStatus() != RobonoboStatus.Stopped)
 			setupPrefDialog();
 		control.addTrackListener(this);
+		control.addRobonoboStatusListener(this);
 	}
 
+	@Override
+	public void setVisible(boolean visible) {
+		super.setVisible(visible);
+		if(visible) {
+			// Log us the hell in
+			final LoginPanel lp = new LoginPanel(RobonoboFrame.this, null);
+			dim();
+			showSheet(lp);
+			if (isNonEmpty(lp.getEmailField().getText())) {
+				invokeLater(new CatchingRunnable() {
+					public void doRun() throws Exception {
+						lp.tryLogin();
+					}
+				});
+			}
+		}
+	}
+	
 	public LeftSidebar getLeftSidebar() {
 		return leftSidebar;
 	}
