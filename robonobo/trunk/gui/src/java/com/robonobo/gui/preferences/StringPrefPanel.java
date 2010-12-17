@@ -2,25 +2,24 @@ package com.robonobo.gui.preferences;
 
 import java.awt.Dimension;
 
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-
 import org.debian.tablelayout.TableLayout;
 
+import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 
 
 @SuppressWarnings("serial")
 public class StringPrefPanel extends PrefPanel {
-	JTextField textField;
+	RTextField textField;
 	String propName;
 	
 	public StringPrefPanel(RobonoboFrame frame, String propName, String description) {
 		super(frame);
 		double[][] cellSizen = { { 5, TableLayout.FILL, 5, 230, 5 }, { 25 } };
 		setLayout(new TableLayout(cellSizen));
-		add(new JLabel(description), "1,0");
-		textField = new JTextField(getProperty(propName));
+		RLabel descLbl = new RLabel12(description);
+		add(descLbl, "1,0");
+		textField = new RTextField(getProperty(propName));
 		add(textField, "3,0");
 		this.propName = propName;
 		setMaximumSize(new Dimension(478, 27));

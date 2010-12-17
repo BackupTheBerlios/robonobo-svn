@@ -12,6 +12,8 @@ import javax.swing.*;
 import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.util.NetUtil;
+import com.robonobo.gui.RoboFont;
+import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 
 @SuppressWarnings("serial")
@@ -30,12 +32,13 @@ public class PrefDialog extends JDialog {
 		setLayout(new TableLayout(cellSizen));
 
 		JTabbedPane tabPane = new JTabbedPane();
+		tabPane.setFont(RoboFont.getFont(12, true));
 		tabPane.addTab("Basic", new JScrollPane(createBasicPanel()));
 		tabPane.addTab("Advanced", new JScrollPane(createAdvancedPanel()));
 		tabPane.setSelectedIndex(0);
 		add(tabPane, "1,1,4,1");
 
-		JButton saveBtn = new JButton("Save");
+		RButton saveBtn = new RGlassButton("SAVE");
 		saveBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				doSave();
@@ -43,7 +46,7 @@ public class PrefDialog extends JDialog {
 		});
 		add(saveBtn, "2,3");
 
-		JButton cancelBtn = new JButton("Cancel");
+		RButton cancelBtn = new RRedGlassButton("CANCEL");
 		cancelBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				doCancel();

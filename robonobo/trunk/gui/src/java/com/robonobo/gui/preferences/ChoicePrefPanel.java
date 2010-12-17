@@ -3,18 +3,18 @@ package com.robonobo.gui.preferences;
 import java.awt.Dimension;
 
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
 
 import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.exceptions.SeekInnerCalmException;
+import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 
 @SuppressWarnings("serial")
 public class ChoicePrefPanel extends PrefPanel {
 	String propName;
 	String[] choices;
-	JComboBox combo;
+	RComboBox combo;
 	
 	public ChoicePrefPanel(RobonoboFrame frame, String propName, String description, String[] choices) {
 		super(frame);
@@ -22,8 +22,9 @@ public class ChoicePrefPanel extends PrefPanel {
 		setLayout(new TableLayout(cellSizen));
 		this.propName = propName;
 		this.choices = choices;
-		add(new JLabel(description), "1,0");
-		combo = new JComboBox(choices);
+		RLabel descLbl = new RLabel12(description);
+		add(descLbl, "1,0");
+		combo = new RComboBox(choices);
 		combo.setEditable(false);
 		resetValue();
 		add(combo, "3,0");

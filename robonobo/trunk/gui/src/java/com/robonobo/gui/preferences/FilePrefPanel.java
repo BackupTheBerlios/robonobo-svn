@@ -9,12 +9,13 @@ import javax.swing.*;
 
 import org.debian.tablelayout.TableLayout;
 
+import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 
 
 @SuppressWarnings("serial")
 public class FilePrefPanel extends PrefPanel {
-	JTextField textField;
+	RTextField textField;
 	String propName;
 	JFileChooser fc;
 	
@@ -23,13 +24,15 @@ public class FilePrefPanel extends PrefPanel {
 		double[][] cellSizen = { { 5, TableLayout.FILL, 5, 205, 5, 20, 5 }, { 25 } };
 		setLayout(new TableLayout(cellSizen));
 		this.propName = propName;
-		add(new JLabel(description), "1,0");
-		textField = new JTextField(getProperty(propName));
+		RLabel descLbl = new RLabel12(description);
+		
+		add(descLbl, "1,0");
+		textField = new RTextField(getProperty(propName));
 		textField.setEnabled(false);
 		add(textField, "3,0");
 		fc = new JFileChooser(new File(getProperty(propName)));
 		fc.setFileSelectionMode(selDirectory ? JFileChooser.DIRECTORIES_ONLY : JFileChooser.FILES_ONLY);
-		JButton but = new JButton("...");
+		RButton but = new RGlassButton("...");
 		but.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int retVal = fc.showOpenDialog(FilePrefPanel.this);

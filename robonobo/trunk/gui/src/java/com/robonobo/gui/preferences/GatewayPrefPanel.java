@@ -10,11 +10,12 @@ import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.swing.IntegerTextField;
 import com.robonobo.core.api.config.RobonoboConfig;
+import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 
 @SuppressWarnings("serial")
 public class GatewayPrefPanel extends PrefPanel {
-	JRadioButton autoBut, neverBut, manualBut;
+	RRadioButton autoBut, neverBut, manualBut;
 	JTextField manualPort;
 	RobonoboConfig roboCfg;
 	
@@ -22,7 +23,8 @@ public class GatewayPrefPanel extends PrefPanel {
 		super(frame);
 		double[][] cellSizen = { { 5, TableLayout.FILL, 5, 180, 5, 45, 5 }, { 25, 5, 25, 5, 25 } };
 		setLayout(new TableLayout(cellSizen));
-		add(new JLabel("Router IP address and port"), "1,0");
+		RLabel ipLbl = new RLabel12("Router IP address and port");
+		add(ipLbl, "1,0");
 
 		roboCfg = frame.getController().getConfig();
 		ButtonGroup butGr = new ButtonGroup();
@@ -32,17 +34,17 @@ public class GatewayPrefPanel extends PrefPanel {
 			}
 		};
 		
-		autoBut = new JRadioButton("Automatically detect");
+		autoBut = new RRadioButton("Automatically detect");
 		autoBut.addActionListener(radLis);
 		butGr.add(autoBut);
 		add(autoBut, "3,0,5,0");
 		
-		neverBut = new JRadioButton("Disable (reduces performance)");
+		neverBut = new RRadioButton("Disable (reduces performance)");
 		neverBut.addActionListener(radLis);
 		butGr.add(neverBut);
 		add(neverBut, "3,2,5,2");
 		
-		manualBut = new JRadioButton("Manual: use router port");
+		manualBut = new RRadioButton("Manual: use router port");
 		manualBut.addActionListener(radLis);
 		butGr.add(manualBut);
 		add(manualBut, "3,4");
