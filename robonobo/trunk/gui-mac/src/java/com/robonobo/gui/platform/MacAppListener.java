@@ -37,9 +37,7 @@ public class MacAppListener implements ApplicationListener {
 	}
 
 	public void handleQuit(ApplicationEvent e) {
-		frame.setVisible(false);
-		frame.getController().shutdown();
-		System.exit(0);
+		frame.confirmThenShutdown();
 	}
 
 	public void handleReOpenApplication(ApplicationEvent arg0) {

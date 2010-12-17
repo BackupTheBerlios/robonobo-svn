@@ -149,11 +149,6 @@ public class Robonobo {
 		} else {
 			final RobonoboFrame frame = new RobonoboFrame(control, args);
 			Platform.getPlatform().initMainWindow(frame);
-			frame.addWindowListener(new WindowAdapter() {
-				public void windowClosing(WindowEvent e) {
-					frame.shutdown();
-				}
-			});
 			SwingUtilities.invokeLater(new CatchingRunnable() {
 				public void doRun() throws Exception {
 					frame.setVisible(true);

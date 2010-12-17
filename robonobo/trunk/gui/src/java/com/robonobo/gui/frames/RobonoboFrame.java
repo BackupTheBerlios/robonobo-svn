@@ -5,6 +5,7 @@ import static javax.swing.SwingUtilities.*;
 
 import java.awt.Dimension;
 import java.awt.Image;
+import java.awt.event.*;
 import java.io.File;
 import java.util.*;
 
@@ -50,7 +51,8 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 
 		setTitle("robonobo");
 		setIconImage(GUIUtils.getImage("/img/icon/robonobo-64x64.png"));
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		addWindowListener(new CloseListener());
 
 		menuBar = Platform.getPlatform().getMenuBar(this);
 		setJMenuBar(menuBar);
@@ -82,7 +84,7 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 				public void doRun() throws Exception {
 					// If the tracks haven't loaded yet, show the welcome when they have
 					shownLogin = true;
-					if(tracksLoaded)
+					if (tracksLoaded)
 						showWelcome();
 				}
 			};
@@ -136,7 +138,7 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 	public void allTracksLoaded() {
 		tracksLoaded = true;
 		// If we haven't shown the login sheet yet, show the welcome later
-		if(shownLogin)
+		if (shownLogin)
 			showWelcome();
 	}
 
@@ -319,5 +321,30 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 
 	public RobonoboController getController() {
 		return control;
+	}
+
+	public void confirmThenShutdown() {
+		invokeLater(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				// If we aren't sharing anything, just close
+				if(getController().getShares().size() == 0) {
+					shutdown();
+					return;
+				}
+				// Likewise, if they've asked us not to confirm
+				if(!getGuiConfig().getConfirmExit()) {
+					shutdown();
+					return;
+				}
+				dim();
+				showSheet(new ConfirmClosePanel(RobonoboFrame.this));		
+			}
+		});
+	}
+	
+	class CloseListener extends WindowAdapter {
+		public void windowClosing(WindowEvent e) {
+			confirmThenShutdown();
+		}
 	}
 }

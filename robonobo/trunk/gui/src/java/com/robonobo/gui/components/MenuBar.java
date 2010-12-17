@@ -75,7 +75,7 @@ public class MenuBar extends JMenuBar {
 			quit.setAccelerator(getPlatform().getAccelKeystroke(KeyEvent.VK_Q));
 			quit.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					frame.shutdown();
+					frame.confirmThenShutdown();
 				}
 			});
 			fileMenu.add(quit);
