@@ -73,9 +73,9 @@ public class PlaylistTableModel extends TrackListTableModel implements TrackList
 		}
 	}
 
-	// Hide 'Added to Library' as well as streamid
+	// Hide 'Added to Library' as well as streamid and track num
 	public int[] hiddenCols() {
-		return new int[] { 11, 12 };
+		return new int[] { 4, 11, 12 };
 	}
 
 

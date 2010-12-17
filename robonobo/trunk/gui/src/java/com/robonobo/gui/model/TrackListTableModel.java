@@ -17,7 +17,7 @@ import com.robonobo.core.api.model.Track;
 public abstract class TrackListTableModel extends AbstractTableModel {
 	static DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 		
-	String[] colNames = { " "/*StatusIcon*/, "Title", "Artist", "Album", "Track", "Year", "Time", "Status", "Download", "Upload", "Size", "Added to Library", "Stream Id" };
+	String[] colNames = { " "/*StatusIcon*/, "Title", "Artist", "Album", "Track", "Year", "Time", "Size", "Status", "Download", "Upload", "Added to Library", "Stream Id" };
 	Pattern firstNumPat = Pattern.compile("^\\s*(\\d*).*$");
 
 	public int getColumnCount() {
@@ -76,21 +76,21 @@ public abstract class TrackListTableModel extends AbstractTableModel {
 		case 6:
 			return TimeUtil.minsSecsFromMs(s.getDuration());
 		case 7:
-			return t.getTransferStatus();
+			return FileUtil.humanReadableSize(s.getSize());
 		case 8:
+			return t.getTransferStatus();
+		case 9:
 			int rate = t.getDownloadRate();
 			if(rate == 0) {
 				return null;
 			}
 			return FileUtil.humanReadableSize(rate)+"/s";
-		case 9:
+		case 10:
 			rate = t.getUploadRate();
 			if(rate == 0) {
 				return null;
 			}
 			return FileUtil.humanReadableSize(rate)+"/s";
-		case 10:
-			return FileUtil.humanReadableSize(s.getSize());
 		case 11:
 			return df.format(t.getDateAdded());
 		case 12:
@@ -111,7 +111,7 @@ public abstract class TrackListTableModel extends AbstractTableModel {
 
 	// By default we just hide the stream id, subclasses hide more
 	public int[] hiddenCols() {
-		return new int[] { 12 };
+		return new int[] { 4, 12 };
 	}
 
 	public abstract Track getTrack(int index);

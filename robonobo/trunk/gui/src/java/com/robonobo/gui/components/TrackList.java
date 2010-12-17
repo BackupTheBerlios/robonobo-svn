@@ -74,8 +74,8 @@ public class TrackList extends JPanel implements SearchExecutor {
 		table.getColumn(4).setCellRenderer(tr);
 		table.getColumn(5).setCellRenderer(tr);
 		table.getColumn(6).setCellRenderer(tr);
-		table.getColumn(7).setCellRenderer(new TransferStatusCellRenderer());
-		table.getColumn(8).setCellRenderer(tr);
+		table.getColumn(7).setCellRenderer(tr);
+		table.getColumn(8).setCellRenderer(new TransferStatusCellRenderer());
 		table.getColumn(9).setCellRenderer(tr);
 		table.getColumn(10).setCellRenderer(tr);
 		table.getColumn(11).setCellRenderer(tr);
@@ -109,14 +109,14 @@ public class TrackList extends JPanel implements SearchExecutor {
 		cm.getColumn(0).setPreferredWidth(22); // Status icon
 		cm.getColumn(1).setPreferredWidth(187); // Title
 		cm.getColumn(2).setPreferredWidth(137); // Artist
-		cm.getColumn(3).setPreferredWidth(155); // Album
+		cm.getColumn(3).setPreferredWidth(139); // Album
 		cm.getColumn(4).setPreferredWidth(44); // Track
 		cm.getColumn(5).setPreferredWidth(40); // Year
 		cm.getColumn(6).setPreferredWidth(47); // Time
-		cm.getColumn(7).setPreferredWidth(160); // Status
-		cm.getColumn(8).setPreferredWidth(80); // Download
-		cm.getColumn(9).setPreferredWidth(80); // Upload
-		cm.getColumn(10).setPreferredWidth(60); // Size
+		cm.getColumn(7).setPreferredWidth(60); // Size
+		cm.getColumn(8).setPreferredWidth(160); // Status
+		cm.getColumn(9).setPreferredWidth(80); // Download
+		cm.getColumn(10).setPreferredWidth(80); // Upload
 		cm.getColumn(11).setPreferredWidth(140); // Date Added
 		cm.getColumn(12).setPreferredWidth(300); // Stream Id
 
