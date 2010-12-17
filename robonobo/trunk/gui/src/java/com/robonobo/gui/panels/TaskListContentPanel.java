@@ -15,6 +15,7 @@ import com.robonobo.core.api.Task;
 import com.robonobo.core.api.TaskListener;
 import com.robonobo.gui.RoboColor;
 import com.robonobo.gui.RoboFont;
+import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 
 @SuppressWarnings("serial")
@@ -65,9 +66,9 @@ public class TaskListContentPanel extends ContentPanel implements TaskListener {
 
 	class TaskPanel extends JPanel {
 		Task t;
-		JLabel titleLbl, statusLbl;
-		JProgressBar progBar;
-		private JButton cancelBtn;
+		RLabel titleLbl, statusLbl;
+		RProgressBar progBar;
+		private RButton cancelBtn;
 
 		public TaskPanel(Task task) {
 			this.t = task;
@@ -75,23 +76,20 @@ public class TaskListContentPanel extends ContentPanel implements TaskListener {
 			double[][] cellSizen = { { 10, 200, 10, TableLayout.FILL, 10, 80, 10 }, { 10, 25, 10, 25, 10, 1 } };
 			setLayout(new TableLayout(cellSizen));
 
-			titleLbl = new JLabel(t.getTitle());
-			titleLbl.setFont(RoboFont.getFont(16, true));
+			titleLbl = new RLabel18B(t.getTitle());
 			add(titleLbl, "1,1,3,1,l,c");
 
-			statusLbl = new JLabel(t.getStatusText());
-			statusLbl.setFont(RoboFont.getFont(12, false));
+			statusLbl = new RLabel12(t.getStatusText());
 			add(statusLbl, "1,3");
 
-			progBar = new JProgressBar(0, 100);
+			progBar = new RProgressBar(0, 100);
 			progBar.setStringPainted(true);
 			int pcnt = (int) (100 * t.getCompletion());
 			progBar.setValue(pcnt);
 			progBar.setString(pcnt + "%");
 			add(progBar, "3,3");
 
-			cancelBtn = new JButton("Cancel");
-			cancelBtn.setFont(RoboFont.getFont(12, true));
+			cancelBtn = new RRedGlassButton("Cancel");
 			cancelBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					if(t.getCompletion() < 1f)

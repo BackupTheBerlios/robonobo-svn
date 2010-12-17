@@ -1,22 +1,17 @@
 package com.robonobo.gui.frames;
 
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
+import javax.swing.*;
 
 import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.exceptions.SeekInnerCalmException;
+import com.robonobo.gui.components.base.*;
 
 @SuppressWarnings("serial")
 public class EULAFrame extends JFrame {
@@ -26,15 +21,15 @@ public class EULAFrame extends JFrame {
 		Dimension sz = new Dimension(600, 400);
 		setSize(sz);
 		setPreferredSize(sz);
-		double[][] cellSizen = { { 5, TableLayout.FILL, 80, 5, 80, 5 }, { 5, TableLayout.FILL, 10, 30, 5 } };
+		double[][] cellSizen = { { 5, TableLayout.FILL, 90, 5, 90, 5 }, { 5, TableLayout.FILL, 10, 30, 5 } };
 		setLayout(new TableLayout(cellSizen));
 		setTitle("robonobo license agreement");
-		JTextPane textPane = new JTextPane();
+		RTextPane textPane = new RTextPane();
 		textPane.setContentType("text/html");
 		textPane.setText(getHtmlEula(eulaPath));
 		textPane.setEditable(false);
 		add(new JScrollPane(textPane), "1,1,4,1");
-		JButton acceptBtn = new JButton("Accept");
+		RButton acceptBtn = new RGlassButton("ACCEPT");
 		acceptBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setVisible(false);
@@ -43,8 +38,7 @@ public class EULAFrame extends JFrame {
 			}
 		});
 		add(acceptBtn, "2,3");
-		JButton cancelBtn = new JButton("Cancel");
-		cancelBtn.setName("robonobo.red.button");
+		RButton cancelBtn = new RRedGlassButton("CANCEL");
 		cancelBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setVisible(false);

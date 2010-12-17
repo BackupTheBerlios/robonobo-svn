@@ -1,6 +1,5 @@
 package com.robonobo.gui.panels;
 
-import java.awt.Dimension;
 import java.awt.event.*;
 
 import javax.swing.*;
@@ -14,6 +13,7 @@ import com.robonobo.core.Platform;
 import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.model.Playlist;
 import com.robonobo.gui.RoboFont;
+import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 
 @SuppressWarnings("serial")
@@ -28,16 +28,13 @@ public class DeletePlaylistPanel extends JPanel implements KeyListener {
 		double[][] cellSizen = { {10, TableLayout.FILL, 100, 5, 100, 10}, { 10, 25, 10, TableLayout.FILL, 10, 30, 10 } };
 		setLayout(new TableLayout(cellSizen));
 		setName("playback.background.panel");
-		JLabel title = new JLabel("Delete playlist '"+p.getTitle()+"'");
-		title.setFont(RoboFont.getFont(14, true));
+		RLabel title = new RLabel14B("Delete playlist '"+p.getTitle()+"'");
 		add(title, "1,1,4,1,LEFT,CENTER");
 		
-		JLabel blurb = new JLabel("<html><center>Are you sure you want to delete this playlist?</center></html>");
-		blurb.setFont(RoboFont.getFont(12, false));
+		RLabel blurb = new RLabel12("<html><center>Are you sure you want to delete this playlist?</center></html>");
 		add(blurb, "1,3,4,3");
 		
-		JButton delBtn = new JButton("DELETE");
-		delBtn.setFont(RoboFont.getFont(12, true));
+		RButton delBtn = new RGlassButton("DELETE");
 		delBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				frame.getLeftSidebar().selectMyMusic();
@@ -54,9 +51,7 @@ public class DeletePlaylistPanel extends JPanel implements KeyListener {
 			}
 		});
 		add(delBtn, "2,5");
-		JButton cancelBtn = new JButton("CANCEL");
-		cancelBtn.setName("robonobo.red.button");
-		cancelBtn.setFont(RoboFont.getFont(12, true));
+		RButton cancelBtn = new RRedGlassButton("CANCEL");
 		cancelBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				DeletePlaylistPanel.this.setVisible(false);

@@ -18,6 +18,7 @@ import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.*;
 import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.components.BalanceLabel;
+import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.mina.external.ConnectedNode;
 
@@ -28,10 +29,10 @@ public class StatusPanel extends JPanel implements RobonoboStatusListener, Trans
 	RobonoboController control;
 	private ImageIcon connFailImg;
 	private ImageIcon connOkImg;
-	private JLabel networkStatusIcon;
-	private JLabel numConnsLbl;
+	private RLabel networkStatusIcon;
+	private RLabel numConnsLbl;
 
-	private JLabel bandwidthLbl;
+	private RLabel bandwidthLbl;
 
 	private BalanceLabel balanceLbl;
 	
@@ -49,15 +50,15 @@ public class StatusPanel extends JPanel implements RobonoboStatusListener, Trans
 
 		connOkImg = new ImageIcon(RobonoboFrame.class.getResource("/img/icon/connection_ok.png"));
 		connFailImg = new ImageIcon(RobonoboFrame.class.getResource("/img/icon/connection_fail.png"));
-		networkStatusIcon = new JLabel(connFailImg);
+		networkStatusIcon = new RIconLabel(connFailImg);
 		add(networkStatusIcon, "2,3,2,5");
 		
-		numConnsLbl = new JLabel("Starting...");
+		numConnsLbl = new RLabel9("Starting...");
 		numConnsLbl.setFont(RoboFont.getFont(9, false));
 		numConnsLbl.setForeground(Color.WHITE);
 		add(numConnsLbl, "4,3,5,3,LEFT,BOTTOM");
 
-		bandwidthLbl = new JLabel("");
+		bandwidthLbl = new RLabel9("");
 		bandwidthLbl.setFont(RoboFont.getFont(9, false));
 		bandwidthLbl.setForeground(Color.WHITE);
 		add(bandwidthLbl, "4,4,5,4,LEFT,BOTTOM");

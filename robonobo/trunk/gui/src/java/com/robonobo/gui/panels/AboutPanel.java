@@ -12,6 +12,7 @@ import org.debian.tablelayout.TableLayout;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.core.Platform;
 import com.robonobo.gui.RoboFont;
+import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 
 public class AboutPanel extends JPanel implements KeyListener {
@@ -27,21 +28,17 @@ public class AboutPanel extends JPanel implements KeyListener {
 		setLayout(new TableLayout(cellSizen));
 		setPreferredSize(sz);
 		
-		JLabel title = new JLabel("About robonobo (version "+frame.getController().getVersion()+")");
-		title.setFont(RoboFont.getFont(14, true));
+		RLabel title = new RLabel14B("About robonobo (version "+frame.getController().getVersion()+")");
 		add(title, "1,1,2,1,LEFT,CENTER");
 		
-		JTextPane textPane = new JTextPane();
+		RTextPane textPane = new RTextPane();
 		textPane.setContentType("text/html");
 		textPane.setText(getCredits());
-		textPane.setFont(RoboFont.getFont(12, false));
 		textPane.setEditable(false);
 		JScrollPane scrollPane = new JScrollPane(textPane);
 		add(scrollPane, "1,3,2,3");
 
-		JButton closeBtn = new JButton("CLOSE");
-		closeBtn.setName("robonobo.red.button");
-		closeBtn.setFont(RoboFont.getFont(12, true));
+		RButton closeBtn = new RRedGlassButton("CLOSE");
 		closeBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setVisible(false);

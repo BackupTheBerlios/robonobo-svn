@@ -12,16 +12,16 @@ import javax.swing.*;
 import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
-import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.core.Platform;
 import com.robonobo.core.api.UserPlaylistListener;
 import com.robonobo.core.api.model.*;
+import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.model.MyLibraryTableModel;
 
 @SuppressWarnings("serial")
 public class MyLibraryContentPanel extends ContentPanel implements UserPlaylistListener {
-	private JCheckBox shareLibCheckBox;
+	private RCheckBox shareLibCheckBox;
 
 	public MyLibraryContentPanel(RobonoboFrame frame) {
 		super(frame, new MyLibraryTableModel(frame.getController()));
@@ -91,7 +91,7 @@ public class MyLibraryContentPanel extends ContentPanel implements UserPlaylistL
 		public MyLibraryTabPanel() {
 			double[][] cellSizen = { { 10, 160, 10, TableLayout.FILL, 10 }, { 10, 25, 10, 25, 10, 25, 10 } };
 			setLayout(new TableLayout(cellSizen));
-			shareLibCheckBox = new JCheckBox("Share library with friends?");
+			shareLibCheckBox = new RCheckBox("Share library with friends?");
 			shareLibCheckBox.addItemListener(new ItemListener() {
 				public void itemStateChanged(final ItemEvent e) {
 					frame.getController().getExecutor().execute(new CatchingRunnable() {
@@ -110,7 +110,7 @@ public class MyLibraryContentPanel extends ContentPanel implements UserPlaylistL
 			// We disable it first, it gets re-enabled when we get our user config
 			shareLibCheckBox.setEnabled(false);
 			add(shareLibCheckBox, "1,1,3,1");
-			JButton shareFilesBtn = new JButton("Share from files...");
+			RButton shareFilesBtn = new RGlassButton("Share from files...");
 			shareFilesBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frame.showAddSharesDialog();
@@ -118,7 +118,7 @@ public class MyLibraryContentPanel extends ContentPanel implements UserPlaylistL
 			});
 			add(shareFilesBtn, "1,3");
 			if (Platform.getPlatform().iTunesAvailable()) {
-				JButton shareITunesBtn = new JButton("Share from iTunes...");
+				RButton shareITunesBtn = new RGlassButton("Share from iTunes...");
 				shareITunesBtn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						// TODO Show iTunes stuff being added

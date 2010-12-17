@@ -24,6 +24,7 @@ import com.robonobo.core.api.UserPlaylistListener;
 import com.robonobo.core.api.model.*;
 import com.robonobo.core.wang.WangListener;
 import com.robonobo.gui.RoboFont;
+import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 
 @SuppressWarnings("serial")
@@ -31,10 +32,10 @@ public class WangContentPanel extends ContentPanel implements WangListener, User
 	static final char WANG_CHAR = 0x65fa;
 	static final int MAX_RECENT_TRANSACTIONS = 16;
 	
-	JLabel balanceLbl;
+	RLabel balanceLbl;
 	NumberFormat balanceFmt;
 	AccountTableModel tm;
-	private JButton topUpBtn;
+	private RButton topUpBtn;
 	
 	public WangContentPanel(RobonoboFrame frame) {
 		this.frame = frame;
@@ -43,12 +44,10 @@ public class WangContentPanel extends ContentPanel implements WangListener, User
 				{ 10, 30, 10, 120, 30, 20, 30, 5, TableLayout.FILL, 10 } };
 		setLayout(new TableLayout(cellSizen));
 		
-		JLabel balanceTitle = new JLabel("Current balance: ");
-		balanceTitle.setFont(RoboFont.getFont(22, true));
+		RLabel balanceTitle = new RLabel22B("Current balance: ");
 		add(balanceTitle, "1,1");
 		
-		balanceLbl = new JLabel(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/wang_symbol.png")));
-		balanceLbl.setFont(RoboFont.getFont(22, false));
+		balanceLbl = new RLabel22(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/wang_symbol.png")));
 		add(balanceLbl, "2,1,LEFT,CENTER");
 		balanceFmt = NumberFormat.getInstance();
 		balanceFmt.setMinimumFractionDigits(4);
@@ -59,11 +58,10 @@ public class WangContentPanel extends ContentPanel implements WangListener, User
 			"<br><p>If you download tracks in advance using the download button or the 'Download tracks automatically' playlist option, you will use less Wang than if you play the tracks without downloading them first.</p>"+
 			"<br><p><b>During alpha/beta testing only</b>, you can request an addition to your Wang here:</p>"+
 			"</html>";
-		JLabel blurbLbl = new JLabel(blurb);
-		blurbLbl.setFont(RoboFont.getFont(12, false));
+		RLabel blurbLbl = new RLabel12(blurb);
 		add(blurbLbl, "1,3,2,3,LEFT,TOP");
 		
-		topUpBtn = new JButton("Request Wang Top-Up");
+		topUpBtn = new RGlassButton("Request Wang Top-Up");
 		topUpBtn.setPreferredSize(topUpBtn.getMinimumSize());
 		topUpBtn.setEnabled(false);
 		topUpBtn.addActionListener(new ActionListener() {
@@ -73,8 +71,7 @@ public class WangContentPanel extends ContentPanel implements WangListener, User
 		});
 		add(topUpBtn, "1,4");
 		
-		JLabel tableTitle = new JLabel("Recent transactions:");
-		tableTitle.setFont(RoboFont.getFont(22, true));
+		RLabel tableTitle = new RLabel22B("Recent transactions:");
 		add(tableTitle, "1,6,2,6,LEFT,CENTER");
 		
 		tm = new AccountTableModel();

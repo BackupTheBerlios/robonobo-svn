@@ -22,6 +22,7 @@ import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.UserPlaylistListener;
 import com.robonobo.core.api.model.*;
 import com.robonobo.gui.RoboFont;
+import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.model.PlaylistTableModel;
 import com.robonobo.gui.model.StreamTransfer;
@@ -30,17 +31,17 @@ import com.robonobo.gui.tasks.ImportFilesTask;
 @SuppressWarnings("serial")
 public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylistListener {
 	protected PlaylistConfig pc;
-	protected JTextField titleField;
-	protected JTextField urlField;
-	protected JTextArea descField;
-	protected JButton saveBtn;
-	protected JButton shareBtn;
-	protected JButton delBtn;
-	protected JCheckBox iTunesCB;
-	protected JRadioButton visMeBtn;
-	protected JRadioButton visFriendsBtn;
-	protected JRadioButton visAllBtn;
-	protected Map<String, JCheckBox> options = new HashMap<String, JCheckBox>();
+	protected RTextField titleField;
+	protected RTextField urlField;
+	protected RTextArea descField;
+	protected RButton saveBtn;
+	protected RButton shareBtn;
+	protected RButton delBtn;
+	protected RCheckBox iTunesCB;
+	protected RRadioButton visMeBtn;
+	protected RRadioButton visFriendsBtn;
+	protected RRadioButton visAllBtn;
+	protected Map<String, RCheckBox> options = new HashMap<String, RCheckBox>();
 
 	public MyPlaylistContentPanel(RobonoboFrame frame, Playlist p, PlaylistConfig pc) {
 		super(frame, new PlaylistTableModel(frame.getController(), p, true));
@@ -226,22 +227,18 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			JLabel titleLbl = new JLabel("Title:");
 			titleLbl.setFont(RoboFont.getFont(13, false));
 			add(titleLbl, "1,1");
-			titleField = new JTextField(p.getTitle());
-			titleField.setFont(RoboFont.getFont(11, false));
+			titleField = new RTextField(p.getTitle());
 			titleField.addKeyListener(kl);
 			add(titleField, "3,1,9,1");
 
-			JLabel urlLbl = new JLabel("URL:");
-			urlLbl.setFont(RoboFont.getFont(13, false));
+			RLabel urlLbl = new RLabel13("URL:");
 			add(urlLbl, "1,3");
 			String urlBase = frame.getController().getConfig().getPlaylistUrlBase();
 			String urlText = (p.getPlaylistId() > 0) ? urlBase + Long.toHexString(p.getPlaylistId()) : "(none)";
-			urlField = new JTextField(urlText);
-			urlField.setFont(RoboFont.getFont(11, false));
+			urlField = new RTextField(urlText);
 			urlField.setEnabled(false);
 			add(urlField, "3,3");
-			JButton fbBtn = new JButton(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/facebook.png")));
-			fbBtn.setName("robonobo.small.round.button");
+			RButton fbBtn = new RSmallRoundButton(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/facebook.png")));
 			// TODO If we are not set up for facebook/twitter, take us to our account page instead...
 			fbBtn.setToolTipText("Post playlist update to facebook");
 			fbBtn.addActionListener(new ActionListener() {
@@ -251,8 +248,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			});
 			fbBtn.setEnabled(p.getPlaylistId() > 0);
 			add(fbBtn, "5,3");
-			JButton twitBtn = new JButton(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/twitter.png")));
-			twitBtn.setName("robonobo.small.round.button");
+			RButton twitBtn = new RSmallRoundButton(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/twitter.png")));
 			twitBtn.setToolTipText("Post playlist update to twitter");
 			twitBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -261,10 +257,8 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			});
 			twitBtn.setEnabled(p.getPlaylistId() > 0);
 			add(twitBtn, "7,3");
-			JButton copyBtn = new JButton("Copy URL");
-			copyBtn.setName("robonobo.small.round.button");
+			RButton copyBtn = new RSmallRoundButton("Copy URL");
 			copyBtn.setToolTipText("Copy playlist URL to clipboard");
-			copyBtn.setFont(RoboFont.getFont(11, false));
 			copyBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					Clipboard c = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -275,11 +269,9 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			copyBtn.setEnabled(p.getPlaylistId() > 0);
 			add(copyBtn, "9,3");
 			
-			JLabel descLbl = new JLabel("Description:");
-			descLbl.setFont(RoboFont.getFont(13, false));
+			RLabel descLbl = new RLabel13("Description:");
 			add(descLbl, "1,4,9,4");
-			descField = new JTextArea(p.getDescription());
-			descField.setFont(RoboFont.getFont(11, false));
+			descField = new RTextArea(p.getDescription());
 			descField.addKeyListener(kl);
 			add(new JScrollPane(descField), "1,6,9,8");
 			add(new VisPanel(), "11,1,11,6");
@@ -303,30 +295,26 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 				}
 			};
 
-			JLabel visLbl = new JLabel("Who can see this playlist?");
-			visLbl.setFont(RoboFont.getFont(12, true));
+			RLabel visLbl = new RLabel12B("Who can see this playlist?");
 			add(visLbl);
 			add(Box.createVerticalStrut(5));
 			ButtonGroup bg = new ButtonGroup();
 			// TODO multiple owners?
 			Playlist p = getModel().getPlaylist();
 			String vis = p.getVisibility();
-			visMeBtn = new JRadioButton("Just me");
-			visMeBtn.setFont(RoboFont.getFont(12, false));
+			visMeBtn = new RRadioButton("Just me");
 			visMeBtn.addActionListener(al);
 			if(vis.equals(Playlist.VIS_ME))
 				visMeBtn.setSelected(true);
 			bg.add(visMeBtn);
 			add(visMeBtn);
-			visFriendsBtn = new JRadioButton("Friends");
-			visFriendsBtn.setFont(RoboFont.getFont(12, false));
+			visFriendsBtn = new RRadioButton("Friends");
 			visFriendsBtn.addActionListener(al);
 			if(vis.equals(Playlist.VIS_FRIENDS))
 				visFriendsBtn.setSelected(true);
 			bg.add(visFriendsBtn);
 			add(visFriendsBtn);
-			visAllBtn = new JRadioButton("Everyone");
-			visAllBtn.setFont(RoboFont.getFont(12, false));
+			visAllBtn = new RRadioButton("Everyone");
 			visAllBtn.addActionListener(al);
 			if(vis.equals(Playlist.VIS_ALL))
 				visAllBtn.setSelected(true);
@@ -345,8 +333,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 				}
 			};
 			if (Platform.getPlatform().iTunesAvailable()) {
-				iTunesCB = new JCheckBox("Export playlist to iTunes");
-				iTunesCB.setFont(RoboFont.getFont(12, false));
+				iTunesCB = new RCheckBox("Export playlist to iTunes");
 				iTunesCB.setSelected("true".equalsIgnoreCase(pc.getItem("iTunesExport")));
 				options.put("iTunesExport", iTunesCB);
 				iTunesCB.addActionListener(al);
@@ -362,9 +349,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 
 			// Laying out right-to-left
 			if (allowDel()) {
-				delBtn = new JButton("DELETE");
-				delBtn.setFont(RoboFont.getFont(12, true));
-				delBtn.setName("robonobo.red.button");
+				delBtn = new RRedGlassButton("DELETE");
 				delBtn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						DeletePlaylistPanel dPanel = new DeletePlaylistPanel(frame, getModel().getPlaylist());
@@ -377,8 +362,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			}
 
 			if (allowShare()) {
-				shareBtn = new JButton("SHARE");
-				shareBtn.setFont(RoboFont.getFont(12, true));
+				shareBtn = new RGlassButton("SHARE");
 				shareBtn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						SharePlaylistPanel shPanel = new SharePlaylistPanel(frame, getModel().getPlaylist());
@@ -390,8 +374,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 				add(Box.createHorizontalStrut(5));
 			}
 
-			saveBtn = new JButton("SAVE");
-			saveBtn.setFont(RoboFont.getFont(12, true));
+			saveBtn = new RGlassButton("SAVE");
 			saveBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					Playlist p = getModel().getPlaylist();

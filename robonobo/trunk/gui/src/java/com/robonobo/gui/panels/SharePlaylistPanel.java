@@ -21,6 +21,7 @@ import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.model.Playlist;
 import com.robonobo.core.api.model.User;
 import com.robonobo.gui.RoboFont;
+import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 
 @SuppressWarnings("serial")
@@ -30,9 +31,9 @@ public class SharePlaylistPanel extends JPanel implements KeyListener {
 	private Playlist p;
 	private Dimension size = new Dimension(445, 230);
 	private JList friendList;
-	private JTextField emailField;
-	private JButton shareBtn;
-	private JButton cancelBtn;
+	private RTextField emailField;
+	private RButton shareBtn;
+	private RButton cancelBtn;
 	private Log log = LogFactory.getLog(getClass());
 	private RobonoboController control;
 
@@ -44,11 +45,9 @@ public class SharePlaylistPanel extends JPanel implements KeyListener {
 		double[][] cellSizen = { { 10, 150, 5, 270, 10 }, { 10, 25, 10, 100, 10, 25, 10, 30, 10 } };
 		setLayout(new TableLayout(cellSizen));
 		setName("playback.background.panel");
-		JLabel titleLbl = new JLabel("Share playlist '"+p.getTitle()+"' with:");
-		titleLbl.setFont(RoboFont.getFont(14, true));
+		RLabel titleLbl = new RLabel14B("Share playlist '"+p.getTitle()+"' with:");
 		add(titleLbl, "1,1,3,1");
-		JLabel exFriendLbl = new JLabel("Existing friends:");
-		exFriendLbl.setFont(RoboFont.getFont(12, false));
+		RLabel exFriendLbl = new RLabel12("Existing friends:");
 		add(exFriendLbl, "1,3,l,t");
 
 		Vector<UserWrapper> friends = new Vector<UserWrapper>();
@@ -63,11 +62,9 @@ public class SharePlaylistPanel extends JPanel implements KeyListener {
 		friendList.setCellRenderer(new MyCellRenderer());
 		add(new JScrollPane(friendList), "3,3");
 
-		JLabel newFriendLbl = new JLabel("New friends:");
-		newFriendLbl.setFont(RoboFont.getFont(12, false));
+		RLabel newFriendLbl = new RLabel12("New friends:");
 		add(newFriendLbl, "1,5");
-		emailField = new JTextField(DEFAULT_EMAILS);
-		emailField.setFont(RoboFont.getFont(12, false));
+		emailField = new RTextField(DEFAULT_EMAILS);
 		// Blank on focus
 		emailField.addFocusListener(new FocusAdapter() {
 			public void focusGained(FocusEvent e) {
@@ -81,8 +78,7 @@ public class SharePlaylistPanel extends JPanel implements KeyListener {
 		int invitesLeft = control.getMyUser().getInvitesLeft();
 		if (invitesLeft <= 0)
 			emailField.setEnabled(false);
-		JLabel inviteLbl = new JLabel(numItems(invitesLeft, "invite") + " left");
-		inviteLbl.setFont(RoboFont.getFont(12, false));
+		RLabel inviteLbl = new RLabel12(numItems(invitesLeft, "invite") + " left");
 		add(inviteLbl, "1,7");
 
 		add(new ButtonPanel(), "3,7,r,t");
@@ -115,8 +111,7 @@ public class SharePlaylistPanel extends JPanel implements KeyListener {
 	private class ButtonPanel extends JPanel {
 		public ButtonPanel() {
 			setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-			shareBtn = new JButton("SHARE");
-			shareBtn.setFont(RoboFont.getFont(12, true));
+			shareBtn = new RGlassButton("SHARE");
 			shareBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frame.getController().getExecutor().execute(new CatchingRunnable() {
@@ -151,9 +146,7 @@ public class SharePlaylistPanel extends JPanel implements KeyListener {
 			add(shareBtn);
 			Dimension fillerD = new Dimension(20, 1);
 			add(new Box.Filler(fillerD, fillerD, fillerD));
-			cancelBtn = new JButton("CANCEL");
-			cancelBtn.setName("robonobo.red.button");
-			cancelBtn.setFont(RoboFont.getFont(12, true));
+			cancelBtn = new RRedGlassButton("CANCEL");
 			cancelBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent ae) {
 					SharePlaylistPanel.this.setVisible(false);
@@ -183,6 +176,7 @@ public class SharePlaylistPanel extends JPanel implements KeyListener {
 			JLabel lbl = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 			if (p.getOwnerIds().contains(uw.u.getUserId()))
 				lbl.setEnabled(false);
+			lbl.setFont(RoboFont.getFont(12, false));
 			return lbl;
 		}
 	}

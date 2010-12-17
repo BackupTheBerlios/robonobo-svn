@@ -21,6 +21,7 @@ import com.robonobo.core.api.model.*;
 import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.components.PlaybackProgressBar;
 import com.robonobo.gui.components.TrackList;
+import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 
 @SuppressWarnings("serial")
@@ -50,13 +51,13 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 
 	RobonoboFrame frame;
 	RobonoboController control;
-	JLabel titleLbl, artistLbl, albumLbl;
+	RLabel titleLbl, artistLbl, albumLbl;
 	PlaybackProgressBar playbackProgress;
 	Stream playingStream = null;
 	PlayState state = PlayState.Stopped;
 	TrackList playingTrackList;
 	String playingContentPanel;
-	JButton prevBtn, dloadBtn, playPauseBtn, nextBtn, delBtn;
+	RButton prevBtn, dloadBtn, playPauseBtn, nextBtn, delBtn;
 	boolean checkedNextTrack = false;
 	boolean seeking = false;
 	Log log = LogFactory.getLog(getClass());
@@ -85,23 +86,20 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 			}
 		});
 		add(titlesPanel, BorderLayout.CENTER);
-		titleLbl = new JLabel("");
+		titleLbl = new RLabel24("");
 		titleLbl.setPreferredSize(new Dimension(450, 38));
 		titleLbl.setMinimumSize(new Dimension(450, 38));
 		titleLbl.setMaximumSize(new Dimension(450, 38));
 		titleLbl.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 0));
-		titleLbl.setFont(RoboFont.getFont(24, false));
 		titleLbl.setForeground(BLUE_GRAY);
 		titlesPanel.add(titleLbl);
-		artistLbl = new JLabel("");
+		artistLbl = new RLabel18B("");
 		artistLbl.setPreferredSize(new Dimension(450, 20));
 		artistLbl.setBorder(BorderFactory.createEmptyBorder(1, 10, 0, 0));
-		artistLbl.setFont(RoboFont.getFont(18, true));
 		titlesPanel.add(artistLbl);
-		albumLbl = new JLabel("");
+		albumLbl = new RLabel16("");
 		albumLbl.setPreferredSize(new Dimension(450, 20));
 		albumLbl.setBorder(BorderFactory.createEmptyBorder(2, 10, 0, 0));
-		albumLbl.setFont(RoboFont.getFont(16, false));
 		titlesPanel.add(albumLbl);
 		final JPanel playerPanel = new JPanel(new BorderLayout(5, 5));
 		add(playerPanel, BorderLayout.EAST);
@@ -118,8 +116,7 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 		playerCtrlPanel.add(buttonsPanel, BorderLayout.WEST);
 		buttonsPanel.setOpaque(false);
 		
-		prevBtn = new JButton();
-		prevBtn.setName("robonobo.round.button");
+		prevBtn = new RRoundButton();
 		prevBtn.setIcon(prevIcon);
 		prevBtn.setToolTipText(PREV_TOOLTIP);
 		prevBtn.setPreferredSize(new Dimension(50, 50));
@@ -130,8 +127,7 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 		});
 		buttonsPanel.add(prevBtn);
 
-		dloadBtn = new JButton();
-		dloadBtn.setName("robonobo.round.button");
+		dloadBtn = new RRoundButton();
 		dloadBtn.setIcon(dloadIcon);
 		dloadBtn.setToolTipText(DOWNLOAD_TOOLTIP);
 		dloadBtn.setPreferredSize(new Dimension(50, 50));
@@ -154,16 +150,14 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 		});
 		buttonsPanel.add(dloadBtn);
 
-		playPauseBtn = new JButton();
-		playPauseBtn.setName("robonobo.round.button");
+		playPauseBtn = new RRoundButton();
 		playPauseBtn.setIcon(playIcon);
 		playPauseBtn.setToolTipText(PLAY_TOOLTIP);
 		playPauseBtn.setPreferredSize(new Dimension(50, 50));
 		playPauseBtn.addActionListener(new PlayPauseListener());
 		buttonsPanel.add(playPauseBtn);
 
-		nextBtn = new JButton();
-		nextBtn.setName("robonobo.round.button");
+		nextBtn = new RRoundButton();
 		nextBtn.setIcon(nextIcon);
 		nextBtn.setToolTipText(NEXT_TOOLTIP);
 		nextBtn.setPreferredSize(new Dimension(50, 50));
@@ -176,8 +170,7 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 
 		buttonsPanel.add(Box.createHorizontalStrut(50));
 
-		delBtn = new JButton();
-		delBtn.setName("robonobo.exit.button");
+		delBtn = new RSquareDelButton();
 		delBtn.setToolTipText(DELETE_TOOLTIP);
 		delBtn.setPreferredSize(new Dimension(40, 40));
 		delBtn.addActionListener(new ActionListener() {

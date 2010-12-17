@@ -1,6 +1,7 @@
 package com.robonobo.gui.panels;
 
-import java.awt.*;
+import java.awt.ComponentOrientation;
+import java.awt.HeadlessException;
 import java.awt.event.*;
 
 import javax.swing.*;
@@ -13,17 +14,16 @@ import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.serialization.UnauthorizedException;
 import com.robonobo.core.Platform;
 import com.robonobo.gui.RoboColor;
-import com.robonobo.gui.RoboFont;
-import com.robonobo.gui.components.base.HyperlinkPane;
+import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 
 public class LoginPanel extends JPanel implements KeyListener {
 	private RobonoboFrame frame;
-	private JButton loginBtn;
-	private JButton cancelBtn;
-	private JTextField emailField;
-	private JPasswordField passwordField;
-	private JLabel statusLbl;
+	private RButton loginBtn;
+	private RButton cancelBtn;
+	private RTextField emailField;
+	private RPasswordField passwordField;
+	private RLabel statusLbl;
 	private Runnable onLogin;
 	private Log log = LogFactory.getLog(getClass());
 
@@ -34,35 +34,33 @@ public class LoginPanel extends JPanel implements KeyListener {
 		setLayout(new TableLayout(cellSizen));
 		setName("playback.background.panel");
 
-		JLabel title = new JLabel("Please login to robonobo");
-		title.setFont(RoboFont.getFont(14, true));
+		RLabel title = new RLabel14B("Please login to robonobo");
 		add(title, "1,1,3,1,CENTER,CENTER");
 
 		String blurbTxt = "<html><center>Visit <a href=\"http://robonobo.com\">http://robonobo.com</a> for an account.<br><br></center></html>";
 		HyperlinkPane blurbLbl = new HyperlinkPane(blurbTxt, RoboColor.MID_GRAY);
 		add(blurbLbl, "1,3,3,3");
 
-		JLabel emailLbl = new JLabel("Email:");
+		RLabel emailLbl = new RLabel12("Email:");
 		add(emailLbl, "1,5,r,f");
-		emailField = new JTextField();
+		emailField = new RTextField();
 		emailField.addKeyListener(this);
 		String email = frame.getController().getConfig().getMetadataServerUsername();
 		if(email != null)
 			emailField.setText(email);
 		add(emailField, "3,5");
 
-		JLabel pwdLbl = new JLabel("Password:");
+		RLabel pwdLbl = new RLabel12("Password:");
 		add(pwdLbl, "1,7,r,f");
 
-		passwordField = new JPasswordField();
+		passwordField = new RPasswordField();
 		passwordField.addKeyListener(this);
 		String pwd = frame.getController().getConfig().getMetadataServerPassword();
 		if(pwd != null)
 			passwordField.setText(pwd);
 		add(passwordField, "3,7");
 
-		statusLbl = new JLabel("");
-		statusLbl.setFont(RoboFont.getFont(12, false));
+		statusLbl = new RLabel12("");
 		add(statusLbl, "1,9,3,9,RIGHT,CENTER");
 
 		ButtonPanel btnPanel = new ButtonPanel();
@@ -134,9 +132,7 @@ public class LoginPanel extends JPanel implements KeyListener {
 			setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
 			setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
 			// Laying out right-to-left
-			cancelBtn = new JButton("CANCEL");
-			cancelBtn.setName("robonobo.red.button");
-			cancelBtn.setFont(RoboFont.getFont(12, true));
+			cancelBtn = new RRedGlassButton("CANCEL");
 			cancelBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					LoginPanel.this.setVisible(false);
@@ -152,8 +148,7 @@ public class LoginPanel extends JPanel implements KeyListener {
 
 			add(Box.createHorizontalStrut(10));
 
-			loginBtn = new JButton("LOGIN");
-			loginBtn.setFont(RoboFont.getFont(12, true));
+			loginBtn = new RGlassButton("LOGIN");
 			loginBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					tryLogin();
