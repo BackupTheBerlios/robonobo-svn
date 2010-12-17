@@ -17,6 +17,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 
 import com.robonobo.gui.RoboFont;
+import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.model.ActiveSearchListModel;
 import com.robonobo.gui.model.SearchResultTableModel;
@@ -75,19 +76,18 @@ public class ActiveSearchList extends LeftSidebarList {
 	}
 
 	class CellRenderer extends DefaultListCellRenderer {
-		JLabel textLbl;
-		JLabel closeLbl;
+		RLabel textLbl;
+		RLabel closeLbl;
 		JPanel pnl;
 
 		public CellRenderer() {
-			textLbl = new JLabel();
+			textLbl = new RLabel11();
 			textLbl.setOpaque(false);
 			textLbl.setIcon(new ImageIcon(ActiveSearchList.class.getResource("/img/icon/magnifier_small.png")));
 			textLbl.setMaximumSize(new Dimension(MAX_LBL_WIDTH, 65535));
 			textLbl.setPreferredSize(new Dimension(MAX_LBL_WIDTH, 65535));
 			textLbl.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
-			textLbl.setFont(RoboFont.getFont(11, false));
-			closeLbl = new JLabel(new ImageIcon(ActiveSearchList.class.getResource("/img/icon/red_x_small.png")));
+			closeLbl = new RIconLabel(new ImageIcon(ActiveSearchList.class.getResource("/img/icon/red_x_small.png")));
 			closeLbl.setOpaque(false);
 			closeLbl.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
 			pnl = new JPanel();

@@ -12,6 +12,8 @@ import org.apache.commons.logging.LogFactory;
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.util.NetUtil;
 import com.robonobo.core.Platform;
+import com.robonobo.gui.RoboColor;
+import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.frames.RobonoboFrame;
 
 @SuppressWarnings("serial")
@@ -19,6 +21,9 @@ public class MenuBar extends JMenuBar {
 	private Log log;
 
 	public MenuBar(final RobonoboFrame frame) {
+		setForeground(RoboColor.DARKISH_GRAY);
+		setBackground(RoboColor.OFF_WHITE);
+		setFont(RoboFont.getFont(11, false));
 		log = LogFactory.getLog(getClass());
 		JMenu fileMenu = new JMenu("File");
 		add(fileMenu);

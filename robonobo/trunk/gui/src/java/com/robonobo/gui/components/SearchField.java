@@ -8,11 +8,12 @@ import java.awt.event.*;
 import javax.swing.*;
 
 import com.robonobo.gui.RoboFont;
+import com.robonobo.gui.components.base.RTextField;
 import com.robonobo.gui.panels.LeftSidebar;
 
 @SuppressWarnings("serial")
 public class SearchField extends JPanel {
-	private JTextField searchField;
+	private RTextField searchField;
 
 	public SearchField(final LeftSidebar leftSidebar) {
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -23,7 +24,7 @@ public class SearchField extends JPanel {
 		setMinimumSize(new Dimension(185, 30));
 		setMaximumSize(new Dimension(185, 30));
 		setAlignmentX(0f);
-		searchField = new JTextField("Search...");
+		searchField = new RTextField("Search...");
 		searchField.setFont(RoboFont.getFont(11, false));
 		searchField.setName("robonobo.search.textfield");
 		searchField.setPreferredSize(new Dimension(170, 25));

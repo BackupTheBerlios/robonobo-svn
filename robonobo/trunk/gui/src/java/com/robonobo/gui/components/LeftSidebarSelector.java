@@ -9,6 +9,8 @@ import java.awt.event.MouseEvent;
 import javax.swing.*;
 
 import com.robonobo.gui.RoboFont;
+import com.robonobo.gui.components.base.RLabel;
+import com.robonobo.gui.components.base.RLabel11;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.panels.LeftSidebar;
 
@@ -21,7 +23,7 @@ public abstract class LeftSidebarSelector extends JPanel implements LeftSidebarC
 	protected LeftSidebar sideBar;
 	protected RobonoboFrame frame;
 	protected String contentPanelName;
-	private JLabel lbl;
+	private RLabel lbl;
 
 	public LeftSidebarSelector(LeftSidebar sideBar, RobonoboFrame frame, String label, boolean lblBold, Icon icon, String contentPanelName) {
 		this.sideBar = sideBar;
@@ -34,8 +36,7 @@ public abstract class LeftSidebarSelector extends JPanel implements LeftSidebarC
 		setPreferredSize(new Dimension(185, 19));
 		setMinimumSize(new Dimension(185, 19));
 		setMaximumSize(new Dimension(185, 19));
-		lbl = new JLabel(label, icon, JLabel.LEFT);
-		lbl.setFont(RoboFont.getFont(11, lblBold));
+		lbl = new RLabel11(label, icon, JLabel.LEFT);
 		lbl.setOpaque(false);
 		add(lbl);
 		addMouseListener(new MouseListener());
