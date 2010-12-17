@@ -11,6 +11,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.robonobo.common.util.NetUtil;
+import com.robonobo.gui.RoboFont;
 
 /**
  * Like a JLabel, but may contain hyperlinks, which when clicked will open the platform's default browser
@@ -36,8 +37,8 @@ public class HyperlinkPane extends JEditorPane {
 				}
 			}
 		});
-		
 		setText(text);
+		setFont(RoboFont.getFont(12, false));
 		StyledDocument doc = (StyledDocument) getDocument();
 		SimpleAttributeSet bgAttSet = new SimpleAttributeSet();
 		StyleConstants.setBackground(bgAttSet, bgColor);
