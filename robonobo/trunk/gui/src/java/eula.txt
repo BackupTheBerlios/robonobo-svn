@@ -2,7 +2,7 @@
 IMPORTANT LEGAL STUFF - please read carefully!
 **********************************************
 
-Alpha Testing Legal Notice
+Alpha/Beta Testing Legal Notice
 ==========================
 robonobo is a music sharing program, and is currently under development.  Most 
 parts of the application remain unfinished, and all parts may change at any 
@@ -16,10 +16,11 @@ any copyrighted materials over the network.
 
 Note that this algorithm is not yet finished.  This means that depending on the 
 legal system in your country of residence, you could be liable for civil and/or 
-criminal penalties if you share copyrighted music using robonobo.  As such, 
-during this alpha testing phase, you should only share music that is made 
-freely available by the artist, or music that you own the copyrights to 
-yourself.  If in doubt, do not share the music using robonobo.
+criminal penalties if you share copyrighted music using robonobo.  Therefore, 
+when using the alpha or beta testing versions of robonobo (of which this is 
+one), you should only share music that is made freely available by the artist, 
+or music that you own the copyrights to yourself.  If in doubt, do not share 
+the music using robonobo.
 
 By accepting this agreement and using robonobo, you agree to take on all legal 
 responsibility for any copyrighted materials that you share.  The robonobo 
