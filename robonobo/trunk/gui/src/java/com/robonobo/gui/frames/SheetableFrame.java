@@ -2,10 +2,13 @@ package com.robonobo.gui.frames;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.exceptions.SeekInnerCalmException;
@@ -18,33 +21,53 @@ public class SheetableFrame extends JFrame {
 	private Dimmer dimmer;
 	private JPanel glass;
 	protected JComponent sheet;
+	Log log = LogFactory.getLog(getClass());
+	protected ReentrantLock sheetLock = new ReentrantLock(); // One at a time, fellas
 
 	public SheetableFrame() {
 		glass = (JPanel) getGlassPane();
 	}
 
 	public void showSheet(JComponent sheet) {
-		SheetContainer sc = new SheetContainer(sheet);
-		glass.removeAll();
-		double[][] cellSizen = { { TableLayout.FILL, sc.getPreferredSize().width, TableLayout.FILL },
-				{ sc.getPreferredSize().height, TableLayout.FILL } };
-		glass.setLayout(new TableLayout(cellSizen));
-		glass.add(sc, "1,0");
-		glass.setVisible(true);
+		sheetLock.lock();
+		try {
+			log.debug("showing sheet: " + sheet);
+			SheetContainer sc = new SheetContainer(sheet);
+			glass.removeAll();
+			double[][] cellSizen = { { TableLayout.FILL, sc.getPreferredSize().width, TableLayout.FILL },
+					{ sc.getPreferredSize().height, TableLayout.FILL } };
+			glass.setLayout(new TableLayout(cellSizen));
+			glass.add(sc, "1,0");
+			glass.setVisible(true);
+		} finally {
+			sheetLock.unlock();
+		}
 	}
 
 	public synchronized void dim() {
-		if (dimmer == null)
-			dimmer = new Dimmer();
+		sheetLock.lock();
+		try {
+			log.fatal("dimming");
+			if (dimmer == null)
+				dimmer = new Dimmer();
+		} finally {
+			sheetLock.unlock();
+		}
 	}
 
 	public synchronized void undim() {
-		glass.setVisible(false);
-		if (dimmer != null) {
-			dimmer.dispose();
-			dimmer = null;
+		sheetLock.lock();
+		try {
+			log.debug("undimming");
+			glass.setVisible(false);
+			if (dimmer != null) {
+				dimmer.dispose();
+				dimmer = null;
+			}
+			sheet = null;
+		} finally {
+			sheetLock.unlock();
 		}
-		sheet = null;
 	}
 
 	class SheetContainer extends JPanel {
@@ -53,7 +76,7 @@ public class SheetableFrame extends JFrame {
 			double[][] cellSizen = { { 3, sheet.getPreferredSize().width, 5 }, { 2, sheet.getPreferredSize().height } };
 			setLayout(new TableLayout(cellSizen));
 			add(sheet, "1,1");
-			Dimension sz = new Dimension(sheet.getPreferredSize().width+8, sheet.getPreferredSize().height+7);
+			Dimension sz = new Dimension(sheet.getPreferredSize().width + 8, sheet.getPreferredSize().height + 7);
 			setPreferredSize(sz);
 			setOpaque(true);
 			// TODO Apply hatched bg here

@@ -41,6 +41,8 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 	private LeftSidebar leftSidebar;
 	private Log log = LogFactory.getLog(RobonoboFrame.class);
 	private GuiConfig guiConfig;
+	private boolean tracksLoaded;
+	private boolean shownLogin;
 
 	public RobonoboFrame(RobonoboController control, String[] args) {
 		this.control = control;
@@ -74,9 +76,17 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 	@Override
 	public void setVisible(boolean visible) {
 		super.setVisible(visible);
-		if(visible) {
+		if (visible) {
 			// Log us the hell in
-			final LoginPanel lp = new LoginPanel(RobonoboFrame.this, null);
+			Runnable onLogin = new CatchingRunnable() {
+				public void doRun() throws Exception {
+					// If the tracks haven't loaded yet, show the welcome when they have
+					shownLogin = true;
+					if(tracksLoaded)
+						showWelcome();
+				}
+			};
+			final LoginPanel lp = new LoginPanel(RobonoboFrame.this, onLogin);
 			dim();
 			showSheet(lp);
 			if (isNonEmpty(lp.getEmailField().getText())) {
@@ -88,7 +98,7 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 			}
 		}
 	}
-	
+
 	public LeftSidebar getLeftSidebar() {
 		return leftSidebar;
 	}
@@ -96,7 +106,7 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 	public GuiConfig getGuiConfig() {
 		return guiConfig;
 	}
-	
+
 	public PlaybackPanel getPlaybackPanel() {
 		return mainPanel.getPlaybackPanel();
 	}
@@ -124,6 +134,13 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 
 	@Override
 	public void allTracksLoaded() {
+		tracksLoaded = true;
+		// If we haven't shown the login sheet yet, show the welcome later
+		if(shownLogin)
+			showWelcome();
+	}
+
+	public void showWelcome() {
 		// If we have no shares, show the welcome dialog
 		final boolean gotShares = (control.getShares().size() > 0);
 		if (!gotShares && guiConfig.getShowWelcomePanel()) {
@@ -134,7 +151,6 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 				}
 			});
 		}
-
 	}
 
 	@Override
@@ -230,8 +246,9 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 				showSheet(ap);
 			}
 		});
-		
+
 	}
+
 	public void showPreferences() {
 		prefDialog.setVisible(true);
 	}

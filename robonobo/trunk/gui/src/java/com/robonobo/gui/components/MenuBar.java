@@ -1,5 +1,7 @@
 package com.robonobo.gui.components;
 
+import static com.robonobo.core.Platform.*;
+
 import java.awt.event.*;
 
 import javax.swing.*;
@@ -22,7 +24,7 @@ public class MenuBar extends JMenuBar {
 		add(fileMenu);
 
 		JMenuItem login = new JMenuItem("Login...", KeyEvent.VK_L);
-		login.setAccelerator(Platform.getPlatform().getAccelKeystroke(KeyEvent.VK_L));
+		login.setAccelerator(getPlatform().getAccelKeystroke(KeyEvent.VK_L));
 		login.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				frame.showLogin(null);
@@ -30,8 +32,16 @@ public class MenuBar extends JMenuBar {
 		});
 		fileMenu.add(login);
 
+		JMenuItem showWelcome = new JMenuItem("Show welcome page...");
+		showWelcome.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				frame.showWelcome();
+			}
+		});
+		fileMenu.add(showWelcome);
+		
 		JMenuItem shareFiles = new JMenuItem("Share files...", KeyEvent.VK_O);
-		shareFiles.setAccelerator(Platform.getPlatform().getAccelKeystroke(KeyEvent.VK_O));
+		shareFiles.setAccelerator(getPlatform().getAccelKeystroke(KeyEvent.VK_O));
 		shareFiles.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				frame.showAddSharesDialog();
@@ -39,9 +49,9 @@ public class MenuBar extends JMenuBar {
 		});
 		fileMenu.add(shareFiles);
 
-		if (Platform.getPlatform().iTunesAvailable()) {
+		if (getPlatform().iTunesAvailable()) {
 			JMenuItem iTunesImport = new JMenuItem("Share tracks/playlists from iTunes...", KeyEvent.VK_I);
-			iTunesImport.setAccelerator(Platform.getPlatform().getAccelKeystroke(KeyEvent.VK_I));
+			iTunesImport.setAccelerator(getPlatform().getAccelKeystroke(KeyEvent.VK_I));
 			iTunesImport.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frame.getController().getExecutor().execute(new CatchingRunnable() {
@@ -55,9 +65,9 @@ public class MenuBar extends JMenuBar {
 			fileMenu.add(iTunesImport);
 		}
 
-		if (Platform.getPlatform().shouldShowQuitInFileMenu()) {
+		if (getPlatform().shouldShowQuitInFileMenu()) {
 			JMenuItem quit = new JMenuItem("Quit", KeyEvent.VK_Q);
-			quit.setAccelerator(Platform.getPlatform().getAccelKeystroke(KeyEvent.VK_Q));
+			quit.setAccelerator(getPlatform().getAccelKeystroke(KeyEvent.VK_Q));
 			quit.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frame.shutdown();
@@ -76,7 +86,7 @@ public class MenuBar extends JMenuBar {
 		});
 		networkMenu.add(updateUsers);
 
-		if (Platform.getPlatform().shouldShowOptionsMenu()) {
+		if (getPlatform().shouldShowOptionsMenu()) {
 			JMenu optionsMenu = new JMenu("Options");
 			add(optionsMenu);
 			JMenuItem showPrefs = new JMenuItem("Preferences...");
@@ -107,7 +117,7 @@ public class MenuBar extends JMenuBar {
 
 		JMenu helpMenu = new JMenu("Help");
 		add(helpMenu);
-		if (Platform.getPlatform().shouldShowAboutInHelpMenu()) {
+		if (getPlatform().shouldShowAboutInHelpMenu()) {
 			JMenuItem showAbout = new JMenuItem("About robonobo");
 			showAbout.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {

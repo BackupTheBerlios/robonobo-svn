@@ -13,6 +13,8 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
+import javax.swing.SwingUtilities;
+
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.console.RobonoboConsole;
 import com.robonobo.core.Platform;
@@ -121,8 +123,8 @@ public class Robonobo {
 	public static void startup(RobonoboController argControl, String[] args, boolean consoleOnly) throws Exception,
 			InterruptedException {
 		final RobonoboController control = (argControl == null) ? new RobonoboController(args) : argControl;
-		// If there is no Download location set (probably first time through, set it)
-		// Note, we do this here as Platform is not visible inside core
+		// If there is no Download location set (probably first time through), set it
+		// We do this here as Platform is not visible inside core
 		if (control.getConfig().getDownloadDirectory() == null) {
 			File dd = Platform.getPlatform().getDefaultDownloadDirectory();
 			dd.mkdirs();
@@ -152,7 +154,11 @@ public class Robonobo {
 					frame.shutdown();
 				}
 			});
-			frame.setVisible(true);
+			SwingUtilities.invokeLater(new CatchingRunnable() {
+				public void doRun() throws Exception {
+					frame.setVisible(true);
+				}
+			});
 		}
 	}
 }
