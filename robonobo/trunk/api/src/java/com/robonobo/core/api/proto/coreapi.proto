@@ -102,3 +102,7 @@ message UserConfigMsg {
 	required int64 user_id = 1;
 	repeated UserConfigItem item = 2;
 }
+
+message UpdateMsg {
+	required string updateHtml = 1;
+}
