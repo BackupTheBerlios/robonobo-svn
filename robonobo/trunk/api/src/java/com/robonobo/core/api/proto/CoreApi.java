@@ -6339,6 +6339,294 @@ public final class CoreApi {
     // @@protoc_insertion_point(class_scope:coreapi.UserConfigMsg)
   }
   
+  public static final class UpdateMsg extends
+      com.google.protobuf.GeneratedMessage {
+    // Use UpdateMsg.newBuilder() to construct.
+    private UpdateMsg() {
+      initFields();
+    }
+    private UpdateMsg(boolean noInit) {}
+    
+    private static final UpdateMsg defaultInstance;
+    public static UpdateMsg getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public UpdateMsg getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.robonobo.core.api.proto.CoreApi.internal_static_coreapi_UpdateMsg_descriptor;
+    }
+    
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.robonobo.core.api.proto.CoreApi.internal_static_coreapi_UpdateMsg_fieldAccessorTable;
+    }
+    
+    // required string updateHtml = 1;
+    public static final int UPDATEHTML_FIELD_NUMBER = 1;
+    private boolean hasUpdateHtml;
+    private java.lang.String updateHtml_ = "";
+    public boolean hasUpdateHtml() { return hasUpdateHtml; }
+    public java.lang.String getUpdateHtml() { return updateHtml_; }
+    
+    private void initFields() {
+    }
+    public final boolean isInitialized() {
+      if (!hasUpdateHtml) return false;
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (hasUpdateHtml()) {
+        output.writeString(1, getUpdateHtml());
+      }
+      getUnknownFields().writeTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      if (hasUpdateHtml()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeStringSize(1, getUpdateHtml());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    public static com.robonobo.core.api.proto.CoreApi.UpdateMsg parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UpdateMsg parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UpdateMsg parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UpdateMsg parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UpdateMsg parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UpdateMsg parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UpdateMsg parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UpdateMsg parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UpdateMsg parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.UpdateMsg parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(com.robonobo.core.api.proto.CoreApi.UpdateMsg prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> {
+      private com.robonobo.core.api.proto.CoreApi.UpdateMsg result;
+      
+      // Construct using com.robonobo.core.api.proto.CoreApi.UpdateMsg.newBuilder()
+      private Builder() {}
+      
+      private static Builder create() {
+        Builder builder = new Builder();
+        builder.result = new com.robonobo.core.api.proto.CoreApi.UpdateMsg();
+        return builder;
+      }
+      
+      protected com.robonobo.core.api.proto.CoreApi.UpdateMsg internalGetResult() {
+        return result;
+      }
+      
+      public Builder clear() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "Cannot call clear() after build().");
+        }
+        result = new com.robonobo.core.api.proto.CoreApi.UpdateMsg();
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(result);
+      }
+      
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.robonobo.core.api.proto.CoreApi.UpdateMsg.getDescriptor();
+      }
+      
+      public com.robonobo.core.api.proto.CoreApi.UpdateMsg getDefaultInstanceForType() {
+        return com.robonobo.core.api.proto.CoreApi.UpdateMsg.getDefaultInstance();
+      }
+      
+      public boolean isInitialized() {
+        return result.isInitialized();
+      }
+      public com.robonobo.core.api.proto.CoreApi.UpdateMsg build() {
+        if (result != null && !isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return buildPartial();
+      }
+      
+      private com.robonobo.core.api.proto.CoreApi.UpdateMsg buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        if (!isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return buildPartial();
+      }
+      
+      public com.robonobo.core.api.proto.CoreApi.UpdateMsg buildPartial() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "build() has already been called on this Builder.");
+        }
+        com.robonobo.core.api.proto.CoreApi.UpdateMsg returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.robonobo.core.api.proto.CoreApi.UpdateMsg) {
+          return mergeFrom((com.robonobo.core.api.proto.CoreApi.UpdateMsg)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+      
+      public Builder mergeFrom(com.robonobo.core.api.proto.CoreApi.UpdateMsg other) {
+        if (other == com.robonobo.core.api.proto.CoreApi.UpdateMsg.getDefaultInstance()) return this;
+        if (other.hasUpdateHtml()) {
+          setUpdateHtml(other.getUpdateHtml());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder(
+            this.getUnknownFields());
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              this.setUnknownFields(unknownFields.build());
+              return this;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                this.setUnknownFields(unknownFields.build());
+                return this;
+              }
+              break;
+            }
+            case 10: {
+              setUpdateHtml(input.readString());
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      // required string updateHtml = 1;
+      public boolean hasUpdateHtml() {
+        return result.hasUpdateHtml();
+      }
+      public java.lang.String getUpdateHtml() {
+        return result.getUpdateHtml();
+      }
+      public Builder setUpdateHtml(java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  result.hasUpdateHtml = true;
+        result.updateHtml_ = value;
+        return this;
+      }
+      public Builder clearUpdateHtml() {
+        result.hasUpdateHtml = false;
+        result.updateHtml_ = getDefaultInstance().getUpdateHtml();
+        return this;
+      }
+      
+      // @@protoc_insertion_point(builder_scope:coreapi.UpdateMsg)
+    }
+    
+    static {
+      defaultInstance = new UpdateMsg(true);
+      com.robonobo.core.api.proto.CoreApi.internalForceInit();
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:coreapi.UpdateMsg)
+  }
+  
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_coreapi_EndPoint_descriptor;
   private static
@@ -6409,6 +6697,11 @@ public final class CoreApi {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_coreapi_UserConfigMsg_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_coreapi_UpdateMsg_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_coreapi_UpdateMsg_fieldAccessorTable;
   
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -6454,8 +6747,9 @@ public final class CoreApi {
       "ect_id\030\003 \003(\t\"7\n\016UserConfigItem\022\021\n\titem_n" +
       "ame\030\001 \002(\t\022\022\n\nitem_value\030\002 \002(\t\"G\n\rUserCon" +
       "figMsg\022\017\n\007user_id\030\001 \002(\003\022%\n\004item\030\002 \003(\0132\027." +
-      "coreapi.UserConfigItemB&\n\033com.robonobo.c" +
-      "ore.api.protoB\007CoreApi"
+      "coreapi.UserConfigItem\"\037\n\tUpdateMsg\022\022\n\nu" +
+      "pdateHtml\030\001 \002(\tB&\n\033com.robonobo.core.api" +
+      ".protoB\007CoreApi"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -6574,6 +6868,14 @@ public final class CoreApi {
               new java.lang.String[] { "UserId", "Item", },
               com.robonobo.core.api.proto.CoreApi.UserConfigMsg.class,
               com.robonobo.core.api.proto.CoreApi.UserConfigMsg.Builder.class);
+          internal_static_coreapi_UpdateMsg_descriptor =
+            getDescriptor().getMessageTypes().get(14);
+          internal_static_coreapi_UpdateMsg_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_coreapi_UpdateMsg_descriptor,
+              new java.lang.String[] { "UpdateHtml", },
+              com.robonobo.core.api.proto.CoreApi.UpdateMsg.class,
+              com.robonobo.core.api.proto.CoreApi.UpdateMsg.Builder.class);
           return null;
         }
       };
