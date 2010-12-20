@@ -32,6 +32,7 @@ public class RobonoboConfig implements Serializable {
 	boolean agreedToEula = false;
 	boolean allowLoopbackAddress = false;
 	String playlistUrlBase = "http://rbnb.co/p/";
+	String updateCheckUrl = "http://robonobo.com/checkupdate";
 
 	public RobonoboConfig() {
 	}
@@ -234,5 +235,13 @@ public class RobonoboConfig implements Serializable {
 
 	public void setPlaylistUrlBase(String playlistUrlBase) {
 		this.playlistUrlBase = playlistUrlBase;
+	}
+
+	public String getUpdateCheckUrl() {
+		return updateCheckUrl;
+	}
+
+	public void setUpdateCheckUrl(String updateCheckUrl) {
+		this.updateCheckUrl = updateCheckUrl;
 	}
 }

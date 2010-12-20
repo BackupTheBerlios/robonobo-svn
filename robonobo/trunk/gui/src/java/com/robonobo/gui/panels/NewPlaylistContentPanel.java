@@ -1,10 +1,6 @@
 package com.robonobo.gui.panels;
 
-import java.security.SecureRandom;
-
 import javax.swing.SwingUtilities;
-
-import org.doomdark.uuid.UUIDGenerator;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.RobonoboController;
@@ -19,6 +15,7 @@ public class NewPlaylistContentPanel extends MyPlaylistContentPanel {
 
 	public NewPlaylistContentPanel(RobonoboFrame frame) {
 		super(frame, new Playlist(), new PlaylistConfig(), new NewPlaylistTableModel(frame.getController()));
+		showMessage("How do I add tracks?", "<html>Drag tracks from your library, or a friend's library, or any other playlist, and drop them on the highlighted 'New Playlist' entry on the left.<br>You can also drag files directly from your computer.</html>");
 	}
 
 	@Override

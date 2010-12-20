@@ -14,7 +14,7 @@ public class MainPanel extends JPanel {
 
 	public MainPanel(RobonoboFrame f) {
 		frame = f;
-		double[][] cellSizen = { { TableLayout.FILL }, { 100, 10, TableLayout.FILL } };
+		double[][] cellSizen = { { TableLayout.FILL }, { 100, 5, TableLayout.FILL } };
 		setLayout(new TableLayout(cellSizen));
 		playbackPanel = new PlaybackPanel(frame);
 		add(playbackPanel, "0,0");

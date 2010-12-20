@@ -2,6 +2,10 @@ package com.robonobo.gui.panels;
 
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.*;
 
@@ -9,7 +13,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.debian.tablelayout.TableLayout;
 
+import com.robonobo.gui.RoboColor;
 import com.robonobo.gui.components.TrackList;
+import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.model.StreamTransfer;
 import com.robonobo.gui.model.TrackListTableModel;
@@ -23,7 +29,8 @@ public abstract class ContentPanel extends JPanel {
 	protected JTabbedPane tabPane;
 	protected RobonoboFrame frame;
 	protected Log log = LogFactory.getLog(getClass());
-
+	private List<MessagePanel> msgs = new ArrayList<MessagePanel>();
+	
 	public ContentPanel() {
 	}
 
@@ -44,6 +51,36 @@ public abstract class ContentPanel extends JPanel {
 		tabPane.setEnabledAt(0, false);
 	}
 
+	/**
+	 * Only call this from the swing UI thread, or else you might get concurrency issues
+	 */
+	public void showMessage(String title, String htmlMsg) {
+		MessagePanel mp = new MessagePanel(title, htmlMsg);
+		if(msgs.size() == 0)
+			showMessage(mp);
+		msgs.add(mp);
+	}
+	
+	private void showMessage(MessagePanel mp) {
+		TableLayout tl = (TableLayout) getLayout();
+		tl.insertRow(0, 5);
+		tl.insertRow(0, mp.getPreferredSize().height);		
+		add(mp, "0,0");
+		revalidate();
+	}
+	
+	private void messageClosed() {
+		TableLayout tl = (TableLayout) getLayout();
+		tl.deleteRow(0);
+		tl.deleteRow(0);
+		msgs.remove(0);
+		if(msgs.size() > 0) {
+			MessagePanel mp = msgs.get(0);
+			showMessage(mp);
+		} else
+			revalidate();
+	}
+	
 	public TrackList getTrackList() {
 		return trackList;
 	}
@@ -62,6 +99,25 @@ public abstract class ContentPanel extends JPanel {
 		return false;
 	}
 
+	private class MessagePanel extends JPanel {
+		public MessagePanel(String title, String htmlMsg) {
+			double[][] cellSizen = { {10, TableLayout.FILL, 70, 10}, {10, 25, 5, TableLayout.FILL, 10} };
+			setName("playback.background.panel");
+			setLayout(new TableLayout(cellSizen));
+			RLabel titleLbl = new RLabel18B(title);
+			add(titleLbl, "1,1");
+			RButton closeBtn = new RRedGlassButton("close");
+			closeBtn.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					messageClosed();
+				}
+			});
+			add(closeBtn, "2,1");
+			HyperlinkPane msgPane = new HyperlinkPane(htmlMsg, RoboColor.MID_GRAY);
+			add(msgPane, "1,3,2,3");
+		}
+	}
+	
 	private TransferHandler createTrackListTransferHandler() {
 		return new TransferHandler() {
 			@Override

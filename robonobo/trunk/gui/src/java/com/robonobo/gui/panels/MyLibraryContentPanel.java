@@ -1,17 +1,21 @@
 package com.robonobo.gui.panels;
 
+import static com.robonobo.common.util.TextUtil.*;
+
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.*;
 
 import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
+import com.robonobo.common.util.TextUtil;
 import com.robonobo.core.Platform;
 import com.robonobo.core.api.UserPlaylistListener;
 import com.robonobo.core.api.model.*;
@@ -23,11 +27,25 @@ import com.robonobo.gui.model.MyLibraryTableModel;
 public class MyLibraryContentPanel extends ContentPanel implements UserPlaylistListener {
 	private RCheckBox shareLibCheckBox;
 
-	public MyLibraryContentPanel(RobonoboFrame frame) {
-		super(frame, new MyLibraryTableModel(frame.getController()));
+	public MyLibraryContentPanel(RobonoboFrame f) {
+		super(f, new MyLibraryTableModel(f.getController()));
 		tabPane.insertTab("library", null, new MyLibraryTabPanel(), null, 0);
 		tabPane.setSelectedIndex(0);
 		frame.getController().addUserPlaylistListener(this);
+		
+		frame.getController().getExecutor().schedule(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				final String updateMsg = frame.getController().getUpdateMessage();
+				if(isNonEmpty(updateMsg)) {
+					final String title = "A new version is available";
+					SwingUtilities.invokeLater(new CatchingRunnable() {
+						public void doRun() throws Exception {
+							showMessage(title, updateMsg);						
+						}
+					});
+				}
+			}
+		}, 10, TimeUnit.SECONDS);
 	}
 
 	@Override

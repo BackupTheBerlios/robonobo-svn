@@ -1,5 +1,6 @@
 package com.robonobo.core.service;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.locks.Condition;
@@ -9,11 +10,13 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.robonobo.common.serialization.SerializationException;
 import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.config.MetadataServerConfig;
 import com.robonobo.core.api.model.Stream;
 import com.robonobo.core.api.model.User;
 import com.robonobo.core.api.proto.CoreApi.StreamMsg;
+import com.robonobo.core.api.proto.CoreApi.UpdateMsg;
 
 public class MetadataService extends AbstractService {
 	Log log = LogFactory.getLog(getClass());
@@ -90,10 +93,23 @@ public class MetadataService extends AbstractService {
 	public void putStream(Stream stream) throws RobonoboException {
 		try {
 			getRobonobo().getDbService().putStream(stream);
-			User me = getRobonobo().getUsersService().getMyUser();
 			getRobonobo().getSerializationManager().putObjectToUrl(stream.toMsg(), metadataServer.getStreamUrl(stream.getStreamId()));
 		} catch (Exception e) {
 			throw new RobonoboException(e);
+		}
+	}
+	
+	/**
+	 * @return The update message, or an empty string if there is no message
+	 */
+	public String getUpdateMessage() throws RobonoboException {
+		String checkUrl = rbnb.getConfig().getUpdateCheckUrl() + "?version="+rbnb.getVersion();
+		UpdateMsg.Builder ub = UpdateMsg.newBuilder();
+		try {
+			rbnb.getSerializationManager().getObjectFromUrl(ub, checkUrl);
+			return ub.build().getUpdateHtml();
+		} catch (Exception e) {
+			throw new RobonoboException(e); 
 		}
 	}
 }

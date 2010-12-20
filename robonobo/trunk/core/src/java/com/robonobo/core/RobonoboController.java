@@ -511,6 +511,10 @@ public class RobonoboController {
 		inst.getUsersService().requestTopUp();
 	}
 	
+	public String getUpdateMessage() throws RobonoboException {
+		return inst.getMetadataService().getUpdateMessage();
+	}
+	
 	/**
 	 * For debugging only
 	 */
