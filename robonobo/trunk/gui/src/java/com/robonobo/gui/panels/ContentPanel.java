@@ -14,6 +14,7 @@ import org.apache.commons.logging.LogFactory;
 import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.gui.RoboColor;
+import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.components.TrackList;
 import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
@@ -44,6 +45,7 @@ public abstract class ContentPanel extends JPanel {
 		add(trackList, "0,0");
 
 		tabPane = new JTabbedPane(JTabbedPane.TOP);
+		tabPane.setFont(RoboFont.getFont(16, true));
 		tabPane.setBorder(BorderFactory.createEmptyBorder(0, 1, 0, 1));
 		add(tabPane, "0,2");
 		// TODO Add the track details once we have identifiable tracks...

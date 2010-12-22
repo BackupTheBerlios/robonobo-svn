@@ -21,6 +21,7 @@ import com.robonobo.core.Platform;
 import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.UserPlaylistListener;
 import com.robonobo.core.api.model.*;
+import com.robonobo.gui.RoboColor;
 import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
@@ -213,7 +214,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 	class PlaylistDetailsPanel extends JPanel implements ClipboardOwner {
 
 		public PlaylistDetailsPanel() {
-			double[][] cellSizen = { { 5, 35, 5, 215, 5, 30, 5, 30, 5, 90, 10, 180, 5, TableLayout.FILL, 5 },
+			double[][] cellSizen = { { 5, 35, 5, 215, 5, 30, 5, 30, 5, 90, 10, 150, 5, TableLayout.FILL, 5 },
 					{ 5, 25, 5, 25, 25, 0, TableLayout.FILL, 5, 30, 5 } };
 			setLayout(new TableLayout(cellSizen));
 
@@ -272,6 +273,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			RLabel descLbl = new RLabel13("Description:");
 			add(descLbl, "1,4,9,4");
 			descField = new RTextArea(p.getDescription());
+			descField.setBGColor(RoboColor.MID_GRAY);
 			descField.addKeyListener(kl);
 			add(new JScrollPane(descField), "1,6,9,8");
 			add(new VisPanel(), "11,1,11,6");
@@ -295,7 +297,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 				}
 			};
 
-			RLabel visLbl = new RLabel12B("Who can see this playlist?");
+			RLabel visLbl = new RLabel12B("Show playlist to:");
 			add(visLbl);
 			add(Box.createVerticalStrut(5));
 			ButtonGroup bg = new ButtonGroup();

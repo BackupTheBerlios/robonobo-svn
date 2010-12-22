@@ -1,21 +1,24 @@
 package com.robonobo.gui.panels;
 
+import java.awt.Color;
+import java.awt.ComponentOrientation;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.*;
+import javax.swing.text.*;
 
 import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
-import com.robonobo.common.util.TextUtil;
+import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.core.Platform;
 import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.UserPlaylistListener;
 import com.robonobo.core.api.model.*;
-import com.robonobo.gui.RoboFont;
+import com.robonobo.gui.RoboColor;
 import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.model.PlaylistTableModel;
@@ -25,7 +28,7 @@ public class FriendPlaylistContentPanel extends ContentPanel implements UserPlay
 	Playlist p;
 	PlaylistConfig pc;
 	RLabel titleField;
-	RLabel descField;
+	RTextPane descField;
 	RButton saveBtn;
 	RCheckBox autoDownloadCB;
 	RCheckBox iTunesCB;
@@ -80,29 +83,29 @@ public class FriendPlaylistContentPanel extends ContentPanel implements UserPlay
 
 	void updateFields() {
 		titleField.setText(p.getTitle());
-		descField.setText("<html>" + TextUtil.escapeHtml(p.getDescription()) + "</html>");
+		String desc = p.getDescription();
+		descField.setText(desc);
 	}
 
 	class PlaylistDetailsPanel extends JPanel {
 		public PlaylistDetailsPanel() {
-			double[][] cellSizen = { { 5, 150, 5, 250, 5, TableLayout.FILL, 5 },
-					{ 5, 30, 5, 30, 5, TableLayout.FILL, 5, 30, 5 } };
+			double[][] cellSizen = { { 5, 400, 20, TableLayout.FILL, 5 },
+					{ 0, 20, 5, TableLayout.FILL, 5, 30, 5 } };
 			setLayout(new TableLayout(cellSizen));
 
-			RLabel titleLbl = new RLabel13("Title:");
-			add(titleLbl, "1,1");
-			titleField = new RLabel13();
-			add(titleField, "3,1");
+			titleField = new RLabel18B();
+			add(titleField, "1,1");
 
-			RLabel descLbl = new RLabel13("Description:");
-			add(descLbl, "1,3,3,3,f,t");
-			descField = new RLabel13();
-			add(descField, "1,5,3,5");
+			descField = new RTextPane();
+			descField.setBGColor(RoboColor.MID_GRAY);
+			descField.setEditable(false);
+			JScrollPane sp = new JScrollPane(descField);
+			add(sp, "1,3,1,5");
 
 			updateFields();
 
-			add(new OptsPanel(), "5,1,5,5");
-			add(new ButtonsPanel(), "5,7");
+			add(new OptsPanel(), "3,1,3,3");
+			add(new ButtonsPanel(), "3,5");
 		}
 	}
 
@@ -110,6 +113,11 @@ public class FriendPlaylistContentPanel extends ContentPanel implements UserPlay
 		public OptsPanel() {
 			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
+			add(Box.createVerticalStrut(3));
+			RLabel optsLbl = new RLabel14B("Playlist options");
+			add(optsLbl);
+			add(Box.createVerticalStrut(2));
+			
 			ActionListener al = new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					saveBtn.setEnabled(true);
@@ -134,7 +142,8 @@ public class FriendPlaylistContentPanel extends ContentPanel implements UserPlay
 
 	class ButtonsPanel extends JPanel {
 		public ButtonsPanel() {
-			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+			setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+			setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
 
 			saveBtn = new RGlassButton("SAVE");
 			saveBtn.addActionListener(new ActionListener() {

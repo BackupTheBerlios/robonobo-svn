@@ -11,6 +11,7 @@ import javax.swing.*;
 import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.exceptions.SeekInnerCalmException;
+import com.robonobo.gui.RoboColor;
 import com.robonobo.gui.components.base.*;
 
 @SuppressWarnings("serial")
@@ -28,7 +29,9 @@ public class EULAFrame extends JFrame {
 		textPane.setContentType("text/html");
 		textPane.setText(getHtmlEula(eulaPath));
 		textPane.setEditable(false);
-		add(new JScrollPane(textPane), "1,1,4,1");
+		JScrollPane sp = new JScrollPane(textPane);
+		sp.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 0, RoboColor.MID_GRAY));
+		add(sp, "1,1,4,1");
 		RButton acceptBtn = new RGlassButton("ACCEPT");
 		acceptBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

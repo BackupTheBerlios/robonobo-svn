@@ -107,8 +107,32 @@ public class MyLibraryContentPanel extends ContentPanel implements UserPlaylistL
 
 	class MyLibraryTabPanel extends JPanel {
 		public MyLibraryTabPanel() {
-			double[][] cellSizen = { { 10, 160, 10, TableLayout.FILL, 10 }, { 10, 25, 10, 25, 10, 25, 10 } };
+			double[][] cellSizen = { { 10, 200, 200, TableLayout.FILL, 10 }, { 0, 25, 5, 30, 10, 30, TableLayout.FILL } };
 			setLayout(new TableLayout(cellSizen));
+			
+			RLabel addLbl = new RLabel16B("Add to library");
+			add(addLbl, "1,1");
+			
+			RButton shareFilesBtn = new RGlassButton("Add from files...");
+			shareFilesBtn.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					frame.showAddSharesDialog();
+				}
+			});
+			add(shareFilesBtn, "1,3");
+			if (Platform.getPlatform().iTunesAvailable()) {
+				RButton shareITunesBtn = new RGlassButton("Add from iTunes...");
+				shareITunesBtn.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						frame.importITunes();
+					}
+				});
+				add(shareITunesBtn, "1,5");
+			}
+
+			RLabel optsLbl = new RLabel16B("Library options");
+			add(optsLbl, "3,1");
+			
 			shareLibCheckBox = new RCheckBox("Share library with friends?");
 			shareLibCheckBox.addItemListener(new ItemListener() {
 				public void itemStateChanged(final ItemEvent e) {
@@ -127,24 +151,7 @@ public class MyLibraryContentPanel extends ContentPanel implements UserPlaylistL
 			shareLibCheckBox.setSelected(false);
 			// We disable it first, it gets re-enabled when we get our user config
 			shareLibCheckBox.setEnabled(false);
-			add(shareLibCheckBox, "1,1,3,1");
-			RButton shareFilesBtn = new RGlassButton("Share from files...");
-			shareFilesBtn.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					frame.showAddSharesDialog();
-				}
-			});
-			add(shareFilesBtn, "1,3");
-			if (Platform.getPlatform().iTunesAvailable()) {
-				RButton shareITunesBtn = new RGlassButton("Share from iTunes...");
-				shareITunesBtn.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						// TODO Show iTunes stuff being added
-						frame.importITunes();
-					}
-				});
-				add(shareITunesBtn, "1,5");
-			}
+			add(shareLibCheckBox, "3,3,LEFT,TOP");
 		}
 	}
 }

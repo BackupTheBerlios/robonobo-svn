@@ -1,6 +1,6 @@
 package com.robonobo.gui.components.base;
 
-import java.awt.Font;
+import java.awt.*;
 
 import javax.swing.JTextArea;
 import javax.swing.text.Document;
@@ -8,6 +8,8 @@ import javax.swing.text.Document;
 import com.robonobo.gui.RoboFont;
 
 public class RTextArea extends JTextArea {
+	private Color bgColor = null;
+
 	public RTextArea() {
 		super();
 		setupFont();
@@ -38,9 +40,13 @@ public class RTextArea extends JTextArea {
 		setupFont();
 	}
 
+	public void setBGColor(Color bgColor) {
+		this.bgColor = bgColor;
+	}
+
 	protected void setupFont() {
 		Font font = getRFont();
-		if(font != null)	
+		if (font != null)
 			setFont(font);
 	}
 
@@ -48,4 +54,12 @@ public class RTextArea extends JTextArea {
 		return RoboFont.getFont(11, false);
 	}
 
+	@Override
+	protected void paintComponent(Graphics g) {
+		if (bgColor != null) {
+			g.setColor(bgColor);
+			g.fillRect(0, 0, getWidth(), getHeight());
+		}
+		super.paintComponent(g);
+	}
 }
