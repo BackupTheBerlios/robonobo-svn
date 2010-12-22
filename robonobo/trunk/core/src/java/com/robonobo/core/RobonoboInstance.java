@@ -31,6 +31,7 @@ import com.robonobo.core.mina.MinaService;
 import com.robonobo.core.search.SearchService;
 import com.robonobo.core.service.*;
 import com.robonobo.core.storage.StorageService;
+import com.robonobo.core.update.Updater;
 import com.robonobo.core.wang.WangService;
 import com.robonobo.mina.external.Application;
 import com.robonobo.mina.external.MinaControl;
@@ -58,6 +59,7 @@ public class RobonoboInstance implements Robonobo {
 		loadVersion();
 		setHomeDir();
 		initLogging();
+		updateHomeDir();
 		loadApplicationDetails();
 		initSerializers();
 		loadConfig();
@@ -351,6 +353,11 @@ public class RobonoboInstance implements Robonobo {
 		}
 	}
 
+	protected void updateHomeDir() throws IOException {
+		Updater updater = new Updater(homeDir);
+		updater.runUpdate();
+	}
+	
 	public FormatService getFormatService() {
 		return (FormatService) serviceMgr.getService("core.format");
 	}
