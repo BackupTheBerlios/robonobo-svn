@@ -24,6 +24,11 @@ import java.nio.ByteBuffer;
 public abstract class EONPacket {
 	public static final int EON_PROTOCOL_DEON = 1;
 	public static final int EON_PROTOCOL_SEON = 2;
+	
+	/**
+	 * This is used just on the sending-side to indicate the gamma with which this pkt was sent - not send over the wire
+	 */
+	private double gamma;
 
 	// Note: this won't set the IP Endpoints - do that externally
 	public static EONPacket parse(ByteBuffer buf) {
@@ -136,4 +141,15 @@ public abstract class EONPacket {
 	public abstract void toByteBuffer(ByteBuffer buf);
 
 	public abstract int getProtocol();
+
+	public abstract ByteBuffer getPayload();
+	
+	public double getGamma() {
+		return gamma;
+	}
+
+
+	public void setGamma(double gamma) {
+		this.gamma = gamma;
+	}
 }

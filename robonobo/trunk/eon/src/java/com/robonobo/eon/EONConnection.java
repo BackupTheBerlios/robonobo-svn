@@ -63,8 +63,8 @@ public abstract class EONConnection {
 		}
 	}
 
-	public void sendPacket(EONPacket pkt) throws EONException {
-		mgr.sendPacket(pkt);
+	public void sendPacket(EONPacket pkt, double gamma, boolean noDelay) throws EONException {
+		mgr.sendPacket(pkt, gamma, noDelay);
 	}
 
 	private class CloseRunner extends CatchingRunnable {

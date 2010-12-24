@@ -57,11 +57,12 @@ public class DEONPacket extends EONPacket {
 		return 1; // D-EON is Protocol 1
 	}
 
+	@Override
 	public ByteBuffer getPayload() {
 		return payload;
 	}
 
-	void setData(ByteBuffer payload) {
+	public void setPayload(ByteBuffer payload) {
 		this.payload = payload;
 	}
 

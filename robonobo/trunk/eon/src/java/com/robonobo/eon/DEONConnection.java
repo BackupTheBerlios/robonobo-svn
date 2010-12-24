@@ -112,7 +112,8 @@ public class DEONConnection extends EONConnection implements PushDataProvider {
 		ByteBuffer payload = ByteBuffer.wrap(payloadArr);
 		DEONPacket thisPacket = new DEONPacket(null, remoteEndPoint, payload);
 		thisPacket.setSourceSocketAddress(localEP);
-		super.sendPacket(thisPacket);
+		// TODO - some way of specifying that some deonconnections ignore our throttling
+		super.sendPacket(thisPacket, 1d, false);
 	}
 
 	public synchronized void close() {

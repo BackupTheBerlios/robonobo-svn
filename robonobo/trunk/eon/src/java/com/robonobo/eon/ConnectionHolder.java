@@ -190,7 +190,7 @@ public class ConnectionHolder {
 		notifyAll();
 	}
 
-	void killAllConnsAssociatedWithAddress(InetSocketAddress addr) {
+	void killAllConnsAssociatedWith(InetSocketAddress addr) {
 		List<EONConnection> toDie = new ArrayList<EONConnection>();
 		synchronized(this) {
 			Iterator<Map<EonSocketAddress, EONConnection>> i = specificConns.values().iterator();

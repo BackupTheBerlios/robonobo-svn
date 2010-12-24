@@ -50,18 +50,12 @@ public class EONManager implements StartStopable {
 	DatagramChannel chan;
 	boolean sockOK;
 	ReceiverThread recvThread;
+	PktSender pktSender;
 	ConnectionHolder conns;
 	ScheduledThreadPoolExecutor executor;
 	Modulo mod;
 	Date uploadCheckLastBase = new Date();
 	int bytesUploadedSinceBase = 0;
-	@SuppressWarnings("unchecked")
-	List backlogPkts;
-	int backlogPktBytes = 0;
-	ByteBuffer sendBuf = ByteBuffer.allocate(MAX_PKT_SIZE);
-	SenderThread sndThread;
-	ReentrantLock sendLock = new ReentrantLock();
-	List<EONPacket> pktsToSend = new LinkedList<EONPacket>();
 
 	public static InetAddress getWildcardAddress() {
 		try {
@@ -96,6 +90,7 @@ public class EONManager implements StartStopable {
 			throw new EONException("Unable to construct udp socket on " + localEP.toString(), e);
 		}
 		sockOK = true;
+		pktSender = new PktSender(chan);
 		recvThread = null;
 		conns = new ConnectionHolder(this);
 		mod = new Modulo((long) Integer.MAX_VALUE + 1);
@@ -108,15 +103,14 @@ public class EONManager implements StartStopable {
 
 	public void start() throws EONException {
 		recvThread = new ReceiverThread();
-		sndThread = new SenderThread();
 		recvThread.start();
-		sndThread.start();
+		pktSender.start();
 	}
 
 	public void stop() {
 		log.debug("Stopping EONManager");
 		conns.closeAllConns(30000);
-		sndThread.terminate();
+		pktSender.stop();
 		recvThread.terminate();
 		try {
 			chan.close();
@@ -139,7 +133,7 @@ public class EONManager implements StartStopable {
 
 	public void sendNATSeed(InetSocketAddress remoteEP) throws EONException {
 		DEONPacket seed = new DEONPacket(new EonSocketAddress(localEP, 0), new EonSocketAddress(remoteEP, 0), null);
-		sendPacket(seed);
+		sendPacket(seed, 1d, true);
 	}
 
 	public ScheduledThreadPoolExecutor getExecutor() {
@@ -177,40 +171,9 @@ public class EONManager implements StartStopable {
 		conns.returnPort(localEONPort, addressMask, thisConn);
 	}
 
-	private void sendBackloggedPackets() throws EONException {
-		while (backlogPkts.size() > 0) {
-			EONPacket pkt = (EONPacket) backlogPkts.get(0);
-			sendPacket(pkt);
-			if (backlogPkts.size() == 0) // This method might have been called
-				// again through recursion
-				return;
-
-			// Taken out this simulated conditions thing
-			// if(numBytes > 0) {
-			// backlogPkts.remove(0);
-			// backlogPktBytes -= numBytes;
-			// } else
-			// // Whoops, we've breached our upload restriction
-			// return;
-		}
-	}
-
-	public void sendPacket(EONPacket pkt) throws EONException {
-		synchronized (sendLock) {
-			pktsToSend.add(pkt);
-			sendLock.notify();
-		}
-	}
-
-	private void reallySendPacket(EONPacket pkt) throws IOException {
-		if (!sockOK)
-			throw new IOException("SendPacket() called, but we have no socket");
-		sendBuf.clear();
-		pkt.toByteBuffer(sendBuf);
-		sendBuf.flip();
-		chan.send(sendBuf, pkt.getDestSocketAddress().getInetSocketAddress());
-		if (log.isDebugEnabled())
-			log.debug("s " + pkt.toString());
+	public void sendPacket(EONPacket pkt, double gamma, boolean noDelay) throws EONException {
+		pkt.setGamma(gamma);
+		pktSender.addPkt(pkt, noDelay);
 	}
 
 	public int getLowestMaxObservedRtt(SEONConnection exceptConn) {
@@ -220,54 +183,18 @@ public class EONManager implements StartStopable {
 	// Note: If we have allowed the system to choose our IP address and/or
 	// port, this will
 	// not be set until Start() is called
-	// FIXME: (Ray) changed this to return a InetSocketAddress from localEP,
-	// otherwise we end up with 0.0.0.0
 	public InetSocketAddress getLocalSocketAddress() throws EONException {
 		if (sockOK)
 			return localEP;
-		// return (InetSocketAddress) udpSock.getLocalSocketAddress();
 		else
 			throw new EONException("Underlying socket not ready");
 	}
 
-	// Send everything using a single thread, some platforms get crappy
-	// performance when too many threads write to a socket
-	private class SenderThread extends Thread {
-		private boolean terminated = false;
-
-		public SenderThread() {
-			setName("EONMgr-SenderThread");
-		}
-		
-		@Override
-		public void run() {
-			try {
-				while (true) {
-					EONPacket pkt;
-					try {
-						synchronized (sendLock) {
-							while (pktsToSend.size() == 0) {
-								if (terminated)
-									return;
-								sendLock.wait();
-							}
-							pkt = pktsToSend.remove(0);
-						}
-						reallySendPacket(pkt);
-					} catch (InterruptedException e) {
-						log.debug("EONMgr sender thread caught InterruptedException");
-					}
-				}
-			} catch (Exception e) {
-				if (!terminated)
-					log.error("EonMgr sender thread caught exception", e);
-			}
-		}
-
-		public void terminate() {
-			terminated = true;
-			interrupt();
-		}
+	/**
+	 * Pass -1 to specify no limit
+	 */
+	public void setMaxOutboundBps(int maxBps) {
+		pktSender.setMaxBps(maxBps);
 	}
 
 	private class ReceiverThread extends Thread {
@@ -320,7 +247,7 @@ public class EONManager implements StartStopable {
 					// We're exiting
 					return;
 				} catch (PortUnreachableException e) {
-					conns.killAllConnsAssociatedWithAddress(remoteEP);
+					conns.killAllConnsAssociatedWith(remoteEP);
 					continue;
 				} catch (SocketException e) {
 					if (!terminated)
@@ -383,7 +310,7 @@ public class EONManager implements StartStopable {
 									log.error("Unable to perform modulo operation", e);
 								}
 							}
-							sendPacket(rstPacket);
+							sendPacket(rstPacket, 1d, true);
 						}
 					}
 				} else if (thisPacket.getProtocol() == EONPacket.EON_PROTOCOL_DEON) {
@@ -413,7 +340,7 @@ public class EONManager implements StartStopable {
 								log.error("Unable to perform modulo operation", e);
 							}
 						}
-						sendPacket(rstPacket);
+						sendPacket(rstPacket, 1d, true);
 					}
 				}
 				// Just drop the packet and move on

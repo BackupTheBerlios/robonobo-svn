@@ -19,6 +19,8 @@ package com.robonobo.common.util;
 */
 
 
+import static java.lang.System.*;
+
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -43,19 +45,19 @@ public class TimeUtil {
 	}
 	
 	public static Date timeInFuture(long msInFuture) {
-		return new Date(now().getTime()+msInFuture);
+		return new Date(currentTimeMillis()+msInFuture);
 	}
 	
 	public static Date timeInPast(long msInPast) {
-		return new Date(now().getTime()-msInPast);
+		return new Date(currentTimeMillis()-msInPast);
 	}
 
 	public static long msElapsedSince(Date pastDate) {
-		return now().getTime() - pastDate.getTime();
+		return currentTimeMillis() - pastDate.getTime();
 	}
 	
 	public static long msUntil(Date futureDate) {
-		return futureDate.getTime() - now().getTime();
+		return futureDate.getTime() - currentTimeMillis();
 	}
 	
 	public static String hoursMinsSecsFromMs(long ms) {

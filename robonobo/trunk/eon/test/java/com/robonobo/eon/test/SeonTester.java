@@ -2,8 +2,9 @@ package com.robonobo.eon.test;
 
 import static com.robonobo.common.util.TimeUtil.msElapsedSince;
 import static com.robonobo.common.util.TimeUtil.now;
+import static java.lang.System.*;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.util.Date;
@@ -41,6 +42,7 @@ public class SeonTester {
 	InetAddress addr;
 	int port;
 	ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(8);
+	private EONManager eonMgr;
 
 	public static void main(String[] args) throws Exception {
 		PropertyConfigurator.configure("log4j.properties");
@@ -80,6 +82,10 @@ public class SeonTester {
 	}
 
 	void run() throws Exception {
+		System.err.println("Ready to rock, hit enter to start...");
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		in.readLine();
+		
 		if (lisConMode.equals("listen"))
 			doListen();
 		else
@@ -87,6 +93,9 @@ public class SeonTester {
 	}
 
 	void doSend(final SEONConnection conn) {
+		// DEBUG
+		eonMgr.setMaxOutboundBps(65536);
+		
 		System.out.println("Starting send");
 		conn.setDataProvider(new PullDataProvider() {
 			int lastSentByte = 0;
@@ -119,7 +128,7 @@ public class SeonTester {
 		conn.setDataReceiver(new PushDataReceiver() {
 			byte lastByte = -1;
 			int numReceived = 0;
-			Date lastLog = new Date();
+			long lastLog = currentTimeMillis();
 			public void receiveData(ByteBuffer data, Object ignore) throws IOException {
 				StringBuffer sb = new StringBuffer("Tester receiving buffer: ");
 				ByteUtil.printBuf(data, sb);
@@ -136,10 +145,10 @@ public class SeonTester {
 						numReceived = 0;
 					}
 				}
-				if(msElapsedSince(lastLog) > 1000L) {
+				if((currentTimeMillis() - lastLog) > 1000L) {
 					if(conn.getInFlowRate() > 0)
 						System.out.println("Receiving data at "+FileUtil.humanReadableSize(conn.getInFlowRate())+"/s");
-					lastLog = now();
+					lastLog = currentTimeMillis();
 				}
 			}
 			public void providerClosed() {
@@ -150,7 +159,7 @@ public class SeonTester {
 
 	void doListen() throws Exception {
 		System.out.println("Starting EON...");
-		EONManager eonMgr = new EONManager("test-eon", executor, port);
+		eonMgr = new EONManager("test-eon", executor, port);
 		eonMgr.start();
 		SEONConnection listenConn = eonMgr.createSEONConnection();
 		listenConn.addListener(new SEONConnectionListener() {
@@ -179,7 +188,7 @@ public class SeonTester {
 
 	void doConnect() throws Exception {
 		System.out.println("Connecting EON to " + addr + ":" + port);
-		EONManager eonMgr = new EONManager("test-eon", executor);
+		eonMgr = new EONManager("test-eon", executor);
 		eonMgr.start();
 		SEONConnection conn = eonMgr.createSEONConnection();
 		conn.connect(new EonSocketAddress(addr, port, 23));

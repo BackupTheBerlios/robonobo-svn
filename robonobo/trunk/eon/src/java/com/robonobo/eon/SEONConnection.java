@@ -31,6 +31,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.robonobo.common.async.PullDataProvider;
@@ -160,7 +161,8 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 	PushDataReceiver dataReceiver;
 	boolean dataReceiverRunning = false;
 	/** Used to make sure the datareceiver is called in order */
-	ReentrantLock receiveLock = new ReentrantLock();
+	ReentrantLock receiveLock = new ReentrantLock(true);
+	Condition haveData;
 	private CatchingRunnable asyncReceiver;
 
 	public SEONConnection(EONManager mgr) throws EONException {
@@ -173,6 +175,7 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 		noDelay = false;
 		initTimeouts();
 		asyncReceiver = new AsyncReceiver();
+		haveData = receiveLock.newCondition();
 	}
 
 	SEONConnection(EONManager manager, SEONPacket synPacket) throws EONException {
@@ -304,14 +307,14 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 	public synchronized void connect(EonSocketAddress remoteEndPoint, int localEONPort) throws EONException, IllegalArgumentException {
 		if (state != State.Closed)
 			throw new IllegalStateException("Connection already being attempted");
+		if (remoteEndPoint == null)
+			throw new EONException("remote end point cannot be null");
 		// [Will 2006/5/06] We should allow connection to self, but I think it's
 		// messing some things up
 		if (remoteEndPoint.getInetSocketAddress().equals(mgr.getLocalSocketAddress()))
 			throw new EONException("Can't connect to self yet, sorry");
 		recvdPkts.clear();
 		retransQ.clear();
-		if (remoteEndPoint == null)
-			throw new EONException("remote end point cannot be null");
 		remoteEP = remoteEndPoint;
 		// Grab our local port
 		if (localEONPort == -1) {
@@ -344,13 +347,14 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 	 * @return A byte buffer with the incoming data
 	 */
 	public void read(ByteBuffer buf) throws EONException {
-		synchronized (receiveLock) {
+		receiveLock.lock();
+		try {
 			while (true) {
 				while (incomingDataBufs.size() == 0) {
 					if (state == State.Closed)
 						return;
 					try {
-						receiveLock.wait();
+						haveData.await();
 					} catch (InterruptedException e) {
 						throw new EONException(e);
 					}
@@ -370,6 +374,8 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 				if (incomingDataBufs.size() == 0)
 					return;
 			}
+		} finally {
+			receiveLock.unlock();
 		}
 	}
 
@@ -381,12 +387,15 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 			ByteUtil.printBuf(buf, sb);
 			log.debug(sb);
 		}
-		synchronized (receiveLock) {
+		receiveLock.lock();
+		try {
 			incomingDataBufs.add(buf);
+			// DEBUG
+			log.warn("Got incoming data: now have "+incomingDataBufs.size()+" bufs incoming");
 			inFlowRate.notifyData(buf.limit());
 			if (dataReceiver == null) {
 				// Synchronous receives
-				receiveLock.notifyAll();
+				haveData.signalAll();
 			} else {
 				// Async receives
 				if (dataReceiverRunning) {
@@ -395,6 +404,8 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 				} else
 					fireAsyncReceiver();
 			}
+		} finally {
+			receiveLock.unlock();
 		}
 	}
 
@@ -468,11 +479,14 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 	 * made in order of delivery
 	 */
 	public void setDataReceiver(PushDataReceiver dataReceiver) {
-		synchronized (receiveLock) {
+		receiveLock.lock();
+		try {
 			this.dataReceiver = dataReceiver;
 			// If we've got incoming data blocks queued up, handle them now
 			if (dataReceiver != null && incomingDataBufs.size() > 0 && !dataReceiverRunning)
 				fireAsyncReceiver();
+		} finally {
+			receiveLock.unlock();
 		}
 	}
 
@@ -738,7 +752,7 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 			SEONPacket rstPacket = new SEONPacket(localEP, pkt.getSourceSocketAddress(), null);
 			rstPacket.setRST(true);
 			rstPacket.setSequenceNumber(pkt.getAckNumber());
-			mgr.sendPacket(rstPacket);
+			mgr.sendPacket(rstPacket, getGamma(), true);
 			return;
 		}
 		if (pkt.isSYN()) {
@@ -1222,7 +1236,7 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 					SEONPacket pkt = (SEONPacket) retransQ.peek();
 					// Send it via the mgr directly to avoid adding it to
 					// the retransmission queue
-					mgr.sendPacket(pkt);
+					mgr.sendPacket(pkt, getGamma(), false);
 					pktsSent++;
 					needToRetransmitFirstPkt = false;
 					continue;
@@ -1441,7 +1455,9 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 			if (startResponseTimer)
 				startResponseTimer(responseTimeout);
 		}
+		boolean ignoreThrottle = false;
 		if (pkt.getPayload() != null) {
+			ignoreThrottle = (pkt.getPayload().limit() > 0);
 			outFlowRate.notifyData(pkt.getPayload().limit());
 			if (DEBUG_LOG_BUFS) {
 				StringBuffer sb = new StringBuffer(this.toString()).append(" sending data: ");
@@ -1449,7 +1465,7 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 				log.debug(sb);
 			}
 		}
-		super.sendPacket(pkt);
+		super.sendPacket(pkt, getGamma(), ignoreThrottle);
 	}
 
 	synchronized void setState(State state) {
@@ -1681,13 +1697,18 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 				// Grab a copy of our datareceiver in case it's set to null
 				PushDataReceiver dataRec = null;
 				ByteBuffer buf = null;
-				synchronized (receiveLock) {
+				receiveLock.lock();
+				try {
 					dataRec = dataReceiver;
 					if (dataRec == null || incomingDataBufs.size() == 0) {
 						dataReceiverRunning = false;
 						return;
 					}
 					buf = incomingDataBufs.remove(0);
+					// DEBUG
+					log.warn("Running receiver: now have "+incomingDataBufs.size()+" bufs incoming");					
+				} finally {
+					receiveLock.unlock();
 				}
 				try {
 					dataRec.receiveData(buf, null);
