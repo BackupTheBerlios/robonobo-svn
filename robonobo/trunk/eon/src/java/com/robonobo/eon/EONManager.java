@@ -133,7 +133,7 @@ public class EONManager implements StartStopable {
 
 	public void sendNATSeed(InetSocketAddress remoteEP) throws EONException {
 		DEONPacket seed = new DEONPacket(new EonSocketAddress(localEP, 0), new EonSocketAddress(remoteEP, 0), null);
-		sendPacket(seed, 1d, true);
+		sendPktImmediate(seed);
 	}
 
 	public ScheduledThreadPoolExecutor getExecutor() {
@@ -171,11 +171,14 @@ public class EONManager implements StartStopable {
 		conns.returnPort(localEONPort, addressMask, thisConn);
 	}
 
-	public void sendPacket(EONPacket pkt, double gamma, boolean noDelay) throws EONException {
-		pkt.setGamma(gamma);
-		pktSender.addPkt(pkt, noDelay);
+	void sendPktImmediate(EONPacket pkt) {
+		pktSender.sendPktImmediate(pkt);
 	}
 
+	void haveDataToSend(EONConnection conn) {
+		pktSender.haveDataToSend(conn);
+	}
+	
 	public int getLowestMaxObservedRtt(SEONConnection exceptConn) {
 		return conns.getLowestMaxObservedRtt(exceptConn);
 	}
@@ -190,10 +193,6 @@ public class EONManager implements StartStopable {
 			throw new EONException("Underlying socket not ready");
 	}
 
-	public int getMaxOutboundBps() {
-		return pktSender.getMaxBps();
-	}
-	
 	/**
 	 * Pass -1 to specify no limit
 	 */
@@ -201,12 +200,16 @@ public class EONManager implements StartStopable {
 		pktSender.setMaxBps(maxBps);
 	}
 
+	int getMaxOutboundBps() {
+		return pktSender.getMaxBps();
+	}
+	
 	private class ReceiverThread extends Thread {
 		boolean terminated = false;
 
 		public ReceiverThread() {
 			super();
-			setName("EonManagerThread");
+			setName("EON-Recv");
 		}
 
 		public void run() {
@@ -314,7 +317,7 @@ public class EONManager implements StartStopable {
 									log.error("Unable to perform modulo operation", e);
 								}
 							}
-							sendPacket(rstPacket, 1d, true);
+							sendPktImmediate(rstPacket);
 						}
 					}
 				} else if (thisPacket.getProtocol() == EONPacket.EON_PROTOCOL_DEON) {
@@ -344,7 +347,7 @@ public class EONManager implements StartStopable {
 								log.error("Unable to perform modulo operation", e);
 							}
 						}
-						sendPacket(rstPacket, 1d, true);
+						sendPktImmediate(rstPacket);
 					}
 				}
 				// Just drop the packet and move on

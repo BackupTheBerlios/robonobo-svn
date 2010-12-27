@@ -185,6 +185,12 @@ public class SEONPacket extends EONPacket {
 		return payload;
 	}
 
+	public int getPayloadSize() {
+		if(payload == null)
+			return 0;
+		return payload.limit();
+	}
+	
 	public int getProtocol() {
 		return 2; // S-EON is Protocol 2
 	}

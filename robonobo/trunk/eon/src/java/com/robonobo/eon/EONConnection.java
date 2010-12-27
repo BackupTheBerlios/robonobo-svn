@@ -21,10 +21,13 @@ package com.robonobo.eon;
 import org.apache.commons.logging.Log;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
+import com.robonobo.common.util.FlowRateIndicator;
 
 public abstract class EONConnection {
 	protected Log log;
 	protected EONManager mgr;
+	FlowRateIndicator inFlowRate = new FlowRateIndicator();
+	FlowRateIndicator outFlowRate = new FlowRateIndicator();
 
 	public EONConnection(EONManager mgr) {
 		this.mgr = mgr;
@@ -39,6 +42,10 @@ public abstract class EONConnection {
 
 	public abstract EonSocketAddress getLocalSocketAddress() throws EONException;
 
+	public abstract float getGamma();
+	
+	abstract boolean acceptVisitor(PktSendVisitor visitor) throws EONException;
+	
 	protected EONConnectionListener listener;
 
 	public void addListener(EONConnectionListener listener) {
@@ -62,11 +69,22 @@ public abstract class EONConnection {
 			log.error("Caught " + e.getClass().getName() + " firing " + this + ".onClose");
 		}
 	}
-
-	public void sendPacket(EONPacket pkt, double gamma, boolean noDelay) throws EONException {
-		mgr.sendPacket(pkt, gamma, noDelay);
+	
+	/**
+	 * Bps
+	 */
+	public int getInFlowRate() {
+		return inFlowRate.getFlowRate();
 	}
 
+	/**
+	 * Bps
+	 */
+	public int getOutFlowRate() {
+		return outFlowRate.getFlowRate();
+	}
+
+	
 	private class CloseRunner extends CatchingRunnable {
 		private final EONConnectionListener listener;
 		private final EONConnectionEvent event;

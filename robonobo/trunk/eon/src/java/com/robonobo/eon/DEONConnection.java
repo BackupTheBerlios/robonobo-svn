@@ -19,8 +19,7 @@ package com.robonobo.eon;
  */
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.robonobo.common.async.PushDataProvider;
@@ -34,11 +33,12 @@ public class DEONConnection extends EONConnection implements PushDataProvider {
 	EonSocketAddress localEP, remoteEP;
 	private List<ByteBuffer> incomingDataBufs = new ArrayList<ByteBuffer>();
 	private List<EonSocketAddress> incomingDataAddrs = new ArrayList<EonSocketAddress>();
-	// FIXME: can we start with a closed currentState?
+	private LinkedList<DEONPacket> outgoingPkts = new LinkedList<DEONPacket>();
 	int state = DEONConnectionState_Closed;
 	PushDataReceiver dataReceiver;
 	ReentrantLock receiveLock = new ReentrantLock();
 	boolean dataReceiverRunning = false;
+	boolean waitingForVisitor = false;
 
 	// Don't allow this class to be instantiated directly - use
 	// EONManager.GetDEONConnection()
@@ -112,10 +112,31 @@ public class DEONConnection extends EONConnection implements PushDataProvider {
 		ByteBuffer payload = ByteBuffer.wrap(payloadArr);
 		DEONPacket thisPacket = new DEONPacket(null, remoteEndPoint, payload);
 		thisPacket.setSourceSocketAddress(localEP);
-		// TODO - some way of specifying that some deonconnections ignore our throttling
-		super.sendPacket(thisPacket, 1d, false);
+		synchronized (this) {
+			outgoingPkts.add(thisPacket);
+			haveDataToSend();
+		}
+		// TODO - some way of specifying that some deonconnections ignore our throttling?
 	}
 
+	protected void haveDataToSend() {
+		if(waitingForVisitor)
+			return;
+		waitingForVisitor = true;
+		mgr.haveDataToSend(this);
+	}
+
+	@Override
+	synchronized boolean acceptVisitor(PktSendVisitor vis) throws EONException {
+		waitingForVisitor = false;
+		while(outgoingPkts.size() > 0) {
+			if(vis.bytesAvailable() < outgoingPkts.getFirst().getPayloadSize())
+				return true;
+			vis.sendPkt(outgoingPkts.removeFirst());
+		}
+		return false;
+	}
+	
 	public synchronized void close() {
 		if(state == DEONConnectionState_Closed) {
 			log.warn("Connection is closed");
@@ -147,6 +168,11 @@ public class DEONConnection extends EONConnection implements PushDataProvider {
 		return state;
 	}
 
+	@Override
+	public float getGamma() {
+		// DEON conns always have gamma 1
+		return 1f;
+	}
 	/**
 	 * @return 2 element array - bytebuffer at 0, eonsocketaddress at 1
 	 */

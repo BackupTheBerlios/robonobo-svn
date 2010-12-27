@@ -62,6 +62,13 @@ public class DEONPacket extends EONPacket {
 		return payload;
 	}
 
+	@Override
+	public int getPayloadSize() {
+		if(payload == null)
+			return 0;
+		return payload.limit();
+	}
+	
 	public void setPayload(ByteBuffer payload) {
 		this.payload = payload;
 	}

@@ -14,6 +14,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
+import com.robonobo.common.exceptions.SeekInnerCalmException;
 
 public class PktSender extends CatchingRunnable {
 	/** millisecs */
@@ -33,9 +34,10 @@ public class PktSender extends CatchingRunnable {
 	private boolean stopping = false;
 	private Thread t;
 	private ArrayList<EONPacket> unThrottledPkts = new ArrayList<EONPacket>();
-	private LinkedList<EONPacket> throttledPkts = new LinkedList<EONPacket>();
+	private LinkedList<EONConnection> readyConns = new LinkedList<EONConnection>();
 	private ReentrantLock lock;
 	private Condition canSend;
+	private Visitor vis = new Visitor();
 
 	PktSender(DatagramChannel chan) {
 		this.chan = chan;
@@ -45,6 +47,7 @@ public class PktSender extends CatchingRunnable {
 
 	void start() {
 		t = new Thread(this);
+		t.setName("EON-Send");
 		t.start();
 	}
 
@@ -54,75 +57,120 @@ public class PktSender extends CatchingRunnable {
 			t.interrupt();
 	}
 
-	void addPkt(EONPacket pkt, boolean noDelay) {
+	void sendPktImmediate(EONPacket pkt) {
 		lock.lock();
 		try {
-			if (noDelay || maxBps < 0) {
-				unThrottledPkts.add(pkt);
-				canSend.signal();
-			} else {
-				// Annoying that one can't 'reset' an iterator, which means we're doing this object creation every time
-				ListIterator<EONPacket> it = throttledPkts.listIterator();
-				// Start at the beginning of our list and go up until we find a pkt with a gamma >= to this one, then
-				// insert it before
-				while (it.hasNext()) {
-					EONPacket testPkt = it.next();
-					if (testPkt.getGamma() >= pkt.getGamma()) {
-						// Rewind so we insert our pkt before this one
-						it.previous();
-						break;
-					}
-				}
-				it.add(pkt);
-				long nowTime = currentTimeMillis();
-				// If we're not waiting to send due to our credit limit, signal the thread
-				if(nowTime >= nextSendTime)
-					canSend.signal();
-			}
+			unThrottledPkts.add(pkt);
+			canSend.signal();
 		} finally {
 			lock.unlock();
 		}
 	}
-	
-	@Override
-	public void doRun() throws Exception {
+
+	void haveDataToSend(EONConnection conn) {
 		lock.lock();
 		try {
-			while (true) {
-				if (stopping)
-					return;
-				long nowTime = currentTimeMillis();
+			insertReadyConn(conn);
+			// If we're not waiting to send due to our credit limit, signal the thread
+			if (currentTimeMillis() >= nextSendTime)
+				canSend.signal();
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	private void insertReadyConn(EONConnection conn) {
+		// Annoying that one can't 'reset' an iterator, which means we're doing this object creation every time
+		ListIterator<EONConnection> it = readyConns.listIterator();
+		// Start at the beginning of the list and go up until we find a conn with a gamma >= to this one, then
+		// insert it before (so that first-notifying conns get to send pkts first)
+		while (it.hasNext()) {
+			EONConnection testConn = it.next();
+			if (testConn.getGamma() >= conn.getGamma()) {
+				// Rewind so we insert before this one
+				it.previous();
+				break;
+			}
+		}
+		it.add(conn);
+	}
+
+	@Override
+	public void doRun() throws Exception {
+		while (true) {
+			if (stopping)
+				return;
+			long nowTime = currentTimeMillis();
+			lock.lock();
+			try {
 				// If we've run out of credit, wait until the specified time, otherwise wait until signalled
-				if(unThrottledPkts.size() == 0 && nextSendTime > nowTime) {
-					if(log.isDebugEnabled())
-						log.debug("Pausing data send due to throttling");
+				if (unThrottledPkts.size() == 0 && nextSendTime > nowTime) {
+					if (log.isDebugEnabled())
+						log.debug("Pausing pktSend: throttling - " + readyConns.size() + " ready conns");
 					canSend.await((nextSendTime - nowTime), TimeUnit.MILLISECONDS);
 				}
-				while (unThrottledPkts.size() == 0 && throttledPkts.size() == 0) {
+				while (unThrottledPkts.size() == 0 && readyConns.size() == 0) {
+					if (log.isDebugEnabled())
+						log.debug("Pausing pktSend: no more data");
 					canSend.await();
 				}
 				nowTime = currentTimeMillis();
-				bytesCredit += (nowTime - lastCreditTime) * (float) (maxBps / 1000);
-				if(bytesCredit > maxBytesCredit())
-					bytesCredit = maxBytesCredit();
+				if (maxBps >= 0) {
+					bytesCredit += (nowTime - lastCreditTime) * (float) (maxBps / 1000);
+					if (bytesCredit > maxBytesCredit())
+						bytesCredit = maxBytesCredit();
+				}
 				lastCreditTime = nowTime;
+				if (log.isDebugEnabled())
+					log.debug("pktSend running, send credit " + bytesCredit + "B");
 				// Any unthrottled pkts we have, send them now
 				for (EONPacket pkt : unThrottledPkts) {
+					if (log.isDebugEnabled())
+						log.debug("Sending unthrottled pkt: " + pkt);
 					sendPkt(pkt);
 				}
 				unThrottledPkts.clear();
-				// Send our throttled pkts until we run out of credit - end of list first
-				while (throttledPkts.size() > 0 && bytesCredit >= getPayloadSize(throttledPkts.getLast())) {
-					EONPacket pkt = throttledPkts.removeLast();
-					bytesCredit -= getPayloadSize(pkt);
+			} finally {
+				lock.unlock();
+			}
+			// Come out of the lock before we call conn.acceptVisitor() to remove deadlock possibilities
+			// Send data from our ready conns until we're out of credit
+			while (readyConns.size() > 0) {
+				if (maxBps >= 0)
+					vis.reset(bytesCredit);
+				else
+					vis.reset(Integer.MAX_VALUE);
+				lock.lock();
+				EONConnection conn;
+				try {
+					conn = readyConns.removeLast();
+				} finally {
+					lock.unlock();
+				}
+				// Collect our pkts in the visitor, then send them here so that we are out of the conn's lock - TODO probably not needed now that acceptVisitor is outside PktSender lock
+				boolean haveMore = conn.acceptVisitor(vis);
+				for (EONPacket pkt : vis.pkts) {
+					if (log.isDebugEnabled())
+						log.debug("Sending throttled pkt: " + pkt);
+					if (maxBps >= 0)
+						bytesCredit -= pkt.getPayloadSize();
 					sendPkt(pkt);
 				}
-				// If we're out of credit, make us wait for a while
-				if(throttledPkts.size() > 0)
-					nextSendTime = nowTime + WAIT_TIME;
+				if (haveMore) {
+					lock.lock();
+					try {
+						// We're out of credit
+						// Re-insert this guy behind any other waiting conns with the same gamma, otherwise one guy with
+						// a 1MB send holds everyone up
+						insertReadyConn(conn);
+						// Wait to allow our credit to accumulate
+						nextSendTime = nowTime + WAIT_TIME;
+					} finally {
+						lock.unlock();
+					}
+					break;
+				}
 			}
-		} finally {
-			lock.unlock();
 		}
 	}
 
@@ -138,12 +186,6 @@ public class PktSender extends CatchingRunnable {
 	private int maxBytesCredit() {
 		return MAX_CREDIT_TIME * (maxBps / 1000);
 	}
-	
-	private int getPayloadSize(EONPacket pkt) {
-		if (pkt.getPayload() == null)
-			return 0;
-		return pkt.getPayload().limit();
-	}
 
 	/**
 	 * Pass maxBps < 0 to indicate no limit
@@ -158,54 +200,35 @@ public class PktSender extends CatchingRunnable {
 			lock.unlock();
 		}
 	}
-	
+
 	public int getMaxBps() {
 		return maxBps;
 	}
-	
-	class TestyPkt extends EONPacket {
-		int pktNum;
-		@Override
-		public EonSocketAddress getDestSocketAddress() {
-			// TODO Auto-generated method stub
-			return null;
+
+	class Visitor implements PktSendVisitor {
+		int bytesAvailable;
+		ArrayList<EONPacket> pkts = new ArrayList<EONPacket>();
+
+		void reset(int bytesAvailable) {
+			this.bytesAvailable = bytesAvailable;
+			pkts.clear();
 		}
 
 		@Override
-		public EonSocketAddress getSourceSocketAddress() {
-			// TODO Auto-generated method stub
-			return null;
+		public int bytesAvailable() {
+			return bytesAvailable;
 		}
 
 		@Override
-		public void setDestSocketAddress(EonSocketAddress endPoint) {
-			// TODO Auto-generated method stub
-			
+		public void sendPkt(EONPacket pkt) {
+			if (bytesAvailable < pkt.getPayloadSize())
+				throw new SeekInnerCalmException();
+			pkts.add(pkt);
+			if (log.isDebugEnabled())
+				log.debug("PktSender accepting pkt for send: " + pkt);
+			if (bytesAvailable != Integer.MAX_VALUE)
+				bytesAvailable -= pkt.getPayloadSize();
 		}
 
-		@Override
-		public void setSourceSocketAddress(EonSocketAddress endPoint) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void toByteBuffer(ByteBuffer buf) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public int getProtocol() {
-			// TODO Auto-generated method stub
-			return 0;
-		}
-
-		@Override
-		public ByteBuffer getPayload() {
-			// TODO Auto-generated method stub
-			return null;
-		}
-		
 	}
 }
