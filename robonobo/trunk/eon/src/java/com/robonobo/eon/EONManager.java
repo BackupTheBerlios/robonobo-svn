@@ -290,15 +290,10 @@ public class EONManager implements StartStopable {
 			if (thisPacket.getDestSocketAddress().getEonPort() == 0)
 				return;
 			EONConnection thisConn = conns.getLocalConnForIncoming(thisPacket.getDestSocketAddress(), thisPacket.getSourceSocketAddress());
-			if(thisConn == null)
+			if(thisConn != null)
+				thisConn.receivePacket(thisPacket);
+			else
 				handleUnwantedPacket(thisPacket);
-			else {
-				// Check it's the right protocol type
-				if (thisPacket.getProtocol() == EONPacket.EON_PROTOCOL_SEON)
-					handleSEONPacket(thisPacket, thisConn);
-				else if (thisPacket.getProtocol() == EONPacket.EON_PROTOCOL_DEON)
-					handleDEONPacket(thisPacket, thisConn);
-			}
 		}
 
 		private void handleUnwantedPacket(EONPacket thisPacket) {
@@ -331,19 +326,5 @@ public class EONManager implements StartStopable {
 			sendPktImmediate(rstPacket);
 		}
 
-		private void handleDEONPacket(EONPacket thisPacket, EONConnection thisConn) {
-			if (thisConn instanceof DEONConnection) {
-				((DEONConnection) thisConn).receivePacket((DEONPacket) thisPacket);
-				return;
-			}
-		}
-
-		private void handleSEONPacket(EONPacket thisPacket, EONConnection thisConn) throws EONException {
-			SEONPacket sPkt = (SEONPacket) thisPacket;
-			if (thisConn instanceof SEONConnection)
-				((SEONConnection) thisConn).receivePacket(sPkt);
-			else
-				sendRstPacketForBadPkt(sPkt);
-		}
 	}
 }
