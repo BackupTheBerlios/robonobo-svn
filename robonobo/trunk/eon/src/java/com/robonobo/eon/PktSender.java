@@ -46,8 +46,7 @@ public class PktSender extends CatchingRunnable {
 	}
 
 	void start() {
-		t = new Thread(this);
-		t.setName("EON-Send");
+		t = new Thread(this, "EON-Send");
 		t.start();
 	}
 
