@@ -192,7 +192,8 @@ public class DEONConnection extends EONConnection implements PushDataProvider {
 	}
 
 
-	void receivePacket(DEONPacket packet) {
+	void receivePacket(EONPacket eonPacket) {
+		DEONPacket packet = (DEONPacket) eonPacket;
 		ByteBuffer buf = ByteBuffer.allocate(packet.getPayload().limit());
 		buf.put(packet.getPayload());
 		EonSocketAddress addr = packet.getSourceSocketAddress();

@@ -290,69 +290,60 @@ public class EONManager implements StartStopable {
 			if (thisPacket.getDestSocketAddress().getEonPort() == 0)
 				return;
 			EONConnection thisConn = conns.getLocalConnForIncoming(thisPacket.getDestSocketAddress(), thisPacket.getSourceSocketAddress());
-			if (thisConn != null) {
+			if(thisConn == null)
+				handleUnwantedPacket(thisPacket);
+			else {
 				// Check it's the right protocol type
-				if (thisPacket.getProtocol() == EONPacket.EON_PROTOCOL_SEON) {
-					SEONPacket sPkt = (SEONPacket) thisPacket;
-					if (thisConn instanceof SEONConnection) {
-						((SEONConnection) thisConn).receivePacket(sPkt);
-						return;
-					} else {
-						// Send a RST (unless the packet contains a RST, in
-						// which case do nothing)
-						if (!sPkt.isRST()) {
-							SEONPacket rstPacket = new SEONPacket(sPkt.getDestSocketAddress(), sPkt.getSourceSocketAddress(), null);
-							rstPacket.setRST(true);
-							if (sPkt.isACK())
-								rstPacket.setSequenceNumber(sPkt.getAckNumber());
-							else {
-								try {
-									rstPacket.setSequenceNumber(0);
-									// FIXME: I think that this should be 1 if
-									// data is null or length is 0
-									rstPacket.setAckNumber(mod.add(sPkt.getSequenceNumber(), (long) ((sPkt.getPayload() == null) ? 1
-											: sPkt.getPayload().remaining())));
-									rstPacket.setACK(true);
-								} catch (IllegalArgumentException e) {
-									log.error("Unable to perform modulo operation", e);
-								}
-							}
-							sendPktImmediate(rstPacket);
-						}
-					}
-				} else if (thisPacket.getProtocol() == EONPacket.EON_PROTOCOL_DEON) {
-					if (thisConn instanceof DEONConnection) {
-						((DEONConnection) thisConn).receivePacket((DEONPacket) thisPacket);
-						return;
-					}
-				}
-			} else {
-				// No connection to take this packet
-				if (thisPacket.getProtocol() == EONPacket.EON_PROTOCOL_SEON) {
-					SEONPacket sPkt = (SEONPacket) thisPacket;
-					// If it's a S-EON packet, send a RST unless it contains a
-					// RST (in which case do nothing)
-					if (!sPkt.isRST()) {
-						SEONPacket rstPacket = new SEONPacket(sPkt.getDestSocketAddress(), sPkt.getSourceSocketAddress(), null);
-						rstPacket.setRST(true);
-						if (sPkt.isACK())
-							rstPacket.setSequenceNumber(sPkt.getAckNumber());
-						else {
-							try {
-								rstPacket.setSequenceNumber(0);
-								rstPacket.setAckNumber(mod.add(sPkt.getSequenceNumber(), (long) ((sPkt.getPayload() == null) ? 0
-										: sPkt.getPayload().remaining())));
-								rstPacket.setACK(true);
-							} catch (IllegalArgumentException e) {
-								log.error("Unable to perform modulo operation", e);
-							}
-						}
-						sendPktImmediate(rstPacket);
-					}
-				}
-				// Just drop the packet and move on
-				log.warn("EON Packet dropped: " + thisPacket);
+				if (thisPacket.getProtocol() == EONPacket.EON_PROTOCOL_SEON)
+					handleSEONPacket(thisPacket, thisConn);
+				else if (thisPacket.getProtocol() == EONPacket.EON_PROTOCOL_DEON)
+					handleDEONPacket(thisPacket, thisConn);
 			}
+		}
+
+		private void handleUnwantedPacket(EONPacket thisPacket) {
+			// No connection to take this packet
+			if (thisPacket.getProtocol() == EONPacket.EON_PROTOCOL_SEON) {
+				SEONPacket sPkt = (SEONPacket) thisPacket;
+				sendRstPacketForBadPkt(sPkt);
+			}
+			// Just drop the packet and move on
+			log.warn("EON Packet dropped: " + thisPacket);
+		}
+
+		private void sendRstPacketForBadPkt(SEONPacket badPkt) {
+			if(badPkt.isRST())
+				return;
+			SEONPacket rstPacket = new SEONPacket(badPkt.getDestSocketAddress(), badPkt.getSourceSocketAddress(), null);
+			rstPacket.setRST(true);
+			if (badPkt.isACK())
+				rstPacket.setSequenceNumber(badPkt.getAckNumber());
+			else {
+				try {
+					rstPacket.setSequenceNumber(0);
+					rstPacket.setAckNumber(mod.add(badPkt.getSequenceNumber(), (long) ((badPkt.getPayload() == null) ? 0
+							: badPkt.getPayload().remaining())));
+					rstPacket.setACK(true);
+				} catch (IllegalArgumentException e) {
+					log.error("Unable to perform modulo operation", e);
+				}
+			}
+			sendPktImmediate(rstPacket);
+		}
+
+		private void handleDEONPacket(EONPacket thisPacket, EONConnection thisConn) {
+			if (thisConn instanceof DEONConnection) {
+				((DEONConnection) thisConn).receivePacket((DEONPacket) thisPacket);
+				return;
+			}
+		}
+
+		private void handleSEONPacket(EONPacket thisPacket, EONConnection thisConn) throws EONException {
+			SEONPacket sPkt = (SEONPacket) thisPacket;
+			if (thisConn instanceof SEONConnection)
+				((SEONConnection) thisConn).receivePacket(sPkt);
+			else
+				sendRstPacketForBadPkt(sPkt);
 		}
 	}
 }

@@ -46,6 +46,8 @@ public abstract class EONConnection {
 	
 	abstract boolean acceptVisitor(PktSendVisitor visitor) throws EONException;
 	
+	abstract void receivePacket(EONPacket pkt) throws EONException;
+	
 	protected EONConnectionListener listener;
 
 	public void addListener(EONConnectionListener listener) {
