@@ -209,7 +209,7 @@ public class EONManager implements StartStopable {
 
 		public ReceiverThread() {
 			super();
-			setName("EonManagerThread");
+			setName("EON-Recv");
 		}
 
 		public void run() {

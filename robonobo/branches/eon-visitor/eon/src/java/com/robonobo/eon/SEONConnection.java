@@ -82,6 +82,7 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 	 * http://citeseer.ist.psu.edu/fall96simulationbased.html
 	 */
 	static final int MAX_BURST_PKTS = 4;
+	static final float BPS_LIMIT_MULTIPLIER = 1.2f;
 	// /** If srtt > (minRtt + gamma(maxRtt - minRtt)), then we have
 	// congestion and we cut our window. See TCP-LP. */
 	float gamma = 1.0f;
@@ -373,8 +374,6 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 		receiveLock.lock();
 		try {
 			incomingDataBufs.add(buf);
-			// DEBUG
-			log.warn("Got incoming data: now have " + incomingDataBufs.size() + " bufs incoming");
 			inFlowRate.notifyData(buf.limit());
 			if (dataReceiver == null) {
 				// Synchronous receives
@@ -830,12 +829,14 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 						+ TimeUtil.getTimeFormat().format(interferenceTimeout) + ")");
 			return;
 		}
-		// Only allow our window to give us double the global max bps
-		if(mgr.getMaxOutboundBps() >= 0) {
-			int myMaxBps = (int) ((float)(1000 / srtt) * sendWindow * MSS);
-			if(myMaxBps > (mgr.getMaxOutboundBps() * 2)) {
+		// Don't extend our window above the global max bps (plus a bit of wiggle room)
+		int globMaxBps = mgr.getMaxOutboundBps();
+		if(globMaxBps >= 0) {
+			int myBps = (int) ((float)(1000 / srtt) * sendWindow * MSS);
+			int bpsLim = (int) Math.max(globMaxBps * BPS_LIMIT_MULTIPLIER, globMaxBps + MSS);
+			if(myBps > bpsLim) {
 				if(log.isDebugEnabled())
-					log.debug(this+" not updating window - above global max bps");
+					log.debug(this+" not updating window - above global max bps ("+myBps+" > "+bpsLim+")");
 				return;
 			}
 		}
@@ -1762,6 +1763,9 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 	}
 
 	void updateRTO(int rtt) {
+		// If we're on localhost rtt might be 0, just make it 1 here so we don't have to add checks everywhere...
+		if(rtt == 0)
+			rtt = 1;
 		if (rtt < minObservedRtt)
 			minObservedRtt = rtt;
 		if (rtt > maxObservedRtt)
@@ -1882,8 +1886,6 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 						return;
 					}
 					buf = incomingDataBufs.removeFirst();
-					// DEBUG
-					log.warn("Running receiver: now have " + incomingDataBufs.size() + " bufs incoming");
 				} finally {
 					receiveLock.unlock();
 				}

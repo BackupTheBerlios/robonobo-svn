@@ -14,6 +14,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
+import com.robonobo.common.exceptions.SeekInnerCalmException;
 
 public class PktSender extends CatchingRunnable {
 	/** millisecs */
@@ -46,6 +47,7 @@ public class PktSender extends CatchingRunnable {
 
 	void start() {
 		t = new Thread(this);
+		t.setName("EON-Send");
 		t.start();
 	}
 
@@ -92,19 +94,19 @@ public class PktSender extends CatchingRunnable {
 		}
 		it.add(conn);
 	}
-	
+
 	@Override
 	public void doRun() throws Exception {
-		lock.lock();
-		try {
-			while (true) {
-				if (stopping)
-					return;
-				long nowTime = currentTimeMillis();
+		while (true) {
+			if (stopping)
+				return;
+			long nowTime = currentTimeMillis();
+			lock.lock();
+			try {
 				// If we've run out of credit, wait until the specified time, otherwise wait until signalled
 				if (unThrottledPkts.size() == 0 && nextSendTime > nowTime) {
 					if (log.isDebugEnabled())
-						log.debug("Pausing pktSend: throttling - " + readyConns + " ready conns");
+						log.debug("Pausing pktSend: throttling - " + readyConns.size() + " ready conns");
 					canSend.await((nextSendTime - nowTime), TimeUnit.MILLISECONDS);
 				}
 				while (unThrottledPkts.size() == 0 && readyConns.size() == 0) {
@@ -113,9 +115,11 @@ public class PktSender extends CatchingRunnable {
 					canSend.await();
 				}
 				nowTime = currentTimeMillis();
-				bytesCredit += (nowTime - lastCreditTime) * (float) (maxBps / 1000);
-				if (bytesCredit > maxBytesCredit())
-					bytesCredit = maxBytesCredit();
+				if (maxBps >= 0) {
+					bytesCredit += (nowTime - lastCreditTime) * (float) (maxBps / 1000);
+					if (bytesCredit > maxBytesCredit())
+						bytesCredit = maxBytesCredit();
+				}
 				lastCreditTime = nowTime;
 				if (log.isDebugEnabled())
 					log.debug("pktSend running, send credit " + bytesCredit + "B");
@@ -126,34 +130,47 @@ public class PktSender extends CatchingRunnable {
 					sendPkt(pkt);
 				}
 				unThrottledPkts.clear();
-				// Send data from our ready conns until we're out of credit
-				while (readyConns.size() > 0) {
+			} finally {
+				lock.unlock();
+			}
+			// Come out of the lock before we call conn.acceptVisitor() to remove deadlock possibilities
+			// Send data from our ready conns until we're out of credit
+			while (readyConns.size() > 0) {
+				if (maxBps >= 0)
+					vis.reset(bytesCredit);
+				else
+					vis.reset(Integer.MAX_VALUE);
+				lock.lock();
+				EONConnection conn;
+				try {
+					conn = readyConns.removeLast();
+				} finally {
+					lock.unlock();
+				}
+				// Collect our pkts in the visitor, then send them here so that we are out of the conn's lock - TODO probably not needed now that acceptVisitor is outside PktSender lock
+				boolean haveMore = conn.acceptVisitor(vis);
+				for (EONPacket pkt : vis.pkts) {
+					if (log.isDebugEnabled())
+						log.debug("Sending throttled pkt: " + pkt);
 					if (maxBps >= 0)
-						vis.reset(maxBps);
-					else
-						vis.reset(Integer.MAX_VALUE);
-					EONConnection conn = readyConns.removeLast();
-					// Collect our pkts in the visitor, then send them here so that we are out of the conn's lock
-					boolean haveMore = conn.acceptVisitor(vis);
-					for (EONPacket pkt : vis.pkts) {
-						if (log.isDebugEnabled())
-							log.debug("Sending throttled pkt: " + pkt);
-						if(maxBps >= 0)
-							bytesCredit -= pkt.getPayloadSize();
-						sendPkt(pkt);
-					}
-					if (haveMore) {
+						bytesCredit -= pkt.getPayloadSize();
+					sendPkt(pkt);
+				}
+				if (haveMore) {
+					lock.lock();
+					try {
 						// We're out of credit
-						// Re-insert this guy behind any other waiting conns with the same gamma, otherwise one guy with a 1MB send holds everyone up
+						// Re-insert this guy behind any other waiting conns with the same gamma, otherwise one guy with
+						// a 1MB send holds everyone up
 						insertReadyConn(conn);
 						// Wait to allow our credit to accumulate
 						nextSendTime = nowTime + WAIT_TIME;
-						break;
+					} finally {
+						lock.unlock();
 					}
+					break;
 				}
 			}
-		} finally {
-			lock.unlock();
 		}
 	}
 
@@ -187,7 +204,7 @@ public class PktSender extends CatchingRunnable {
 	public int getMaxBps() {
 		return maxBps;
 	}
-	
+
 	class Visitor implements PktSendVisitor {
 		int bytesAvailable;
 		ArrayList<EONPacket> pkts = new ArrayList<EONPacket>();
@@ -204,9 +221,11 @@ public class PktSender extends CatchingRunnable {
 
 		@Override
 		public void sendPkt(EONPacket pkt) {
+			if (bytesAvailable < pkt.getPayloadSize())
+				throw new SeekInnerCalmException();
 			pkts.add(pkt);
-			if(log.isDebugEnabled())
-				log.debug("PktSender accepting pkt for send: "+pkt);
+			if (log.isDebugEnabled())
+				log.debug("PktSender accepting pkt for send: " + pkt);
 			if (bytesAvailable != Integer.MAX_VALUE)
 				bytesAvailable -= pkt.getPayloadSize();
 		}

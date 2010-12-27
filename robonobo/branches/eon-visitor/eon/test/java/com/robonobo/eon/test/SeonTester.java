@@ -94,7 +94,7 @@ public class SeonTester {
 
 	void doSend(final SEONConnection conn) {
 		// DEBUG
-//		eonMgr.setMaxOutboundBps(65536);
+		eonMgr.setMaxOutboundBps(65536);
 		
 		System.out.println("Starting send");
 		conn.setDataProvider(new PullDataProvider() {
@@ -130,21 +130,22 @@ public class SeonTester {
 			int numReceived = 0;
 			long lastLog = currentTimeMillis();
 			public void receiveData(ByteBuffer data, Object ignore) throws IOException {
-				StringBuffer sb = new StringBuffer("Tester receiving buffer: ");
-				ByteUtil.printBuf(data, sb);
-				log.info(sb);
-				while (data.remaining() > 0) {
-					byte b = data.get();
-					if(lastByte < 0)
-						lastByte = b;
-					if(b != lastByte)
-						throw new SeekInnerCalmException();
-					numReceived++;
-					if(numReceived == 16384) {
-						lastByte = -1;
-						numReceived = 0;
-					}
-				}
+				// DEBUG - just throw it away
+//				StringBuffer sb = new StringBuffer("Tester receiving buffer: ");
+//				ByteUtil.printBuf(data, sb);
+//				log.info(sb);
+//				while (data.remaining() > 0) {
+//					byte b = data.get();
+//					if(lastByte < 0)
+//						lastByte = b;
+//					if(b != lastByte)
+//						throw new SeekInnerCalmException();
+//					numReceived++;
+//					if(numReceived == 16384) {
+//						lastByte = -1;
+//						numReceived = 0;
+//					}
+//				}
 				if((currentTimeMillis() - lastLog) > 1000L) {
 					if(conn.getInFlowRate() > 0)
 						System.out.println("Receiving data at "+FileUtil.humanReadableSize(conn.getInFlowRate())+"/s");
