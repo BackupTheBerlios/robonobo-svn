@@ -190,6 +190,10 @@ public class EONManager implements StartStopable {
 			throw new EONException("Underlying socket not ready");
 	}
 
+	public int getMaxOutboundBps() {
+		return pktSender.getMaxBps();
+	}
+	
 	/**
 	 * Pass -1 to specify no limit
 	 */

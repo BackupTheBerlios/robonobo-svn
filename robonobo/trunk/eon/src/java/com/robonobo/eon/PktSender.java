@@ -159,6 +159,10 @@ public class PktSender extends CatchingRunnable {
 		}
 	}
 	
+	public int getMaxBps() {
+		return maxBps;
+	}
+	
 	class TestyPkt extends EONPacket {
 		int pktNum;
 		@Override
