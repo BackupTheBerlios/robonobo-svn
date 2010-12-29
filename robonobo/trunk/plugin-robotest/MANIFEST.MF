@@ -1,0 +1,3 @@
+Manifest-Version: 1.0
+Implementation-Title: robonobo network testing plugin
+Implementation-Vendor: robonobo project
