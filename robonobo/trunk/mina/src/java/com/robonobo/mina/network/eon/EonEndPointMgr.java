@@ -53,6 +53,7 @@ public class EonEndPointMgr implements EndPointMgr {
 		int udpPortToListen = mina.getConfig().getListenUdpPort();
 		myListenEp = new EonEndPoint(myAddress, udpPortToListen, LISTENER_EON_PORT);
 		eonMgr = new EONManager("mina", mina.getExecutor(), udpPortToListen);
+		eonMgr.setMaxOutboundBps(mina.getConfig().getMaxOutboundBps());
 		if (mina.getConfig().getGatewayAddress() != null)
 			gatewayEp = new EonEndPoint(InetAddress.getByName(mina.getConfig().getGatewayAddress()), mina.getConfig().getGatewayUdpPort(), LISTENER_EON_PORT);
 		log.info("Starting Eon endpoint on " + myListenEp);
@@ -171,6 +172,11 @@ public class EonEndPointMgr implements EndPointMgr {
 		}
 	}
 
+	@Override
+	public void configUpdated() {
+		eonMgr.setMaxOutboundBps(mina.getConfig().getMaxOutboundBps());
+	}
+	
 	private class LocalNodesListener extends CatchingRunnable {
 		private DEONConnection conn;
 

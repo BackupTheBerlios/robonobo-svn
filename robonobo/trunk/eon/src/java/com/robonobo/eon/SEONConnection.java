@@ -748,36 +748,24 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 			}
 			if (mod.gt(sendUna, iss)) {
 				// Our SYN has been ACKd
-				SEONPacket ackPacket = new SEONPacket(localEP, remoteEP, null);
-				ackPacket.setSequenceNumber(sendNext);
-				ackPacket.setAckNumber(recvNext);
-				ackPacket.setACK(true);
+				inConnect = false; // We're connected
+				setState(State.Established);
 
 				// If we are asynchronously sending and we need more data, get
 				// some
 				if (dataProvider != null && outgoing.available() < SEONConnection.MSS)
 					fetchMoreData();
-
-				// Add any data if we've got it
-				if (outgoing.available() > 0) {
-					int numBytes = (outgoing.available() < SEONConnection.MSS) ? outgoing.available()
-							: SEONConnection.MSS;
-					byte[] payloadArr = new byte[numBytes];
-					try {
-						outgoing.read(payloadArr, 0, numBytes);
-						ByteBuffer payload = ByteBuffer.wrap(payloadArr);
-						ackPacket.setPayload(payload);
-						sendNext = mod.add(sendNext, numBytes);
-					} catch (IOException e) {
-						throw new EONException("Something happened to the pipe buffer", e);
-					}
+				// If we have no data to send, send a bare ack to complete the handshake
+				if(outgoing.available() == 0) {
+					SEONPacket ackPacket = new SEONPacket(localEP, remoteEP, null);
+					ackPacket.setSequenceNumber(sendNext);
+					ackPacket.setAckNumber(recvNext);
+					ackPacket.setACK(true);
+					sendPktImmediate(ackPacket, rto, responseTimeoutNormal);					
+				} else {
+					// We have any data to send; the pktSender will send our ack when it gets around to us
+					sendDataIfNecessary();
 				}
-				sendPktImmediate(ackPacket, rto, responseTimeoutNormal);
-				inConnect = false; // We're connected
-				setState(State.Established);
-				// If there's any backlogged data, send it now
-				sendDataIfNecessary();
-				return;
 			} else {
 				// Our SYN has not been ACKd - simultaneous SYNs
 				// from both sockets
@@ -788,12 +776,9 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 				synAckPacket.setACK(true);
 				sendPktImmediate(synAckPacket, rto, responseTimeoutNormal);
 				setState(State.SynReceived);
-				return;
 			}
-		} else {
-			// Neither SYN nor RST is set - ignore
-			return;
 		}
+		// Neither SYN nor RST is set - ignore
 	}
 
 	private void updateSendWindow(long bytesAckedByThisPkt) {

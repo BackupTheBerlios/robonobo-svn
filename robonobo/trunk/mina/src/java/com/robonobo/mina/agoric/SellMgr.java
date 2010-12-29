@@ -211,21 +211,23 @@ public class SellMgr {
 		return acct != null && (acct.balance > 0) && !acct.needsTopUp;
 	}
 
-	public void cmdPendingOpenAccount(MessageHolder mh) {
+	public void cmdPendingOpenAccount(final MessageHolder mh) {
 		String nodeId = mh.getFromCC().getNodeId();
 		// The account may already be open due to threading
-		boolean handleNow = false;
 		synchronized (this) {
-			if (haveActiveAccount(nodeId))
-				handleNow = true;
-			else {
+			// Might already be open due to threading
+			if (haveActiveAccount(nodeId)) {
+				mina.getExecutor().execute(new CatchingRunnable() {
+					public void doRun() throws Exception {
+						handleMsg(mh);
+					}
+				});
+			} else {
 				if (!msgsWaitingForAcct.containsKey(nodeId))
 					msgsWaitingForAcct.put(nodeId, new ArrayList<MessageHolder>());
 				msgsWaitingForAcct.get(nodeId).add(mh);
 			}
 		}
-		if (handleNow)
-			handleMsg(mh);
 	}
 
 	/**

@@ -25,8 +25,7 @@ import com.robonobo.core.api.*;
 import com.robonobo.core.api.config.RobonoboConfig;
 import com.robonobo.core.api.model.*;
 import com.robonobo.core.wang.WangListener;
-import com.robonobo.mina.external.ConnectedNode;
-import com.robonobo.mina.external.FoundSourceListener;
+import com.robonobo.mina.external.*;
 
 /**
  * Main external-facing Robonobo class
@@ -101,6 +100,14 @@ public class RobonoboController {
 	
 	public void removeTaskListener(TaskListener l) {
 		inst.getEventService().removeTaskListener(l);
+	}
+	
+	public void addNodeFilter(NodeFilter nf) {
+		inst.getMina().addNodeFilter(nf);
+	}
+	
+	public void removeNodeFilter(NodeFilter nf) {
+		inst.getMina().removeNodeFilter(nf);
 	}
 	
 	public RobonoboStatus getStatus() {

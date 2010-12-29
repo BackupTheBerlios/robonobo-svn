@@ -16,8 +16,7 @@ import org.apache.commons.logging.Log;
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.api.proto.CoreApi.EndPoint;
 import com.robonobo.core.api.proto.CoreApi.Node;
-import com.robonobo.mina.external.MinaException;
-import com.robonobo.mina.external.NodeLocator;
+import com.robonobo.mina.external.*;
 import com.robonobo.mina.instance.MinaInstance;
 import com.robonobo.mina.util.MinaConnectionException;
 
@@ -32,7 +31,7 @@ public class NetworkMgr {
 	private ScheduledFuture nodeLocatorTask;
 	private final NodeLocatorList nodeLocators = new NodeLocatorList();
 	private List<EndPointMgr> endPointMgrs = new ArrayList<EndPointMgr>();
-	
+	private List<NodeFilter> nodeFilters = new ArrayList<NodeFilter>();
 	private String myNodeId;
 	private String myAppUri;
 	private boolean iAmSuper;
@@ -212,6 +211,12 @@ public class NetworkMgr {
 	public boolean canConnectTo(Node node) {
 		if(node.getProtocolVersion() > MinaInstance.MINA_PROTOCOL_VERSION)
 			return false;
+		for (NodeFilter nf : nodeFilters) {
+			if(!nf.acceptNode(node)) {
+				log.debug("Node filter '"+nf.getFilterName()+"' rejected node "+node);
+				return false;
+			}
+		}
 		// TODO Support lower protocol versions (when we have more than one...)
 		if(mina.getCCM().haveRunningOrPendingCCTo(node.getId())) return true;
 		if(amIPublicallyReachable()) return true;
@@ -234,6 +239,20 @@ public class NetworkMgr {
 		return null;
 	}
 
+	public void addNodeFilter(NodeFilter nf) {
+		nodeFilters.add(nf);
+	}
+	
+	public void removeNodeFilter(NodeFilter nf) {
+		nodeFilters.remove(nf);
+	}
+	
+	public void configUpdated() {
+		for (EndPointMgr epMgr : endPointMgrs) {
+			epMgr.configUpdated();
+		}
+	}
+	
 	private class LocateNodesRunner extends CatchingRunnable {
 		public LocateNodesRunner() {
 			super("NodeLocator");

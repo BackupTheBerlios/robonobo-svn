@@ -2,7 +2,8 @@ package com.robonobo.mina.network;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.common.util.TimeUtil;
@@ -21,7 +22,7 @@ public class BCPair extends ConnectionPair {
 	static final char GAMMA = 0x03b3;
 	private BroadcastConnection bc;
 	private boolean isClosed;
-	private Semaphore reqPageSem = new Semaphore(1, true);
+	private Lock reqPageLock = new ReentrantLock(true);
 
 	/**
 	 * @param pages
@@ -50,7 +51,7 @@ public class BCPair extends ConnectionPair {
 	public int getFlowRate() {
 		return bc.getFlowRate();
 	}
-	
+
 	/**
 	 * @syncpriority 120
 	 */
@@ -77,66 +78,63 @@ public class BCPair extends ConnectionPair {
 	 * @syncpriority 120
 	 */
 	public void requestPages(List<Long> pages) {
+		if(mina.getCCM().isShuttingDown()) {
+			log.debug(this+" not requesting pages - closing down");
+			return;
+		}
 		// Bug huntin
 		if (bc == null)
 			throw new SeekInnerCalmException();
-		// We use a semaphore here rather than plain ol' synchronized as the
-		// fairness flag means it guarantees requests are handled in the order
-		// they are received - to make sure we don't handle reqpage requests out of
-		// order
 		boolean failedPage = false;
+		// Use a fair reentrant lock to make sure we don't handle reqpage requests out of order
+		reqPageLock.lock();
 		try {
-			reqPageSem.acquire();
-			try {
-				// Get the total amount of data we want to send
-				long totalPageLen = 0;
-				if (mina.getConfig().isAgoric()) {
-					for(Iterator<Long> iter = pages.iterator();iter.hasNext();) {
-						Long pn = iter.next();
-						if (sm.getPageBuffer().haveGotPage(pn)) {
-							PageInfo pi = sm.getPageBuffer().getPageInfo(pn);
-							totalPageLen += pi.getLength();
-						} else {
-							iter.remove();
-							failedPage = true;
-							if (log.isDebugEnabled())
-								log.debug(this + " requested page " + pn + " which I do not have");
-						}
+			// Get the total amount of data we want to send
+			long totalPageLen = 0;
+			if (mina.getConfig().isAgoric()) {
+				for (Iterator<Long> iter = pages.iterator(); iter.hasNext();) {
+					Long pn = iter.next();
+					if (sm.getPageBuffer().haveGotPage(pn)) {
+						PageInfo pi = sm.getPageBuffer().getPageInfo(pn);
+						totalPageLen += pi.getLength();
+					} else {
+						iter.remove();
+						failedPage = true;
+						if (log.isDebugEnabled())
+							log.debug(this + " requested page " + pn + " which I do not have");
 					}
 				}
-				// Make sure they have enough ends to get these (if their
-				// balance is too low, this call will cause them to be told to
-				// pay up)
-				int auctStatIdx = (mina.getConfig().isAgoric()) ? mina.getSellMgr().requestAndCharge(cc.getNodeId(), totalPageLen)
-						: 0;
-				if (auctStatIdx < 0) {
-					// Ask again when they've paid up
-					ReqPage rp = ReqPage.newBuilder().setStreamId(sm.getStreamId()).addAllPage(pages).build();
-					mina.getSellMgr().cmdPendingOpenAccount(new MessageHolder("ReqPage", rp, cc, TimeUtil.now()));
-					return;
-				} else {
-					for (Long pn : pages) {
-						bc.addPageToQ(pn, auctStatIdx);
-					}
+			}
+			// Make sure they have enough ends to get these (if their
+			// balance is too low, this call will cause them to be told to
+			// pay up)
+			int auctStatIdx = (mina.getConfig().isAgoric()) ? mina.getSellMgr().requestAndCharge(cc.getNodeId(),
+					totalPageLen) : 0;
+			if (auctStatIdx < 0) {
+				// Ask again when they've paid up
+				ReqPage rp = ReqPage.newBuilder().setStreamId(sm.getStreamId()).addAllPage(pages).build();
+				mina.getSellMgr().cmdPendingOpenAccount(new MessageHolder("ReqPage", rp, cc, TimeUtil.now()));
+				return;
+			} else {
+				for (Long pn : pages) {
+					bc.addPageToQ(pn, auctStatIdx);
 				}
-			} finally {
-				reqPageSem.release();
 			}
-			// If they asked us for a page we didn't have, tell them where we are in the stream
-			if(failedPage) {
-				cc.sendMessage("StreamStatus", sm.buildStreamStatus(cc.getNodeId()));
-			}
-		} catch (InterruptedException e) {
-			throw new SeekInnerCalmException();
+		} finally {
+			reqPageLock.unlock();
+		}
+		// If they asked us for a page we didn't have, tell them where we are in the stream
+		if (failedPage) {
+			cc.sendMessage("StreamStatus", sm.buildStreamStatus(cc.getNodeId()));
 		}
 	}
 
 	public void setGamma(float gamma) {
-		if(log.isDebugEnabled())
-			log.debug(this+": setting "+GAMMA+" to "+gamma);
+		if (log.isDebugEnabled())
+			log.debug(this + ": setting " + GAMMA + " to " + gamma);
 		bc.setGamma(gamma);
 	}
-	
+
 	public boolean equals(Object obj) {
 		if (obj instanceof BCPair)
 			return (hashCode() == obj.hashCode());

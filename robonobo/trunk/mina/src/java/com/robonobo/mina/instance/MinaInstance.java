@@ -1,11 +1,6 @@
 package com.robonobo.mina.instance;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.apache.commons.logging.Log;
@@ -17,23 +12,14 @@ import com.robonobo.common.concurrent.SafetyNet;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.common.util.ExceptionEvent;
 import com.robonobo.common.util.ExceptionListener;
-import com.robonobo.core.api.CurrencyClient;
-import com.robonobo.core.api.StreamVelocity;
-import com.robonobo.core.api.TransferSpeed;
+import com.robonobo.core.api.*;
 import com.robonobo.core.api.proto.CoreApi.EndPoint;
 import com.robonobo.core.api.proto.CoreApi.Node;
 import com.robonobo.mina.agoric.BuyMgr;
 import com.robonobo.mina.agoric.SellMgr;
 import com.robonobo.mina.escrow.EscrowMgr;
 import com.robonobo.mina.escrow.EscrowProvider;
-import com.robonobo.mina.external.Application;
-import com.robonobo.mina.external.ConnectedNode;
-import com.robonobo.mina.external.FoundSourceListener;
-import com.robonobo.mina.external.MinaConfig;
-import com.robonobo.mina.external.MinaControl;
-import com.robonobo.mina.external.MinaException;
-import com.robonobo.mina.external.MinaListener;
-import com.robonobo.mina.external.NodeLocator;
+import com.robonobo.mina.external.*;
 import com.robonobo.mina.external.buffer.PageBuffer;
 import com.robonobo.mina.message.proto.MinaProtocol.Agorics;
 import com.robonobo.mina.network.EndPointMgr;
@@ -401,6 +387,16 @@ public class MinaInstance implements MinaControl {
 		}
 	}
 	
+	@Override
+	public void addNodeFilter(NodeFilter nf) {
+		netMgr.addNodeFilter(nf);
+	}
+	
+	@Override
+	public void removeNodeFilter(NodeFilter nf) {
+		netMgr.removeNodeFilter(nf);
+	}
+	
 	public void setCurrencyClient(CurrencyClient client) {
 		curClient = client;
 		Agorics.Builder ab = Agorics.newBuilder();
@@ -412,6 +408,10 @@ public class MinaInstance implements MinaControl {
 		myAgorics = ab.build();
 		if(escrowProvider != null)
 			escrowProvider.setCurrencyClient(client);
+	}
+	
+	public void configUpdated() {
+		netMgr.configUpdated();
 	}
 	
 	public CurrencyClient getCurrencyClient() {

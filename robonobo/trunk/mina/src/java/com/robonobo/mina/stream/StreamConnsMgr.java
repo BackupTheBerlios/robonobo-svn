@@ -198,6 +198,10 @@ public class StreamConnsMgr {
 	 * @syncpriority 160
 	 */
 	public synchronized void makeBroadcastConnectionTo(ControlConnection cc, EndPoint listenEp, List<Long> pages) {
+		if(mina.getCCM().isShuttingDown()) {
+			log.debug("Not making broadcast connection to "+cc.getNodeId()+": shutting down");
+			return;
+		}
 		if (bcPairs.containsKey(cc.getNodeId())) {
 			log.error("Error: not creating broadcasting connection to already-receiving node " + cc.getNodeId());
 			return;
@@ -211,6 +215,10 @@ public class StreamConnsMgr {
 	public void makeListenConnectionTo(final SourceStatus ss) throws MinaConnectionException {
 		Node node = ss.getFromNode();
 		final String nodeId = node.getId();
+		if(mina.getCCM().isShuttingDown()) {
+			log.debug("Not making listen connection to "+nodeId+": shutting down");
+			return;
+		}
 		ControlConnection cc = mina.getCCM().getCCWithId(nodeId);
 		if (cc == null) {
 			synchronized (this) {

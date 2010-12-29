@@ -74,4 +74,8 @@ public interface MinaControl {
 	public void setAllStreamVelocitiesExcept(String streamId, StreamVelocity sv);
 	
 	public void setCurrencyClient(CurrencyClient client);
+
+	public abstract void removeNodeFilter(NodeFilter nf);
+
+	public abstract void addNodeFilter(NodeFilter nf);
 }

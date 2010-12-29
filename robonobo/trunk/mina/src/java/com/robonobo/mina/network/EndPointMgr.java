@@ -37,4 +37,6 @@ public interface EndPointMgr {
 	public void locateLocalNodes();
 
 	public void setMina(MinaInstance mina);
+	
+	public void configUpdated();
 }

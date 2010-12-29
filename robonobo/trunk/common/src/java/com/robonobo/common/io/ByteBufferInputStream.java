@@ -96,6 +96,8 @@ public class ByteBufferInputStream extends InputStream implements PeekableInputS
 	public int locateNullByte() {
 		lock.lock();
 		try {
+			if(currentBuf == null)
+				return -1;
 			int result = 0;
 			for(int i=currentBuf.position();i<currentBuf.limit();i++) {
 				if(currentBuf.get(i) == 0)

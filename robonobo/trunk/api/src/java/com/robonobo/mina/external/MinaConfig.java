@@ -98,6 +98,7 @@ public class MinaConfig implements Cloneable, Serializable {
 	 * Percent fee
 	 */
 	int escrowFee = 1;
+	int maxOutboundBps = -1;
 	
 	public MinaConfig() {
 	}
@@ -428,5 +429,13 @@ public class MinaConfig implements Cloneable, Serializable {
 
 	public void setEscrowFee(int escrowFee) {
 		this.escrowFee = escrowFee;
+	}
+
+	public int getMaxOutboundBps() {
+		return maxOutboundBps;
+	}
+
+	public void setMaxOutboundBps(int maxOutboundBps) {
+		this.maxOutboundBps = maxOutboundBps;
 	}
 }
