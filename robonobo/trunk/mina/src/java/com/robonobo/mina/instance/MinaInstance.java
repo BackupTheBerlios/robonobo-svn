@@ -342,6 +342,7 @@ public class MinaInstance implements MinaControl {
 
 	public Map<String, TransferSpeed> getTransferSpeeds() {
 		Map<String, TransferSpeed> result = new HashMap<String, TransferSpeed>();
+		// TODO Need to refactor this!  Say we're sharing 500 tracks, this is creating a 500-element array and copying the SMs into it every second - and then every SM makes a copy of its broadcast conns and adds that...
 		for (StreamMgr sm : smRegister.getSMs()) {
 			int upload = sm.getBroadcastingFlowRate();
 			int download = sm.getReceivingFlowRate();

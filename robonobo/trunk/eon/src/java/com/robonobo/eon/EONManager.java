@@ -171,11 +171,11 @@ public class EONManager implements StartStopable {
 		conns.returnPort(localEONPort, addressMask, thisConn);
 	}
 
-	void sendPktImmediate(EONPacket pkt) {
+	final void sendPktImmediate(EONPacket pkt) {
 		pktSender.sendPktImmediate(pkt);
 	}
 
-	void haveDataToSend(EONConnection conn) {
+	final void haveDataToSend(EONConnection conn) {
 		pktSender.haveDataToSend(conn);
 	}
 	
@@ -200,7 +200,7 @@ public class EONManager implements StartStopable {
 		pktSender.setMaxBps(maxBps);
 	}
 
-	int getMaxOutboundBps() {
+	final int getMaxOutboundBps() {
 		return pktSender.getMaxBps();
 	}
 	
