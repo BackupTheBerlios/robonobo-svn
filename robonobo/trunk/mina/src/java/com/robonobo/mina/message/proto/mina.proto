@@ -42,9 +42,9 @@ message ReceivedBid {
 }
 
 message AuctionStateMsg {
-	required int32 bids_open = 1;
-	optional string you_are = 2;
-	required int32 index = 3;
+	required int32 index = 1;
+	optional int32 bids_open = 2;
+	optional string you_are = 3;
 	repeated ReceivedBid bid = 4;
 }
 
