@@ -2388,26 +2388,26 @@ public final class MinaProtocol {
       return com.robonobo.mina.message.proto.MinaProtocol.internal_static_mina_AuctionStateMsg_fieldAccessorTable;
     }
     
-    // required int32 bids_open = 1;
-    public static final int BIDS_OPEN_FIELD_NUMBER = 1;
+    // required int32 index = 1;
+    public static final int INDEX_FIELD_NUMBER = 1;
+    private boolean hasIndex;
+    private int index_ = 0;
+    public boolean hasIndex() { return hasIndex; }
+    public int getIndex() { return index_; }
+    
+    // optional int32 bids_open = 2;
+    public static final int BIDS_OPEN_FIELD_NUMBER = 2;
     private boolean hasBidsOpen;
     private int bidsOpen_ = 0;
     public boolean hasBidsOpen() { return hasBidsOpen; }
     public int getBidsOpen() { return bidsOpen_; }
     
-    // optional string you_are = 2;
-    public static final int YOU_ARE_FIELD_NUMBER = 2;
+    // optional string you_are = 3;
+    public static final int YOU_ARE_FIELD_NUMBER = 3;
     private boolean hasYouAre;
     private java.lang.String youAre_ = "";
     public boolean hasYouAre() { return hasYouAre; }
     public java.lang.String getYouAre() { return youAre_; }
-    
-    // required int32 index = 3;
-    public static final int INDEX_FIELD_NUMBER = 3;
-    private boolean hasIndex;
-    private int index_ = 0;
-    public boolean hasIndex() { return hasIndex; }
-    public int getIndex() { return index_; }
     
     // repeated .mina.ReceivedBid bid = 4;
     public static final int BID_FIELD_NUMBER = 4;
@@ -2424,7 +2424,6 @@ public final class MinaProtocol {
     private void initFields() {
     }
     public final boolean isInitialized() {
-      if (!hasBidsOpen) return false;
       if (!hasIndex) return false;
       for (com.robonobo.mina.message.proto.MinaProtocol.ReceivedBid element : getBidList()) {
         if (!element.isInitialized()) return false;
@@ -2435,14 +2434,14 @@ public final class MinaProtocol {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
+      if (hasIndex()) {
+        output.writeInt32(1, getIndex());
+      }
       if (hasBidsOpen()) {
-        output.writeInt32(1, getBidsOpen());
+        output.writeInt32(2, getBidsOpen());
       }
       if (hasYouAre()) {
-        output.writeString(2, getYouAre());
-      }
-      if (hasIndex()) {
-        output.writeInt32(3, getIndex());
+        output.writeString(3, getYouAre());
       }
       for (com.robonobo.mina.message.proto.MinaProtocol.ReceivedBid element : getBidList()) {
         output.writeMessage(4, element);
@@ -2456,17 +2455,17 @@ public final class MinaProtocol {
       if (size != -1) return size;
     
       size = 0;
+      if (hasIndex()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, getIndex());
+      }
       if (hasBidsOpen()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(1, getBidsOpen());
+          .computeInt32Size(2, getBidsOpen());
       }
       if (hasYouAre()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeStringSize(2, getYouAre());
-      }
-      if (hasIndex()) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(3, getIndex());
+          .computeStringSize(3, getYouAre());
       }
       for (com.robonobo.mina.message.proto.MinaProtocol.ReceivedBid element : getBidList()) {
         size += com.google.protobuf.CodedOutputStream
@@ -2634,14 +2633,14 @@ public final class MinaProtocol {
       
       public Builder mergeFrom(com.robonobo.mina.message.proto.MinaProtocol.AuctionStateMsg other) {
         if (other == com.robonobo.mina.message.proto.MinaProtocol.AuctionStateMsg.getDefaultInstance()) return this;
+        if (other.hasIndex()) {
+          setIndex(other.getIndex());
+        }
         if (other.hasBidsOpen()) {
           setBidsOpen(other.getBidsOpen());
         }
         if (other.hasYouAre()) {
           setYouAre(other.getYouAre());
-        }
-        if (other.hasIndex()) {
-          setIndex(other.getIndex());
         }
         if (!other.bid_.isEmpty()) {
           if (result.bid_.isEmpty()) {
@@ -2675,15 +2674,15 @@ public final class MinaProtocol {
               break;
             }
             case 8: {
+              setIndex(input.readInt32());
+              break;
+            }
+            case 16: {
               setBidsOpen(input.readInt32());
               break;
             }
-            case 18: {
+            case 26: {
               setYouAre(input.readString());
-              break;
-            }
-            case 24: {
-              setIndex(input.readInt32());
               break;
             }
             case 34: {
@@ -2697,7 +2696,25 @@ public final class MinaProtocol {
       }
       
       
-      // required int32 bids_open = 1;
+      // required int32 index = 1;
+      public boolean hasIndex() {
+        return result.hasIndex();
+      }
+      public int getIndex() {
+        return result.getIndex();
+      }
+      public Builder setIndex(int value) {
+        result.hasIndex = true;
+        result.index_ = value;
+        return this;
+      }
+      public Builder clearIndex() {
+        result.hasIndex = false;
+        result.index_ = 0;
+        return this;
+      }
+      
+      // optional int32 bids_open = 2;
       public boolean hasBidsOpen() {
         return result.hasBidsOpen();
       }
@@ -2715,7 +2732,7 @@ public final class MinaProtocol {
         return this;
       }
       
-      // optional string you_are = 2;
+      // optional string you_are = 3;
       public boolean hasYouAre() {
         return result.hasYouAre();
       }
@@ -2733,24 +2750,6 @@ public final class MinaProtocol {
       public Builder clearYouAre() {
         result.hasYouAre = false;
         result.youAre_ = getDefaultInstance().getYouAre();
-        return this;
-      }
-      
-      // required int32 index = 3;
-      public boolean hasIndex() {
-        return result.hasIndex();
-      }
-      public int getIndex() {
-        return result.getIndex();
-      }
-      public Builder setIndex(int value) {
-        result.hasIndex = true;
-        result.index_ = value;
-        return this;
-      }
-      public Builder clearIndex() {
-        result.hasIndex = false;
-        result.index_ = 0;
         return this;
       }
       
@@ -12736,9 +12735,9 @@ public final class MinaProtocol {
       "\"=\n\rAuctionResult\022,\n\rauction_state\030\001 \002(\013" +
       "2\025.mina.AuctionStateMsg\"E\n\013ReceivedBid\022\023" +
       "\n\013listener_id\030\001 \002(\t\022\013\n\003bid\030\002 \002(\001\022\024\n\tflow" +
-      "_rate\030\003 \001(\005:\0010\"d\n\017AuctionStateMsg\022\021\n\tbid" +
-      "s_open\030\001 \002(\005\022\017\n\007you_are\030\002 \001(\t\022\r\n\005index\030\003" +
-      " \002(\005\022\036\n\003bid\030\004 \003(\0132\021.mina.ReceivedBid\"0\n\013" +
+      "_rate\030\003 \001(\005:\0010\"d\n\017AuctionStateMsg\022\r\n\005ind" +
+      "ex\030\001 \002(\005\022\021\n\tbids_open\030\002 \001(\005\022\017\n\007you_are\030\003" +
+      " \001(\t\022\036\n\003bid\030\004 \003(\0132\021.mina.ReceivedBid\"0\n\013" +
       "BeginEscrow\022\016\n\006amount\030\001 \002(\001\022\021\n\tescrow_id" +
       "\030\002 \002(\t\"\025\n\003Bid\022\016\n\006amount\030\001 \002(\001\"E\n\tBidUpda" +
       "te\022\017\n\007you_are\030\001 \001(\t\022\023\n\013listener_id\030\002 \003(\t" +
@@ -12843,7 +12842,7 @@ public final class MinaProtocol {
           internal_static_mina_AuctionStateMsg_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mina_AuctionStateMsg_descriptor,
-              new java.lang.String[] { "BidsOpen", "YouAre", "Index", "Bid", },
+              new java.lang.String[] { "Index", "BidsOpen", "YouAre", "Bid", },
               com.robonobo.mina.message.proto.MinaProtocol.AuctionStateMsg.class,
               com.robonobo.mina.message.proto.MinaProtocol.AuctionStateMsg.Builder.class);
           internal_static_mina_BeginEscrow_descriptor =
