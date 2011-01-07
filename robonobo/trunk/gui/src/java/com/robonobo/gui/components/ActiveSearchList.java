@@ -79,6 +79,8 @@ public class ActiveSearchList extends LeftSidebarList {
 		RLabel textLbl;
 		RLabel closeLbl;
 		JPanel pnl;
+		ImageIcon closeIconUnsel;
+		ImageIcon closeIconSel;
 
 		public CellRenderer() {
 			textLbl = new RLabel11();
@@ -87,7 +89,9 @@ public class ActiveSearchList extends LeftSidebarList {
 			textLbl.setMaximumSize(new Dimension(MAX_LBL_WIDTH, 65535));
 			textLbl.setPreferredSize(new Dimension(MAX_LBL_WIDTH, 65535));
 			textLbl.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
-			closeLbl = new RIconLabel(new ImageIcon(ActiveSearchList.class.getResource("/img/icon/red_x_small.png")));
+			closeIconSel = new ImageIcon(ActiveSearchList.class.getResource("/img/icon/close_x_light_bg.png"));
+			closeIconUnsel = new ImageIcon(ActiveSearchList.class.getResource("/img/icon/close_x_mid_bg.png"));
+			closeLbl = new RIconLabel(closeIconUnsel);
 			closeLbl.setOpaque(false);
 			closeLbl.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
 			pnl = new JPanel();
@@ -105,9 +109,11 @@ public class ActiveSearchList extends LeftSidebarList {
 			if (index == getSelectedIndex()) {
 				pnl.setBackground(LIGHT_GRAY);
 				textLbl.setForeground(BLUE_GRAY);
+				closeLbl.setIcon(closeIconSel);
 			} else {
 				pnl.setBackground(MID_GRAY);
 				textLbl.setForeground(DARK_GRAY);
+				closeLbl.setIcon(closeIconUnsel);
 			}
 			return pnl;
 		}
