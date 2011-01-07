@@ -219,6 +219,18 @@ public class StreamConnsMgr {
 			log.debug("Not making listen connection to "+nodeId+": shutting down");
 			return;
 		}
+		
+		// If we have no currency client, wait til we do
+		if(mina.getConfig().isAgoric() && !mina.getCurrencyClient().isReady()) {
+			log.debug("Not making lcpair to "+nodeId+" as currency client is not ready - waiting 5s");
+			mina.getExecutor().schedule(new CatchingRunnable() {
+				public void doRun() throws Exception {
+					makeListenConnectionTo(ss);
+				}
+			}, 5, TimeUnit.SECONDS);
+			return;			
+		}
+		
 		ControlConnection cc = mina.getCCM().getCCWithId(nodeId);
 		if (cc == null) {
 			synchronized (this) {

@@ -44,11 +44,11 @@ public class SourceStatusHandler extends AbstractMessageHandler {
 					return;
 				}
 			}
-			mina.getSourceMgr().gotSourceStatus(ss);
 			// Pass this to all lcpairs and our sourceMgr
 			for (LCPair lcp : cc.getLCPairs()) {
 				lcp.notifySourceStatus(ss);
 			}
+			mina.getSourceMgr().gotSourceStatus(ss);
 		} else if (mina.getConfig().isSupernode()) {
 			// I am a supernode - forward this to its destination
 			ControlConnection toCC = mina.getCCM().getCCWithId(ss.getToNodeId());

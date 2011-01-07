@@ -40,7 +40,7 @@ public class PktSender extends CatchingRunnable {
 	private Condition canSend;
 	private Condition noUnthrottledPkts;
 	private Visitor vis = new Visitor();
-	private boolean debugLogging;
+	private final boolean debugLogging;
 
 	PktSender(DatagramChannel chan) {
 		// Those isDebugEnabled() calls add up, this class is inner-loopish
@@ -61,7 +61,7 @@ public class PktSender extends CatchingRunnable {
 		// Wait for all immediate pkts to be sent
 		lock.lock();
 		try {
-			while(unthrottledPkts.size() > 0) {
+			while (unthrottledPkts.size() > 0) {
 				noUnthrottledPkts.await();
 			}
 		} catch (InterruptedException e) {
@@ -96,6 +96,12 @@ public class PktSender extends CatchingRunnable {
 	}
 
 	private void insertReadyConn(EONConnection conn) {
+		// Debugging...
+		for (EONConnection testConn : readyConns) {
+			if (testConn == conn)
+				throw new SeekInnerCalmException();
+		}
+
 		// TODO Annoying that one can't 'reset' an iterator, which means we're doing this object creation every time
 		// Need to profile a node with many connections and see if it's worth writing a custom class
 		ListIterator<EONConnection> it = readyConns.listIterator();
@@ -110,9 +116,9 @@ public class PktSender extends CatchingRunnable {
 			}
 		}
 		it.add(conn);
-		
+
 		// DEBUG
-		log.debug("pktSender added ready conn, now have: "+readyConns);
+		log.debug("pktSender added ready conn, now have: " + readyConns);
 	}
 
 	@Override
@@ -158,16 +164,17 @@ public class PktSender extends CatchingRunnable {
 					noUnthrottledPkts.signal();
 					return;
 				}
+			} catch(InterruptedException e) {
+				if(stopping)
+					return;
+				else
+					log.error("pktSender received unexpected InterruptedException - continuing");
 			} finally {
 				lock.unlock();
 			}
 			// Come out of the lock before we call conn.acceptVisitor() to remove deadlock possibilities
 			// Send data from our ready conns until we're out of credit
 			while (readyConns.size() > 0) {
-				if (maxBps >= 0)
-					vis.reset(bytesCredit);
-				else
-					vis.reset(Integer.MAX_VALUE);
 				EONConnection conn;
 				lock.lock();
 				try {
@@ -175,19 +182,24 @@ public class PktSender extends CatchingRunnable {
 				} finally {
 					lock.unlock();
 				}
-				if (conn.acceptVisitor(vis)) {
-					// We're out of credit, and this guy still has data to send
-					// Re-insert this guy behind any other waiting conns with the same gamma, otherwise one guy with a
-					// 1MB send holds everyone up
-					lock.lock();
-					try {
-						insertReadyConn(conn);
-						// Wait to allow our credit to accumulate
-						nextSendTime = nowTime + WAIT_TIME;
-					} finally {
-						lock.unlock();
+				try {
+					if (conn.acceptVisitor(vis)) {
+						// We're out of credit, and this guy still has data to send
+						// Re-insert this guy behind any other waiting conns with the same gamma, otherwise one guy with
+						// a
+						// 1MB send holds everyone up
+						lock.lock();
+						try {
+							insertReadyConn(conn);
+							// Wait to allow our credit to accumulate
+							nextSendTime = nowTime + WAIT_TIME;
+						} finally {
+							lock.unlock();
+						}
+						break;
 					}
-					break;
+				} catch (Exception e) {
+					log.error("pktSender caught exception when visiting "+conn, e);
 				}
 			}
 		}
@@ -212,10 +224,15 @@ public class PktSender extends CatchingRunnable {
 	public void setMaxBps(int maxBps) {
 		lock.lock();
 		try {
+			if (debugLogging)
+				log.debug("PktSender setting max bps to " + maxBps);
 			this.maxBps = maxBps;
-			bytesCredit = (int) (maxBps * (float) (MAX_CREDIT_TIME / 1000));
-			lastCreditTime = currentTimeMillis();
-			maxBytesCredit = MAX_CREDIT_TIME * (maxBps / 1000);
+			if (maxBps >= 0) {
+				bytesCredit = (int) (maxBps * (float) (MAX_CREDIT_TIME / 1000));
+				lastCreditTime = currentTimeMillis();
+				maxBytesCredit = MAX_CREDIT_TIME * (maxBps / 1000);
+			} else
+				bytesCredit = Integer.MAX_VALUE;
 		} finally {
 			lock.unlock();
 		}
@@ -226,24 +243,19 @@ public class PktSender extends CatchingRunnable {
 	}
 
 	class Visitor implements PktSendVisitor {
-		int bytesAvailable;
-
-		void reset(int bytesAvailable) {
-			this.bytesAvailable = bytesAvailable;
-		}
-
 		@Override
 		public int bytesAvailable() {
-			return bytesAvailable;
+			return bytesCredit;
 		}
 
 		@Override
 		public void sendPkt(EONPacket pkt) throws EONException {
-			if (bytesAvailable < pkt.getPayloadSize())
+			int payloadSz = pkt.getPayloadSize();
+			if (bytesCredit < payloadSz)
 				throw new SeekInnerCalmException();
 			PktSender.this.sendPkt(pkt);
-			if (bytesAvailable != Integer.MAX_VALUE)
-				bytesAvailable -= pkt.getPayloadSize();
+			if (bytesCredit != Integer.MAX_VALUE)
+				bytesCredit -= payloadSz;
 		}
 
 	}

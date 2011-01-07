@@ -25,9 +25,9 @@ public class NetworkMgr {
 	private final MinaInstance mina;
 	private boolean listenerReady = false;
 	// TODO: holepunching
-	//	private InetAddress firstFoundPublicAddr;
-	//	private InetSocketAddress provPublicDetails;
-	//	private boolean testedHolepunching = false;
+	// private InetAddress firstFoundPublicAddr;
+	// private InetSocketAddress provPublicDetails;
+	// private boolean testedHolepunching = false;
 	private ScheduledFuture nodeLocatorTask;
 	private final NodeLocatorList nodeLocators = new NodeLocatorList();
 	private List<EndPointMgr> endPointMgrs = new ArrayList<EndPointMgr>();
@@ -35,7 +35,7 @@ public class NetworkMgr {
 	private String myNodeId;
 	private String myAppUri;
 	private boolean iAmSuper;
-	
+
 	/** Node descriptor to be sent out publically */
 	private Node publicNodeDesc;
 	/** Node descriptor for local nodes */
@@ -51,7 +51,7 @@ public class NetworkMgr {
 	private void instantiateEndPointMgrs() {
 		// Grab our list of epmgr classnames, and instantiate them
 		String[] classNames = mina.getConfig().getEndPointMgrClasses().split(",");
-		if(classNames.length == 0)
+		if (classNames.length == 0)
 			throw new RuntimeException("No endpoint manager classes defined");
 		for (String className : classNames) {
 			try {
@@ -76,7 +76,7 @@ public class NetworkMgr {
 		// return;
 		// if(myPublicEp != null)
 		// return;
-		//		
+		//
 		// // Assume our NAT device can do holepunching - test only!
 		// if(mina.getConfig().isAssumeNatHolepunch()) {
 		// log.warn("Assuming NAT holepunch, using external details "+details);
@@ -88,7 +88,7 @@ public class NetworkMgr {
 		// testedHolepunching = true;
 		// return;
 		// }
-		//		
+		//
 		// // If our UDP port stays the same when talking to different IPs, our
 		// NAT device supports holepunching
 		// if(firstFoundPublicAddr == null) {
@@ -121,12 +121,12 @@ public class NetworkMgr {
 		builder.setLocal(isLocal);
 		return builder.build();
 	}
-	
+
 	public Node getDescriptorForTalkingTo(Node otherNode, boolean isLocal) {
 		List<EndPoint> eps = new ArrayList<EndPoint>();
 		for (EndPointMgr epMgr : endPointMgrs) {
 			EndPoint ep = epMgr.getEndPointForTalkingTo(otherNode);
-			if(ep != null)
+			if (ep != null)
 				eps.add(ep);
 		}
 		return getNode(isLocal, eps);
@@ -144,24 +144,24 @@ public class NetworkMgr {
 		myNodeId = mina.getMyNodeId();
 		iAmSuper = mina.getConfig().isSupernode();
 		myAppUri = mina.getImplementingApplication().getHomeUri();
-		if(mina.getConfig().isSupernode())
+		if (mina.getConfig().isSupernode())
 			log.info("I am a supernode.  Fear me.");
 		else
 			log.info("I am a leaf node.");
 
 		for (EndPointMgr epMgr : endPointMgrs) {
-			log.info("Starting "+epMgr.getClass().getName());
+			log.info("Starting " + epMgr.getClass().getName());
 			try {
 				epMgr.start();
-			} catch(Exception e) {
+			} catch (Exception e) {
 				throw new MinaException(e);
 			}
 		}
 
 		publicallyReachable = false;
 		List<EndPoint> eps = new ArrayList<EndPoint>();
-		if(mina.getConfig().getSendPrivateAddrsToLocator()) {
-			// Debug only!  Send private addresses to node locator
+		if (mina.getConfig().getSendPrivateAddrsToLocator()) {
+			// Debug only! Send private addresses to node locator
 			publicallyReachable = true;
 			for (EndPointMgr epMgr : endPointMgrs) {
 				eps.add(epMgr.getLocalEndPoint());
@@ -170,7 +170,7 @@ public class NetworkMgr {
 			// Only send public addresses
 			for (EndPointMgr epMgr : endPointMgrs) {
 				EndPoint ep = epMgr.getPublicEndPoint();
-				if(ep != null) {
+				if (ep != null) {
 					publicallyReachable = true;
 					eps.add(ep);
 				}
@@ -184,14 +184,15 @@ public class NetworkMgr {
 		}
 		localNodeDesc = getNode(true, eps);
 
-		nodeLocatorTask = mina.getExecutor().scheduleAtFixedRate(new LocateNodesRunner(), 0, mina.getConfig().getLocateNodesFreq(), TimeUnit.SECONDS);
+		nodeLocatorTask = mina.getExecutor().scheduleAtFixedRate(new LocateNodesRunner(), 0,
+				mina.getConfig().getLocateNodesFreq(), TimeUnit.SECONDS);
 	}
 
 	public void stop() {
-		if(nodeLocatorTask != null)
+		if (nodeLocatorTask != null)
 			nodeLocatorTask.cancel(true);
 		for (EndPointMgr epMgr : endPointMgrs) {
-			log.info("Stopping "+epMgr.getClass().getName());
+			log.info("Stopping " + epMgr.getClass().getName());
 			epMgr.stop();
 		}
 	}
@@ -209,31 +210,33 @@ public class NetworkMgr {
 	}
 
 	public boolean canConnectTo(Node node) {
-		if(node.getProtocolVersion() > MinaInstance.MINA_PROTOCOL_VERSION)
+		if (node.getProtocolVersion() > MinaInstance.MINA_PROTOCOL_VERSION)
 			return false;
 		for (NodeFilter nf : nodeFilters) {
-			if(!nf.acceptNode(node)) {
-				log.debug("Node filter '"+nf.getFilterName()+"' rejected node "+node);
+			if (!nf.acceptNode(node)) {
+				log.debug("Node filter '" + nf.getFilterName() + "' rejected node " + node);
 				return false;
 			}
 		}
 		// TODO Support lower protocol versions (when we have more than one...)
-		if(mina.getCCM().haveRunningOrPendingCCTo(node.getId())) return true;
-		if(amIPublicallyReachable()) return true;
+		if (mina.getCCM().haveRunningOrPendingCCTo(node.getId()))
+			return true;
+		if (amIPublicallyReachable())
+			return true;
 		for (EndPointMgr epMgr : endPointMgrs) {
-			if(epMgr.canConnectTo(node))
+			if (epMgr.canConnectTo(node))
 				return true;
 		}
 		return false;
 	}
 
 	/**
-	 * Don't call this method directly, use CCMgr.initiateNewCC().  This method may not return for 30+secs
+	 * Don't call this method directly, use CCMgr.initiateNewCC(). This method may not return for 30+secs
 	 */
 	public ControlConnection makeCCTo(Node node, List<EndPoint> triedEps) {
 		for (EndPointMgr epMgr : endPointMgrs) {
 			ControlConnection cc = epMgr.connectTo(node, triedEps);
-			if(cc != null)
+			if (cc != null)
 				return cc;
 		}
 		return null;
@@ -242,28 +245,28 @@ public class NetworkMgr {
 	public void addNodeFilter(NodeFilter nf) {
 		nodeFilters.add(nf);
 	}
-	
+
 	public void removeNodeFilter(NodeFilter nf) {
 		nodeFilters.remove(nf);
 	}
-	
+
 	public void configUpdated() {
 		for (EndPointMgr epMgr : endPointMgrs) {
 			epMgr.configUpdated();
 		}
 	}
-	
+
 	private class LocateNodesRunner extends CatchingRunnable {
 		public LocateNodesRunner() {
 			super("NodeLocator");
 		}
 
 		public void doRun() {
-			if(mina.getConfig().getLocateLocalNodes())
+			if (mina.getConfig().getLocateLocalNodes())
 				locateLocalNodes();
-			if(mina.getConfig().isSupernode())
+			if (mina.getConfig().isSupernode())
 				sendDetailsToLocator();
-			else if(mina.getConfig().getLocateRemoteNodes() && !mina.getCCM().haveSupernode())
+			else if (mina.getConfig().getLocateRemoteNodes() && !mina.getCCM().haveSupernode())
 				locateSupernodes();
 		}
 
@@ -282,23 +285,21 @@ public class NetworkMgr {
 		private void locateSupernodes() {
 			log.debug("Locating supernodes");
 			NodeLocator[] locators = nodeLocators.getLocators();
-			for(int i = 0; i < locators.length; i++) {
+			for (int i = 0; i < locators.length; i++) {
 				NodeLocator nl = locators[i];
 				List<Node> nodeList = nl.locateSuperNodes(publicNodeDesc);
-				if(nodeList != null) {
+				if (nodeList != null) {
 					Iterator<Node> iter = nodeList.iterator();
-					while(iter.hasNext()) {
+					while (iter.hasNext()) {
 						Node thisNode = iter.next();
-						log.debug("Checking remote node "+thisNode);
+						log.debug("Checking remote node " + thisNode);
 						try {
 							mina.getCCM().initiateNewCC(thisNode, null);
-						} catch(MinaConnectionException e) {
+						} catch (MinaConnectionException e) {
 							log.error("Error connecting to node " + thisNode.getId(), e);
 						}
 					}
-					log.debug("Locating remote nodes using '" + nl.toString() + "' found " + nodeList.size() + " nodes");
-				} else
-					log.debug("Locating remote nodes using '" + nl.toString() + "' didnt find any nodes");
+				}
 			}
 		}
 	}

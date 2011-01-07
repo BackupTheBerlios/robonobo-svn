@@ -300,9 +300,8 @@ public class ControlConnection implements PushDataReceiver {
 		if (!handshakeComplete) {
 			if (msg instanceof Hello)
 				receiveHello((Hello) msg);
-			else {
+			else
 				waitingMsgs.add(msgHolder);
-			}
 			return;
 		}
 		lastDataRecvd = now();
@@ -438,12 +437,12 @@ public class ControlConnection implements PushDataReceiver {
 		}
 
 		protected void onFail() {
-			log.error(this + " failing attempt to close connection - closing now");
+			log.error(ControlConnection.this + " failing attempt to close connection - closing now");
 			close(false, null);
 		}
 
 		protected void onTimeout() {
-			log.error(this + " timeout closing connection - closing now");
+			log.error(ControlConnection.this + " timeout closing connection - closing now");
 			close(false, null);
 		}
 	}
@@ -578,7 +577,7 @@ public class ControlConnection implements PushDataReceiver {
 					incoming.setPretendEof(serialMsgLength);
 					GeneratedMessage msg = handler.parse(msgName, incoming);
 					incoming.clearPretendEof();
-					MessageHolder msgHolder = new MessageHolder(msgName, msg, this, TimeUtil.now());
+					MessageHolder msgHolder = new MessageHolder(msgName, msg, this, now());
 					handleMessage(handler, msgHolder);
 					serialMsgLength = -1;
 					msgName = null;
@@ -620,10 +619,12 @@ public class ControlConnection implements PushDataReceiver {
 
 		public void doRun() {
 			synchronized (ControlConnection.this) {
-				Date nowDate = new Date();
+				// If we have data flowing, don't bother pinging
+				if(getUpFlowRate() > 0 || getDownFlowRate() > 0)
+					return;
 				int timeoutSecs = mina.getConfig().getMessageTimeout();
 				Date nextPingDate = new Date(lastDataRecvd.getTime() + timeoutSecs * 1000);
-				if (nextPingDate.before(nowDate)) {
+				if (nextPingDate.before(now())) {
 					pingAttempt = new MessageAttempt("Ping", timeoutSecs, "PingAttempt");
 					pingAttempt.start();
 					String tok = String.valueOf(rand.nextInt(9999));

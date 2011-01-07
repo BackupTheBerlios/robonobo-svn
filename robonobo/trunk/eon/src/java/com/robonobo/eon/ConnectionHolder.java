@@ -84,10 +84,6 @@ public class ConnectionHolder {
 						long msToWait = endWaitingTime.getTime() - nowTime.getTime();
 						if(msToWait <= 0) {
 							log.debug("EON finished waiting for connections");
-							for (EONConnection eonConn : connsToWaitFor) {
-								SEONConnection seonConn = (SEONConnection) eonConn;
-								seonConn.cancelTimeouts();
-							}
 							break;
 						} else {
 							log.debug("EON waiting for "+connsToWaitFor+" conns, "+msToWait+"ms");
@@ -98,9 +94,12 @@ public class ConnectionHolder {
 					}
 				}
 			}
-
-			connsToWaitFor.clear();
 		}
+		for (EONConnection eonConn : connsToWaitFor) {
+			SEONConnection seonConn = (SEONConnection) eonConn;
+			seonConn.cancelTimeouts();
+		}
+		connsToWaitFor.clear();
 		log.debug("All EON conns closed");
 	}
 

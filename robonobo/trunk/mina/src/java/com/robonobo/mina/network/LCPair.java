@@ -2,6 +2,7 @@ package com.robonobo.mina.network;
 
 import static com.robonobo.common.util.TextUtil.formatSizeInBytes;
 import static com.robonobo.common.util.TimeUtil.now;
+import static java.lang.System.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,7 +32,7 @@ public class LCPair extends ConnectionPair {
 	private ListenConnection lc;
 	private boolean closing = false;
 	private Map<Long, PageAttempt> reqdPages = new HashMap<Long, PageAttempt>();
-	private boolean complete;
+	private boolean setupFinished = false;
 	private SourceStatus lastSourceStat;
 	private StreamStatus lastStreamStat;
 	// These below are used to measure page timeouts, all in ms
@@ -58,8 +59,14 @@ public class LCPair extends ConnectionPair {
 	 * 
 	 */
 	protected void startListening() {
-		if (complete)
-			return;
+		synchronized (this) {
+			if (setupFinished)
+				return;
+		}
+
+		// DEBUG
+		log.debug(LCPair.this + ": in startListening (tid: " + Thread.currentThread().getId() + ")");
+
 		// If we don't yet have a confirmed bid, make one, and call us back when
 		// they do
 		// TODO: We might need to change our bid if this new stream demands a
@@ -70,18 +77,25 @@ public class LCPair extends ConnectionPair {
 			mina.getBuyMgr().newAuctionState(cc.getNodeId(), new AuctionState(lastSourceStat.getAuctionState()));
 			// Set our timeout to 8 * command timeout, to allow time to open an
 			// auction and for bids to go to and fro
-			Attempt a = new Attempt(mina, 8 * mina.getConfig().getMessageTimeout() * 1000, "lcp-" + sm.getStreamId() + "-" + nodeId) {
+			Attempt a = new Attempt(mina, 8 * mina.getConfig().getMessageTimeout() * 1000, "lcp-" + sm.getStreamId()
+					+ "-" + nodeId) {
 				protected void onSuccess() {
+					// DEBUG
+					log.debug(LCPair.this + " account setup succeeded, starting listen (tid: "
+							+ Thread.currentThread().getId() + ")");
 					startListening();
 				}
 
 				protected void onTimeout() {
-					log.error("Timeout attempting to set up connection to " + nodeId + " for stream " + sm.getStreamId());
+					log.error("Timeout attempting to set up connection to " + nodeId + " for stream "
+							+ sm.getStreamId());
 					mina.getSourceMgr().cachePossiblyDeadSource(lastSourceStat, lastStreamStat);
 					die(false);
 				}
 			};
 			a.start();
+			// DEBUG
+			log.debug(this + " setting up account so we can listen (tid: " + Thread.currentThread().getId() + ")");
 			mina.getBuyMgr().setupAccountAndBid(nodeId, sm.getBidStrategy().getOpeningBid(nodeId), a);
 			return;
 		}
@@ -89,31 +103,24 @@ public class LCPair extends ConnectionPair {
 		// Let's get this party started
 		sm.getPRM().notifyStreamStatus(cc.getNodeId(), lastStreamStat);
 		SortedSet<Long> newPages = sm.getPRM().getPagesToRequest(cc.getNodeId(), 1, reqdPages.keySet());
-		StartSource ss = StartSource.newBuilder().setStreamId(sm.getStreamId()).setEp(lc.getEndPoint()).addAllPage(newPages).build();
+		StartSource ss = StartSource.newBuilder().setStreamId(sm.getStreamId()).setEp(lc.getEndPoint())
+				.addAllPage(newPages).build();
 		cc.sendMessage("StartSource", ss);
 		for (Long pn : newPages) {
 			int statusIdx = mina.getConfig().isAgoric() ? mina.getBuyMgr().getCurrentStatusIdx(cc.getNodeId()) : 0;
-			PageAttempt rpa = new PageAttempt(rto, pn, now().getTime(), statusIdx);
+			PageAttempt rpa = new PageAttempt(rto, pn, currentTimeMillis(), statusIdx);
 			reqdPages.put(pn, rpa);
 			rpa.start();
 		}
-
-		sendReqPageIfNecessary();
-		complete = true;
+		synchronized (this) {
+			setupFinished = true;
+		}
 	}
 
 	public void notifySourceStatus(SourceStatus sourceStat) {
+		// DEBUG
+		log.debug(this + " notified of sourcestat (tid: " + Thread.currentThread().getId() + ")");
 		setLastSourceStat(sourceStat);
-		// If we're not yet up and running, we might be sent a sourcestatus in
-		// response to us bidding too early - bid again when bids open
-		if (!complete) {
-			mina.getExecutor().schedule(new CatchingRunnable() {
-				public void doRun() throws Exception {
-					startListening();
-				}
-			}, sourceStat.getAuctionState().getBidsOpen(), TimeUnit.MILLISECONDS);
-			return;
-		}
 		for (StreamStatus streamStat : sourceStat.getSsList()) {
 			if (streamStat.getStreamId().equals(sm.getStreamId())) {
 				notifyStreamStatus(streamStat);
@@ -188,7 +195,8 @@ public class LCPair extends ConnectionPair {
 		if (!(obj instanceof LCPair))
 			return false;
 		ConnectionPair other = (ConnectionPair) obj;
-		return (other.getCC().getNodeId().equals(cc.getNodeId()) && other.getSM().getStreamId().equals(sm.getStreamId()));
+		return (other.getCC().getNodeId().equals(cc.getNodeId()) && other.getSM().getStreamId()
+				.equals(sm.getStreamId()));
 	}
 
 	public int hashCode() {
@@ -196,7 +204,7 @@ public class LCPair extends ConnectionPair {
 	}
 
 	public boolean isComplete() {
-		return complete;
+		return setupFinished;
 	}
 
 	public String toString() {
@@ -222,8 +230,9 @@ public class LCPair extends ConnectionPair {
 
 		if (log.isDebugEnabled()) {
 			long bytesInFlight = sm.getPageBuffer().getAvgPageSize() * reqdPages.size();
-			log.debug("Stream " + sm.getStreamId() + " / node " + cc.getNodeId() + ": got page " + pn + " - rate=" + formatSizeInBytes(getFlowRate()) + "/s, "
-					+ reqdPages.size() + " pages in flight (" + FileUtil.humanReadableSize(bytesInFlight) + ")");
+			log.debug("Stream " + sm.getStreamId() + " / node " + cc.getNodeId() + ": got page " + pn + " - rate="
+					+ formatSizeInBytes(getFlowRate()) + "/s, " + reqdPages.size() + " pages in flight ("
+					+ FileUtil.humanReadableSize(bytesInFlight) + ")");
 		}
 
 		sm.receivePage(p);
@@ -233,7 +242,8 @@ public class LCPair extends ConnectionPair {
 			// greater than (mod 64) the status when we requested it
 			if (AuctionState.INDEX_MOD.lt(p.getAuctionStatus(), rpa.statusIdx)) {
 				// TODO Something much more serious
-				log.error("ERROR: " + this + " received page with statusIdx " + p.getAuctionStatus() + " but I requested it with idx " + rpa.statusIdx);
+				log.error("ERROR: " + this + " received page with statusIdx " + p.getAuctionStatus()
+						+ " but I requested it with idx " + rpa.statusIdx);
 				return;
 			}
 			mina.getBuyMgr().receivedPage(cc.getNodeId(), p.getAuctionStatus(), p.getLength());
@@ -265,14 +275,16 @@ public class LCPair extends ConnectionPair {
 		synchronized (this) {
 			if (reqdPages.size() < pgWin) {
 				int pagesToReq = pgWin - reqdPages.size();
-				SortedSet<Long> newPages = sm.getPRM().getPagesToRequest(cc.getNodeId(), pagesToReq, reqdPages.keySet());
+				SortedSet<Long> newPages = sm.getPRM()
+						.getPagesToRequest(cc.getNodeId(), pagesToReq, reqdPages.keySet());
 				if (newPages.size() > 0) {
 					if (usefulDataTimeout != null) {
 						usefulDataTimeout.cancel(false);
 						usefulDataTimeout = null;
 					}
 					try {
-						sendMessage("ReqPage", ReqPage.newBuilder().setStreamId(sm.getStreamId()).addAllPage(newPages).build());
+						sendMessage("ReqPage", ReqPage.newBuilder().setStreamId(sm.getStreamId()).addAllPage(newPages)
+								.build());
 					} catch (MinaConnectionException e) {
 						// We'll die shortly - just return
 						return;
@@ -288,7 +300,8 @@ public class LCPair extends ConnectionPair {
 					// pages that are useful to us... Start a timeout to shut us
 					// down if they don't offer any useful data within 2 mins
 					if (usefulDataTimeout == null) {
-						log.debug(this + " has no useful data - starting timeout of " + mina.getConfig().getUsefulDataSourceTimeout() + "s");
+						log.debug(this + " has no useful data - starting timeout of "
+								+ mina.getConfig().getUsefulDataSourceTimeout() + "s");
 						usefulDataTimeout = mina.getExecutor().schedule(new CatchingRunnable() {
 							public void doRun() throws Exception {
 								log.info(this + " useful data timeout - closing (caching source)");
@@ -304,7 +317,8 @@ public class LCPair extends ConnectionPair {
 
 	private int pageWindowSize() {
 		float windowSecs = mina.getConfig().getPageRequestLookAheadTime() / 1000;
-		int result = (getFlowRate() == 0) ? 1 : (int) (getFlowRate() * windowSecs / sm.getPageBuffer().getAvgPageSize());
+		int result = (getFlowRate() == 0) ? 1
+				: (int) (getFlowRate() * windowSecs / sm.getPageBuffer().getAvgPageSize());
 		if (result < 1)
 			result = 1;
 		return result;

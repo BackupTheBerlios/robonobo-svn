@@ -49,7 +49,7 @@ public class AuctionState {
 
 	public AuctionState(AuctionStateMsg asm) {
 		this.asm = asm;
-		bidsOpen = asm.getBidsOpen();
+		bidsOpen = asm.hasBidsOpen() ? asm.getBidsOpen() : 0;
 		youAre = asm.getYouAre();
 		index = asm.getIndex();
 		for (ReceivedBid recBid : asm.getBidList()) {

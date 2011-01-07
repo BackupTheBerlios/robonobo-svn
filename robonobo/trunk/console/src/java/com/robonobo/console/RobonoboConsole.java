@@ -1,8 +1,6 @@
 package com.robonobo.console;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
@@ -71,7 +69,10 @@ public class RobonoboConsole extends CatchingRunnable {
 		}
 	}
 
-
+	public String readLine() throws IOException {
+		return in.readLine();
+	}
+	
 	private void printMotd() {
 		out.println("Welcome to the robonobo console.  Type 'help' for help.");
 	}

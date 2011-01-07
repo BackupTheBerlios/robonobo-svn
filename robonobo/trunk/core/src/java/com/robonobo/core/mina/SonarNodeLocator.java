@@ -50,7 +50,6 @@ public class SonarNodeLocator implements NodeLocator {
 	}
 
 	public List<Node> locateSuperNodesUsingUri(Node myNodeDesc, String uri) {
-		log.debug("Attempting to locate supernodes using " + uri);
 		List<Node> result = new ArrayList<Node>();
 		HttpClient client = new HttpClient();
 		PostMethod post = new PostMethod(uri);
@@ -61,10 +60,10 @@ public class SonarNodeLocator implements NodeLocator {
 			case 200:
 				NodeList nl = NodeList.parseFrom(post.getResponseBody());
 				result.addAll(nl.getNodeList());
-				log.debug("Got "+nl.getNodeCount()+" nodes");
+				log.debug("Sonar server @ " + uri +" returned "+nl.getNodeCount()+" nodes");
 				break;
 			default:
-				log.error("Error locating supernodes: Sonar returned status '" + post.getStatusText() + "'");
+				log.error("Sonar error: returned status '" + post.getStatusText() + "' from url "+uri);
 				log.error(post.getResponseBodyAsString());
 			}
 		} catch(IOException e) {

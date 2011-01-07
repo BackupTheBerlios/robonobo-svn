@@ -29,6 +29,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.robonobo.common.async.*;
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.concurrent.Timeout;
@@ -46,11 +49,16 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 		Closed, Listen, SynSent, SynReceived, Established, FinWait, LastAck
 	};
 
+	private static final Log log = LogFactory.getLog(SEONConnection.class);
+	private static final boolean debugLogging;
+	static {
+		// Those isDebugEnabled() calls add up
+		debugLogging = log.isDebugEnabled();
+	}
 	/**
 	 * Logs details of all data received - ultra spammy, do not enable unless debugging!
 	 */
-//	private static final boolean DEBUG_LOG_BUFS = false;
-	private final boolean debugLogging;
+	// private static final boolean DEBUG_LOG_BUFS = false;
 	private State state;
 	/** 1492 (MTU) - 20 (ip hdr) - 8 (udp hdr) - 38 (max seon hdr size) */
 	public static final int MSS = 1426;
@@ -162,8 +170,6 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 		initTimeouts();
 		asyncReceiver = new AsyncReceiver();
 		haveData = receiveLock.newCondition();
-		// Those isDebugEnabled() calls add up
-		debugLogging = log.isDebugEnabled();
 	}
 
 	SEONConnection(EONManager manager, SEONPacket synPacket) throws EONException {
@@ -352,11 +358,11 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 	private void gotIncomingData(SEONPacket pkt) {
 		ByteBuffer buf = pkt.getPayload();
 		buf.position(0);
-//		if (DEBUG_LOG_BUFS) {
-//			StringBuffer sb = new StringBuffer(this.toString()).append(" receiving data: ");
-//			ByteUtil.printBuf(buf, sb);
-//			log.debug(sb);
-//		}
+		// if (DEBUG_LOG_BUFS) {
+		// StringBuffer sb = new StringBuffer(this.toString()).append(" receiving data: ");
+		// ByteUtil.printBuf(buf, sb);
+		// log.debug(sb);
+		// }
 		receiveLock.lock();
 		try {
 			incomingDataBufs.add(buf);
@@ -537,9 +543,9 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 
 	/** Must only be called inside sync block */
 	private void processPktNow(SEONPacket pkt) throws EONException {
-		if(debugLogging)
-			log.debug(this+" processing pkt: "+pkt);
-		
+		if (debugLogging)
+			log.debug(this + " processing pkt: " + pkt);
+
 		// Only send one ack, we might be processing a lot of pkts here
 		boolean shouldSendBareAck = false;
 		while (pkt != null) {
@@ -609,7 +615,7 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 				shouldSendBareAck = !sentData;
 			} else
 				sendDataIfNecessary();
-			
+
 			// wikipedia suggests that we should restart retrans timer
 			// whenever new data is acked, regardless of whether we've just
 			// sent pkts or not, so we'll try it...
@@ -629,11 +635,15 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 					if (pkt.getAckNumber() == sendNext) {
 						// Our FIN is acked
 						sendBareAck();
-						// Note we can't just close the connection here, because we need to wait for the pkt sender thread to send that last ACK
-						// Tell it that we're ready to go, and by the time it calls acceptVisitor(), the ack will have been sent and we can close
+						// Note we can't just close the connection here, because we need to wait for the pkt sender
+						// thread to send that last ACK
+						// Tell it that we're ready to go, and by the time it calls acceptVisitor(), the ack will have
+						// been sent and we can close
 						waitingToSendLastAck = true;
-						mgr.haveDataToSend(this);
-						waitingForVisitor = true;
+						if (!waitingForVisitor) {
+							mgr.haveDataToSend(this);
+							waitingForVisitor = true;
+						}
 						return;
 					} else {
 						// Simultaneous FINs
@@ -762,12 +772,12 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 				if (dataProvider != null && outgoing.available() < SEONConnection.MSS)
 					fetchMoreData();
 				// If we have no data to send, send a bare ack to complete the handshake
-				if(outgoing.available() == 0) {
+				if (outgoing.available() == 0) {
 					SEONPacket ackPacket = new SEONPacket(localEP, remoteEP, null);
 					ackPacket.setSequenceNumber(sendNext);
 					ackPacket.setAckNumber(recvNext);
 					ackPacket.setACK(true);
-					sendPktImmediate(ackPacket, rto, responseTimeoutNormal);					
+					sendPktImmediate(ackPacket, rto, responseTimeoutNormal);
 				} else {
 					// We have any data to send; the pktSender will send our ack when it gets around to us
 					sendDataIfNecessary();
@@ -831,8 +841,8 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 			}
 		}
 		// Log window measurements
-//		if (isDebugLogging)
-//			log.debug(this + ", WINSTATS, " + TimeUtil.now().getTime() + ", " + sendWindow);
+		// if (isDebugLogging)
+		// log.debug(this + ", WINSTATS, " + TimeUtil.now().getTime() + ", " + sendWindow);
 	}
 
 	/**
@@ -965,7 +975,7 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 				sb.append(" - setting ssThresh, window to ").append(ssThresh);
 				log.debug(sb);
 				// Log window measurements
-//				log.debug(this + ", WINSTATS, " + TimeUtil.now().getTime() + ", " + sendWindow);
+				// log.debug(this + ", WINSTATS, " + TimeUtil.now().getTime() + ", " + sendWindow);
 			}
 			// Stay in fast recovery state until all outstanding pkts are clear
 			SEONPacket lastSentPkt = retransQ.getLast();
@@ -986,8 +996,8 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 		changeParamsForLossage();
 		// Slow start again
 		sendWindow = 2;
-//		if (isDebugLogging)
-//			log.debug(this + ", WINSTATS, " + TimeUtil.now().getTime() + ", " + sendWindow);
+		// if (isDebugLogging)
+		// log.debug(this + ", WINSTATS, " + TimeUtil.now().getTime() + ", " + sendWindow);
 		fastRecoveryUntil = -1;
 		// Cancel retransmission timeout, otherwise it'll fire at the same time
 		// as our hard retransmit, and bugger things up
@@ -1100,7 +1110,7 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 		if (waitingForVisitor)
 			return false;
 		boolean shouldSendData;
-		if(shouldSendFin || shouldSendFinAck)
+		if (shouldSendFin || shouldSendFinAck)
 			shouldSendData = true;
 		else
 			shouldSendData = haveDataToSend();
@@ -1149,23 +1159,27 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 		return false;
 	}
 
-	/** Return true if we have more data to send (but have stopped due to limit), false if no more data.
-	 * 	Inner loop! 
+	/**
+	 * Return true if we have more data to send (but have stopped due to limit), false if no more data. Inner loop!
 	 * */
 	@Override
 	synchronized boolean acceptVisitor(PktSendVisitor vis) throws EONException {
-		// Hopefully declaring this as a final local will allow the jit to optimize the calls away
-		final boolean dbgLog = debugLogging;
 		waitingForVisitor = false;
-		if(waitingToSendLastAck) {
+
+		if (waitingToSendLastAck) {
 			// We were just waiting for our last ack to be sent, which it now has, so we're outta here
-			if(dbgLog)
-				log.debug(this+" sent last ack, signing off");
+			if (debugLogging)
+				log.debug(this + " sent last ack, signing off");
 			closeConnection();
 			return false;
 		}
-		if (state == State.Closed)
-			throw new EONException("Connection is closed");
+
+		if (state == State.Closed) {
+			if (debugLogging)
+				log.debug(this + " not running pkt sender: conn is closed");
+			return false;
+		}
+
 		if (state == State.Listen) {
 			// Can't happen
 			throw new SeekInnerCalmException();
@@ -1173,7 +1187,7 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 		// Don't send data in SynSent/SynReceived - but allow ourselves to
 		// retransmit
 		if (lostQ.size() == 0 && (state == State.SynSent || state == State.SynReceived)) {
-			if (dbgLog)
+			if (debugLogging)
 				log.debug(this + " not sending data, state is " + state);
 			return false;
 		}
@@ -1184,9 +1198,10 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 			return false;
 		int pktsSent = 0;
 		try {
-			while (dataProvider != null || outgoing.available() > 0 || needToRetransmitFirstPkt || lostQ.size() > 0 || shouldSendFin || shouldSendFinAck) {
+			while (dataProvider != null || outgoing.available() > 0 || needToRetransmitFirstPkt || lostQ.size() > 0
+					|| shouldSendFin || shouldSendFinAck) {
 				if (retransQ.size() >= sendWindow) {
-					if (dbgLog) {
+					if (debugLogging) {
 						StringBuffer sb = new StringBuffer(toString());
 						sb.append(" not sending data now due to window size (win=");
 						sb.append(sendWindow).append(",pkts=").append(retransQ.size());
@@ -1196,15 +1211,17 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 					return false;
 				}
 				if (pktsSent >= MAX_BURST_PKTS) {
-					if (dbgLog)
+					if (debugLogging)
 						log.debug(this + " not sending data now due to burst limit");
 					return false;
 				}
 				// If we have any lost packets, send them before we send new
 				// data
 				if (lostQ.size() > 0) {
-					if (lostQ.getFirst().getPayloadSize() > vis.bytesAvailable())
+					if (lostQ.getFirst().getPayloadSize() > vis.bytesAvailable()) {
+						waitingForVisitor = true;
 						return true;
+					}
 					SEONPacket pkt = lostQ.removeFirst();
 					addToRetransQ(pkt);
 					outFlowRate.notifyData(pkt.getPayloadSize());
@@ -1215,8 +1232,10 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 				// If we need to resend our pkt, do it now
 				if (needToRetransmitFirstPkt) {
 					SEONPacket pkt = (SEONPacket) retransQ.peek();
-					if (pkt.getPayloadSize() > vis.bytesAvailable())
+					if (pkt.getPayloadSize() > vis.bytesAvailable()) {
+						waitingForVisitor = true;
 						return true;
+					}
 					// Don't add this pkt to the retrans q
 					outFlowRate.notifyData(pkt.getPayloadSize());
 					vis.sendPkt(pkt);
@@ -1269,8 +1288,10 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 				// Send fresh data
 				if (noDelay) {
 					int numBytes = min(outgoing.available(), MSS);
-					if (numBytes > vis.bytesAvailable())
+					if (numBytes > vis.bytesAvailable()) {
+						waitingForVisitor = true;
 						return true;
+					}
 					byte[] payloadArr = new byte[numBytes];
 					try {
 						outgoing.read(payloadArr, 0, payloadArr.length);
@@ -1290,8 +1311,10 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 				} else {
 					// Nagle's algorithm
 					if (outgoing.available() >= MSS) {
-						if (MSS > vis.bytesAvailable())
+						if (MSS > vis.bytesAvailable()) {
+							waitingForVisitor = true;
 							return true;
+						}
 						byte[] payloadArr = new byte[MSS];
 						try {
 							outgoing.read(payloadArr, 0, payloadArr.length);
@@ -1313,8 +1336,10 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 						// unconfirmed data
 						if (retransQ.size() == 0) {
 							int bytesToSend = (int) outgoing.available();
-							if (bytesToSend > vis.bytesAvailable())
+							if (bytesToSend > vis.bytesAvailable()) {
+								waitingForVisitor = true;
 								return true;
+							}
 							byte[] payloadArr = new byte[bytesToSend];
 							try {
 								outgoing.read(payloadArr, 0, payloadArr.length);
@@ -1331,7 +1356,7 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 							vis.sendPkt(pkt);
 							pktsSent++;
 						} else {
-							if (dbgLog)
+							if (debugLogging)
 								log.debug(this + " not sending " + outgoing.available()
 										+ " bytes due to Nagle's Algorithm");
 							return false;
@@ -1474,9 +1499,9 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 
 	/** Must only be called inside sync block */
 	private void sendPktImmediate(SEONPacket pkt, int retransTimeout, int responseTimeout) {
-		if(debugLogging)
-			log.debug(this+" sending immediate pkt:"+pkt);
-		
+		if (debugLogging)
+			log.debug(this + " sending immediate pkt:" + pkt);
+
 		if (pkt.getPayloadSize() > 0)
 			throw new SeekInnerCalmException();
 		if (retransTimeout > 0 && (pkt.isSYN() || pkt.isFIN())) {
@@ -1498,8 +1523,8 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 
 	/**
 	 * We use a lower value for timeout for the first SYN, as the host might not be there or might not be listening
-	 * (we're using UDP so we won't get RSTs)
-	 Must only be called inside a sync block */
+	 * (we're using UDP so we won't get RSTs) Must only be called inside a sync block
+	 */
 	private void startResponseTimer(int timeoutMs) {
 		if (!responseTimeout.isTaskIsScheduled()) {
 			responseTimeout.set(timeoutMs);
@@ -1513,8 +1538,7 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 	/**
 	 * @param recvdPkt
 	 *            The just-received packet
-	 * @return The number of bytes trimmed
-	 * Must only be called inside a sync block
+	 * @return The number of bytes trimmed Must only be called inside a sync block
 	 */
 	private int trimRetransmissionQueues(SEONPacket recvdPkt) throws EONException {
 		int bytesAcked = trimQueue(lostQ, recvdPkt);

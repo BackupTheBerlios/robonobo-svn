@@ -1,5 +1,7 @@
 package com.robonobo.core.service;
 
+import static com.robonobo.common.util.TimeUtil.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -96,7 +98,7 @@ public class ShareService extends AbstractService {
 		} catch (IOException e) {
 			throw new RobonoboException(e);
 		}
-		sh.setDateAdded(TimeUtil.now());
+		sh.setDateAdded(now());
 		db.putShare(sh);
 		synchronized (this) {
 			shareStreamIds.add(s.getStreamId());
@@ -113,6 +115,7 @@ public class ShareService extends AbstractService {
 			throw new SeekInnerCalmException();
 		}
 		SharedTrack sh = new SharedTrack(d.getStream(), d.getFile(), ShareStatus.Sharing);
+		sh.setDateAdded(now());
 		db.putShare(sh);
 		synchronized (this) {
 			shareStreamIds.add(d.getStream().getStreamId());

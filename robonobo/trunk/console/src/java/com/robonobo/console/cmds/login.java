@@ -7,7 +7,7 @@ import com.robonobo.console.RobonoboConsole;
 
 public class login implements ConsoleCommand {
 	public void printHelp(PrintWriter out) {
-		out.println("'login <email> <password>' logs into robonobo - contact macavity@well.com for an account");
+		out.println("'login <email> <password>' logs into robonobo - visit http://robonobo.com for an account");
 	}
 
 	public void run(RobonoboConsole console, String[] args, PrintWriter out) throws Exception {

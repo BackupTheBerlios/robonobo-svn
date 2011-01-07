@@ -1,4 +1,5 @@
 package com.robonobo.eon;
+
 /*
  * Eye-Of-Needle
  * Copyright (C) 2008 Will Morton (macavity@well.com) & Ray Hilton (ray@wirestorm.net)
@@ -16,7 +17,7 @@ package com.robonobo.eon;
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/
+ */
 
 import org.apache.commons.logging.Log;
 
@@ -24,14 +25,12 @@ import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.util.FlowRateIndicator;
 
 public abstract class EONConnection {
-	protected Log log;
 	protected EONManager mgr;
 	FlowRateIndicator inFlowRate = new FlowRateIndicator();
 	FlowRateIndicator outFlowRate = new FlowRateIndicator();
 
 	public EONConnection(EONManager mgr) {
 		this.mgr = mgr;
-		log = mgr.getLogger(getClass());
 	}
 
 	public abstract void close();
@@ -43,11 +42,11 @@ public abstract class EONConnection {
 	public abstract EonSocketAddress getLocalSocketAddress() throws EONException;
 
 	public abstract float getGamma();
-	
+
 	abstract boolean acceptVisitor(PktSendVisitor visitor) throws EONException;
-	
+
 	abstract void receivePacket(EONPacket pkt) throws EONException;
-	
+
 	protected EONConnectionListener listener;
 
 	public void addListener(EONConnectionListener listener) {
@@ -60,18 +59,17 @@ public abstract class EONConnection {
 
 	protected synchronized void fireOnClose() {
 		EONConnectionListener myListener = listener;
-		if(myListener == null)
+		if (myListener == null)
 			return;
 		EONConnectionEvent event = new EONConnectionEvent(this);
 		// Small chance the executor might throw an exception here if we've
 		// exited
 		try {
 			mgr.getExecutor().execute(new CloseRunner(myListener, event));
-		} catch(Exception e) {
-			log.error("Caught " + e.getClass().getName() + " firing " + this + ".onClose");
+		} catch (Exception ignore) {
 		}
 	}
-	
+
 	/**
 	 * Bps
 	 */
@@ -86,7 +84,6 @@ public abstract class EONConnection {
 		return outFlowRate.getFlowRate();
 	}
 
-	
 	private class CloseRunner extends CatchingRunnable {
 		private final EONConnectionListener listener;
 		private final EONConnectionEvent event;

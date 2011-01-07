@@ -109,9 +109,9 @@ public class BuyMgr {
 	}
 
 	public void setupAccountAndBid(final String nodeId, final double openingBid, final Attempt onBidSuccess) {
-		if (haveActiveAccount(nodeId)) {
+		if (haveActiveAccount(nodeId))
 			openBidding(nodeId, openingBid, onBidSuccess);
-		} else {
+		else {
 			Attempt openAcctAttempt = new Attempt(mina, 0, "openAcct-" + nodeId) {
 				protected void onSuccess() {
 					openBidding(nodeId, openingBid, onBidSuccess);
@@ -167,12 +167,12 @@ public class BuyMgr {
 		if (paymentMethod.equals("upfront")) {
 			setupUpfrontAccount(nodeId, onAcctCreation);
 			return;
-		} else if(paymentMethod.startsWith("escrow:")) {
+		} else if (paymentMethod.startsWith("escrow:")) {
 			String escrowProvId = paymentMethod.substring(7);
 			setupEscrowAccount(nodeId, escrowProvId, onAcctCreation);
 			return;
 		}
-		log.error("Error: could not setup account with "+nodeId+" - unknown payment method '"+paymentMethod+"'");
+		log.error("Error: could not setup account with " + nodeId + " - unknown payment method '" + paymentMethod + "'");
 	}
 
 	private void setupUpfrontAccount(final String nodeId, Attempt onAcctCreation) {
@@ -186,7 +186,7 @@ public class BuyMgr {
 		double cashToSend = mina.getCurrencyClient().getOpeningBalance();
 		byte[] token;
 		try {
-			token = mina.getCurrencyClient().withdrawToken(cashToSend, "Setting up account with node "+nodeId);
+			token = mina.getCurrencyClient().withdrawToken(cashToSend, "Setting up account with node " + nodeId);
 		} catch (CurrencyException e) {
 			log.error("Error withdrawing token of value " + cashToSend + " trying to open account with " + nodeId);
 			onAcctCreation.failed();
@@ -206,7 +206,8 @@ public class BuyMgr {
 			mina.getExecutor().execute(new CatchingRunnable() {
 				public void doRun() throws Exception {
 					log.error("Attempting to return cash for failed openacct");
-					mina.getCurrencyClient().depositToken(tok, "Returning cash after failing to open account with node "+nodeId);
+					mina.getCurrencyClient().depositToken(tok,
+							"Returning cash after failing to open account with node " + nodeId);
 				}
 			});
 		}
@@ -217,7 +218,7 @@ public class BuyMgr {
 	}
 
 	private void setupEscrowAccount(final String nodeId, final String escrowProvId, final Attempt onAcctCreation) {
-		Attempt a = new Attempt(mina, mina.getConfig().getMessageTimeout(), "escrow-"+nodeId) {
+		Attempt a = new Attempt(mina, mina.getConfig().getMessageTimeout(), "escrow-" + nodeId) {
 			protected void onSuccess() {
 				// We're now connected to the escrow provider
 				double cashToSend = mina.getCurrencyClient().getOpeningBalance();
@@ -272,7 +273,8 @@ public class BuyMgr {
 			log.error("Received acctclosed from " + nodeId + ", but I have no registered account");
 		else {
 			try {
-				double val = mina.getCurrencyClient().depositToken(currencyToken, "Balance returned from node "+nodeId);
+				double val = mina.getCurrencyClient().depositToken(currencyToken,
+						"Balance returned from node " + nodeId);
 				if ((val - acct.balance) < 0) {
 					// TODO Something more serious here
 					log.error("ERROR: balance mismatch when closing acct with " + nodeId + ": I say " + acct.balance
@@ -375,6 +377,8 @@ public class BuyMgr {
 	}
 
 	public void newAuctionState(final String nodeId, AuctionState as) {
+		// DEBUG
+		log.debug("BuyMgr got new auctionstate (tid: " + Thread.currentThread().getId() + ")");
 		as.setTimeReceived(now());
 		List<Attempt> attempts = null;
 		boolean gotConfirmedBid;
@@ -382,6 +386,10 @@ public class BuyMgr {
 			// Check our quoted bid, check it conforms to the last one we sent
 			AuctionState oldAs = asMap.get(nodeId);
 			if (oldAs != null) {
+				if(AuctionState.INDEX_MOD.gte(oldAs.getIndex(), as.getIndex())) {
+					// This auctionstate isn't newer than what we have, ignore
+					return;
+				}
 				double myLastBid = oldAs.getLastSentBid();
 				if (myLastBid > 0) {
 					String myTok = as.getYouAre();
@@ -407,9 +415,8 @@ public class BuyMgr {
 						double quotedBid = as.getMyBid();
 						if ((quotedBid - myLastBid) != 0) {
 							log.error("ERROR: node " + nodeId + " quoted my last bid as " + quotedBid + ", but it was "
-									+ myLastBid);
+									+ myLastBid + " (tid: " + Thread.currentThread().getId() + ")");
 							// TODO Something much more serious here
-							return;
 						}
 					}
 					as.setLastSentBid(oldAs.getLastSentBid());
@@ -463,10 +470,10 @@ public class BuyMgr {
 			if (method.equals("upfront"))
 				gotUpfront = true;
 		}
-		if(!gotUpfront)
+		if (!gotUpfront)
 			return null;
 		for (String method : mina.getCurrencyClient().getAcceptPaymentMethods().split(",")) {
-			if(method.equals("upfront"))
+			if (method.equals("upfront"))
 				return "upfront";
 		}
 		return null;
@@ -527,7 +534,8 @@ public class BuyMgr {
 		if (balance < endsRequired) {
 			byte[] token;
 			try {
-				token = mina.getCurrencyClient().withdrawToken(endsRequired, "Topping up account with node "+fromNodeId);
+				token = mina.getCurrencyClient().withdrawToken(endsRequired,
+						"Topping up account with node " + fromNodeId);
 			} catch (CurrencyException e) {
 				log.error("Error withdrawing token of value " + endsRequired + " trying to top up account with "
 						+ fromNodeId);

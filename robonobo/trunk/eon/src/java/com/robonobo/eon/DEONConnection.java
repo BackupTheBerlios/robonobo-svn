@@ -22,6 +22,9 @@ import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.robonobo.common.async.PushDataProvider;
 import com.robonobo.common.async.PushDataReceiver;
 import com.robonobo.common.concurrent.CatchingRunnable;
@@ -30,6 +33,7 @@ public class DEONConnection extends EONConnection implements PushDataProvider {
 	// currentState
 	public static final int DEONConnectionState_Open = 1;
 	public static final int DEONConnectionState_Closed = 2;
+	private static final Log log = LogFactory.getLog(DEONConnection.class);
 	EonSocketAddress localEP, remoteEP;
 	private List<ByteBuffer> incomingDataBufs = new ArrayList<ByteBuffer>();
 	private List<EonSocketAddress> incomingDataAddrs = new ArrayList<EonSocketAddress>();
@@ -130,8 +134,10 @@ public class DEONConnection extends EONConnection implements PushDataProvider {
 	synchronized boolean acceptVisitor(PktSendVisitor vis) throws EONException {
 		waitingForVisitor = false;
 		while(outgoingPkts.size() > 0) {
-			if(vis.bytesAvailable() < outgoingPkts.getFirst().getPayloadSize())
+			if(vis.bytesAvailable() < outgoingPkts.getFirst().getPayloadSize()) {
+				waitingForVisitor = true;
 				return true;
+			}
 			vis.sendPkt(outgoingPkts.removeFirst());
 		}
 		return false;

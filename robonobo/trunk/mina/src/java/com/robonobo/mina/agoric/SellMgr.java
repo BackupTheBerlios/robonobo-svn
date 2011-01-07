@@ -42,8 +42,7 @@ import com.robonobo.mina.stream.StreamMgr;
 import com.robonobo.mina.util.Attempt;
 
 /**
- * Handles auctions of this node's bandwidth, and accounts that others have with
- * us
+ * Handles auctions of this node's bandwidth, and accounts that others have with us
  */
 public class SellMgr {
 	MinaInstance mina;
@@ -64,27 +63,24 @@ public class SellMgr {
 	Timeout bidTimeout;
 	Map<String, List<MessageHolder>> msgsWaitingForAcct = new HashMap<String, List<MessageHolder>>();
 	/**
-	 * We use an incrementing (mod 64) index to track versions of auction state.
-	 * This index is sent with each page, so both sides can agree on page cost
+	 * We use an incrementing (mod 64) index to track versions of auction state. This index is sent with each page, so
+	 * both sides can agree on page cost
 	 */
 	int stateIndex = 0;
 
 	/**
-	 * We use token values to refer to our nodes, so their bids can be
-	 * identified without giving out their node ids
+	 * We use token values to refer to our nodes, so their bids can be identified without giving out their node ids
 	 */
 	Map<String, String> nodeIdTokens = new HashMap<String, String>();
 	int lastNodeIdToken = 0;
 	Map<String, Account> accounts = new HashMap<String, Account>();
 	/**
-	 * The node id of the top bidder. This guy is charged at a minimum rate to
-	 * prevent him DoSing
+	 * The node id of the top bidder. This guy is charged at a minimum rate to prevent him DoSing
 	 */
 	String topBidder;
 	Date auctionFinishTime;
 	/**
-	 * If someone disappears during our can't-bid time, fire off a bidupdate
-	 * when the time elapses
+	 * If someone disappears during our can't-bid time, fire off a bidupdate when the time elapses
 	 */
 	ScheduledFuture<?> bidUpdateTask = null;
 
@@ -104,12 +100,19 @@ public class SellMgr {
 
 	public AuctionStateMsg getState(boolean useCache, String forNodeId) {
 		synchronized (this) {
-			if (useCache && cachedStateMsg != null && timeInPast(mina.getConfig().getAuctionStateCacheTime()).before(cachedStateTime)) {
+			if (useCache && cachedStateMsg != null
+					&& timeInPast(mina.getConfig().getAuctionStateCacheTime()).before(cachedStateTime)) {
 				AuctionStateMsg.Builder bldr = AuctionStateMsg.newBuilder(cachedStateMsg);
-				if (agreedBids.containsKey(forNodeId))
+				if (agreedBids.containsKey(forNodeId)) {
 					bldr.setYouAre(getNodeIdToken(forNodeId));
-				else
+					if (now().after(openForBidsTime))
+						bldr.setBidsOpen(0);
+					else
+						bldr.setBidsOpen((int) msUntil(openForBidsTime));
+				} else {
 					bldr.setYouAre("");
+					bldr.clearBidsOpen();
+				}
 				return bldr.build();
 			}
 		}
@@ -117,10 +120,14 @@ public class SellMgr {
 		ConnectedNode[] conNodes = mina.getCCM().getConnectedNodes();
 		synchronized (this) {
 			asmBldr.setIndex(stateIndex);
-			if (now().after(openForBidsTime))
-				asmBldr.setBidsOpen(0);
-			else
-				asmBldr.setBidsOpen((int) msUntil(openForBidsTime));
+			// If we have an agreed bid for this guy, he's not allowed to bid until we open again - if he's a new node,
+			// he can bid when he likes
+			if (agreedBids.containsKey(forNodeId)) {
+				if (now().after(openForBidsTime))
+					asmBldr.setBidsOpen(0);
+				else
+					asmBldr.setBidsOpen((int) msUntil(openForBidsTime));
+			}
 			for (ConnectedNode cn : conNodes) {
 				if (agreedBids.containsKey(cn.nodeId)) {
 					ReceivedBid.Builder bidBldr = ReceivedBid.newBuilder();
@@ -172,7 +179,7 @@ public class SellMgr {
 		double tokVal;
 		try {
 			CurrencyClient cClient = mina.getCurrencyClient();
-			tokVal = cClient.depositToken(currencyToken, "Account topup from node "+nodeId);
+			tokVal = cClient.depositToken(currencyToken, "Account topup from node " + nodeId);
 		} catch (CurrencyException e) {
 			log.error("Error depositing token from " + nodeId, e);
 			return;
@@ -231,9 +238,8 @@ public class SellMgr {
 	}
 
 	/**
-	 * If the requesting node has enough ends to pay for the requested bytes,
-	 * charge their account and return the status index used to calculate the
-	 * charge. Otherwise, return <0
+	 * If the requesting node has enough ends to pay for the requested bytes, charge their account and return the status
+	 * index used to calculate the charge. Otherwise, return <0
 	 */
 	public int requestAndCharge(String nodeId, long numBytes) {
 		double charge;
@@ -260,8 +266,7 @@ public class SellMgr {
 	}
 
 	/**
-	 * If the charge fails, will note the account as needing to pay, send out a
-	 * payup command and adjust gammas
+	 * If the charge fails, will note the account as needing to pay, send out a payup command and adjust gammas
 	 * 
 	 * @return Did this charge succeed?
 	 */
@@ -293,7 +298,7 @@ public class SellMgr {
 		ssBldr.setToNodeId(reqNode.getId());
 		if (mina.getConfig().isAgoric()) {
 			ssBldr.setAgorics(mina.getMyAgorics());
-			ssBldr.setAuctionState(mina.getSellMgr().getState(reqNode.getId()));
+			ssBldr.setAuctionState(getState(reqNode.getId()));
 		}
 		if (ssList != null)
 			ssBldr.addAllSs(ssList);
@@ -312,9 +317,9 @@ public class SellMgr {
 		Map<String, Double> updateBidMap = new HashMap<String, Double>();
 		boolean sendSourceStatus = false;
 		synchronized (this) {
-			if (now().before(openForBidsTime)) {
-				// Not allowed to bid before opening time unless they're saying
-				// goodbye (bid == 0)
+			// Not allowed to bid before opening time unless they're saying
+			// goodbye (bid == 0) or they're a new node
+			if (agreedBids.containsKey(fromNodeId) && now().before(openForBidsTime)) {
 				if (newBid == 0) {
 					agreedBids.remove(fromNodeId);
 					// If this guy was the only bidder, just shut everything
@@ -328,7 +333,8 @@ public class SellMgr {
 							bidUpdateTask = null;
 						}
 					} else {
-						log.debug(fromNodeId + " bid 0 - waiting " + msUntil(openForBidsTime) + "ms before triggering bidupdate");
+						log.debug(fromNodeId + " bid 0 - waiting " + msUntil(openForBidsTime)
+								+ "ms before triggering bidupdate");
 						// When our bids open time arrives, trigger an auction
 						if (bidUpdateTask == null) {
 							bidUpdateTask = mina.getExecutor().schedule(new CatchingRunnable() {
@@ -374,14 +380,16 @@ public class SellMgr {
 			if (newBid > oldBid) {
 				// Check they're increasing by enough
 				if ((newBid - oldBid) < mina.getMyAgorics().getIncrement()) {
-					log.debug("Not allowing bid of " + newBid + " from " + fromNodeId + " - not increasing by min increment");
+					log.debug("Not allowing bid of " + newBid + " from " + fromNodeId
+							+ " - not increasing by min increment");
 					return;
 				}
 			} else if (newBid < oldBid) {
 				// They're allowed to decrease their bid only as their first bid
 				// of the auction
 				if (currentBids.containsKey(fromNodeId)) {
-					log.error("Not allowing bid of " + newBid + " from " + fromNodeId + " - can't decrease bid during auction");
+					log.error("Not allowing bid of " + newBid + " from " + fromNodeId
+							+ " - can't decrease bid during auction");
 					return;
 				}
 			}
@@ -663,7 +671,8 @@ public class SellMgr {
 		bid(nodeId, 0);
 		// Send the remaining balance
 		try {
-			byte[] currencyToken = mina.getCurrencyClient().withdrawToken(acct.balance, "Returning remaining balance to node "+nodeId);
+			byte[] currencyToken = mina.getCurrencyClient().withdrawToken(acct.balance,
+					"Returning remaining balance to node " + nodeId);
 			AcctClosed ac = AcctClosed.newBuilder().setCurrencyToken(ByteString.copyFrom(currencyToken)).build();
 			cc.sendMessage("AcctClosed", ac);
 		} catch (CurrencyException e) {
@@ -683,8 +692,8 @@ public class SellMgr {
 	class Account {
 		double balance = 0;
 		/**
-		 * needsTopUp will be true if the account has insufficient balance to
-		 * meet one of our demands, though the balance may still be > 0
+		 * needsTopUp will be true if the account has insufficient balance to meet one of our demands, though the
+		 * balance may still be > 0
 		 */
 		boolean needsTopUp = false;
 		long bytesSinceLastAuction = 0;
