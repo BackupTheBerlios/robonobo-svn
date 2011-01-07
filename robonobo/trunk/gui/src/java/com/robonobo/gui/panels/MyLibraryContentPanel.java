@@ -133,7 +133,7 @@ public class MyLibraryContentPanel extends ContentPanel implements UserPlaylistL
 			RLabel optsLbl = new RLabel16B("Library options");
 			add(optsLbl, "3,1");
 			
-			shareLibCheckBox = new RCheckBox("Share library with friends?");
+			shareLibCheckBox = new RCheckBox("Share library with friends");
 			shareLibCheckBox.addItemListener(new ItemListener() {
 				public void itemStateChanged(final ItemEvent e) {
 					frame.getController().getExecutor().execute(new CatchingRunnable() {

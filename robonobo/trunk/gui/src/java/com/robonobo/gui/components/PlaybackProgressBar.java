@@ -218,10 +218,14 @@ public class PlaybackProgressBar extends JProgressBar {
 		if(dragging && !viaDrag)
 			return;
 		trackPositionMs = positionMs;
+		String newSliderText = timeLblFromMs(positionMs);
+		if(newSliderText.equals(getSliderText()))
+			return;
 		// pos = 0, trackPosition = 0
 		// pos = (maximum - thumbWidth), trackPosition = trackLength
+		// TODO This method gets called a lot - check the calculated text and only fire the update if it's changed
 		int thumbPos = (int) ((getMaximum() - SLIDER_OPAQUE_WIDTH) * ((float) positionMs / trackLengthMs));
-		setSliderText(timeLblFromMs(positionMs));
+		setSliderText(newSliderText);
 		long msLeft = trackLengthMs - trackPositionMs;
 		setStartText("-"+timeLblFromMs(msLeft));
 		setThumbPosition(thumbPos);
@@ -257,6 +261,10 @@ public class PlaybackProgressBar extends JProgressBar {
 		sliderThumb.setText(text);
 	}
 
+	private String getSliderText() {
+		return sliderThumb.getText();
+	}
+	
 	private String timeLblFromMs(long ms) {
 		int totalSec = Math.round(ms / 1000f);
 		int hours = totalSec / 3600;

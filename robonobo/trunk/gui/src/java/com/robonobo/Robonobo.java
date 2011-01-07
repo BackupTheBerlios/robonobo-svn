@@ -16,6 +16,7 @@ import java.io.PrintWriter;
 import javax.swing.SwingUtilities;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
+import com.robonobo.common.util.TextUtil;
 import com.robonobo.console.RobonoboConsole;
 import com.robonobo.core.Platform;
 import com.robonobo.core.RobonoboController;
@@ -146,6 +147,9 @@ public class Robonobo {
 			RobonoboConsole console = new RobonoboConsole("Console", control, in, out);
 			Thread consoleThread = new Thread(console);
 			consoleThread.start();
+			// If the user has login details entered, perform the login here (gui handles this in RobonoboFrame.setVisible() to show the login sheet)
+			if(TextUtil.isNonEmpty(control.getConfig().getMetadataServerUsername()))
+				control.login(control.getConfig().getMetadataServerUsername(), control.getConfig().getMetadataServerPassword());
 		} else {
 			final RobonoboFrame frame = new RobonoboFrame(control, args);
 			Platform.getPlatform().initMainWindow(frame);
