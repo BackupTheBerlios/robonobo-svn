@@ -4131,6 +4131,294 @@ public final class CoreApi {
     // @@protoc_insertion_point(class_scope:coreapi.LibraryMsg)
   }
   
+  public static final class LocalUserRequest extends
+      com.google.protobuf.GeneratedMessage {
+    // Use LocalUserRequest.newBuilder() to construct.
+    private LocalUserRequest() {
+      initFields();
+    }
+    private LocalUserRequest(boolean noInit) {}
+    
+    private static final LocalUserRequest defaultInstance;
+    public static LocalUserRequest getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public LocalUserRequest getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.robonobo.core.api.proto.CoreApi.internal_static_coreapi_LocalUserRequest_descriptor;
+    }
+    
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.robonobo.core.api.proto.CoreApi.internal_static_coreapi_LocalUserRequest_fieldAccessorTable;
+    }
+    
+    // required string arg = 1;
+    public static final int ARG_FIELD_NUMBER = 1;
+    private boolean hasArg;
+    private java.lang.String arg_ = "";
+    public boolean hasArg() { return hasArg; }
+    public java.lang.String getArg() { return arg_; }
+    
+    private void initFields() {
+    }
+    public final boolean isInitialized() {
+      if (!hasArg) return false;
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (hasArg()) {
+        output.writeString(1, getArg());
+      }
+      getUnknownFields().writeTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      if (hasArg()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeStringSize(1, getArg());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    public static com.robonobo.core.api.proto.CoreApi.LocalUserRequest parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.LocalUserRequest parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.LocalUserRequest parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.LocalUserRequest parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.LocalUserRequest parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.LocalUserRequest parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.LocalUserRequest parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static com.robonobo.core.api.proto.CoreApi.LocalUserRequest parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static com.robonobo.core.api.proto.CoreApi.LocalUserRequest parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static com.robonobo.core.api.proto.CoreApi.LocalUserRequest parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(com.robonobo.core.api.proto.CoreApi.LocalUserRequest prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> {
+      private com.robonobo.core.api.proto.CoreApi.LocalUserRequest result;
+      
+      // Construct using com.robonobo.core.api.proto.CoreApi.LocalUserRequest.newBuilder()
+      private Builder() {}
+      
+      private static Builder create() {
+        Builder builder = new Builder();
+        builder.result = new com.robonobo.core.api.proto.CoreApi.LocalUserRequest();
+        return builder;
+      }
+      
+      protected com.robonobo.core.api.proto.CoreApi.LocalUserRequest internalGetResult() {
+        return result;
+      }
+      
+      public Builder clear() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "Cannot call clear() after build().");
+        }
+        result = new com.robonobo.core.api.proto.CoreApi.LocalUserRequest();
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(result);
+      }
+      
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.robonobo.core.api.proto.CoreApi.LocalUserRequest.getDescriptor();
+      }
+      
+      public com.robonobo.core.api.proto.CoreApi.LocalUserRequest getDefaultInstanceForType() {
+        return com.robonobo.core.api.proto.CoreApi.LocalUserRequest.getDefaultInstance();
+      }
+      
+      public boolean isInitialized() {
+        return result.isInitialized();
+      }
+      public com.robonobo.core.api.proto.CoreApi.LocalUserRequest build() {
+        if (result != null && !isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return buildPartial();
+      }
+      
+      private com.robonobo.core.api.proto.CoreApi.LocalUserRequest buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        if (!isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return buildPartial();
+      }
+      
+      public com.robonobo.core.api.proto.CoreApi.LocalUserRequest buildPartial() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "build() has already been called on this Builder.");
+        }
+        com.robonobo.core.api.proto.CoreApi.LocalUserRequest returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.robonobo.core.api.proto.CoreApi.LocalUserRequest) {
+          return mergeFrom((com.robonobo.core.api.proto.CoreApi.LocalUserRequest)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+      
+      public Builder mergeFrom(com.robonobo.core.api.proto.CoreApi.LocalUserRequest other) {
+        if (other == com.robonobo.core.api.proto.CoreApi.LocalUserRequest.getDefaultInstance()) return this;
+        if (other.hasArg()) {
+          setArg(other.getArg());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder(
+            this.getUnknownFields());
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              this.setUnknownFields(unknownFields.build());
+              return this;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                this.setUnknownFields(unknownFields.build());
+                return this;
+              }
+              break;
+            }
+            case 10: {
+              setArg(input.readString());
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      // required string arg = 1;
+      public boolean hasArg() {
+        return result.hasArg();
+      }
+      public java.lang.String getArg() {
+        return result.getArg();
+      }
+      public Builder setArg(java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  result.hasArg = true;
+        result.arg_ = value;
+        return this;
+      }
+      public Builder clearArg() {
+        result.hasArg = false;
+        result.arg_ = getDefaultInstance().getArg();
+        return this;
+      }
+      
+      // @@protoc_insertion_point(builder_scope:coreapi.LocalUserRequest)
+    }
+    
+    static {
+      defaultInstance = new LocalUserRequest(true);
+      com.robonobo.core.api.proto.CoreApi.internalForceInit();
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:coreapi.LocalUserRequest)
+  }
+  
   public static final class InviteMsg extends
       com.google.protobuf.GeneratedMessage {
     // Use InviteMsg.newBuilder() to construct.
@@ -6673,6 +6961,11 @@ public final class CoreApi {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_coreapi_LibraryMsg_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_coreapi_LocalUserRequest_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_coreapi_LocalUserRequest_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_coreapi_InviteMsg_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -6735,21 +7028,22 @@ public final class CoreApi {
       "braryTrackMsg\022\021\n\tstream_id\030\001 \002(\t\022\022\n\nadde" +
       "d_date\030\002 \001(\003\"F\n\nLibraryMsg\022\017\n\007user_id\030\001 " +
       "\001(\003\022\'\n\005track\030\002 \003(\0132\030.coreapi.LibraryTrac" +
-      "kMsg\"\200\001\n\tInviteMsg\022\021\n\tinvite_id\030\001 \002(\003\022\r\n" +
-      "\005email\030\002 \002(\t\022\023\n\013invite_code\030\003 \002(\t\022\024\n\014upd" +
-      "ated_date\030\004 \001(\003\022\023\n\013playlist_id\030\005 \003(\003\022\021\n\t" +
-      "friend_id\030\006 \003(\003\"\232\001\n\020FriendRequestMsg\022\031\n\021" +
-      "friend_request_id\030\001 \002(\003\022\024\n\014requestor_id\030" +
-      "\002 \002(\003\022\024\n\014requestee_id\030\003 \002(\003\022\024\n\014request_c",
-      "ode\030\004 \002(\t\022\024\n\014updated_date\030\005 \001(\003\022\023\n\013playl" +
-      "ist_id\030\006 \003(\003\"N\n\016SearchResponse\022\023\n\013firstR" +
-      "esult\030\001 \002(\005\022\024\n\014totalResults\030\002 \002(\005\022\021\n\tobj" +
-      "ect_id\030\003 \003(\t\"7\n\016UserConfigItem\022\021\n\titem_n" +
-      "ame\030\001 \002(\t\022\022\n\nitem_value\030\002 \002(\t\"G\n\rUserCon" +
-      "figMsg\022\017\n\007user_id\030\001 \002(\003\022%\n\004item\030\002 \003(\0132\027." +
-      "coreapi.UserConfigItem\"\037\n\tUpdateMsg\022\022\n\nu" +
-      "pdateHtml\030\001 \002(\tB&\n\033com.robonobo.core.api" +
-      ".protoB\007CoreApi"
+      "kMsg\"\037\n\020LocalUserRequest\022\013\n\003arg\030\001 \002(\t\"\200\001" +
+      "\n\tInviteMsg\022\021\n\tinvite_id\030\001 \002(\003\022\r\n\005email\030" +
+      "\002 \002(\t\022\023\n\013invite_code\030\003 \002(\t\022\024\n\014updated_da" +
+      "te\030\004 \001(\003\022\023\n\013playlist_id\030\005 \003(\003\022\021\n\tfriend_" +
+      "id\030\006 \003(\003\"\232\001\n\020FriendRequestMsg\022\031\n\021friend_" +
+      "request_id\030\001 \002(\003\022\024\n\014requestor_id\030\002 \002(\003\022\024",
+      "\n\014requestee_id\030\003 \002(\003\022\024\n\014request_code\030\004 \002" +
+      "(\t\022\024\n\014updated_date\030\005 \001(\003\022\023\n\013playlist_id\030" +
+      "\006 \003(\003\"N\n\016SearchResponse\022\023\n\013firstResult\030\001" +
+      " \002(\005\022\024\n\014totalResults\030\002 \002(\005\022\021\n\tobject_id\030" +
+      "\003 \003(\t\"7\n\016UserConfigItem\022\021\n\titem_name\030\001 \002" +
+      "(\t\022\022\n\nitem_value\030\002 \002(\t\"G\n\rUserConfigMsg\022" +
+      "\017\n\007user_id\030\001 \002(\003\022%\n\004item\030\002 \003(\0132\027.coreapi" +
+      ".UserConfigItem\"\037\n\tUpdateMsg\022\022\n\nupdateHt" +
+      "ml\030\001 \002(\tB&\n\033com.robonobo.core.api.protoB" +
+      "\007CoreApi"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -6828,8 +7122,16 @@ public final class CoreApi {
               new java.lang.String[] { "UserId", "Track", },
               com.robonobo.core.api.proto.CoreApi.LibraryMsg.class,
               com.robonobo.core.api.proto.CoreApi.LibraryMsg.Builder.class);
-          internal_static_coreapi_InviteMsg_descriptor =
+          internal_static_coreapi_LocalUserRequest_descriptor =
             getDescriptor().getMessageTypes().get(9);
+          internal_static_coreapi_LocalUserRequest_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_coreapi_LocalUserRequest_descriptor,
+              new java.lang.String[] { "Arg", },
+              com.robonobo.core.api.proto.CoreApi.LocalUserRequest.class,
+              com.robonobo.core.api.proto.CoreApi.LocalUserRequest.Builder.class);
+          internal_static_coreapi_InviteMsg_descriptor =
+            getDescriptor().getMessageTypes().get(10);
           internal_static_coreapi_InviteMsg_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_coreapi_InviteMsg_descriptor,
@@ -6837,7 +7139,7 @@ public final class CoreApi {
               com.robonobo.core.api.proto.CoreApi.InviteMsg.class,
               com.robonobo.core.api.proto.CoreApi.InviteMsg.Builder.class);
           internal_static_coreapi_FriendRequestMsg_descriptor =
-            getDescriptor().getMessageTypes().get(10);
+            getDescriptor().getMessageTypes().get(11);
           internal_static_coreapi_FriendRequestMsg_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_coreapi_FriendRequestMsg_descriptor,
@@ -6845,7 +7147,7 @@ public final class CoreApi {
               com.robonobo.core.api.proto.CoreApi.FriendRequestMsg.class,
               com.robonobo.core.api.proto.CoreApi.FriendRequestMsg.Builder.class);
           internal_static_coreapi_SearchResponse_descriptor =
-            getDescriptor().getMessageTypes().get(11);
+            getDescriptor().getMessageTypes().get(12);
           internal_static_coreapi_SearchResponse_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_coreapi_SearchResponse_descriptor,
@@ -6853,7 +7155,7 @@ public final class CoreApi {
               com.robonobo.core.api.proto.CoreApi.SearchResponse.class,
               com.robonobo.core.api.proto.CoreApi.SearchResponse.Builder.class);
           internal_static_coreapi_UserConfigItem_descriptor =
-            getDescriptor().getMessageTypes().get(12);
+            getDescriptor().getMessageTypes().get(13);
           internal_static_coreapi_UserConfigItem_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_coreapi_UserConfigItem_descriptor,
@@ -6861,7 +7163,7 @@ public final class CoreApi {
               com.robonobo.core.api.proto.CoreApi.UserConfigItem.class,
               com.robonobo.core.api.proto.CoreApi.UserConfigItem.Builder.class);
           internal_static_coreapi_UserConfigMsg_descriptor =
-            getDescriptor().getMessageTypes().get(13);
+            getDescriptor().getMessageTypes().get(14);
           internal_static_coreapi_UserConfigMsg_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_coreapi_UserConfigMsg_descriptor,
@@ -6869,7 +7171,7 @@ public final class CoreApi {
               com.robonobo.core.api.proto.CoreApi.UserConfigMsg.class,
               com.robonobo.core.api.proto.CoreApi.UserConfigMsg.Builder.class);
           internal_static_coreapi_UpdateMsg_descriptor =
-            getDescriptor().getMessageTypes().get(14);
+            getDescriptor().getMessageTypes().get(15);
           internal_static_coreapi_UpdateMsg_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_coreapi_UpdateMsg_descriptor,
