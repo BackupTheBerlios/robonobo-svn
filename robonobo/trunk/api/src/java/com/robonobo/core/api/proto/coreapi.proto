@@ -70,7 +70,7 @@ message LibraryMsg {
 }
 
 // Passed to a running rbnb instance when another instance starts up and hands over
-message LocalUserRequest {
+message HandoverMsg {
 	required string arg = 1;
 }
 
