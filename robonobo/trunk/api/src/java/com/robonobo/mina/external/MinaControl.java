@@ -78,4 +78,6 @@ public interface MinaControl {
 	public abstract void removeNodeFilter(NodeFilter nf);
 
 	public abstract void addNodeFilter(NodeFilter nf);
+
+	public abstract void setHandoverHandler(HandoverHandler handler);
 }

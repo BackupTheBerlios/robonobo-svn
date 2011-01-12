@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 @SuppressWarnings("serial")
 public class RobonoboConfig implements Serializable {
-	int threadPoolSize = 16;
+	int threadPoolSize = 4;
 	int upnpTimeout = 2000; // ms
 	int upnpDefaultPort = 17235;
 	int upnpPortsToTry = 50;

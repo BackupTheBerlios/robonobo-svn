@@ -16,12 +16,10 @@ public class MinaConfig implements Cloneable, Serializable {
 	String endPointMgrClasses = "com.robonobo.mina.network.eon.EonEndPointMgr";
 	/** FQ classname of bid strategy */
 	String bidStrategyClass = "com.robonobo.mina.stream.bidstrategy.DefaultBidStrategy";
-	int threadPoolSize = 10;
 	int maxCachedBroadcasterAge = 300;
 	int listenUdpPort = 23232;
 	int gatewayUdpPort = 17235;
 	int localLocatorUdpPort = 23232;
-	int listenEonPort = 23;
 	int messageMaxSize = 16384; // Bytes
 	int pageReadBufferSize = 262144; // Bytes
 	int messageTimeout = 30; // Seconds
@@ -135,10 +133,6 @@ public class MinaConfig implements Cloneable, Serializable {
 		return localAddress;
 	}
 
-	public int getListenEonPort() {
-		return listenEonPort;
-	}
-
 	public int getLocalLocatorUdpPort() {
 		return localLocatorUdpPort;
 	}
@@ -165,10 +159,6 @@ public class MinaConfig implements Cloneable, Serializable {
 
 	public String getNodeId() {
 		return nodeId;
-	}
-
-	public int getThreadPoolSize() {
-		return threadPoolSize;
 	}
 
 	public boolean getLocateLocalNodes() {
@@ -211,10 +201,6 @@ public class MinaConfig implements Cloneable, Serializable {
 		this.localAddress = localAddress;
 	}
 
-	public void setListenEonPort(int localEonPort) {
-		this.listenEonPort = localEonPort;
-	}
-
 	public void setLocalLocatorUdpPort(int localLocatorUdpPort) {
 		this.localLocatorUdpPort = localLocatorUdpPort;
 	}
@@ -249,10 +235,6 @@ public class MinaConfig implements Cloneable, Serializable {
 
 	public void setSupernode(boolean supernode) {
 		this.supernode = supernode;
-	}
-
-	public void setThreadPoolSize(int threadPoolSize) {
-		this.threadPoolSize = threadPoolSize;
 	}
 
 	public String getEndPointMgrClasses() {
