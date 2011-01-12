@@ -1,5 +1,7 @@
 package com.robonobo.common.swing;
 
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
 import javax.swing.tree.*;
 
 public class SortedTreeModel extends DefaultTreeModel {
@@ -46,5 +48,13 @@ public class SortedTreeModel extends DefaultTreeModel {
 			return getInsertIndex(newNode, parent, low, pivot);
 		else
 			return getInsertIndex(newNode, parent, pivot, high);
+	}
+
+	public void firePathToRootChanged(TreeNode n) {
+		// Why isn't this in DefaultTreeModel?
+		TreeModelEvent e = new TreeModelEvent(this, getPathToRoot(n));
+		for (TreeModelListener l : getTreeModelListeners()) {
+			l.treeNodesChanged(e);
+		}
 	}
 }
