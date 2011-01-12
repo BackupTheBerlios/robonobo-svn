@@ -40,7 +40,7 @@ public class PlaylistController extends BaseController {
 			send404(req, resp);
 			return;
 		}
-		// Check to see if this user is allowed to see the playlist - is s/he
+		// Check to see if this user is allowed to see the playlist - is it public, or if not, is s/he
 		// the owner, or a friend of the owner?
 		User u = getAuthUser(req);
 		if (u == null) {
@@ -68,9 +68,8 @@ public class PlaylistController extends BaseController {
 		if (allowed) {
 			log.info("Returning playlist " + playlistId + " to " + u.getEmail());
 			writeToOutput(p.toMsg(), resp);
-		} else {
+		} else
 			send401(req, resp);
-		}
 	}
 
 	@RequestMapping(value = "/playlists/{pIdStr}", method = RequestMethod.PUT)
@@ -145,8 +144,7 @@ public class PlaylistController extends BaseController {
 	}
 
 	@RequestMapping("/playlists/{pIdStr}/post-update")
-	public void postPlaylistUpdate(@PathVariable("pIdStr") String pIdStr, 
-			@RequestParam("service") String service,
+	public void postPlaylistUpdate(@PathVariable("pIdStr") String pIdStr, @RequestParam("service") String service,
 			HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		long playlistId = Long.parseLong(pIdStr, 16);
 		Playlist p = midas.getPlaylistById(playlistId);
@@ -156,11 +154,11 @@ public class PlaylistController extends BaseController {
 			return;
 		}
 		MidasUserConfig muc = midas.getUserConfig(u);
-		if("facebook".equalsIgnoreCase(service))
+		if ("facebook".equalsIgnoreCase(service))
 			facebook.postPlaylistUpdateToFacebook(muc, p);
-		else if("twitter".equalsIgnoreCase(service))
+		else if ("twitter".equalsIgnoreCase(service))
 			twitter.postPlaylistUpdateToTwitter(muc, p);
 		else
-			log.error("Error: user "+u.getEmail()+" tried to update their playlist to service: '"+service);
+			log.error("Error: user " + u.getEmail() + " tried to update their playlist to service: '" + service);
 	}
 }

@@ -9,8 +9,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/common"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/api"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pageio"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/serialization"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/common-servlets"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/midas-model"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6">
 		<attributes>

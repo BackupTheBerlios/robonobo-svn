@@ -4,8 +4,6 @@
 	<comment></comment>
 	<projects>
 		<project>midas-model</project>
-		<project>common-servlets</project>
-		<project>serialization</project>
 		<project>api</project>
 		<project>common</project>
 		<project>common-webapps</project>

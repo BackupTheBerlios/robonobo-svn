@@ -8,8 +8,6 @@
 		<ant dir="../common" inheritall="false" target="compile-all"/>
 		<ant dir="../api" inheritall="false" target="compile-all"/>
 		<ant dir="../common-hibernate" inheritall="false" target="compile-all"/>
-		<ant dir="../common-servlets" inheritall="false" target="compile-all"/>
-		<ant dir="../serialization" inheritall="false" target="compile-all"/>
 		<ant dir="../midas-model" inheritall="false" target="compile-all"/>
 
 		<mkdir dir="target/classes"/>
@@ -18,15 +16,10 @@
 		includes="**/*.java,**/*.properties,**/*.xml">
 			<classpath>
 				<pathelement path="../common-hibernate/target/classes"/>
-				<pathelement path="../common-servlets/target/classes"/>
 				<pathelement path="../api/target/classes"/>
-				<pathelement path="../serialization/target/classes"/>
 				<pathelement path="../common/target/classes"/>
 				<pathelement path="../midas-model/target/classes"/>
 				<fileset dir="WebContent/WEB-INF/lib">
-					<include name="**/*.jar"/>
-				</fileset>
-				<fileset dir="../common-servlets/lib">
 					<include name="**/*.jar"/>
 				</fileset>
 				<fileset dir="../common-hibernate/lib">
@@ -55,13 +48,10 @@
 				<exclude name="**/context.xml"/>
 			</fileset>
 			<lib dir="../common-hibernate/lib"/>
-			<lib dir="../common-servlets/lib"/>
 			<lib dir="../common/lib"/>
 			<lib dir="../midas-model/lib"/>
 			<classes dir="target/classes"/>
 			<classes dir="../common-hibernate/target/classes"/>
-			<classes dir="../common-servlets/target/classes"/>
-			<classes dir="../serialization/target/classes"/>
 			<classes dir="../common/target/classes"/>
 			<classes dir="../api/target/classes"/>
 			<classes dir="../midas-model/target/classes"/>
@@ -78,8 +68,6 @@
 		<ant dir="../common" inheritall="false" target="clean"/>
 		<ant dir="../api" inheritall="false" target="clean"/>
 		<ant dir="../common-hibernate" inheritall="false" target="clean"/>
-		<ant dir="../common-servlets" inheritall="false" target="clean"/>
-		<ant dir="../serialization" inheritall="false" target="clean"/>
 		<ant dir="../midas-model" inheritall="false" target="clean"/>
 	</target>
 </project>

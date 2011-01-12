@@ -6,9 +6,6 @@
 <dependent-module deploy-path="/WEB-INF/lib" handle="module:/resource/midas-model/midas-model">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module deploy-path="/WEB-INF/lib" handle="module:/resource/common-servlets/common-servlets">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
         <dependent-module deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/common/lib/commons-logging-1.0.3.jar">
             <dependency-type>uses</dependency-type>
         </dependent-module>
@@ -34,9 +31,6 @@
             <dependency-type>uses</dependency-type>
         </dependent-module>
         <dependent-module deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/common/lib/commons-codec-1.2.jar">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
-        <dependent-module archiveName="serialization.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/serialization/serialization">
             <dependency-type>uses</dependency-type>
         </dependent-module>
         <dependent-module archiveName="api.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/api/api">
