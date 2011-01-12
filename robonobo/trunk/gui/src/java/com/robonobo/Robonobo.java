@@ -1,5 +1,7 @@
 package com.robonobo;
 
+import static com.robonobo.common.util.TextUtil.*;
+
 import java.awt.GraphicsEnvironment;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -16,11 +18,12 @@ import java.io.PrintWriter;
 import javax.swing.SwingUtilities;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
+import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.common.util.TextUtil;
 import com.robonobo.console.RobonoboConsole;
-import com.robonobo.core.Platform;
-import com.robonobo.core.RobonoboController;
+import com.robonobo.core.*;
 import com.robonobo.core.api.RobonoboStatus;
+import com.robonobo.eon.EONException;
 import com.robonobo.gui.frames.EULAFrame;
 import com.robonobo.gui.frames.RobonoboFrame;
 
@@ -34,7 +37,6 @@ public class Robonobo {
 	private static final String TEXT_EULA_PATH = "/eula.txt";
 
 	public static void main(String[] args) throws Exception {
-		// Register exception handler for threads
 		// 1st-stage arg checker
 		boolean consoleOnly = false;
 		for (int i = 0; i < args.length; i++) {
@@ -43,33 +45,60 @@ public class Robonobo {
 		}
 		if (GraphicsEnvironment.isHeadless())
 			consoleOnly = true;
+		// Is there an instance already running?
+		RobonoboRuntime rt = new RobonoboRuntime(homeDir());
+		boolean handedOver;
+		try {
+			handedOver = rt.handoverIfRunning(argForRunningInstance(args));
+		} catch(EONException e) {
+			// TODO: there is a running instance, but it's wedged - ask the user to kill it...
+			throw new SeekInnerCalmException("Wedged rbnb instance");
+		}
+		if(handedOver) {
+			System.exit(0);
+		}
 		Platform.getPlatform().init();
 		if (!consoleOnly)
 			Platform.getPlatform().setLookAndFeel();
 		checkEulaAndStartup(args, consoleOnly);
 	}
 
+	public static File homeDir() {
+		if (System.getenv().containsKey("ROBOHOME"))
+			return new File(System.getenv("ROBOHOME"));
+		else
+			return Platform.getPlatform().getDefaultHomeDirectory();
+	}
+	
+	public static String argForRunningInstance(String[] args) {
+		for (String arg : args) {
+			if(!"-console".equals(arg))
+				return arg;
+		}
+		return null;
+	}
+	
 	public static void checkEulaAndStartup(final String[] args, boolean consoleOnly) throws Exception {
 		// Make sure they've agreed to the eula
-		final RobonoboController controller = new RobonoboController(args);
-		if (controller.getConfig().getAgreedToEula())
-			startup(controller, args, consoleOnly);
+		final RobonoboController control = new RobonoboController(args);
+		if (control.getConfig().getAgreedToEula())
+			startup(control, args, consoleOnly);
 		else {
 			if (consoleOnly) {
 				boolean acceptedEula = showConsoleEula();
 				if (acceptedEula) {
-					controller.getConfig().setAgreedToEula(true);
-					controller.saveConfig();
-					startup(null, args, true);
+					control.getConfig().setAgreedToEula(true);
+					control.saveConfig();
+					startup(control, args, true);
 				} else {
 					System.exit(0);
 				}
 			} else {
 				CatchingRunnable onAccept = new CatchingRunnable() {
 					public void doRun() throws Exception {
-						controller.getConfig().setAgreedToEula(true);
-						controller.saveConfig();
-						startup(null, args, false);
+						control.getConfig().setAgreedToEula(true);
+						control.saveConfig();
+						startup(control, args, false);
 					}
 				};
 				CatchingRunnable onCancel = new CatchingRunnable() {
@@ -77,7 +106,7 @@ public class Robonobo {
 						System.exit(0);
 					}
 				};
-				EULAFrame eulaFrame = new EULAFrame(HTML_EULA_PATH, controller.getExecutor(), onAccept, onCancel);
+				EULAFrame eulaFrame = new EULAFrame(HTML_EULA_PATH, control.getExecutor(), onAccept, onCancel);
 				eulaFrame.setVisible(true);
 			}
 		}
@@ -124,14 +153,6 @@ public class Robonobo {
 	public static void startup(RobonoboController argControl, String[] args, boolean consoleOnly) throws Exception,
 			InterruptedException {
 		final RobonoboController control = (argControl == null) ? new RobonoboController(args) : argControl;
-		// If there is no Download location set (probably first time through), set it
-		// We do this here as Platform is not visible inside core
-		if (control.getConfig().getDownloadDirectory() == null) {
-			File dd = Platform.getPlatform().getDefaultDownloadDirectory();
-			dd.mkdirs();
-			String ddPath = dd.getAbsolutePath();
-			control.getConfig().setDownloadDirectory(ddPath);
-		}
 
 		// Start the controller and the gui in parallel
 		Thread cThread = new Thread(new CatchingRunnable() {
@@ -148,7 +169,7 @@ public class Robonobo {
 			Thread consoleThread = new Thread(console);
 			consoleThread.start();
 			// If the user has login details entered, perform the login here (gui handles this in RobonoboFrame.setVisible() to show the login sheet)
-			if(TextUtil.isNonEmpty(control.getConfig().getMetadataServerUsername()))
+			if(isNonEmpty(control.getConfig().getMetadataServerUsername()))
 				control.login(control.getConfig().getMetadataServerUsername(), control.getConfig().getMetadataServerPassword());
 		} else {
 			final RobonoboFrame frame = new RobonoboFrame(control, args);

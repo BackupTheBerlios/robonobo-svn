@@ -12,6 +12,7 @@ import javax.swing.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.api.UserPlaylistListener;
 import com.robonobo.core.api.model.*;
 import com.robonobo.gui.components.*;
@@ -28,8 +29,10 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 	private TaskListSelector taskList;
 	private boolean showTasks = false;
 	private NewPlaylistSelector newPlaylist;
-	private PlaylistList playlistList;
+	private PlaylistList myPlList;
 	private FriendTree friendTree;
+	private PublicPlaylistTree pubPlTree;
+	private boolean showPublicPlaylists = false;
 	Log log = LogFactory.getLog(getClass());
 	private JPanel sideBarPanel;
 	private SearchField searchField;
@@ -55,6 +58,10 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 		sideBarPanel.add(activeSearchList);
 		sideBarComps.add(activeSearchList);
 
+		pubPlTree = new PublicPlaylistTree(this, frame);
+		pubPlTree.setBorder(BorderFactory.createEmptyBorder(5, 10, 0, 10));
+		sideBarComps.add(pubPlTree);
+		
 		friendTree = new FriendTree(this, frame);
 		friendTree.setBorder(BorderFactory.createEmptyBorder(5, 10, 3, 10));
 		sideBarPanel.add(friendTree);
@@ -71,9 +78,9 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 		sideBarPanel.add(newPlaylist);
 		sideBarComps.add(newPlaylist);
 
-		playlistList = new PlaylistList(this, frame);
-		sideBarPanel.add(playlistList);
-		sideBarComps.add(playlistList);
+		myPlList = new PlaylistList(this, frame);
+		sideBarPanel.add(myPlList);
+		sideBarComps.add(myPlList);
 
 		JPanel spacerPanel = new JPanel();
 		spacerPanel.setLayout(new BoxLayout(spacerPanel, BoxLayout.X_AXIS));
@@ -91,12 +98,14 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 		sideBarPanel.removeAll();
 		sideBarPanel.add(searchField);
 		sideBarPanel.add(activeSearchList);
+		if(showPublicPlaylists)
+			sideBarPanel.add(pubPlTree);
 		sideBarPanel.add(friendTree);
 		sideBarPanel.add(myMusic);
 		if(showTasks)
 			sideBarPanel.add(taskList);
 		sideBarPanel.add(newPlaylist);
-		sideBarPanel.add(playlistList);
+		sideBarPanel.add(myPlList);
 		sideBarPanel.revalidate();
 	}
 	
@@ -107,27 +116,60 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 		relayoutSidebar();
 	}
 	
-	public void selectForContentPanel(String cpn) {
-		if(cpn.equals("mymusiclibrary"))
+	public void showPublicPlaylists(boolean show) {
+		if(showPublicPlaylists == show)
+			return;
+		showPublicPlaylists = show;
+		relayoutSidebar();
+	}
+	
+	public void selectForContentPanel(String cpName) {
+		if(cpName.equals("mymusiclibrary"))
 			myMusic.setSelected(true);
-		else if(cpn.equals("newplaylist"))
+		else if(cpName.equals("newplaylist"))
 			newPlaylist.setSelected(true);
-		else if(cpn.startsWith("search/"))
-			activeSearchList.selectForQuery(cpn.substring("search/".length()));
-		else if(cpn.startsWith("playlist/")) {
-			// Playlist might be one of mine or it might be a friend's
-			long plId = Long.parseLong(cpn.substring("playlist/".length()));
+		else if(cpName.startsWith("search/"))
+			activeSearchList.selectForQuery(cpName.substring("search/".length()));
+		else if(cpName.startsWith("playlist/")) {
+			long plId = Long.parseLong(cpName.substring("playlist/".length()));
 			Playlist p = frame.getController().getPlaylist(plId);
-			User me = frame.getController().getMyUser();
-			if(me.getPlaylistIds().contains(plId))
-				playlistList.selectPlaylist(p);
-			else
-				friendTree.selectForPlaylist(plId);
-		} else if(cpn.startsWith("library/")) {
-			long uid = Long.parseLong(cpn.substring("library/".length()));
+			selectForPlaylist(p);
+		} else if(cpName.startsWith("library/")) {
+			long uid = Long.parseLong(cpName.substring("library/".length()));
 			friendTree.selectForLibrary(uid);
 		} else
-			log.error("Couldn't select content panel: "+cpn);
+			log.error("Couldn't select content panel: "+cpName);
+	}
+	
+	public void selectForPlaylist(Playlist p) {
+		long plId = p.getPlaylistId();
+		if(myPlList.getModel().hasPlaylist(plId))
+			myPlList.selectPlaylist(p);
+		else if(friendTree.getModel().hasPlaylist(plId))
+			friendTree.selectForPlaylist(plId);
+		else {
+			// Public playlist
+			if(!pubPlTree.getModel().hasPlaylist(plId)) {
+				PlaylistConfig pc = frame.getController().getPlaylistConfig(p.getPlaylistId());
+				// TODO Don't use friend panel, have separate public one
+				// TODO Need to change playlistChanged() as well in case public panel gets replaced
+				FriendPlaylistContentPanel cp = new FriendPlaylistContentPanel(frame, p, pc);
+				frame.getMainPanel().addContentPanel("playlist/"+plId, cp);
+				pubPlTree.getModel().addPlaylist(p);
+			}
+			pubPlTree.selectForPlaylist(plId);
+			showPublicPlaylists(true);
+		}
+	}
+	
+	public void showPlaylist(final long playlistId) {
+		// Make sure we've got the playlist before we go to the UI thread, or it might hang while we contact midas
+		final Playlist p = frame.getController().getPlaylist(playlistId); 
+		SwingUtilities.invokeLater(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				selectForPlaylist(p);
+			}
+		});
 	}
 	
 	public void searchAdded(String query) {
@@ -147,7 +189,7 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 	}
 
 	public void selectMyPlaylist(Playlist p) {
-		playlistList.selectPlaylist(p);
+		myPlList.selectPlaylist(p);
 	}
 
 	public void clearSelectionExcept(LeftSidebarComponent selCmp) {
@@ -176,6 +218,7 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 		PlaylistConfig pc = frame.getController().getPlaylistConfig(p.getPlaylistId());
 		ContentPanel pPanel = frame.getMainPanel().getContentPanel(panelName);
 		long myUserId = frame.getController().getMyUser().getUserId();
+		// TODO If there is a public playlist with this plId, replace it with a friend/my playlist
 		if (pPanel == null) {
 			// Create playlist panel
 			if (p.getOwnerIds().contains(myUserId))

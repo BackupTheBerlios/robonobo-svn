@@ -47,7 +47,7 @@ public class SheetableFrame extends JFrame {
 	public synchronized void dim() {
 		sheetLock.lock();
 		try {
-			log.fatal("dimming");
+			log.debug("dimming");
 			if (dimmer == null)
 				dimmer = new Dimmer();
 		} finally {
@@ -79,7 +79,6 @@ public class SheetableFrame extends JFrame {
 			Dimension sz = new Dimension(sheet.getPreferredSize().width + 8, sheet.getPreferredSize().height + 7);
 			setPreferredSize(sz);
 			setOpaque(true);
-			// TODO Apply hatched bg here
 			setBackground(Color.WHITE);
 			setBorder(BorderFactory.createLineBorder(RoboColor.LIGHT_GRAY));
 		}

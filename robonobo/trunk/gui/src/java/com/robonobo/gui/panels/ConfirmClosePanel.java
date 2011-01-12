@@ -29,8 +29,8 @@ public class ConfirmClosePanel extends JPanel {
 		feckOffCB.setSelected(false);
 		add(feckOffCB, "1,5,4,5,CENTER,CENTER");
 		
-		RButton closeBtn = new RGlassButton("CLOSE");
-		closeBtn.addActionListener(new ActionListener() {
+		RButton exitBtn = new RGlassButton("EXIT");
+		exitBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if(feckOffCB.isSelected()) {
 					frame.getGuiConfig().setConfirmExit(false);
@@ -39,7 +39,7 @@ public class ConfirmClosePanel extends JPanel {
 				frame.shutdown();
 			}
 		});
-		add(closeBtn, "2,7");
+		add(exitBtn, "2,7");
 		RButton cancelBtn = new RRedGlassButton("CANCEL");
 		cancelBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

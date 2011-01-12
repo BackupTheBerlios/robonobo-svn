@@ -15,6 +15,7 @@ import com.robonobo.core.Platform;
 import com.robonobo.gui.RoboColor;
 import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.frames.RobonoboFrame;
+import com.robonobo.gui.panels.OpenURIPanel;
 
 @SuppressWarnings("serial")
 public class MenuBar extends JMenuBar {
@@ -70,6 +71,15 @@ public class MenuBar extends JMenuBar {
 			fileMenu.add(iTunesImport);
 		}
 
+		JMenuItem openUrl = new JMenuItem("Open 'rbnb:' URI...");
+		openUrl.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				frame.dim();
+				frame.showSheet(new OpenURIPanel(frame));
+			}
+		});
+		fileMenu.add(openUrl);
+		
 		if (getPlatform().shouldShowQuitInFileMenu()) {
 			JMenuItem quit = new JMenuItem("Quit", KeyEvent.VK_Q);
 			quit.setAccelerator(getPlatform().getAccelKeystroke(KeyEvent.VK_Q));

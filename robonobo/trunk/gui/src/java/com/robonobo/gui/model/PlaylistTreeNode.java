@@ -15,14 +15,12 @@ public class PlaylistTreeNode extends SelectableTreeNode {
 	Log log = LogFactory.getLog(getClass());
 	RobonoboFrame frame;
 	private Playlist playlist;
-	private FriendTreeModel model;
 	int numUnseenTracks;
 
-	public PlaylistTreeNode(Playlist p, RobonoboFrame frame, FriendTreeModel model) {
+	public PlaylistTreeNode(Playlist p, RobonoboFrame frame) {
 		super(p.getTitle());
 		this.playlist = p;
 		this.frame = frame;
-		this.model = model;
 		numUnseenTracks = frame.getController().numUnseenTracks(p);
 	}
 

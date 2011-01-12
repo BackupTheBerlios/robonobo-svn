@@ -20,7 +20,10 @@ import com.robonobo.common.exceptions.SeekInnerCalmException;
  * @author macavity
  */
 public class RoboFont {
+	private static final String BOLD_FONT_PATH = "/font/VeraBd.ttf";
+	private static final String REG_FONT_PATH = "/font/Vera.ttf";
 	static final String FONT_NAME = "Bitstream Vera Sans";
+//	static final String FONT_NAME = "Ubuntu";
 	static Font basePlainFont;
 	static Font baseBoldFont;
 	static Map<Integer, Font> derivedPlainFonts;
@@ -40,8 +43,8 @@ public class RoboFont {
 			derivedBoldFonts.put(12, baseBoldFont);
 		} else {
 			// Not on the system - build this sucka from our ttf file
-			InputStream plainIs = RoboFont.class.getResourceAsStream("/font/Vera.ttf");
-			InputStream boldIs = RoboFont.class.getResourceAsStream("/font/VeraBd.ttf");
+			InputStream plainIs = RoboFont.class.getResourceAsStream(REG_FONT_PATH);
+			InputStream boldIs = RoboFont.class.getResourceAsStream(BOLD_FONT_PATH);
 			try {
 				Font onePoint = Font.createFont(Font.TRUETYPE_FONT, plainIs);
 				basePlainFont = onePoint.deriveFont(Font.PLAIN, 12);

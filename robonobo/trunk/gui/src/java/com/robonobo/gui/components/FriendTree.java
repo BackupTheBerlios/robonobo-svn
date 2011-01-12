@@ -23,8 +23,8 @@ import com.robonobo.gui.panels.LeftSidebar;
 
 @SuppressWarnings("serial")
 public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
-	static final Dimension MAX_FRIEND_SZ = new Dimension(145, Integer.MAX_VALUE);
-	static final Dimension MAX_PLAYLIST_SZ = new Dimension(135, Integer.MAX_VALUE);
+	static final Dimension MAX_LVL1_SZ = new Dimension(145, Integer.MAX_VALUE);
+	static final Dimension MAX_LVL2_SZ = new Dimension(135, Integer.MAX_VALUE);
 
 	LeftSidebar sideBar;
 	RobonoboFrame frame;
@@ -94,8 +94,8 @@ public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
 
 			if (node instanceof PlaylistTreeNode) {
 				lbl.setIcon(playlistIcon);
-				lbl.setMaximumSize(MAX_PLAYLIST_SZ);
-				lbl.setPreferredSize(MAX_PLAYLIST_SZ);
+				lbl.setMaximumSize(MAX_LVL2_SZ);
+				lbl.setPreferredSize(MAX_LVL2_SZ);
 				PlaylistTreeNode ptn = (PlaylistTreeNode) node;
 				int unseen = ptn.getNumUnseenTracks();
 				if (unseen > 0) {
@@ -105,8 +105,8 @@ public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
 					lbl.setFont(normalFont);
 			} else if(node instanceof LibraryTreeNode) {
 				lbl.setIcon(libraryIcon);
-				lbl.setMaximumSize(MAX_PLAYLIST_SZ);
-				lbl.setPreferredSize(MAX_PLAYLIST_SZ);
+				lbl.setMaximumSize(MAX_LVL2_SZ);
+				lbl.setPreferredSize(MAX_LVL2_SZ);
 				LibraryTreeNode ltn = (LibraryTreeNode) node;
 				int unseen = ltn.getNumUnseenTracks();
 				if (unseen > 0) {
@@ -116,8 +116,8 @@ public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
 					lbl.setFont(normalFont);
 			} else if (node instanceof FriendTreeNode) {
 				lbl.setIcon(friendIcon);
-				lbl.setMaximumSize(MAX_FRIEND_SZ);
-				lbl.setPreferredSize(MAX_FRIEND_SZ);
+				lbl.setMaximumSize(MAX_LVL1_SZ);
+				lbl.setPreferredSize(MAX_LVL1_SZ);
 				int unseen = getTotalUnseen(node);
 				if (unseen > 0) {
 					lbl.setText("[" + unseen + "] " + lbl.getText());
@@ -135,11 +135,10 @@ public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
 			} else
 				lbl.setFont(normalFont);
 
-			if (getSelectionPath() != null && node.equals(getSelectionPath().getLastPathComponent())) {
+			if (getSelectionPath() != null && node.equals(getSelectionPath().getLastPathComponent()))
 				lbl.setForeground(BLUE_GRAY);
-			} else {
+			else
 				lbl.setForeground(DARK_GRAY);
-			}
 			return lbl;
 		}
 

@@ -3,11 +3,14 @@ package com.robonobo.gui.frames;
 import static com.robonobo.common.util.TextUtil.*;
 import static javax.swing.SwingUtilities.*;
 
-import java.awt.Dimension;
-import java.awt.Image;
-import java.awt.event.*;
+import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.*;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.*;
 
@@ -17,20 +20,18 @@ import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.Robonobo;
 import com.robonobo.common.concurrent.CatchingRunnable;
-import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.common.util.FileUtil;
-import com.robonobo.common.util.TextUtil;
 import com.robonobo.core.Platform;
 import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.*;
 import com.robonobo.gui.GUIUtils;
 import com.robonobo.gui.GuiConfig;
-import com.robonobo.gui.laf.RobonoboLookAndFeel;
 import com.robonobo.gui.panels.*;
 import com.robonobo.gui.preferences.PrefDialog;
 import com.robonobo.gui.tasks.ImportFilesTask;
 import com.robonobo.gui.tasks.ImportITunesTask;
 import com.robonobo.mina.external.ConnectedNode;
+import com.robonobo.mina.external.HandoverHandler;
 
 @SuppressWarnings("serial")
 public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListener, TrackListener {
@@ -134,14 +135,75 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 		// Do nothing
 	}
 
+	/**
+	 * Once this is called, everything is up and running
+	 */
 	@Override
 	public void allTracksLoaded() {
 		tracksLoaded = true;
+		setupHandoverHandler();
+		handleArgs();
 		// If we haven't shown the login sheet yet, show the welcome later
 		if (shownLogin)
 			showWelcome();
 	}
 
+	private void handleArgs() {
+		// Handle everything that isn't the -console
+		for (String arg : cmdLineArgs) {
+			if(!"-console".equalsIgnoreCase(arg))
+				handleArg(arg);
+		}
+	}
+	
+	private void setupHandoverHandler() {
+		control.setHandoverHandler(new HandoverHandler() {
+			@Override
+			public String gotHandover(String arg) {
+				handleArg(arg);
+				SwingUtilities.invokeLater(new CatchingRunnable() {
+					public void doRun() throws Exception {
+						// Note: this doesn't bring the app to the front on OSX, but we don't care that much as the app
+						// receives URL notifications directly anyway
+						// If we need it at a subsequent stage, just run an applescript:
+						// tell app "robonobo"
+						// activate
+						// end tell
+						RobonoboFrame.this.setState(Frame.NORMAL);
+						RobonoboFrame.this.toFront();
+					}
+				});
+				log.debug("Got handover msg: " + arg);
+				return "0:OK";
+			}
+
+		});
+	}
+
+	private void handleArg(String arg) {
+		if (isNonEmpty(arg)) {
+			if (arg.startsWith("rbnb"))
+				openRbnbUri(arg);
+			else
+				log.error("Received erroneous robonobo argument: "+arg);
+		}
+	}
+	
+	public void openRbnbUri(String uri) {
+		Pattern uriPat = Pattern.compile("^rbnb:(\\w+):(.*)$");
+		Matcher m = uriPat.matcher(uri);
+		if(m.matches()) {
+			String objType = m.group(1);
+			String objId = m.group(2);
+			if(objType.equalsIgnoreCase("playlist")) {
+				long pId = Long.parseLong(objId, 16);
+				leftSidebar.showPlaylist(pId);
+				return;
+			}
+		}
+		log.error("Received invalid rbnb uri: "+uri);
+	}
+	
 	public void showWelcome() {
 		// If we have no shares, show the welcome dialog
 		final boolean gotShares = (control.getShares().size() > 0);
@@ -327,21 +389,21 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 		invokeLater(new CatchingRunnable() {
 			public void doRun() throws Exception {
 				// If we aren't sharing anything, just close
-				if(getController().getShares().size() == 0) {
+				if (getController().getShares().size() == 0) {
 					shutdown();
 					return;
 				}
 				// Likewise, if they've asked us not to confirm
-				if(!getGuiConfig().getConfirmExit()) {
+				if (!getGuiConfig().getConfirmExit()) {
 					shutdown();
 					return;
 				}
 				dim();
-				showSheet(new ConfirmClosePanel(RobonoboFrame.this));		
+				showSheet(new ConfirmClosePanel(RobonoboFrame.this));
 			}
 		});
 	}
-	
+
 	class CloseListener extends WindowAdapter {
 		public void windowClosing(WindowEvent e) {
 			confirmThenShutdown();

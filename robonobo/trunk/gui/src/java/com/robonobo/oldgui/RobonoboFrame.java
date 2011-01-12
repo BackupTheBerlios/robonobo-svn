@@ -317,7 +317,7 @@ public class RobonoboFrame extends JFrame implements UserPlaylistListener {
 					}
 				});
 				// Startup a new frame and controller
-				Robonobo.startup(null, cmdLineArgs, false);
+//				Robonobo.startup(null, cmdLineArgs, false);
 				// Dispose of the old frame
 				RobonoboFrame.this.dispose();
 			}

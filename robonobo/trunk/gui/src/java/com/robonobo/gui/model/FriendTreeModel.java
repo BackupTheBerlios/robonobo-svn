@@ -3,15 +3,10 @@
  */
 package com.robonobo.gui.model;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import javax.swing.SwingUtilities;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import org.apache.commons.logging.Log;
@@ -33,6 +28,7 @@ public class FriendTreeModel extends SortedTreeModel implements UserPlaylistList
 	Map<Long, FriendTreeNode> friendNodes = new HashMap<Long, FriendTreeNode>();
 	Map<Long, LibraryTreeNode> libNodes = new HashMap<Long, LibraryTreeNode>();
 	Map<Long, Map<Long, PlaylistTreeNode>> playlistNodes = new HashMap<Long, Map<Long, PlaylistTreeNode>>();
+	Set<Long> playlistIds = new HashSet<Long>();
 	Log log = LogFactory.getLog(getClass());
 	SelectableTreeNode myRoot;
 
@@ -52,6 +48,7 @@ public class FriendTreeModel extends SortedTreeModel implements UserPlaylistList
 					getRoot().removeAllChildren();
 					friendNodes.clear();
 					playlistNodes.clear();
+					playlistIds.clear();
 				}
 				nodeStructureChanged(getRoot());
 			}
@@ -68,7 +65,8 @@ public class FriendTreeModel extends SortedTreeModel implements UserPlaylistList
 							if (!u.getFriendIds().contains(friendId)) {
 								removeNodeFromParent(friendNodes.get(friendId));
 								friendNodes.remove(friendId);
-								playlistNodes.remove(friendId);
+								Map<Long, PlaylistTreeNode> toRm = playlistNodes.remove(friendId);
+								playlistIds.removeAll(toRm.keySet());
 							}
 						}
 					}
@@ -89,6 +87,7 @@ public class FriendTreeModel extends SortedTreeModel implements UserPlaylistList
 									PlaylistTreeNode ptn = entry.getValue();
 									removeNodeFromParent(ptn);
 									iter.remove();
+									playlistIds.remove(ptn.getPlaylist().getPlaylistId());
 								}
 							}
 							// Friend might have changed friendly names, re-order if necessary
@@ -117,9 +116,10 @@ public class FriendTreeModel extends SortedTreeModel implements UserPlaylistList
 							long friendId = ftn.getFriend().getUserId();
 							PlaylistTreeNode ptn = playlistNodes.get(friendId).get(p.getPlaylistId());
 							if(ptn == null) {
-								ptn = new PlaylistTreeNode(p, frame, FriendTreeModel.this);
+								ptn = new PlaylistTreeNode(p, frame);
 								playlistNodes.get(friendId).put(p.getPlaylistId(), ptn);
 								insertNodeSorted(ftn, ptn);
+								playlistIds.add(p.getPlaylistId());
 								firePathToRootChanged(ptn);
 							} else {
 								ptn.setPlaylist(p);
@@ -178,16 +178,12 @@ public class FriendTreeModel extends SortedTreeModel implements UserPlaylistList
 		return null;
 	}
 	
-	public void firePathToRootChanged(TreeNode n) {
-		// Why isn't this in DefaultTreeModel?
-		TreeModelEvent e = new TreeModelEvent(this, getPathToRoot(n));
-		for (TreeModelListener l : getTreeModelListeners()) {
-			l.treeNodesChanged(e);
-		}
-	}
-	
 	@Override
 	public SortableTreeNode getRoot() {
 		return (SortableTreeNode) super.getRoot();
+	}
+	
+	public synchronized boolean hasPlaylist(long playlistId) {
+		return playlistIds.contains(playlistId);
 	}
 }
