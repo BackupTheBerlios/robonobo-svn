@@ -4,9 +4,6 @@
 <wb-resource deploy-path="/" source-path="/WebContent"/>
 <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/java"/>
 <wb-resource deploy-path="/WEB-INF/classes" source-path="/rules"/>
-<dependent-module deploy-path="/WEB-INF/lib" handle="module:/resource/common-servlets/common-servlets">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
         <dependent-module deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/common/lib/commons-httpclient-3.0.jar">
             <dependency-type>uses</dependency-type>
         </dependent-module>
@@ -16,9 +13,6 @@
         <dependent-module deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/common-hibernate/lib/postgresql-8.3-603.jdbc3.jar">
             <dependency-type>uses</dependency-type>
         </dependent-module>
-        <dependent-module deploy-path="/WEB-INF/lib" handle="module:/resource/serialization/serialization">
-<dependency-type>uses</dependency-type>
-</dependent-module>
         <dependent-module archiveName="api.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/api/api">
             <dependency-type>uses</dependency-type>
         </dependent-module>
