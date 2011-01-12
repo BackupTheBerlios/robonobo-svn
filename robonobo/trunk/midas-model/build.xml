@@ -5,7 +5,6 @@
 		<ant dir="../common" inheritall="false" target="compile-all"/>
 		<ant dir="../api" inheritall="false" target="compile-all"/>
 		<ant dir="../common-hibernate" inheritall="false" target="compile-all"/>
-		<ant dir="../serialization" inheritall="false" target="compile-all"/>
 
 		<mkdir dir="target/classes"/>
 		
@@ -13,9 +12,7 @@
 		includes="**/*.java,**/*.properties,**/*.xml">
 			<classpath>
 				<pathelement path="../common-hibernate/target/classes"/>
-				<pathelement path="../common-servlets/target/classes"/>
 				<pathelement path="../api/target/classes"/>
-				<pathelement path="../serialization/target/classes"/>
 				<pathelement path="../common/target/classes"/>
 				<fileset dir="lib">
 					<include name="**/*.jar"/>
@@ -43,7 +40,6 @@
 		<ant dir="../common" inheritall="false" target="clean"/>
 		<ant dir="../api" inheritall="false" target="clean"/>
 		<ant dir="../common-hibernate" inheritall="false" target="clean"/>
-		<ant dir="../serialization" inheritall="false" target="clean"/>
 	</target>
 
 </project>
