@@ -18,24 +18,12 @@ public class RobonoboConsole extends CatchingRunnable {
 	private PrintWriter out;
 	private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
-	public static void main(String[] args) throws Exception {
-		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-		PrintWriter out = new PrintWriter(System.out);
-		RobonoboController control = new RobonoboController(args);
-		control.start();
-		RobonoboConsole instance = new RobonoboConsole("Console", control, in, out);
-		Thread myThread = new Thread(instance);
-		myThread.start();
-	}
-
-
 	public RobonoboConsole(String threadName, RobonoboController controller, BufferedReader in, PrintWriter out) {
 		super(threadName);
 		this.controller = controller;
 		this.in = in;
 		this.out = out;
 	}
-
 
 	@Override
 	public void doRun() throws Exception {

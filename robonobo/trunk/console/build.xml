@@ -29,7 +29,6 @@
 				<pathelement path="../common/target/classes"/>
 				<pathelement path="../mina/bin"/>
 				<pathelement path="../core/target/classes"/>
-				<pathelement path="../serialization/target/classes"/>
 				<fileset dir="lib">
 					<include name="**/*.jar"/>
 				</fileset>
