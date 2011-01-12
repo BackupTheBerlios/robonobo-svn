@@ -30,8 +30,8 @@ public abstract class EONPacket {
 		int numBytes = buf.remaining();
 		int sourcePort, destPort, protocol;
 		EonSocketAddress sourceEP, destEP;
-		// All EON packets are at least 64 bits long
-		if (numBytes < 8)
+		// All EON packets are at least 40 bits long
+		if (numBytes < 5)
 			return null;
 		// Source Port is bytes 0-1
 		byte b0 = buf.get();

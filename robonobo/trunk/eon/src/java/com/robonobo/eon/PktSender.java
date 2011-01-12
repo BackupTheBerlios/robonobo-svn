@@ -26,7 +26,7 @@ public class PktSender extends CatchingRunnable {
 	ByteBuffer sendBuf = ByteBuffer.allocate(EONManager.MAX_PKT_SIZE);
 	private int maxBps = -1;
 	/** This represents the number of bytes we can send now */
-	private int bytesCredit;
+	private int bytesCredit = Integer.MAX_VALUE;
 	private int maxBytesCredit;
 	/** The last time we calculated how much credit we have */
 	private long lastCreditTime;
@@ -164,8 +164,8 @@ public class PktSender extends CatchingRunnable {
 					noUnthrottledPkts.signal();
 					return;
 				}
-			} catch(InterruptedException e) {
-				if(stopping)
+			} catch (InterruptedException e) {
+				if (stopping)
 					return;
 				else
 					log.error("pktSender received unexpected InterruptedException - continuing");
@@ -186,8 +186,7 @@ public class PktSender extends CatchingRunnable {
 					if (conn.acceptVisitor(vis)) {
 						// We're out of credit, and this guy still has data to send
 						// Re-insert this guy behind any other waiting conns with the same gamma, otherwise one guy with
-						// a
-						// 1MB send holds everyone up
+						// a 1MB send holds everyone up
 						lock.lock();
 						try {
 							insertReadyConn(conn);
@@ -199,7 +198,7 @@ public class PktSender extends CatchingRunnable {
 						break;
 					}
 				} catch (Exception e) {
-					log.error("pktSender caught exception when visiting "+conn, e);
+					log.error("pktSender caught exception when visiting " + conn, e);
 				}
 			}
 		}

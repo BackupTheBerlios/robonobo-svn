@@ -1,4 +1,5 @@
 package com.robonobo.eon;
+
 /*
  * Eye-Of-Needle
  * Copyright (C) 2008 Will Morton (macavity@well.com) & Ray Hilton (ray@wirestorm.net)
@@ -20,6 +21,7 @@ package com.robonobo.eon;
 
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.logging.Log;
@@ -28,9 +30,9 @@ import org.apache.commons.logging.LogFactory;
 import com.robonobo.common.async.PushDataProvider;
 import com.robonobo.common.async.PushDataReceiver;
 import com.robonobo.common.concurrent.CatchingRunnable;
+import com.robonobo.common.exceptions.SeekInnerCalmException;
 
 public class DEONConnection extends EONConnection implements PushDataProvider {
-	// currentState
 	public static final int DEONConnectionState_Open = 1;
 	public static final int DEONConnectionState_Closed = 2;
 	private static final Log log = LogFactory.getLog(DEONConnection.class);
@@ -41,6 +43,8 @@ public class DEONConnection extends EONConnection implements PushDataProvider {
 	int state = DEONConnectionState_Closed;
 	PushDataReceiver dataReceiver;
 	ReentrantLock receiveLock = new ReentrantLock();
+	Condition canReceive;
+	ReentrantLock sendLock = new ReentrantLock();
 	boolean dataReceiverRunning = false;
 	boolean waitingForVisitor = false;
 
@@ -48,6 +52,7 @@ public class DEONConnection extends EONConnection implements PushDataProvider {
 	// EONManager.GetDEONConnection()
 	protected DEONConnection(EONManager mgr) {
 		super(mgr);
+		canReceive = receiveLock.newCondition();
 	}
 
 	public void bind() throws EONException, IllegalArgumentException {
@@ -62,20 +67,20 @@ public class DEONConnection extends EONConnection implements PushDataProvider {
 		connect(-1, remoteEndPoint);
 	}
 
-	public synchronized void connect(int localEONPort, EonSocketAddress remoteEndPoint) throws EONException,
-	IllegalArgumentException {
-		if(state == DEONConnectionState_Open) {
+	public void connect(int localEONPort, EonSocketAddress remoteEndPoint) throws EONException,
+			IllegalArgumentException {
+		if (state == DEONConnectionState_Open) {
 			throw new EONException("Connection is already open");
 		}
-		if(localEONPort != -1 && (localEONPort < 1 || localEONPort > 65535)) {
+		if (localEONPort != -1 && (localEONPort < 1 || localEONPort > 65535)) {
 			throw new IllegalArgumentException("Port must be between 1 and 65535");
 		}
 		localEP = new EonSocketAddress(mgr.getLocalSocketAddress(), 1);
 		// First, request our port
-		if(localEONPort == -1) {
+		if (localEONPort == -1) {
 			// Unspecified port
 			localEP.setEonPort(mgr.getPort(this));
-			if(localEP.getEonPort() == -1) {
+			if (localEP.getEonPort() == -1) {
 				throw new IllegalArgumentException("No EON ports available");
 			}
 		} else {
@@ -86,75 +91,84 @@ public class DEONConnection extends EONConnection implements PushDataProvider {
 		state = DEONConnectionState_Open;
 	}
 
-	public void send(byte[] buffer) throws EONException, IllegalArgumentException {
+	public void send(byte[] buffer) throws EONException {
 		send(buffer, 0, buffer.length);
 	}
 
-	public void send(byte[] buffer, int startIndex, int numBytes) throws EONException, IllegalArgumentException {
-		if(remoteEP == null) {
+	public void send(byte[] buffer, int startIndex, int numBytes) throws EONException {
+		if (remoteEP == null) {
 			throw new EONException("Remote EON Endpoint has not been specified");
 		}
 		sendTo(remoteEP, buffer, startIndex, numBytes);
 	}
 
-	public void sendTo(EonSocketAddress remoteEndPoint, byte[] buffer) throws EONException, IllegalArgumentException {
+	public void sendTo(EonSocketAddress remoteEndPoint, byte[] buffer) throws EONException {
 		sendTo(remoteEndPoint, buffer, 0, buffer.length);
 	}
 
 	public void sendTo(EonSocketAddress remoteEndPoint, byte[] buffer, int startIndex, int numBytes)
-	throws EONException, IllegalArgumentException {
-		if(startIndex + numBytes > buffer.length) {
-			throw new IllegalArgumentException("Supplied indices do not fit in supplied buffer");
-		}
-		synchronized(this) {
-			if(state == DEONConnectionState_Closed) {
-				throw new EONException("Connection is closed");
-			}
-		}
+			throws EONException {
+		if (startIndex + numBytes > buffer.length)
+			throw new SeekInnerCalmException("Supplied indices do not fit in supplied buffer");
+		if (state == DEONConnectionState_Closed)
+			throw new EONException("Connection is closed");
 		byte[] payloadArr = new byte[numBytes];
 		System.arraycopy(buffer, startIndex, payloadArr, 0, numBytes);
 		ByteBuffer payload = ByteBuffer.wrap(payloadArr);
 		DEONPacket thisPacket = new DEONPacket(null, remoteEndPoint, payload);
 		thisPacket.setSourceSocketAddress(localEP);
-		synchronized (this) {
+		sendLock.lock();
+		try {
 			outgoingPkts.add(thisPacket);
 			haveDataToSend();
+		} finally {
+			sendLock.unlock();
 		}
 		// TODO - some way of specifying that some deonconnections ignore our throttling?
 	}
 
 	protected void haveDataToSend() {
-		if(waitingForVisitor)
+		if (waitingForVisitor)
 			return;
 		waitingForVisitor = true;
 		mgr.haveDataToSend(this);
 	}
 
 	@Override
-	synchronized boolean acceptVisitor(PktSendVisitor vis) throws EONException {
-		waitingForVisitor = false;
-		while(outgoingPkts.size() > 0) {
-			if(vis.bytesAvailable() < outgoingPkts.getFirst().getPayloadSize()) {
-				waitingForVisitor = true;
-				return true;
+	boolean acceptVisitor(PktSendVisitor vis) throws EONException {
+		sendLock.lock();
+		try {
+			waitingForVisitor = false;
+			while (outgoingPkts.size() > 0) {
+				if (vis.bytesAvailable() < outgoingPkts.getFirst().getPayloadSize()) {
+					waitingForVisitor = true;
+					return true;
+				}
+				vis.sendPkt(outgoingPkts.removeFirst());
 			}
-			vis.sendPkt(outgoingPkts.removeFirst());
+			return false;
+		} finally {
+			sendLock.unlock();
 		}
-		return false;
 	}
-	
-	public synchronized void close() {
-		if(state == DEONConnectionState_Closed) {
+
+	public void close() {
+		if (state == DEONConnectionState_Closed)
 			log.warn("Connection is closed");
-		}
 		try {
 			mgr.returnPort(localEP.getEonPort(), this);
-		} catch(Exception e) {
+		} catch (Exception e) {
 			// dont care, we are closing, but log anyway
 			log.warn("Exception caught on close()", e);
 		}
 		state = DEONConnectionState_Closed;
 		fireOnClose();
+		receiveLock.lock(); 
+		try {
+			canReceive.signalAll();
+		} finally {
+			receiveLock.unlock();
+		}
 	}
 
 	public void abort() {
@@ -179,48 +193,55 @@ public class DEONConnection extends EONConnection implements PushDataProvider {
 		// DEON conns always have gamma 1
 		return 1f;
 	}
+
 	/**
 	 * @return 2 element array - bytebuffer at 0, eonsocketaddress at 1
 	 */
-	public synchronized Object[] read() throws EONException, InterruptedException {
-		synchronized (receiveLock) {
-			while(incomingDataBufs.size() == 0) {
-				receiveLock.wait();
+	public Object[] read() throws EONException, InterruptedException {
+		receiveLock.lock();
+		try {
+			while (incomingDataBufs.size() == 0 && state == DEONConnectionState_Open) {
+				canReceive.await();
 			}
+			if (state == DEONConnectionState_Closed)
+				throw new InterruptedException();
 			ByteBuffer buf = (ByteBuffer) incomingDataBufs.get(0);
 			incomingDataBufs.remove(0);
 			EonSocketAddress addr = (EonSocketAddress) incomingDataAddrs.get(0);
 			Object[] result = new Object[2];
 			result[0] = buf;
 			result[1] = addr;
-			return result;
+			return result;			
+		} finally {
+			receiveLock.unlock();
 		}
 	}
-
 
 	void receivePacket(EONPacket eonPacket) {
 		DEONPacket packet = (DEONPacket) eonPacket;
 		ByteBuffer buf = ByteBuffer.allocate(packet.getPayload().limit());
 		buf.put(packet.getPayload());
+		buf.flip();
 		EonSocketAddress addr = packet.getSourceSocketAddress();
-		synchronized (receiveLock) {
+		receiveLock.lock();
+		try {
 			incomingDataBufs.add(buf);
 			incomingDataAddrs.add(addr);
-			if(dataReceiver == null)
-				receiveLock.notifyAll();
+			if (dataReceiver == null)
+				canReceive.signal();
 			else {
 				// Async read
-				if(dataReceiverRunning) {
-					// This will be picked up by the already-running receiver
+				if (dataReceiverRunning) // This will be picked up by the already-running receiver
 					return;
-				} else {
+				else
 					fireAsyncReceiver();
-				}
 			}
+		} finally {
+			receiveLock.unlock();
 		}
 	}
-	
-	/** Must only be called from inside sync(receiveLock) block */
+
+	/** Must only be called when holding receiveLock*/
 	private void fireAsyncReceiver() {
 		dataReceiverRunning = true;
 		// Fire off our async receiver
@@ -231,7 +252,8 @@ public class DEONConnection extends EONConnection implements PushDataProvider {
 					PushDataReceiver dataRec = null;
 					ByteBuffer buf = null;
 					EonSocketAddress sockAddr = null;
-					synchronized (receiveLock) {
+					receiveLock.lock();
+					try {
 						dataRec = dataReceiver;
 						if (dataRec == null || incomingDataBufs.size() == 0) {
 							dataReceiverRunning = false;
@@ -239,19 +261,24 @@ public class DEONConnection extends EONConnection implements PushDataProvider {
 						}
 						buf = incomingDataBufs.remove(0);
 						sockAddr = incomingDataAddrs.remove(0);
+					} finally {
+						receiveLock.unlock();
 					}
 					dataRec.receiveData(buf, sockAddr);
 				}
 			}
 		});
 	}
-	
+
 	public void setDataReceiver(PushDataReceiver dataReceiver) {
-		synchronized (receiveLock) {
+		receiveLock.lock();
+		try {
 			this.dataReceiver = dataReceiver;
 			// If we've got incoming data blocks queued up, handle them now
-			if(dataReceiver != null && incomingDataBufs.size() > 0 && !dataReceiverRunning)
+			if (dataReceiver != null && incomingDataBufs.size() > 0 && !dataReceiverRunning)
 				fireAsyncReceiver();
+		} finally {
+			receiveLock.unlock();
 		}
 	}
 }
