@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.logging.Log;
 
 import com.google.protobuf.GeneratedMessage;
+import com.robonobo.common.concurrent.Attempt;
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.api.proto.CoreApi.EndPoint;
 import com.robonobo.core.api.proto.CoreApi.Node;
@@ -21,7 +22,6 @@ import com.robonobo.mina.network.BCPair;
 import com.robonobo.mina.network.ConnectionPair;
 import com.robonobo.mina.network.ControlConnection;
 import com.robonobo.mina.network.LCPair;
-import com.robonobo.mina.util.Attempt;
 import com.robonobo.mina.util.MinaConnectionException;
 
 /**
@@ -396,7 +396,7 @@ public class StreamConnsMgr {
 		private String nodeId;
 
 		public GetCCAttempt(int timeoutSecs, SourceStatus ss) {
-			super(mina, timeoutSecs * 1000, "GetCCAttempt");
+			super(mina.getExecutor(), timeoutSecs * 1000, "GetCCAttempt");
 			this.sourceStat = ss;
 			this.nodeId = ss.getFromNode().getId();
 		}

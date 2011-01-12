@@ -4,7 +4,6 @@
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/common"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/api"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/pageio"/>
-	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/serialization"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/eon"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6">
 		<attributes>

@@ -11,10 +11,6 @@ import com.robonobo.mina.external.MinaControl;
 import com.robonobo.mina.instance.MinaInstance;
 
 public class Mina {
-	public static MinaControl newInstance(MinaConfig config, Application app) {
-		return new MinaInstance(config, app, null);
-	}
-
 	public static MinaControl newInstance(MinaConfig config, Application app, ScheduledThreadPoolExecutor executor) {
 		return new MinaInstance(config, app, executor);
 	}

@@ -3,12 +3,12 @@ package com.robonobo.mina.escrow;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.robonobo.common.concurrent.Attempt;
 import com.robonobo.core.api.proto.CoreApi.Node;
 import com.robonobo.mina.instance.MinaInstance;
 import com.robonobo.mina.message.proto.MinaProtocol.AdvEscrow;
 import com.robonobo.mina.message.proto.MinaProtocol.QueryEscrow;
 import com.robonobo.mina.network.ControlConnection;
-import com.robonobo.mina.util.Attempt;
 
 /**
  * Handles use of escrow servers

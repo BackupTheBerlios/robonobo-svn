@@ -256,6 +256,12 @@ public class NetworkMgr {
 		}
 	}
 
+	public void setHandoverHandler(HandoverHandler handler) {
+		for (EndPointMgr epMgr : endPointMgrs) {
+			epMgr.setHandoverHandler(handler);
+		}
+	}
+
 	private class LocateNodesRunner extends CatchingRunnable {
 		public LocateNodesRunner() {
 			super("NodeLocator");

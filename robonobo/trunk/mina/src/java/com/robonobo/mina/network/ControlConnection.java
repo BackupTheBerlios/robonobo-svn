@@ -19,6 +19,7 @@ import org.apache.commons.logging.Log;
 import com.google.protobuf.GeneratedMessage;
 import com.robonobo.common.async.PushDataChannel;
 import com.robonobo.common.async.PushDataReceiver;
+import com.robonobo.common.concurrent.Attempt;
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.dlugosz.Dlugosz;
 import com.robonobo.common.io.ByteBufferInputStream;
@@ -33,7 +34,6 @@ import com.robonobo.mina.message.proto.MinaProtocol.Bye;
 import com.robonobo.mina.message.proto.MinaProtocol.Hello;
 import com.robonobo.mina.message.proto.MinaProtocol.Ping;
 import com.robonobo.mina.message.proto.MinaProtocol.Pong;
-import com.robonobo.mina.util.Attempt;
 import com.robonobo.mina.util.LocalConnHelper;
 import com.robonobo.mina.util.MinaConnectionException;
 /**
@@ -428,7 +428,7 @@ public class ControlConnection implements PushDataReceiver {
 		private String closeReason;
 
 		public CloseCCAttempt(String closeReason) {
-			super(mina, mina.getConfig().getMessageTimeout() * 1000, "CloseCC-" + nodeId);
+			super(mina.getExecutor(), mina.getConfig().getMessageTimeout() * 1000, "CloseCC-" + nodeId);
 			this.closeReason = closeReason;
 		}
 
@@ -545,7 +545,7 @@ public class ControlConnection implements PushDataReceiver {
 		String msgName;
 
 		public MessageAttempt(String msgName, int timeoutSecs, String attemptName) {
-			super(mina, timeoutSecs * 1000, attemptName);
+			super(mina.getExecutor(), timeoutSecs * 1000, attemptName);
 			this.msgName = msgName;
 		}
 

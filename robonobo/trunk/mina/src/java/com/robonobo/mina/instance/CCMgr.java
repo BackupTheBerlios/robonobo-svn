@@ -12,6 +12,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 
 import com.google.protobuf.GeneratedMessage;
+import com.robonobo.common.concurrent.Attempt;
 import com.robonobo.core.api.proto.CoreApi.EndPoint;
 import com.robonobo.core.api.proto.CoreApi.Node;
 import com.robonobo.mina.external.ConnectedNode;
@@ -22,7 +23,6 @@ import com.robonobo.mina.network.BCPair;
 import com.robonobo.mina.network.ControlConnection;
 import com.robonobo.mina.network.StreamConnectionFactory;
 import com.robonobo.mina.stream.StreamMgr;
-import com.robonobo.mina.util.Attempt;
 import com.robonobo.mina.util.MinaConnectionException;
 
 /**
@@ -477,7 +477,7 @@ public class CCMgr {
 
 		public ConnectAttempt(int timeoutSecs, Node node, EndPoint tryingEp, List<EndPoint> triedEps,
 				boolean sendReqConnIfFail) {
-			super(mina, timeoutSecs * 1000, "ConnectAttempt");
+			super(mina.getExecutor(), timeoutSecs * 1000, "ConnectAttempt");
 			this.node = node;
 			nodeId = node.getId();
 			this.tryingEp = tryingEp;

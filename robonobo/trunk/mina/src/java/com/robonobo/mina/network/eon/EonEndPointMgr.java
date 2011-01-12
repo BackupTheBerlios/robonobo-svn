@@ -1,44 +1,38 @@
 package com.robonobo.mina.network.eon;
 
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
+import java.io.IOException;
+import java.net.*;
 import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.robonobo.common.concurrent.CatchingRunnable;
+import com.robonobo.common.async.PushDataReceiver;
+import com.robonobo.common.util.NetUtil;
 import com.robonobo.core.api.proto.CoreApi.EndPoint;
 import com.robonobo.core.api.proto.CoreApi.Node;
-import com.robonobo.eon.DEONConnection;
-import com.robonobo.eon.DEONPacket;
-import com.robonobo.eon.EONConnectionEvent;
-import com.robonobo.eon.EONException;
-import com.robonobo.eon.EONManager;
-import com.robonobo.eon.EonSocketAddress;
-import com.robonobo.eon.SEONConnection;
-import com.robonobo.eon.SEONConnectionChannel;
-import com.robonobo.eon.SEONConnectionListener;
+import com.robonobo.eon.*;
+import com.robonobo.mina.external.HandoverHandler;
 import com.robonobo.mina.external.MinaException;
 import com.robonobo.mina.external.node.EonEndPoint;
 import com.robonobo.mina.instance.MinaInstance;
-import com.robonobo.mina.network.ControlConnection;
-import com.robonobo.mina.network.EndPointMgr;
-import com.robonobo.mina.network.RemoteNodeHandler;
+import com.robonobo.mina.network.*;
 import com.robonobo.mina.util.MinaConnectionException;
 
 public class EonEndPointMgr implements EndPointMgr {
 	private static final int LISTENER_EON_PORT = 23;
 	private static final int LOCAL_LISTENER_EON_PORT = 17;
+	private static final int HANDOVER_EON_PORT = 1;
 	private MinaInstance mina;
 	private EonEndPoint myListenEp;
 	private EonEndPoint gatewayEp;
 	private Log log;
 	private EONManager eonMgr;
 	private SEONConnection listenConn;
-	private Thread localNodesThread;
+	private LocalNodesListener localNodesListener;
+	private HandoverListener handoverListener;
+	private HandoverHandler handoverHandler;
 	boolean localListenerReady = false;
 
 	public EonEndPointMgr() {
@@ -55,21 +49,25 @@ public class EonEndPointMgr implements EndPointMgr {
 		eonMgr = new EONManager("mina", mina.getExecutor(), udpPortToListen);
 		eonMgr.setMaxOutboundBps(mina.getConfig().getMaxOutboundBps());
 		if (mina.getConfig().getGatewayAddress() != null)
-			gatewayEp = new EonEndPoint(InetAddress.getByName(mina.getConfig().getGatewayAddress()), mina.getConfig().getGatewayUdpPort(), LISTENER_EON_PORT);
+			gatewayEp = new EonEndPoint(InetAddress.getByName(mina.getConfig().getGatewayAddress()), mina.getConfig()
+					.getGatewayUdpPort(), LISTENER_EON_PORT);
 		log.info("Starting Eon endpoint on " + myListenEp);
 		eonMgr.start();
 		listenConn = eonMgr.createSEONConnection();
 		listenConn.addListener(new IncomingConnectionListener());
-		listenConn.bind(mina.getConfig().getListenEonPort());
+		listenConn.bind(LISTENER_EON_PORT);
 		if (mina.getConfig().getLocateLocalNodes()) {
-			localNodesThread = new Thread(new LocalNodesListener());
-			localNodesThread.start();
+			localNodesListener = new LocalNodesListener();
+			localNodesListener.start();
 		}
+		handoverListener = new HandoverListener();
+		handoverListener.start();
 	}
 
 	public void stop() {
-		if (localNodesThread != null)
-			localNodesThread.interrupt();
+		handoverListener.stop();
+		if (localNodesListener != null)
+			localNodesListener.stop();
 		log.info("Shutting down Eon endpoint on " + myListenEp);
 		listenConn.close();
 		eonMgr.stop();
@@ -77,7 +75,7 @@ public class EonEndPointMgr implements EndPointMgr {
 
 	public boolean canConnectTo(Node node) {
 		for (EndPoint ep : node.getEndPointList()) {
-			if(EonEndPoint.isEonUrl(ep.getUrl()))
+			if (EonEndPoint.isEonUrl(ep.getUrl()))
 				return true;
 		}
 		return false;
@@ -98,12 +96,15 @@ public class EonEndPointMgr implements EndPointMgr {
 				try {
 					log.info("Connecting to node " + node.getId() + " on " + theirEp.getUrl());
 					SEONConnection newConn = eonMgr.createSEONConnection();
-					EonSocketAddress theirSockAddr = new EonSocketAddress(theirEp.getAddress(), theirEp.getUdpPort(), theirEp.getEonPort());
+					EonSocketAddress theirSockAddr = new EonSocketAddress(theirEp.getAddress(), theirEp.getUdpPort(),
+							theirEp.getEonPort());
 					newConn.connect(theirSockAddr);
 					EonSocketAddress mySockAddr = newConn.getLocalSocketAddress();
-					EonEndPoint myEp = new EonEndPoint(mySockAddr.getAddress(), mySockAddr.getUdpPort(), mySockAddr.getEonPort());
+					EonEndPoint myEp = new EonEndPoint(mySockAddr.getAddress(), mySockAddr.getUdpPort(),
+							mySockAddr.getEonPort());
 					EonConnectionFactory scm = new EonConnectionFactory(eonMgr, mina);
-					ControlConnection cc = new ControlConnection(mina, node, myEp.toMsg(), theirEp.toMsg(), newConn, scm);
+					ControlConnection cc = new ControlConnection(mina, node, myEp.toMsg(), theirEp.toMsg(), newConn,
+							scm);
 					return cc;
 				} catch (EONException e) {
 					log.error("Error creating eon control connection to " + theirEp);
@@ -154,7 +155,8 @@ public class EonEndPointMgr implements EndPointMgr {
 			DatagramSocket sock = new DatagramSocket();
 			int locatorPort = mina.getConfig().getLocalLocatorUdpPort();
 			log.debug("Locating local nodes on UDP port " + locatorPort);
-			EonSocketAddress sourceEp = new EonSocketAddress(myListenEp.getAddress(), myListenEp.getUdpPort(), myListenEp.getEonPort());
+			EonSocketAddress sourceEp = new EonSocketAddress(myListenEp.getAddress(), myListenEp.getUdpPort(),
+					myListenEp.getEonPort());
 			EonSocketAddress destEp = new EonSocketAddress("255.255.255.255", locatorPort, LOCAL_LISTENER_EON_PORT);
 			Node myLocalNodeDesc = mina.getNetMgr().getLocalNodeDesc();
 			ByteBuffer payload = ByteBuffer.wrap(myLocalNodeDesc.toByteArray());
@@ -165,7 +167,8 @@ public class EonEndPointMgr implements EndPointMgr {
 			byte[] pktBytes = new byte[buf.limit()];
 			System.arraycopy(buf.array(), 0, pktBytes, 0, buf.limit());
 			sock.setBroadcast(true);
-			sock.send(new DatagramPacket(pktBytes, pktBytes.length, InetAddress.getByName("255.255.255.255"), locatorPort));
+			sock.send(new DatagramPacket(pktBytes, pktBytes.length, InetAddress.getByName("255.255.255.255"),
+					locatorPort));
 			sock.close();
 		} catch (Exception e) {
 			log.error("Caught " + e.getClass().getName() + " when locating local nodes: " + e.getMessage());
@@ -176,12 +179,18 @@ public class EonEndPointMgr implements EndPointMgr {
 	public void configUpdated() {
 		eonMgr.setMaxOutboundBps(mina.getConfig().getMaxOutboundBps());
 	}
-	
-	private class LocalNodesListener extends CatchingRunnable {
+
+	@Override
+	public void setHandoverHandler(HandoverHandler handler) {
+		handoverHandler = handler;
+	}
+
+	private class LocalNodesListener implements PushDataReceiver {
 		private DEONConnection conn;
 
-		public void doRun() {
+		public void start() {
 			conn = eonMgr.createDEONConnection();
+			conn.setDataReceiver(this);
 			try {
 				conn.bind(LOCAL_LISTENER_EON_PORT);
 			} catch (EONException e) {
@@ -190,28 +199,18 @@ public class EonEndPointMgr implements EndPointMgr {
 			}
 			localListenerReady = true;
 			log.debug("Listening for local nodes");
-			while (true) {
-				try {
-					Object[] arr = conn.read();
-					ByteBuffer buf = (ByteBuffer) arr[0];
-					// EonSocketAddress fromSockAddr = (EonSocketAddress)
-					// arr[1];
-					handleData(buf);
-				} catch (InterruptedException e) {
-					log.debug("LocalNodeListener caught interruptedexception: exiting");
-					conn.close();
-					return;
-				} catch (EONException e) {
-					log.error("LocalNodeListener caught exception", e);
-				}
-			}
 		}
 
-		public void handleData(ByteBuffer buf) {
+		public void stop() {
+			conn.close();
+		}
+		
+		@Override
+		public void receiveData(ByteBuffer data, Object metadata) throws IOException {
 			try {
-				Node otherNode = Node.parseFrom(buf.array());
-				if(!otherNode.getLocal()) {
-					log.error("Received local node advert with non-local descriptor: "+new String(buf.array()));
+				Node otherNode = Node.parseFrom(data.array());
+				if (!otherNode.getLocal()) {
+					log.error("Received local node advert with non-local descriptor: " + new String(data.array()));
 					return;
 				}
 				if (otherNode.getId().equals(mina.getMyNodeId().toString()))
@@ -230,6 +229,55 @@ public class EonEndPointMgr implements EndPointMgr {
 				log.error("Error: XML parse error when receiving local node advert", e);
 			}
 		}
+		@Override
+		public void providerClosed() {
+			// Do nothing
+		}
+	}
+
+	private class HandoverListener implements PushDataReceiver {
+		private DEONConnection conn;
+
+		public void start() {
+			conn = eonMgr.createDEONConnection();
+			conn.setDataReceiver(this);
+			try {
+				conn.bind(HANDOVER_EON_PORT);
+			} catch (EONException e) {
+				log.fatal("ERROR: caught EONException while listening for local nodes", e);
+				return;
+			}
+			
+		}
+
+		public void stop() {
+			conn.close();
+		}
+		
+		@Override
+		public void receiveData(ByteBuffer data, Object metadata) throws IOException {
+			EonSocketAddress theirSockAddr = (EonSocketAddress) metadata;
+			if(!NetUtil.getLocalInetAddresses(true).contains(theirSockAddr.getAddress())) {
+				log.error("SECURITY ERROR: Illegal handover attempt from non-local address "+theirSockAddr.getAddress().getHostAddress());
+				return;
+			}
+			String msg = new String(data.array(), data.arrayOffset(), data.remaining());
+			String retMsg;
+			if(handoverHandler == null)
+				retMsg = "1:No handler was available to accept the handover - perhaps rbnb is running in console mode?";
+			else
+				retMsg = handoverHandler.gotHandover(msg);
+			log.debug("Received handover msg '"+msg+"', sending response: "+retMsg);
+			try {
+				conn.sendTo(theirSockAddr, retMsg.getBytes());
+			} catch (EONException e) {
+				log.error("Error sending handover response", e);
+			}
+		}
+		@Override
+		public void providerClosed() {
+			// Do nothing
+		}
 	}
 
 	private class IncomingConnectionListener implements SEONConnectionListener {
@@ -246,10 +294,13 @@ public class EonEndPointMgr implements EndPointMgr {
 		public void onNewSEONConnection(EONConnectionEvent event) {
 			SEONConnection conn = (SEONConnection) event.getConnection();
 			EonSocketAddress localSockAddr = conn.getLocalSocketAddress();
-			EonEndPoint myEp = new EonEndPoint(localSockAddr.getAddress(), localSockAddr.getUdpPort(), localSockAddr.getEonPort());
+			EonEndPoint myEp = new EonEndPoint(localSockAddr.getAddress(), localSockAddr.getUdpPort(),
+					localSockAddr.getEonPort());
 			EonSocketAddress remoteSockAddr = conn.getRemoteSocketAddress();
-			EonEndPoint theirEp = new EonEndPoint(remoteSockAddr.getAddress(), remoteSockAddr.getUdpPort(), remoteSockAddr.getEonPort());
-			RemoteNodeHandler handler = new RemoteNodeHandler(mina, conn, myEp.toMsg(), theirEp.toMsg(), connectionFactory);
+			EonEndPoint theirEp = new EonEndPoint(remoteSockAddr.getAddress(), remoteSockAddr.getUdpPort(),
+					remoteSockAddr.getEonPort());
+			RemoteNodeHandler handler = new RemoteNodeHandler(mina, conn, myEp.toMsg(), theirEp.toMsg(),
+					connectionFactory);
 			handler.handle();
 		}
 	}

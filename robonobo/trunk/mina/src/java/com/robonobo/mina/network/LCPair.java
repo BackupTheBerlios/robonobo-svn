@@ -10,6 +10,7 @@ import java.util.SortedSet;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import com.robonobo.common.concurrent.Attempt;
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.util.FileUtil;
 import com.robonobo.mina.agoric.AuctionState;
@@ -20,7 +21,6 @@ import com.robonobo.mina.message.proto.MinaProtocol.StartSource;
 import com.robonobo.mina.message.proto.MinaProtocol.StopSource;
 import com.robonobo.mina.message.proto.MinaProtocol.StreamStatus;
 import com.robonobo.mina.stream.StreamMgr;
-import com.robonobo.mina.util.Attempt;
 import com.robonobo.mina.util.MinaConnectionException;
 
 /**
@@ -77,7 +77,7 @@ public class LCPair extends ConnectionPair {
 			mina.getBuyMgr().newAuctionState(cc.getNodeId(), new AuctionState(lastSourceStat.getAuctionState()));
 			// Set our timeout to 8 * command timeout, to allow time to open an
 			// auction and for bids to go to and fro
-			Attempt a = new Attempt(mina, 8 * mina.getConfig().getMessageTimeout() * 1000, "lcp-" + sm.getStreamId()
+			Attempt a = new Attempt(mina.getExecutor(), 8 * mina.getConfig().getMessageTimeout() * 1000, "lcp-" + sm.getStreamId()
 					+ "-" + nodeId) {
 				protected void onSuccess() {
 					// DEBUG
@@ -344,7 +344,7 @@ public class LCPair extends ConnectionPair {
 		int statusIdx;
 
 		public PageAttempt(int timeoutMs, long pageNum, long startTime, int statusIdx) {
-			super(mina, timeoutMs, "ReqPage-" + pageNum);
+			super(mina.getExecutor(), timeoutMs, "ReqPage-" + pageNum);
 			this.pageNum = pageNum;
 			this.startTime = startTime;
 			this.statusIdx = statusIdx;

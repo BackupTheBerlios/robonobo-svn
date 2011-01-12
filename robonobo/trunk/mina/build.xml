@@ -7,7 +7,6 @@
 			<classpath>
 				<pathelement path="../api/target/classes"/>
 				<pathelement path="../common/target/classes"/>
-				<pathelement path="../serialization/target/classes"/>
 				<pathelement path="../pageio/target/classes"/>
 				<pathelement path="../eon/target/classes"/>
 				<fileset dir="lib">

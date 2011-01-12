@@ -30,7 +30,7 @@ import com.robonobo.mina.util.Tagline;
 
 public class MinaInstance implements MinaControl {
 	public static final int MINA_PROTOCOL_VERSION = 1;
-	
+
 	private String myNodeId;
 	private final Log log;
 	private final MinaConfig config;
@@ -48,7 +48,6 @@ public class MinaInstance implements MinaControl {
 	private final BadNodeList badNodes;
 	private final EventMgr eventMgr;
 	private StreamAdvertiser streamAdvertiser;
-	private final boolean myExecutor;
 	private final Application implementingApplication;
 	private boolean started = false;
 	private Agorics myAgorics;
@@ -58,26 +57,25 @@ public class MinaInstance implements MinaControl {
 		// Make sure we know about exceptions
 		SafetyNet.addListener(new MinaExceptionListener());
 		log = getLogger(getClass());
-		if (config.getNodeId() != null) {
-			myNodeId = config.getNodeId();
-		} else {
-			myNodeId = generateNodeId();
-		}
 		this.config = config;
 		this.executor = executor;
-		myExecutor = (executor == null);
+		if (config.getNodeId() != null)
+			myNodeId = config.getNodeId();
+		else
+			myNodeId = generateNodeId();
+		log.fatal("Mina running on udp port " + config.getListenUdpPort() + ", node id: " + myNodeId);
 		messageMgr = new MessageMgr(this);
 		ccm = new CCMgr(this);
 		netMgr = new NetworkMgr(this);
 		smRegister = new SMRegister(this);
-		if(config.isSupernode())
+		if (config.isSupernode())
 			supernodeMgr = new SupernodeMgr(this);
-		if(config.isAgoric()) {
+		if (config.isAgoric()) {
 			sellMgr = new SellMgr(this);
 			buyMgr = new BuyMgr(this);
 			escrowMgr = new EscrowMgr(this);
 		}
-		if(config.getRunEscrowProvider()) {
+		if (config.getRunEscrowProvider()) {
 			escrowProvider = new EscrowProvider(this);
 		}
 		badNodes = new BadNodeList(this);
@@ -85,17 +83,11 @@ public class MinaInstance implements MinaControl {
 		sourceMgr = new SourceMgr(this);
 		streamAdvertiser = new StreamAdvertiser(this);
 		implementingApplication = application;
-		this.executor = executor;
 	}
 
 	private String generateNodeId() {
-		// We take the hyphens out... it's only a couple of chars, but there are
-		// a lot of node ids flying around
-		UUIDGenerator gen = UUIDGenerator.getInstance();
-		UUID uuid = gen.generateRandomBasedUUID();
-		String result = uuid.toString().replace("-", "");
-		log.fatal("Mina generated my node id: "+result);
-		return result;
+		UUID uuid = UUIDGenerator.getInstance().generateRandomBasedUUID();
+		return uuid.toString().replace("-", "");
 	}
 
 	/**
@@ -110,9 +102,6 @@ public class MinaInstance implements MinaControl {
 		}
 		ccm.abort();
 		netMgr.stop();
-		if (myExecutor) {
-			executor.shutdownNow();
-		}
 		started = false;
 		log.fatal("Mina instance stopped");
 	}
@@ -151,7 +140,7 @@ public class MinaInstance implements MinaControl {
 			sm = getSmRegister().getOrCreateSM(streamId, pb);
 		else
 			sm.setPageBuffer(pb);
-		if(sv != null)
+		if (sv != null)
 			sm.setStreamVelocity(sv);
 		sm.startReception();
 		getEventMgr().fireReceptionStarted(streamId);
@@ -184,37 +173,37 @@ public class MinaInstance implements MinaControl {
 
 	public Set<String> getSources(String streamId) {
 		StreamMgr sm = smRegister.getSM(streamId);
-		if(sm == null)
+		if (sm == null)
 			return new HashSet<String>();
 		return sm.getSourceNodeIds();
 	}
-	
+
 	public int numSources(String streamId) {
 		StreamMgr sm = smRegister.getSM(streamId);
-		if(sm == null)
+		if (sm == null)
 			return 0;
 		return sm.numSources();
 	}
-	
+
 	public List<String> getConnectedSources(String streamId) {
 		StreamMgr sm = smRegister.getSM(streamId);
-		if(sm == null)
+		if (sm == null)
 			return new ArrayList<String>();
 		return sm.getConnectedSources();
 	}
-	
+
 	public boolean isConnectedToSupernode() {
 		return ccm.haveSupernode();
 	}
-	
+
 	public List<String> getMyEndPointUrls() {
 		List<String> result = new ArrayList<String>();
 		for (EndPointMgr epMgr : getNetMgr().getEndPointMgrs()) {
 			EndPoint localEp = epMgr.getLocalEndPoint();
-			if(localEp != null)
+			if (localEp != null)
 				result.add(localEp.getUrl());
 			EndPoint publicEp = epMgr.getPublicEndPoint();
-			if(publicEp != null)
+			if (publicEp != null)
 				result.add(publicEp.getUrl());
 		}
 		return result;
@@ -223,7 +212,7 @@ public class MinaInstance implements MinaControl {
 	public MessageMgr getMessageMgr() {
 		return messageMgr;
 	}
-	
+
 	public EventMgr getEventMgr() {
 		return eventMgr;
 	}
@@ -275,9 +264,6 @@ public class MinaInstance implements MinaControl {
 	public void start() throws MinaException {
 		try {
 			log.info(Tagline.getTagLine());
-			if (myExecutor) {
-				executor = new ScheduledThreadPoolExecutor(config.getThreadPoolSize());
-			}
 			netMgr.start();
 			sourceMgr.start();
 			started = true;
@@ -305,9 +291,6 @@ public class MinaInstance implements MinaControl {
 		ccm.stop();
 		netMgr.stop();
 		badNodes.clear();
-		if (myExecutor) {
-			executor.shutdownNow();
-		}
 		started = false;
 		log.fatal("Mina instance stopped");
 		eventMgr.fireMinaStopped();
@@ -325,7 +308,7 @@ public class MinaInstance implements MinaControl {
 
 	public void removeFoundSourceListener(String streamId, FoundSourceListener listener) {
 		StreamMgr sm = smRegister.getSM(streamId);
-		if(sm != null) {
+		if (sm != null) {
 			sm.removeFoundSourceListener(listener);
 		}
 	}
@@ -342,7 +325,8 @@ public class MinaInstance implements MinaControl {
 
 	public Map<String, TransferSpeed> getTransferSpeeds() {
 		Map<String, TransferSpeed> result = new HashMap<String, TransferSpeed>();
-		// TODO Need to refactor this!  Say we're sharing 500 tracks, this is creating a 500-element array and copying the SMs into it every second - and then every SM makes a copy of its broadcast conns and adds that...
+		// TODO Need to refactor this! Say we're sharing 500 tracks, this is creating a 500-element array and copying
+		// the SMs into it every second - and then every SM makes a copy of its broadcast conns and adds that...
 		for (StreamMgr sm : smRegister.getSMs()) {
 			int upload = sm.getBroadcastingFlowRate();
 			int download = sm.getReceivingFlowRate();
@@ -355,19 +339,19 @@ public class MinaInstance implements MinaControl {
 	public StreamAdvertiser getStreamAdvertiser() {
 		return streamAdvertiser;
 	}
-	
+
 	public void clearStreamPriorities() {
 		for (StreamMgr sm : smRegister.getSMs()) {
 			sm.setPriority(0);
 		}
 	}
-	
+
 	/**
 	 * The stream priority dictates the importance of streams relative to each other (higher is more important)
 	 */
 	public void setStreamPriority(String streamId, int priority) {
 		StreamMgr sm = smRegister.getSM(streamId);
-		if(sm != null)
+		if (sm != null)
 			sm.setPriority(priority);
 	}
 
@@ -376,28 +360,28 @@ public class MinaInstance implements MinaControl {
 	 */
 	public void setStreamVelocity(String streamId, StreamVelocity sv) {
 		StreamMgr sm = smRegister.getSM(streamId);
-		if(sm != null)
+		if (sm != null)
 			sm.setStreamVelocity(sv);
 	}
-	
+
 	public void setAllStreamVelocitiesExcept(String streamId, StreamVelocity sv) {
 		StreamMgr[] sms = smRegister.getSMs();
 		for (StreamMgr sm : sms) {
-			if(sm.isReceiving() && !sm.getStreamId().equals(streamId))
+			if (sm.isReceiving() && !sm.getStreamId().equals(streamId))
 				sm.setStreamVelocity(sv);
 		}
 	}
-	
+
 	@Override
 	public void addNodeFilter(NodeFilter nf) {
 		netMgr.addNodeFilter(nf);
 	}
-	
+
 	@Override
 	public void removeNodeFilter(NodeFilter nf) {
 		netMgr.removeNodeFilter(nf);
 	}
-	
+
 	public void setCurrencyClient(CurrencyClient client) {
 		curClient = client;
 		Agorics.Builder ab = Agorics.newBuilder();
@@ -407,18 +391,23 @@ public class MinaInstance implements MinaControl {
 		ab.setIncrement(client.getBidIncrement());
 		ab.setMinTopRate(client.getMinTopRate());
 		myAgorics = ab.build();
-		if(escrowProvider != null)
+		if (escrowProvider != null)
 			escrowProvider.setCurrencyClient(client);
 	}
-	
+
 	public void configUpdated() {
 		netMgr.configUpdated();
+	}
+
+	@Override
+	public void setHandoverHandler(HandoverHandler handler) {
+		netMgr.setHandoverHandler(handler);
 	}
 	
 	public CurrencyClient getCurrencyClient() {
 		return curClient;
 	}
-	
+
 	public SellMgr getSellMgr() {
 		return sellMgr;
 	}
@@ -430,7 +419,7 @@ public class MinaInstance implements MinaControl {
 	public SourceMgr getSourceMgr() {
 		return sourceMgr;
 	}
-	
+
 	public Agorics getMyAgorics() {
 		return myAgorics;
 	}

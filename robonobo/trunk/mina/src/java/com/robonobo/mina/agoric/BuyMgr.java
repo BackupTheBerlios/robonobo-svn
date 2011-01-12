@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.logging.Log;
 
 import com.google.protobuf.ByteString;
+import com.robonobo.common.concurrent.Attempt;
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.core.api.CurrencyException;
@@ -30,7 +31,6 @@ import com.robonobo.mina.message.proto.MinaProtocol.ReceivedBid;
 import com.robonobo.mina.message.proto.MinaProtocol.TopUp;
 import com.robonobo.mina.network.ControlConnection;
 import com.robonobo.mina.network.LCPair;
-import com.robonobo.mina.util.Attempt;
 
 /**
  * Handles accounts we have with other nodes, and their auction states
@@ -112,7 +112,7 @@ public class BuyMgr {
 		if (haveActiveAccount(nodeId))
 			openBidding(nodeId, openingBid, onBidSuccess);
 		else {
-			Attempt openAcctAttempt = new Attempt(mina, 0, "openAcct-" + nodeId) {
+			Attempt openAcctAttempt = new Attempt(mina.getExecutor(), 0, "openAcct-" + nodeId) {
 				protected void onSuccess() {
 					openBidding(nodeId, openingBid, onBidSuccess);
 				}
@@ -218,7 +218,7 @@ public class BuyMgr {
 	}
 
 	private void setupEscrowAccount(final String nodeId, final String escrowProvId, final Attempt onAcctCreation) {
-		Attempt a = new Attempt(mina, mina.getConfig().getMessageTimeout(), "escrow-" + nodeId) {
+		Attempt a = new Attempt(mina.getExecutor(), mina.getConfig().getMessageTimeout(), "escrow-" + nodeId) {
 			protected void onSuccess() {
 				// We're now connected to the escrow provider
 				double cashToSend = mina.getCurrencyClient().getOpeningBalance();

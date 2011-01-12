@@ -18,8 +18,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.logging.Log;
 
 import com.google.protobuf.ByteString;
-import com.robonobo.common.concurrent.CatchingRunnable;
-import com.robonobo.common.concurrent.Timeout;
+import com.robonobo.common.concurrent.*;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.core.api.CurrencyClient;
 import com.robonobo.core.api.CurrencyException;
@@ -39,7 +38,6 @@ import com.robonobo.mina.message.proto.MinaProtocol.SourceStatus;
 import com.robonobo.mina.message.proto.MinaProtocol.StreamStatus;
 import com.robonobo.mina.network.ControlConnection;
 import com.robonobo.mina.stream.StreamMgr;
-import com.robonobo.mina.util.Attempt;
 
 /**
  * Handles auctions of this node's bandwidth, and accounts that others have with us

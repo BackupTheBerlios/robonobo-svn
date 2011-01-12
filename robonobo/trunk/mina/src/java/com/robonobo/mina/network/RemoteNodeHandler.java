@@ -7,6 +7,7 @@ import org.apache.commons.logging.Log;
 
 import com.robonobo.common.async.PushDataChannel;
 import com.robonobo.common.async.PushDataReceiver;
+import com.robonobo.common.concurrent.Attempt;
 import com.robonobo.common.dlugosz.Dlugosz;
 import com.robonobo.common.io.ByteBufferInputStream;
 import com.robonobo.core.api.proto.CoreApi.EndPoint;
@@ -14,7 +15,6 @@ import com.robonobo.mina.instance.MinaInstance;
 import com.robonobo.mina.message.HelloHelper;
 import com.robonobo.mina.message.handlers.HelloHandler;
 import com.robonobo.mina.message.proto.MinaProtocol.Hello;
-import com.robonobo.mina.util.Attempt;
 import com.robonobo.mina.util.MinaConnectionException;
 
 /**
@@ -115,7 +115,7 @@ public class RemoteNodeHandler implements PushDataReceiver {
 	
 	private class HandleAttempt extends Attempt {
 		HandleAttempt(int timeoutSecs) {
-			super(mina, timeoutSecs*1000, "ConnectHandleAttempt");
+			super(mina.getExecutor(), timeoutSecs*1000, "ConnectHandleAttempt");
 		}
 
 		public void onTimeout() {
