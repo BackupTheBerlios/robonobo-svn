@@ -1,3 +1,4 @@
+
 package com.robonobo.core.service;
 
 import static com.robonobo.common.util.TimeUtil.*;
@@ -100,7 +101,7 @@ public class LibraryService extends AbstractService implements UserPlaylistListe
 				break nextFriend;
 			}
 			for (Long plId : friend.getPlaylistIds()) {
-				Playlist pl = usrs.getPlaylist(plId);
+				Playlist pl = usrs.getExistingPlaylist(plId);
 				if (pl == null) {
 					gotEveryone = false;
 					break nextFriend;

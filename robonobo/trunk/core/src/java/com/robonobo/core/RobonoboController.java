@@ -400,7 +400,7 @@ public class RobonoboController {
 	}
 
 	public Playlist getPlaylist(long playlistId) {
-		return inst.getUsersService().getPlaylist(playlistId);
+		return inst.getUsersService().getOrFetchPlaylist(playlistId);
 	}
 
 	public Playlist getMyPlaylistByTitle(String title) {
@@ -520,6 +520,10 @@ public class RobonoboController {
 	
 	public String getUpdateMessage() throws RobonoboException {
 		return inst.getMetadataService().getUpdateMessage();
+	}
+	
+	public void setHandoverHandler(HandoverHandler handler) {
+		inst.getMina().setHandoverHandler(handler);
 	}
 	
 	/**

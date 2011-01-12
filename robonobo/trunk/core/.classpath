@@ -11,7 +11,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/common"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/api"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/pageio"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/serialization"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/wang-client"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

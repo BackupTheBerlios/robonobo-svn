@@ -287,15 +287,31 @@ public class UserService extends AbstractService {
 		return usersById.get(userId);
 	}
 
-	public synchronized Playlist getPlaylist(long playlistId) {
+	public synchronized Playlist getExistingPlaylist(long playlistId) {
 		return playlists.get(playlistId);
 	}
 
+	public Playlist getOrFetchPlaylist(long plId) {
+		Playlist p = getExistingPlaylist(plId);
+		if(p != null)
+			return p;
+		try {
+			p = getUpdatedPlaylist(plId);
+		} catch (Exception e) {
+			log.error("Error fetching playlist with pId "+plId, e);
+			return null;
+		}
+		synchronized (this) {
+			playlists.put(plId, p);
+		}
+		return p;
+	}
+	
 	public synchronized Playlist getMyPlaylistByTitle(String title) {
 		Long plId = myPlaylistIdsByTitle.get(title);
 		if (plId == null)
 			return null;
-		return getPlaylist(plId);
+		return getExistingPlaylist(plId);
 	}
 
 	private User getUpdatedUser(long userId) throws IOException, SerializationException {
@@ -367,7 +383,7 @@ public class UserService extends AbstractService {
 					if ("true".equalsIgnoreCase(pc.getItem("iTunesExport"))) {
 						if (!contPls.containsKey(u))
 							contPls.put(u, new ArrayList<Playlist>());
-						contPls.get(u).add(getPlaylist(plId));
+						contPls.get(u).add(getExistingPlaylist(plId));
 					}
 				}
 			}
@@ -468,7 +484,7 @@ public class UserService extends AbstractService {
 				// For shared playlists, don't hit the server again if we already have it - but fire the playlist
 				// changed event so it's added to the friend tree
 				// for this user
-				Playlist p = getPlaylist(playlistId);
+				Playlist p = getExistingPlaylist(playlistId);
 				if (p == null)
 					checkPlaylistUpdate(playlistId);
 				else

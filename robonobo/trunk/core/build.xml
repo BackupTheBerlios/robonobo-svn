@@ -24,7 +24,6 @@
 		<ant dir="../common" inheritall="false" target="compile-all"/>
 		<ant dir="../api" inheritall="false" target="compile-all"/>
 		<ant dir="../pageio" inheritall="false" target="compile-all"/>
-		<ant dir="../serialization" inheritall="false" target="compile-all"/>
 		<ant dir="../eon" inheritall="false" target="compile-all"/>
 		<ant dir="../mina" inheritall="false" target="compile-all"/>
 		<ant dir="../wang-client" inheritall="false" target="compile-all"/>
@@ -34,7 +33,7 @@
 				<pathelement path="../api/target/classes"/>
 				<pathelement path="../common/target/classes"/>
 				<pathelement path="../pageio/target/classes"/>
-				<pathelement path="../serialization/target/classes"/>
+				<pathelement path="../eon/target/classes"/>
 				<pathelement path="../mina/target/classes"/>
 				<pathelement path="../wang-client/target/classes"/>
 				<fileset dir="lib">
@@ -89,7 +88,6 @@
 			<fatjar.filesource path="../common/target/classes" relpath="." />
 			<fatjar.filesource path="../api/target/classes" relpath="." />
 			<fatjar.filesource path="../pageio/target/classes" relpath="." />
-			<fatjar.filesource path="../serialization/target/classes" relpath="." />
 			<fatjar.filesource path="../eon/target/classes" relpath="." />
 			<fatjar.filesource path="../mina/target/classes" relpath="." />
 			<fatjar.filesource path="../core/target/classes" relpath="." />
@@ -117,7 +115,6 @@
 		<ant dir="../common" inheritall="false" target="clean"/>
 		<ant dir="../api" inheritall="false" target="clean"/>
 		<ant dir="../pageio" inheritall="false" target="clean"/>
-		<ant dir="../serialization" inheritall="false" target="clean"/>
 		<ant dir="../eon" inheritall="false" target="clean"/>
 		<ant dir="../mina" inheritall="false" target="clean"/>
 	</target>

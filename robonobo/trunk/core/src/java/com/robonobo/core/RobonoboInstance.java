@@ -174,6 +174,15 @@ public class RobonoboInstance implements Robonobo {
 				throw new IOException("Error loading config class " + cfgClassName);
 			}
 		}
+		
+		// First time through, set the default download dir
+		if (getConfig().getDownloadDirectory() == null) {
+			File dd = Platform.getPlatform().getDefaultDownloadDirectory();
+			dd.mkdirs();
+			String ddPath = dd.getAbsolutePath();
+			getConfig().setDownloadDirectory(ddPath);
+		}
+		
 		saveConfig();
 	}
 
