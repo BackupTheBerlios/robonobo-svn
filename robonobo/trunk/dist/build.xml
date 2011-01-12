@@ -143,9 +143,6 @@
 			<fileset dir="../plugin-mp3/src/java">
 				<include name="com/**/*"/>
 			</fileset>
-			<fileset dir="../serialization/src/java">
-				<include name="com/**/*"/>
-			</fileset>
 			<fileset dir="../wang-client/src/java">
 				<include name="**/*"/>
 			</fileset>
