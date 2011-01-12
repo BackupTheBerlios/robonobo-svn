@@ -69,11 +69,6 @@ message LibraryMsg {
 	repeated LibraryTrackMsg track = 2;
 }
 
-// Passed to a running rbnb instance when another instance starts up and hands over
-message HandoverMsg {
-	required string arg = 1;
-}
-
 message InviteMsg {
 	required int64 invite_id = 1;
 	required string email = 2;
