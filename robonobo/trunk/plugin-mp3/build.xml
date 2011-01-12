@@ -9,7 +9,6 @@
 				<pathelement path="../api/target/classes" />
 				<pathelement path="../pageio/target/classes" />
 				<pathelement path="../core/target/classes" />
-				<pathelement path="../serialization/target/classes" />
 				<pathelement path="../mina/bin" />
 				<fileset dir="lib">
 					<include name="**/*.jar" />
