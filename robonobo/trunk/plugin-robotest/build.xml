@@ -12,9 +12,6 @@
 				<pathelement path="../core/target/classes"/>
 				<pathelement path="../mina/target/classes"/>
 				<pathelement path="../console/target/classes"/>
-				<fileset dir="lib">
-					<include name="**/*.jar"/>
-				</fileset>
 				<fileset dir="../common/lib">
 					<include name="**/*.jar"/>
 				</fileset>
