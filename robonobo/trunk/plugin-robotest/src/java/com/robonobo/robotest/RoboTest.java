@@ -23,7 +23,7 @@ import com.robonobo.mina.external.node.EonEndPoint;
 
 public class RoboTest {
 	static int SECS_BETWEEN_DOWNLOADS = 60;
-	static Pattern testFilePat = Pattern.compile("^(\\w+)\\s+(.+)$");
+	static Pattern testFilePat = Pattern.compile("^(\\S+)\\s+(.+)$");
 	private static RoboTest instance;
 	private RobonoboController control;
 	private List<String> streamIds = new ArrayList<String>();
@@ -46,7 +46,7 @@ public class RoboTest {
 		BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(testFile)));
 		String line;
 		while ((line = in.readLine()) != null) {
-			Matcher m = testFilePat.matcher(line);
+			Matcher m = testFilePat.matcher(line.replaceAll("\\s+$", ""));
 			if (!m.matches())
 				throw new SeekInnerCalmException("Format of file must be <streamid> <filepath>");
 			String sid = m.group(1);
@@ -114,7 +114,7 @@ public class RoboTest {
 
 		@Override
 		public void doRun() throws Exception {
-			if(finished()) {
+			if(sidsToDownload.size() == 0) {
 				addDownloadsTask.cancel(false);
 				return;
 			}

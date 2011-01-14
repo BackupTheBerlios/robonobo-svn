@@ -1138,9 +1138,6 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 		// retransmit
 		if (lostQ.size() == 0 && (state == State.SynSent || state == State.SynReceived))
 			return false;
-		// Don't send if we've been silected
-		if (gamma == 0f)
-			return false;
 		// Are we waiting after a pkt loss during SS?
 		if (needToHardRetransmit && currentTimeMillis() < hardRetransmitTime)
 			return false;
@@ -1148,6 +1145,9 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 			return true;
 		if (needToRetransmitFirstPkt || lostQ.size() > 0 || outgoing.available() > 0)
 			return true;
+		// Don't send new data if we've been silenced
+		if (gamma == 0f)
+			return false;
 		// If we are asynchronously sending and we need more data, get
 		// some
 		if (dataProvider != null && outgoing.available() <= MSS) {
@@ -1191,8 +1191,6 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 				log.debug(this + " not sending data, state is " + state);
 			return false;
 		}
-		if (gamma == 0f)
-			return false;
 		// Are we waiting after a pkt loss during SS?
 		if (needToHardRetransmit && currentTimeMillis() < hardRetransmitTime)
 			return false;
@@ -1278,6 +1276,9 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 				}
 				// Don't send any more data if we're waiting to close
 				if (state == State.FinWait || state == State.LastAck)
+					return false;
+				// Don't send any new data if we've been silenced
+				if (gamma == 0f)
 					return false;
 				// If we are asynchronously sending and we need more data, get
 				// some
