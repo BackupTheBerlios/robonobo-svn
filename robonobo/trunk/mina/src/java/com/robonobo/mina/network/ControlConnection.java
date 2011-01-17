@@ -36,6 +36,7 @@ import com.robonobo.mina.message.proto.MinaProtocol.Ping;
 import com.robonobo.mina.message.proto.MinaProtocol.Pong;
 import com.robonobo.mina.util.LocalConnHelper;
 import com.robonobo.mina.util.MinaConnectionException;
+
 /**
  * @syncpriority 60
  */
@@ -78,7 +79,8 @@ public class ControlConnection implements PushDataReceiver {
 	}
 
 	/** Called when we are connecting to a remote endpoint */
-	public ControlConnection(MinaInstance mina, Node nd, EndPoint myEp, EndPoint theirEp, PushDataChannel dataChan, StreamConnectionFactory scf) {
+	public ControlConnection(MinaInstance mina, Node nd, EndPoint myEp, EndPoint theirEp, PushDataChannel dataChan,
+			StreamConnectionFactory scf) {
 		this(mina);
 		nodeDesc = nd;
 		if (isLocal())
@@ -89,7 +91,8 @@ public class ControlConnection implements PushDataReceiver {
 		this.dataChan = dataChan;
 		this.scf = scf;
 		incoming = new ByteBufferInputStream();
-		Hello hello = Hello.newBuilder().setNode(mina.getNetMgr().getDescriptorForTalkingTo(nodeDesc, isLocal())).build();
+		Hello hello = Hello.newBuilder().setNode(mina.getNetMgr().getDescriptorForTalkingTo(nodeDesc, isLocal()))
+				.build();
 		helloAttempt = new MessageAttempt("Hello", mina.getConfig().getMessageTimeout(), "HelloAttempt");
 		helloAttempt.start();
 		sendMessageImmediate("Hello", hello);
@@ -97,7 +100,8 @@ public class ControlConnection implements PushDataReceiver {
 	}
 
 	/** Called when we are responding to a remote request */
-	public ControlConnection(MinaInstance mina, HelloHelper helHelper, StreamConnectionFactory scf) throws MinaConnectionException {
+	public ControlConnection(MinaInstance mina, HelloHelper helHelper, StreamConnectionFactory scf)
+			throws MinaConnectionException {
 		this(mina);
 		nodeDesc = helHelper.getHello().getNode();
 		nodeId = nodeDesc.getId();
@@ -184,6 +188,8 @@ public class ControlConnection implements PushDataReceiver {
 			helloAttempt.cancel();
 		if (pingAttempt != null)
 			pingAttempt.cancel();
+		dataChan.close();
+		closed = true;
 	}
 
 	/**
@@ -315,7 +321,8 @@ public class ControlConnection implements PushDataReceiver {
 		int rnd = new Random().nextInt(20);
 		double var = (pingFreq / 100) * (10 - rnd);
 		pingFreq += var;
-		pingTask = mina.getExecutor().scheduleAtFixedRate(new PingChecker(), (int) pingFreq, (int) pingFreq, TimeUnit.SECONDS);
+		pingTask = mina.getExecutor().scheduleAtFixedRate(new PingChecker(), (int) pingFreq, (int) pingFreq,
+				TimeUnit.SECONDS);
 	}
 
 	/**
@@ -324,7 +331,8 @@ public class ControlConnection implements PushDataReceiver {
 	protected void receiveHello(Hello hello) {
 		if (!hello.getNode().getId().equals(nodeId)) {
 			helloAttempt.failed();
-			log.error("Error: attempting to connect to ID " + nodeId + ", but node claims its ID as " + hello.getNode().getId());
+			log.error("Error: attempting to connect to ID " + nodeId + ", but node claims its ID as "
+					+ hello.getNode().getId());
 			close(true, "Your Node ID is not the one I was expecting");
 			return;
 		}
@@ -396,12 +404,14 @@ public class ControlConnection implements PushDataReceiver {
 	}
 
 	private synchronized boolean isInUse() {
-		return nodeDesc.getSupernode() || mina.getConfig().isSupernode() || isLocal() || lcPairs.size() > 0 || bcPairs.size() > 0;
+		return nodeDesc.getSupernode() || mina.getConfig().isSupernode() || isLocal() || lcPairs.size() > 0
+				|| bcPairs.size() > 0;
 	}
 
 	/**
-	 * Shuts down any pending state we have with the other end, eg currency accounts. Guaranteed to close down after a timeout, whatever happens with state.
-	 * Note: this method will return immediately - check isClosed() to see if the closing process has finished.
+	 * Shuts down any pending state we have with the other end, eg currency accounts. Guaranteed to close down after a
+	 * timeout, whatever happens with state. Note: this method will return immediately - check isClosed() to see if the
+	 * closing process has finished.
 	 */
 	public void closeGracefully(String reason) {
 		// If we have an account with them, or they with us, close it before we
@@ -550,14 +560,20 @@ public class ControlConnection implements PushDataReceiver {
 		}
 
 		public void onTimeout() {
-			log.error("Timeout waiting for node " + nodeId + " to respond to " + msgName + ": Closing connection");
-			close(true, "You timed out responding to my " + msgName);
+			// We might have a simultaneous connection that got through, if so just quit silently
+			if (mina.getCCM().getCCWithId(nodeId) != null) {
+				log.debug("Attempted CC to " + nodeId + " failed, but I see a working connection - continuing");
+				abort();
+			} else {
+				log.error("Timeout waiting for node " + nodeId + " to respond to " + msgName + ": Closing connection");
+				close(true, "You timed out responding to my " + msgName);
+			}
 		}
 	}
 
 	/**
-	 * We read data in 3 states. 1. Read the msg name as a string, null terminated 2. Read a Dlugosz number -
-	 * this is the length of the serialized msg 3. Read the serialized msg as a byte array
+	 * We read data in 3 states. 1. Read the msg name as a string, null terminated 2. Read a Dlugosz number - this is
+	 * the length of the serialized msg 3. Read the serialized msg as a byte array
 	 */
 	public void receiveData(ByteBuffer buf, Object ignoreMe) throws IOException {
 		incoming.addBuffer(buf);
@@ -592,8 +608,8 @@ public class ControlConnection implements PushDataReceiver {
 			} else {
 				// We're reading our msg name - look for a null-terminated string
 				int strSz = incoming.locateNullByte();
-				if(strSz >= 0) {
-					byte[] arr = new byte[strSz+1]; // Read the null itself too
+				if (strSz >= 0) {
+					byte[] arr = new byte[strSz + 1]; // Read the null itself too
 					incoming.read(arr);
 					msgName = new String(arr, 0, strSz);
 				} else
@@ -620,7 +636,7 @@ public class ControlConnection implements PushDataReceiver {
 		public void doRun() {
 			synchronized (ControlConnection.this) {
 				// If we have data flowing, don't bother pinging
-				if(getUpFlowRate() > 0 || getDownFlowRate() > 0)
+				if (getUpFlowRate() > 0 || getDownFlowRate() > 0)
 					return;
 				int timeoutSecs = mina.getConfig().getMessageTimeout();
 				Date nextPingDate = new Date(lastDataRecvd.getTime() + timeoutSecs * 1000);

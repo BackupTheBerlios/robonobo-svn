@@ -203,7 +203,7 @@ public class MinaInstance implements MinaControl {
 			if (localEp != null)
 				result.add(localEp.getUrl());
 			EndPoint publicEp = epMgr.getPublicEndPoint();
-			if (publicEp != null)
+			if (publicEp != null && ((localEp == null) || !publicEp.getUrl().equals(localEp.getUrl())))
 				result.add(publicEp.getUrl());
 		}
 		return result;
@@ -403,7 +403,7 @@ public class MinaInstance implements MinaControl {
 	public void setHandoverHandler(HandoverHandler handler) {
 		netMgr.setHandoverHandler(handler);
 	}
-	
+
 	public CurrencyClient getCurrencyClient() {
 		return curClient;
 	}

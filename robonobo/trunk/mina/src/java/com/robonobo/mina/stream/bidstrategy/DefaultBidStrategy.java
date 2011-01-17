@@ -62,7 +62,6 @@ public class DefaultBidStrategy extends BidStrategy {
 			return ag.getMinBid();
 
 		double myNewBid = getPreferredBid(cleanBids(bu), ag.getIncrement());
-		log.debug("DEBUG: preferred bid = "+myNewBid);
 		if (myNewBid == as.getLastSentBid()) {
 			// No bid
 			log.debug("DEBUG: bid same as last sent");

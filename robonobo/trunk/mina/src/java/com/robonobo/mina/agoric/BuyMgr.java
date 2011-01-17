@@ -1,16 +1,9 @@
 package com.robonobo.mina.agoric;
 
-import static com.robonobo.common.util.TimeUtil.msElapsedSince;
-import static com.robonobo.common.util.TimeUtil.msUntil;
-import static com.robonobo.common.util.TimeUtil.now;
+import static com.robonobo.common.util.TextUtil.*;
+import static com.robonobo.common.util.TimeUtil.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
@@ -377,25 +370,25 @@ public class BuyMgr {
 	}
 
 	public void newAuctionState(final String nodeId, AuctionState as) {
-		// DEBUG
-		log.debug("BuyMgr got new auctionstate (tid: " + Thread.currentThread().getId() + ")");
 		as.setTimeReceived(now());
 		List<Attempt> attempts = null;
 		boolean gotConfirmedBid;
+		// When next should we consider bidding on this auction?
+		Date considerBiddingTime = null;
 		synchronized (this) {
 			// Check our quoted bid, check it conforms to the last one we sent
 			AuctionState oldAs = asMap.get(nodeId);
 			if (oldAs != null) {
-				if(AuctionState.INDEX_MOD.gte(oldAs.getIndex(), as.getIndex())) {
+				if (AuctionState.INDEX_MOD.gte(oldAs.getIndex(), as.getIndex())) {
 					// This auctionstate isn't newer than what we have, ignore
 					return;
 				}
 				double myLastBid = oldAs.getLastSentBid();
 				if (myLastBid > 0) {
-					String myTok = as.getYouAre();
-					if (myTok == null) {
+					if (isEmpty(as.getYouAre())) {
 						// I am not in this auction result, and I expect to be -
-						// probably bidding had just finished as our bid arrived
+						// probably bidding had just finished as our bid arrived, or else we didn't make it into the
+						// top-enough bidders
 						if (onConfirmedBidAttempts.get(nodeId).size() > 0) {
 							final double openingBid = myLastBid;
 							List<Attempt> myAttempts = onConfirmedBidAttempts.remove(nodeId);
@@ -436,6 +429,7 @@ public class BuyMgr {
 				a.succeeded();
 			}
 		}
+		// TODO Poll our interested SMs at intervals to see if our bid should change
 	}
 
 	public void sentBid(String nodeId, double bid) {

@@ -33,17 +33,16 @@ public class CCMgr {
 	// The strings in these are nodeIds... wish we had typedefs :-(
 	private Map<String, ControlConnection> cons = new HashMap<String, ControlConnection>();
 	/**
-	 * The value here might be null if there is no CC yet (eg if we are waiting
-	 * for incoming cc)
+	 * The value here might be null if there is no CC yet (eg if we are waiting for incoming cc)
 	 */
 	private Map<String, ControlConnection> inProgressCons = new HashMap<String, ControlConnection>();
 	/**
-	 * Nodes we are waiting for connections from - will also be in
-	 * inProgressCons with null value
+	 * Nodes we are waiting for connections from - will also be in inProgressCons with null value
 	 */
 	private Set<String> waitingForCons = new HashSet<String>();
 	private Log log;
-	private Map<String, ConnectAttempt> connectAttempts = Collections.synchronizedMap(new HashMap<String, ConnectAttempt>());
+	private Map<String, ConnectAttempt> connectAttempts = Collections
+			.synchronizedMap(new HashMap<String, ConnectAttempt>());
 	private boolean shuttingDown = false;
 
 	public CCMgr(MinaInstance mina) {
@@ -187,8 +186,7 @@ public class CCMgr {
 	}
 
 	/**
-	 * Tries to connect to the supplied node. This method will try different
-	 * endpoints/methods in turn
+	 * Tries to connect to the supplied node. This method will try different endpoints/methods in turn
 	 * 
 	 * @syncpriority 140
 	 */
@@ -245,7 +243,8 @@ public class CCMgr {
 				// of them asking us, in which case fail)
 				// TODO holepunching
 				if (sendReqConn && mina.getNetMgr().amIPublicallyReachable()) {
-					ReqConn rcMsg = ReqConn.newBuilder().setFromNode(mina.getNetMgr().getPublicNodeDesc()).setToNodeId(newNodeId).build();
+					ReqConn rcMsg = ReqConn.newBuilder().setFromNode(mina.getNetMgr().getPublicNodeDesc())
+							.setToNodeId(newNodeId).build();
 					log.debug("Sending Connection Request to " + newNodeId);
 					waitingForCons.add(newNodeId);
 					sendOrForwardMessageTo("ReqConn", rcMsg, newNodeId);
@@ -259,7 +258,8 @@ public class CCMgr {
 			}
 			// Set up our connection attempt
 			EndPoint theirEp = (cc == null) ? null : cc.getTheirEp();
-			ConnectAttempt ca = new ConnectAttempt(mina.getConfig().getMessageTimeout(), nd, theirEp, triedEps, sendReqConn);
+			ConnectAttempt ca = new ConnectAttempt(mina.getConfig().getMessageTimeout(), nd, theirEp, triedEps,
+					sendReqConn);
 			if (onCompletionAttempt != null)
 				ca.addContingentAttempt(onCompletionAttempt);
 			ca.start();
@@ -362,14 +362,26 @@ public class CCMgr {
 
 		ControlConnection cc;
 		synchronized (this) {
-			if (mina.getMyNodeId().equals(helloId))
+			String myNodeId = mina.getMyNodeId();
+			if (myNodeId.equals(helloId))
 				throw new MinaConnectionException("Connection attempt from apparently my node ID. Closing.");
 			// See if we're waiting for a connection from this guy
-			if(waitingForCons.contains(helloId))
+			if (waitingForCons.contains(helloId))
 				waitingForCons.remove(helloId);
-			else if (haveRunningOrPendingCCTo(helloId)) {
-				log.error("Duplicate connection attempt from node " + helloId);
-				return;
+			else {
+				if (cons.containsKey(helloId)) {
+					log.error("Ignoring conn attempt from node " + helloId + ": already have connection");
+					return;
+				}
+				if (inProgressCons.containsKey(helloId)) {
+					// It's possible, between low-computron nodes on a local network, that two nodes trying to connect
+					// to each other both get here at the same time
+					// We cross these treacherous waters by rejecting only one end - the one with the higher node id
+					if(myNodeId.compareTo(helloId) > 0) {
+						log.error("Ignoring simultaneous conn attempt from node "+helloId+" - my attempt should get through");
+						return;
+					}
+				}
 			}
 			cc = new ControlConnection(mina, helHelper, scm);
 			inProgressCons.put(helloId, cc);
@@ -408,7 +420,7 @@ public class CCMgr {
 		if (wasConnected)
 			mina.getEventMgr().fireNodeDisconnected(buildConnectedNode(cc));
 		if (mina.getConfig().isAgoric()) {
-			mina.getSellMgr().notifyDeadConnection(cc.getNodeId());
+			mina.getSellMgr().removeBidder(cc.getNodeId());
 			mina.getBuyMgr().notifyDeadConnection(cc.getNodeId());
 		}
 	}
@@ -444,7 +456,7 @@ public class CCMgr {
 				}
 			}
 		}
-		if(mina.getEscrowMgr() != null)
+		if (mina.getEscrowMgr() != null)
 			mina.getEscrowMgr().notifySuccessfulConnection(cc);
 		mina.getEventMgr().fireNodeConnected(buildConnectedNode(cc));
 	}

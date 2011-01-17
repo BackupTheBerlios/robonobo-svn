@@ -35,6 +35,7 @@ public abstract class BidStrategy {
 	}
 
 	public void setStreamVelocity(StreamVelocity streamVelocity) {
+		boolean changed = !(streamVelocity.equals(this.streamVelocity));
 		this.streamVelocity = streamVelocity;
 	}
 	

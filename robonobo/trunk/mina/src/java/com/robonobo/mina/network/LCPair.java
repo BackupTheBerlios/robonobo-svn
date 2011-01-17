@@ -43,10 +43,10 @@ public class LCPair extends ConnectionPair {
 
 	public LCPair(StreamMgr sm, ControlConnection cc, SourceStatus ss) throws MinaConnectionException {
 		super(sm, cc);
-		cc.addLCPair(this);
 		lc = cc.getSCF().getListenConnection(cc);
 		lc.setLCPair(this);
 		setLastSourceStat(ss);
+		cc.addLCPair(this);
 		startListening();
 	}
 

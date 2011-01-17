@@ -58,6 +58,8 @@ public class SellMgr {
 	Set<String> activeBidders = new HashSet<String>();
 	/** nodeIds we're waiting to hear from */
 	Set<String> waitingForBids = new HashSet<String>();
+	/** nodeIds that are not allowed to bid until we open bidding again (new nodes can bid any time) */
+	Set<String> bidFrozen = new HashSet<String>();
 	Timeout bidTimeout;
 	Map<String, List<MessageHolder>> msgsWaitingForAcct = new HashMap<String, List<MessageHolder>>();
 	/**
@@ -97,6 +99,8 @@ public class SellMgr {
 	}
 
 	public AuctionStateMsg getState(boolean useCache, String forNodeId) {
+		// TODO Keep a separate set of bid-frozen nodes - it's not just those with agreed bids, it's also folks who have
+		// dropped out recently
 		synchronized (this) {
 			if (useCache && cachedStateMsg != null
 					&& timeInPast(mina.getConfig().getAuctionStateCacheTime()).before(cachedStateTime)) {
@@ -303,74 +307,44 @@ public class SellMgr {
 		return ssBldr.build();
 	}
 
-	public void bid(final String fromNodeId, final double newBid) {
-		if (newBid != 0 && newBid < mina.getMyAgorics().getMinBid()) {
-			log.error("Ignoring too-low bid " + newBid + " from " + fromNodeId);
+	public void removeBidder(String fromNodeId) {
+		synchronized (this) {
+			if (!(agreedBids.containsKey(fromNodeId) || currentBids.containsKey(fromNodeId))) {
+				log.debug("Not removing bidder " + fromNodeId + ": no current or agreed bid");
+				return;
+			}
+			if (auctionInProgress) {
+				// TODO: They're only allowed to drop out if they're not top bidder - otherwise they get charged 30s of
+				// min_top_rate, to stop them DOSing by inflating the top bid and dropping out
+			}
+			agreedBids.remove(fromNodeId);
+			currentBids.remove(fromNodeId);
+			waitingForBids.remove(fromNodeId);
+			activeBidders.remove(fromNodeId);
+			// We don't remove them from bidFrozen here - that will be done when the next proper auction starts
+		}
+		updateAuctionStatus();
+	}
+
+	public void bid(final String bidderNodeId, final double newBid) {
+		if (newBid < mina.getMyAgorics().getMinBid()) {
+			log.error("Ignoring too-low bid " + newBid + " from " + bidderNodeId);
 			return;
 		}
-
-		boolean finished = false, sendUpdate = false;
-		// When we send a BidUpdate, it will include the highest bid from each
-		// participant so far in this auction
-		Map<String, Double> updateBidMap = new HashMap<String, Double>();
-		boolean sendSourceStatus = false;
 		synchronized (this) {
-			// Not allowed to bid before opening time unless they're saying
-			// goodbye (bid == 0) or they're a new node
-			if (agreedBids.containsKey(fromNodeId) && now().before(openForBidsTime)) {
-				if (newBid == 0) {
-					agreedBids.remove(fromNodeId);
-					// If this guy was the only bidder, just shut everything
-					// down
-					if (agreedBids.size() == 0) {
-						log.debug(fromNodeId + " bid 0 - cleaning up");
-						currentBids.clear();
-						auctionFinished();
-						if (bidUpdateTask != null) {
-							bidUpdateTask.cancel(false);
-							bidUpdateTask = null;
-						}
-					} else {
-						log.debug(fromNodeId + " bid 0 - waiting " + msUntil(openForBidsTime)
-								+ "ms before triggering bidupdate");
-						// When our bids open time arrives, trigger an auction
-						if (bidUpdateTask == null) {
-							bidUpdateTask = mina.getExecutor().schedule(new CatchingRunnable() {
-								public void doRun() throws Exception {
-									Map<String, Double> updateBidMap = new HashMap<String, Double>();
-									synchronized (SellMgr.this) {
-										if (auctionInProgress)
-											return;
-										// Some folk have dropped out, trigger
-										// an auction with no starting bids
-										auctionInProgress = true;
-										bidUpdateTask = null;
-										waitingForBids.addAll(agreedBids.keySet());
-										activeBidders.addAll(agreedBids.keySet());
-									}
-									sendBidUpdate(updateBidMap);
-								}
-							}, msUntil(openForBidsTime), TimeUnit.MILLISECONDS);
-						}
-					}
-					return;
-				} else {
-					log.error("Ignoring bid [" + newBid + "] from " + fromNodeId + ": bids not open yet");
-					sendSourceStatus = true;
-				}
-			}
-			if (sendSourceStatus) {
-				ControlConnection cc = mina.getCCM().getCCWithId(fromNodeId);
+			// Not allowed to bid before opening time unless they're a new node
+			if (bidFrozen.contains(bidderNodeId) && now().before(openForBidsTime)) {
+				log.error("Ignoring bid [" + newBid + "] from " + bidderNodeId + ": bids not open yet");
+				ControlConnection cc = mina.getCCM().getCCWithId(bidderNodeId);
 				SourceStatus ss = buildSourceStatus(cc.getNodeDescriptor(), null);
 				cc.sendMessage("SourceStatus", ss);
 				return;
 			}
-
 			double oldBid;
-			if (currentBids.containsKey(fromNodeId))
-				oldBid = currentBids.get(fromNodeId);
-			else if (agreedBids.containsKey(fromNodeId))
-				oldBid = agreedBids.get(fromNodeId);
+			if (currentBids.containsKey(bidderNodeId))
+				oldBid = currentBids.get(bidderNodeId);
+			else if (agreedBids.containsKey(bidderNodeId))
+				oldBid = agreedBids.get(bidderNodeId);
 			else
 				oldBid = 0;
 
@@ -378,104 +352,130 @@ public class SellMgr {
 			if (newBid > oldBid) {
 				// Check they're increasing by enough
 				if ((newBid - oldBid) < mina.getMyAgorics().getIncrement()) {
-					log.debug("Not allowing bid of " + newBid + " from " + fromNodeId
+					log.debug("Not allowing bid of " + newBid + " from " + bidderNodeId
 							+ " - not increasing by min increment");
 					return;
 				}
 			} else if (newBid < oldBid) {
 				// They're allowed to decrease their bid only as their first bid
 				// of the auction
-				if (currentBids.containsKey(fromNodeId)) {
-					log.error("Not allowing bid of " + newBid + " from " + fromNodeId
+				if (currentBids.containsKey(bidderNodeId)) {
+					log.error("Not allowing bid of " + newBid + " from " + bidderNodeId
 							+ " - can't decrease bid during auction");
 					return;
 				}
 			}
 
 			if (auctionInProgress) {
-				if ((!agreedBids.containsKey(fromNodeId)) && (!currentBids.containsKey(fromNodeId))) {
+				if ((!agreedBids.containsKey(bidderNodeId)) && (!currentBids.containsKey(bidderNodeId))) {
 					// Here comes a new challenger!
-					activeBidders.add(fromNodeId);
-				} else if (!activeBidders.contains(fromNodeId)) {
-					log.error("Node " + fromNodeId + " bid " + newBid + ", but is no longer an active bidder");
+					activeBidders.add(bidderNodeId);
+					bidFrozen.add(bidderNodeId);
+				} else if (!activeBidders.contains(bidderNodeId)) {
+					log.error("Node " + bidderNodeId + " bid " + newBid + ", but is no longer an active bidder");
 					return;
 				}
-				waitingForBids.remove(fromNodeId);
-				if (newBid == 0) {
-					// They're leaving
-					activeBidders.remove(fromNodeId);
-					currentBids.remove(fromNodeId);
-				} else if (currentBids.containsKey(fromNodeId) && currentBids.get(fromNodeId) == newBid) {
+				waitingForBids.remove(bidderNodeId);
+				if (currentBids.containsKey(bidderNodeId) && currentBids.get(bidderNodeId) == newBid) {
 					// They shouldn't do this, but we'll be nice and not Cast
 					// them Into Outer Darkness - take it as a NoBid
-					activeBidders.remove(fromNodeId);
+					activeBidders.remove(bidderNodeId);
 				} else
-					currentBids.put(fromNodeId, newBid);
-				finished = (activeBidders.size() <= 1 && waitingForBids.size() == 0);
-				if (!finished) {
-					sendUpdate = (waitingForBids.size() == 0);
-					if (sendUpdate) {
-						waitingForBids.addAll(activeBidders);
-						updateBidMap.putAll(currentBids);
-					}
-				}
+					currentBids.put(bidderNodeId, newBid);
+				// Anyone who bids at least once during the auction is bid frozen after that auction ends (to prevent
+				// them playing silly buggers by bidding, dropping out, then bidding again when the auction closes)
+				bidFrozen.add(bidderNodeId);
 			} else {
-				// Start a new auction
-				auctionInProgress = true;
 				if (!waitingForBids.isEmpty())
 					throw new SeekInnerCalmException();
-				// Turn all our listeners into active bidders
-				for (String node : agreedBids.keySet()) {
-					// If they don't have enough ends, they can't bid, so don't
-					// tell them to
-					if (!haveActiveAccount(node))
-						continue;
-					if (!node.equals(fromNodeId)) {
-						waitingForBids.add(node);
-						activeBidders.add(node);
-					}
-				}
-				currentBids.put(fromNodeId, newBid);
-				// A zero bid prevents any more bidding in this auction
-				if (newBid != 0)
-					activeBidders.add(fromNodeId);
-				finished = (activeBidders.size() <= 1 && waitingForBids.size() == 0);
-				if (!finished) {
-					sendUpdate = true;
-					if (newBid != 0)
-						updateBidMap.put(fromNodeId, newBid);
-				}
+				currentBids.put(bidderNodeId, newBid);
+				// updateAuctionStatus will start a new auction
 			}
 		}
-		if (finished)
-			auctionFinished();
-		else if (sendUpdate)
-			sendBidUpdate(updateBidMap);
+		updateAuctionStatus();
 	}
 
 	public void noBid(String fromNodeId) {
-		boolean finished = false, sendUpdate = false;
-		Map<String, Double> updateBidMap = new HashMap<String, Double>();
 		synchronized (this) {
 			if (!auctionInProgress) {
-				// Er, what?
+				// wat
 				log.error("Ignoring erroneous nobid from " + fromNodeId);
 				return;
 			}
 			waitingForBids.remove(fromNodeId);
 			activeBidders.remove(fromNodeId);
-			finished = (activeBidders.size() <= 1 && waitingForBids.size() == 0);
-			if (!finished) {
-				sendUpdate = (waitingForBids.size() == 0);
-				if (sendUpdate) {
-					waitingForBids.addAll(activeBidders);
+		}
+		updateAuctionStatus();
+	}
+
+	private void updateAuctionStatus() {
+		boolean finished = false;
+		Map<String, Double> updateBidMap = null;
+		synchronized (this) {
+			if (auctionInProgress) {
+				finished = (activeBidders.size() <= 1 && waitingForBids.size() == 0);
+				if (finished)
+					log.debug("No more bids - auction finished");
+				else {
+					if (waitingForBids.size() == 0) {
+						updateBidMap = new HashMap<String, Double>();
+						updateBidMap.putAll(currentBids);
+						waitingForBids.addAll(activeBidders);
+					}
+				}
+			} else {
+				if (currentBids.size() == 0) {
+					// Someone just dropped out, null auction
+					log.debug("Sending null auction result");
+					// Put agreedBids into currentBids to make auctionFinished() work properly
+					currentBids.putAll(agreedBids);
+					finished = true;
+				} else if ((agreedBids.size() == 0) || agreedBids.keySet().equals(currentBids.keySet())) {
+					// There is a small chance we might have more than one bidder in currentBids if the threading winds are blowing very strangely
+					if (log.isDebugEnabled()) {
+						StringBuffer sb = new StringBuffer("Finishing short auction with bids from: ");
+						for (String nodeId : currentBids.keySet()) {
+							sb.append(nodeId).append(" ");
+						}
+						log.debug(sb);
+					}
+					finished = true;
+				} else {
+					// Start a new auction
+					if (log.isDebugEnabled()) {
+						StringBuffer sb = new StringBuffer("Starting auction with opening bids from: ");
+						for (String nodeId : currentBids.keySet()) {
+							sb.append(nodeId).append(" ");
+						}
+						log.debug(sb);
+					}
+					auctionInProgress = true;
+					// Bid frozen nodes are no longer frozen
+					bidFrozen.clear();
+					bidFrozen.addAll(currentBids.keySet());
+					// Build a map of current bids to send out as a new AuctionStatus
+					updateBidMap = new HashMap<String, Double>();
+					// Turn all our listeners into active bidders
+					for (String node : agreedBids.keySet()) {
+						// If they don't have enough ends, they can't bid, so don't
+						// tell them to
+						if (!haveActiveAccount(node))
+							continue;
+						activeBidders.add(node);
+						// We add their agreed bid (from the last auction) here - if they have sent us a more recent
+						// bid, this will be used, see below
+						updateBidMap.put(node, agreedBids.get(node));
+						// If they have a current bid here, we're not waiting to hear from them
+						if (!currentBids.containsKey(node))
+							waitingForBids.add(node);
+					}
 					updateBidMap.putAll(currentBids);
 				}
 			}
 		}
 		if (finished)
 			auctionFinished();
-		else if (sendUpdate)
+		else if (updateBidMap != null)
 			sendBidUpdate(updateBidMap);
 	}
 
@@ -495,7 +495,6 @@ public class SellMgr {
 	private void auctionFinished() {
 		bidTimeout.clear();
 		Set<String> sendResultSet = new HashSet<String>();
-
 		// Bookkeeping for the period since the last auction - make sure the top
 		// bidder is paying at least the minimum charge
 		String tbNode = null;
@@ -513,17 +512,7 @@ public class SellMgr {
 					}
 				}
 			}
-		}
-		if (tbNode != null) {
-			ControlConnection cc = mina.getCCM().getCCWithId(tbNode);
-			if (cc != null) {
-				MinCharge mc = MinCharge.newBuilder().setAmount(tbCharge).build();
-				cc.sendMessage("MinCharge", mc);
-			}
-			chargeAcct(tbNode, tbCharge);
-		}
 
-		synchronized (this) {
 			auctionInProgress = false;
 			auctionFinishTime = now();
 			// Update our agreed bids
@@ -550,13 +539,23 @@ public class SellMgr {
 			waitingForBids.clear();
 			// Increment our index
 			stateIndex = AuctionState.INDEX_MOD.add(stateIndex, 1);
-			// If we have any bidders, take note of the next time until we can
-			// start bidding again - otherwise we allow new bidders straight
-			// away
-			if (agreedBids.size() > 0)
-				openForBidsTime = timeInFuture(mina.getConfig().getMinTimeBetweenAuctions());
-			else
-				openForBidsTime = now();
+			// If we were still within our bid freeze, we've just had a null auction due to someone dropping out, so
+			// keep the openForBids time the same
+			if (now().after(openForBidsTime)) {
+				if (agreedBids.size() > 0)
+					openForBidsTime = timeInFuture(mina.getConfig().getMinTimeBetweenAuctions());
+				else
+					openForBidsTime = now();
+			}
+		}
+
+		if (tbNode != null) {
+			ControlConnection cc = mina.getCCM().getCCWithId(tbNode);
+			if (cc != null) {
+				MinCharge mc = MinCharge.newBuilder().setAmount(tbCharge).build();
+				cc.sendMessage("MinCharge", mc);
+			}
+			chargeAcct(tbNode, tbCharge);
 		}
 
 		if (log.isDebugEnabled()) {
@@ -572,6 +571,7 @@ public class SellMgr {
 			sb.append("]");
 			log.debug(sb);
 		}
+
 		adjustGammas();
 
 		// Make an auction result msg and send it to everyone - use cached for
@@ -609,10 +609,8 @@ public class SellMgr {
 				float gamma;
 				if (acct == null || acct.needsTopUp || acct.balance <= 0)
 					gamma = 0;
-				else {
-					double bid = agreedBids.get(nodeId);
-					gamma = (bid == highBid) ? 1f : (float) (bid / highBid);
-				}
+				else
+					gamma = (float) (agreedBids.get(nodeId) / highBid);
 				gammas.put(nodeId, gamma);
 			}
 		}
@@ -627,7 +625,12 @@ public class SellMgr {
 			sendList.addAll(waitingForBids);
 			for (String bNodeId : bidMap.keySet()) {
 				templateBldr.addListenerId(getNodeIdToken(bNodeId));
-				templateBldr.addBidAmount(currentBids.get(bNodeId));
+				if(currentBids.containsKey(bNodeId))
+					templateBldr.addBidAmount(currentBids.get(bNodeId));
+				else if(agreedBids.containsKey(bNodeId))
+					templateBldr.addBidAmount(agreedBids.get(bNodeId));
+				else
+					throw new SeekInnerCalmException("Couldn't find bid for node "+bNodeId);
 			}
 		}
 		if (log.isDebugEnabled()) {
@@ -666,7 +669,7 @@ public class SellMgr {
 			return;
 
 		// Put in a bid of zero to remove this guy from our auctions
-		bid(nodeId, 0);
+		removeBidder(nodeId);
 		// Send the remaining balance
 		try {
 			byte[] currencyToken = mina.getCurrencyClient().withdrawToken(acct.balance,
@@ -681,10 +684,6 @@ public class SellMgr {
 		// won't be (probably)
 		if (onClose != null)
 			onClose.succeeded();
-	}
-
-	public void notifyDeadConnection(String nodeId) {
-		bid(nodeId, 0d);
 	}
 
 	class Account {
