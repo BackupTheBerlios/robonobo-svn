@@ -300,7 +300,7 @@ public class NetworkMgr {
 						Node thisNode = iter.next();
 						log.debug("Checking remote node " + thisNode);
 						try {
-							mina.getCCM().initiateNewCC(thisNode, null);
+							mina.getCCM().makeCCTo(thisNode, null);
 						} catch (MinaConnectionException e) {
 							log.error("Error connecting to node " + thisNode.getId(), e);
 						}

@@ -63,10 +63,6 @@ public class LCPair extends ConnectionPair {
 			if (setupFinished)
 				return;
 		}
-
-		// DEBUG
-		log.debug(LCPair.this + ": in startListening (tid: " + Thread.currentThread().getId() + ")");
-
 		// If we don't yet have a confirmed bid, make one, and call us back when
 		// they do
 		// TODO: We might need to change our bid if this new stream demands a
@@ -80,9 +76,6 @@ public class LCPair extends ConnectionPair {
 			Attempt a = new Attempt(mina.getExecutor(), 8 * mina.getConfig().getMessageTimeout() * 1000, "lcp-" + sm.getStreamId()
 					+ "-" + nodeId) {
 				protected void onSuccess() {
-					// DEBUG
-					log.debug(LCPair.this + " account setup succeeded, starting listen (tid: "
-							+ Thread.currentThread().getId() + ")");
 					startListening();
 				}
 
@@ -94,8 +87,6 @@ public class LCPair extends ConnectionPair {
 				}
 			};
 			a.start();
-			// DEBUG
-			log.debug(this + " setting up account so we can listen (tid: " + Thread.currentThread().getId() + ")");
 			mina.getBuyMgr().setupAccountAndBid(nodeId, sm.getBidStrategy().getOpeningBid(nodeId), a);
 			return;
 		}
@@ -118,8 +109,6 @@ public class LCPair extends ConnectionPair {
 	}
 
 	public void notifySourceStatus(SourceStatus sourceStat) {
-		// DEBUG
-		log.debug(this + " notified of sourcestat (tid: " + Thread.currentThread().getId() + ")");
 		setLastSourceStat(sourceStat);
 		for (StreamStatus streamStat : sourceStat.getSsList()) {
 			if (streamStat.getStreamId().equals(sm.getStreamId())) {
@@ -181,6 +170,8 @@ public class LCPair extends ConnectionPair {
 		for (PageAttempt rpa : reqdPages.values()) {
 			rpa.failed();
 		}
+		if(usefulDataTimeout != null)
+			usefulDataTimeout.cancel(false);
 		if (sendStopSource) {
 			try {
 				sendMessage("StopSource", StopSource.newBuilder().setStreamId(sm.getStreamId()).build());
@@ -304,7 +295,7 @@ public class LCPair extends ConnectionPair {
 								+ mina.getConfig().getUsefulDataSourceTimeout() + "s");
 						usefulDataTimeout = mina.getExecutor().schedule(new CatchingRunnable() {
 							public void doRun() throws Exception {
-								log.info(this + " useful data timeout - closing (caching source)");
+								log.info(LCPair.this + " useful data timeout - closing (caching source)");
 								mina.getSourceMgr().cacheSourceUntilDataAvailable(lastSourceStat, lastStreamStat);
 								die();
 							}

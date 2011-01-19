@@ -93,7 +93,7 @@ public class ControlConnection implements PushDataReceiver {
 		incoming = new ByteBufferInputStream();
 		Hello hello = Hello.newBuilder().setNode(mina.getNetMgr().getDescriptorForTalkingTo(nodeDesc, isLocal()))
 				.build();
-		helloAttempt = new MessageAttempt("Hello", mina.getConfig().getMessageTimeout(), "HelloAttempt");
+		helloAttempt = new ConnectAttempt();
 		helloAttempt.start();
 		sendMessageImmediate("Hello", hello);
 		dataChan.setDataReceiver(this);
@@ -179,7 +179,6 @@ public class ControlConnection implements PushDataReceiver {
 
 	/**
 	 * @syncpriority 60
-	 * 
 	 */
 	public synchronized void abort() {
 		if (pingTask != null)
@@ -293,6 +292,8 @@ public class ControlConnection implements PushDataReceiver {
 	}
 
 	private void handleMessage(MessageHandler handler, final MessageHolder msgHolder) {
+		if(closed)
+			return;
 		GeneratedMessage msg = msgHolder.getMessage();
 		String msgName = msgHolder.getMsgName();
 		final MessageHandler myHandler = (handler == null) ? mina.getMessageMgr().getHandler(msgName) : handler;
@@ -418,12 +419,14 @@ public class ControlConnection implements PushDataReceiver {
 		// quit
 		boolean closeNow = true;
 		if (mina.getConfig().isAgoric() && mina.getSellMgr().haveActiveAccount(nodeId)) {
+			log.debug(this+": not closing yet as they have an account with us");
 			CloseCCAttempt soc = new CloseCCAttempt(reason);
 			soc.start();
 			mina.getSellMgr().closeAccount(nodeId, soc);
 			closeNow = false;
 		}
 		if (mina.getConfig().isAgoric() && mina.getBuyMgr().haveActiveAccount(nodeId)) {
+			log.debug(this+": not closing yet as we have an account with them");
 			CloseCCAttempt boc = new CloseCCAttempt(reason);
 			boc.start();
 			mina.getBuyMgr().closeAccount(nodeId, boc);
@@ -443,6 +446,9 @@ public class ControlConnection implements PushDataReceiver {
 		}
 
 		protected void onSuccess() {
+			// DEBUG
+			log.debug(ControlConnection.this+" attempt succeeded - closing gracefully");
+			
 			closeGracefully(closeReason);
 		}
 
@@ -551,12 +557,9 @@ public class ControlConnection implements PushDataReceiver {
 		}
 	}
 
-	protected class MessageAttempt extends Attempt {
-		String msgName;
-
-		public MessageAttempt(String msgName, int timeoutSecs, String attemptName) {
-			super(mina.getExecutor(), timeoutSecs * 1000, attemptName);
-			this.msgName = msgName;
+	protected class ConnectAttempt extends Attempt {
+		public ConnectAttempt() {
+			super(mina.getExecutor(), mina.getConfig().getMessageTimeout() * 1000, "Connect-"+nodeId);
 		}
 
 		public void onTimeout() {
@@ -565,9 +568,19 @@ public class ControlConnection implements PushDataReceiver {
 				log.debug("Attempted CC to " + nodeId + " failed, but I see a working connection - continuing");
 				abort();
 			} else {
-				log.error("Timeout waiting for node " + nodeId + " to respond to " + msgName + ": Closing connection");
-				close(true, "You timed out responding to my " + msgName);
+				log.error("Timeout connecting to node " + nodeId + ": closing connection");
+				close();
 			}
+		}
+	}
+	protected class PingAttempt extends Attempt {
+		public PingAttempt() {
+			super(mina.getExecutor(), mina.getConfig().getMessageTimeout() * 1000, "Ping-"+nodeId);
+		}
+
+		public void onTimeout() {
+			log.error("Node " + nodeId + "ping timeout: closing connection");
+			close();
 		}
 	}
 
@@ -641,7 +654,7 @@ public class ControlConnection implements PushDataReceiver {
 				int timeoutSecs = mina.getConfig().getMessageTimeout();
 				Date nextPingDate = new Date(lastDataRecvd.getTime() + timeoutSecs * 1000);
 				if (nextPingDate.before(now())) {
-					pingAttempt = new MessageAttempt("Ping", timeoutSecs, "PingAttempt");
+					pingAttempt = new PingAttempt();
 					pingAttempt.start();
 					String tok = String.valueOf(rand.nextInt(9999));
 					sendMessage("Ping", Ping.newBuilder().setPingId(tok).build());

@@ -41,8 +41,7 @@ public class CCMgr {
 	 */
 	private Set<String> waitingForCons = new HashSet<String>();
 	private Log log;
-	private Map<String, ConnectAttempt> connectAttempts = Collections
-			.synchronizedMap(new HashMap<String, ConnectAttempt>());
+	Map<String, Attempt> connectAttempts = new HashMap<String, Attempt>();
 	private boolean shuttingDown = false;
 
 	public CCMgr(MinaInstance mina) {
@@ -73,7 +72,7 @@ public class CCMgr {
 			}
 		}
 		shuttingDown = true;
-		for (ConnectAttempt ca : connectAttempts.values()) {
+		for (Attempt ca : connectAttempts.values()) {
 			ca.cancel();
 		}
 		connectAttempts.clear();
@@ -117,7 +116,7 @@ public class CCMgr {
 			}
 			inProgressCons.clear();
 			waitingForCons.clear();
-			for (ConnectAttempt ca : connectAttempts.values()) {
+			for (Attempt ca : connectAttempts.values()) {
 				ca.cancel();
 			}
 			connectAttempts.clear();
@@ -190,15 +189,14 @@ public class CCMgr {
 	 * 
 	 * @syncpriority 140
 	 */
-	public void initiateNewCC(Node nd, Attempt onCompletionAttempt) throws MinaConnectionException {
-		initiateNewCC(nd, onCompletionAttempt, true, null);
+	public void makeCCTo(Node nd, Attempt onCompletionAttempt) throws MinaConnectionException {
+		makeCCTo(nd, onCompletionAttempt, true, null);
 	}
 
 	/**
-	 * @see initiateNewCC(Node,Attempt)
 	 * @syncpriority 140
 	 */
-	public void initiateNewCC(Node nd, Attempt onCompletionAttempt, boolean sendReqConn, List<EndPoint> triedEps) {
+	public void makeCCTo(Node nd, Attempt onCompletionAttempt, boolean sendReqConn, List<EndPoint> triedEps) {
 		if (shuttingDown) {
 			log.debug("CCM not initiating CC to " + nd.getId() + ": shutting down");
 			return;
@@ -215,8 +213,13 @@ public class CCMgr {
 			}
 			if (inProgressCons.containsKey(newNodeId)) {
 				log.debug("Not attempting connection to in-progress node " + newNodeId);
-				if (onCompletionAttempt != null)
-					addAttemptToPendingCC(newNodeId, onCompletionAttempt);
+				if (onCompletionAttempt != null) {
+					log.debug("Adding contingent attempt to in-progress connection with " + newNodeId);
+					if(connectAttempts.containsKey(newNodeId))
+						connectAttempts.get(newNodeId).addContingentAttempt(onCompletionAttempt);
+					else
+						connectAttempts.put(newNodeId, onCompletionAttempt);
+				}
 				return;
 			}
 			// If the node is bad, don't connect again
@@ -265,21 +268,6 @@ public class CCMgr {
 			ca.start();
 			connectAttempts.put(newNodeId, ca);
 		}
-	}
-
-	public synchronized void addAttemptToPendingCC(String nodeId, Attempt a) {
-		if (cons.containsKey(nodeId)) {
-			// We succeeded already
-			a.succeeded();
-			return;
-		}
-		ConnectAttempt ca = connectAttempts.get(nodeId);
-		if (ca == null) {
-			log.error("No connect attempt for node " + nodeId + " - cannot add contingent attempt");
-			return;
-		}
-		log.debug("Adding contingent attempt to in-progress connection to " + nodeId);
-		ca.addContingentAttempt(a);
 	}
 
 	/**
@@ -394,7 +382,7 @@ public class CCMgr {
 	 */
 	public void notifyDeadConnection(ControlConnection cc) {
 		boolean wasConnected = false;
-		ConnectAttempt a;
+		Attempt a;
 		log.debug("Cleaning up CC " + cc.getNodeId());
 		if (mina.getConfig().isSupernode())
 			mina.getSupernodeMgr().notifyDeadConnection(cc.getNodeDescriptor());
@@ -413,10 +401,12 @@ public class CCMgr {
 				if (numSupernodes == 0)
 					mina.getNetMgr().locateMoreNodes();
 			}
-			a = connectAttempts.get(cc.getNodeId());
+			a = connectAttempts.remove(cc.getNodeId());
 		}
-		if (a != null)
-			a.tryNextMethodOrFail();
+		if (a instanceof ConnectAttempt)
+			((ConnectAttempt) a).tryNextMethodOrFail();
+		else if(a != null)
+			a.failed();
 		if (wasConnected)
 			mina.getEventMgr().fireNodeDisconnected(buildConnectedNode(cc));
 		if (mina.getConfig().isAgoric()) {
@@ -433,7 +423,7 @@ public class CCMgr {
 		synchronized (this) {
 			inProgressCons.remove(cc.getNodeId());
 			cons.put(cc.getNodeId(), cc);
-			Attempt conAttempt = connectAttempts.get(cc.getNodeId());
+			Attempt conAttempt = connectAttempts.remove(cc.getNodeId());
 			if (conAttempt != null) {
 				conAttempt.succeeded();
 			}
@@ -524,8 +514,13 @@ public class CCMgr {
 				return;
 			}
 			triedEps.add(tryingEp);
-			Attempt contingentAttempt = (contingentAttempts.size() > 0) ? contingentAttempts.get(0) : null;
-			CCMgr.this.initiateNewCC(node, contingentAttempt, sendReqConnIfFail, triedEps);
+			Attempt ca = (contingentAttempts.size() > 0) ? contingentAttempts.get(0) : null;
+			if(contingentAttempts.size() > 1) {
+				for(int i=1;i<contingentAttempts.size();i++) {
+					ca.addContingentAttempt(contingentAttempts.get(i));
+				}
+			}
+			CCMgr.this.makeCCTo(node, ca, sendReqConnIfFail, triedEps);
 		}
 
 		@Override

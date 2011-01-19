@@ -1241,38 +1241,45 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 					needToRetransmitFirstPkt = false;
 					continue;
 				}
-				// If we need to close the conn, do it now
-				if (shouldSendFinAck) {
-					SEONPacket finAckPacket = new SEONPacket(localEP, remoteEP, null);
-					finAckPacket.setSequenceNumber(sendNext);
-					sendNext = mod.add(sendNext, 1);
-					finAckPacket.setAckNumber(recvNext);
-					finAckPacket.setFIN(true);
-					finAckPacket.setACK(true);
-					addToRetransQ(finAckPacket);
-					startResponseTimer(responseTimeoutLow);
-					vis.sendPkt(finAckPacket);
-					pktsSent++;
-					setState(State.LastAck);
-					shouldSendFinAck = false;
-					return false;
-				}
-				if (shouldSendFin) {
-					// NB RFC 793 p60 is WRONG! We must set ACK as well as
-					// FIN or it won't get processed
-					SEONPacket finPacket = new SEONPacket(localEP, remoteEP, null);
-					finPacket.setSequenceNumber(sendNext);
-					finPacket.setAckNumber(recvNext);
-					finPacket.setFIN(true);
-					finPacket.setACK(true);
-					sendNext = mod.add(sendNext, 1);
-					addToRetransQ(finPacket);
-					startResponseTimer(responseTimeoutLow);
-					vis.sendPkt(finPacket);
-					pktsSent++;
-					setState(State.FinWait);
-					shouldSendFin = false;
-					return false;
+				// If we are asynchronously sending and we need more data, get
+				// some
+				if (dataProvider != null && outgoing.available() <= MSS)
+					fetchMoreData();
+				// Closing the conn - we only do this once all data has been sent, unless gamma=0, which will prevent
+				// data ever being sent, so we close now
+				if (gamma == 0f || outgoing.available() == 0) {
+					if (shouldSendFinAck) {
+						SEONPacket finAckPacket = new SEONPacket(localEP, remoteEP, null);
+						finAckPacket.setSequenceNumber(sendNext);
+						sendNext = mod.add(sendNext, 1);
+						finAckPacket.setAckNumber(recvNext);
+						finAckPacket.setFIN(true);
+						finAckPacket.setACK(true);
+						addToRetransQ(finAckPacket);
+						startResponseTimer(responseTimeoutLow);
+						vis.sendPkt(finAckPacket);
+						pktsSent++;
+						setState(State.LastAck);
+						shouldSendFinAck = false;
+						return false;
+					}
+					if (shouldSendFin) {
+						// NB RFC 793 p60 is WRONG! We must set ACK as well as
+						// FIN or it won't get processed
+						SEONPacket finPacket = new SEONPacket(localEP, remoteEP, null);
+						finPacket.setSequenceNumber(sendNext);
+						finPacket.setAckNumber(recvNext);
+						finPacket.setFIN(true);
+						finPacket.setACK(true);
+						sendNext = mod.add(sendNext, 1);
+						addToRetransQ(finPacket);
+						startResponseTimer(responseTimeoutLow);
+						vis.sendPkt(finPacket);
+						pktsSent++;
+						setState(State.FinWait);
+						shouldSendFin = false;
+						return false;
+					}
 				}
 				// Don't send any more data if we're waiting to close
 				if (state == State.FinWait || state == State.LastAck)
@@ -1280,10 +1287,6 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 				// Don't send any new data if we've been silenced
 				if (gamma == 0f)
 					return false;
-				// If we are asynchronously sending and we need more data, get
-				// some
-				if (dataProvider != null && outgoing.available() <= MSS)
-					fetchMoreData();
 				if (outgoing.available() == 0)
 					return false;
 				// Send fresh data

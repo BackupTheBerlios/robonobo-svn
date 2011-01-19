@@ -277,6 +277,13 @@ public class BuyMgr {
 				log.error("Error when depositing token from " + nodeId, e);
 			}
 			Attempt onClose = onAcctCloseAttempts.remove(nodeId);
+			
+			// DEBUG
+			String msg = "Successfully closed account with "+nodeId;
+			if(onClose != null)
+				msg += ": firing onclose attempt";
+			log.debug(msg);
+			
 			if (onClose != null)
 				onClose.succeeded();
 		}

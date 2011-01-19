@@ -53,6 +53,8 @@ public class EonBroadcastConnection implements BroadcastConnection, PullDataProv
 		if (closed)
 			return;
 		closed = true;
+		// Set the gamma to 0 here; this tells the connection to close without waiting for data to be sent
+		seonConn.setGamma(0f);
 		seonConn.close();
 	}
 

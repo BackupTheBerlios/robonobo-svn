@@ -13,7 +13,7 @@ public class ReqConnHandler extends AbstractMessageHandler {
 		if(rc.getToNodeId().equals(mina.getMyNodeId())) {
 			// Make a ControlConnection to this host
 			// TODO: #CC limits
-			mina.getCCM().initiateNewCC(rc.getFromNode(), null, false, null);
+			mina.getCCM().makeCCTo(rc.getFromNode(), null, false, null);
 		}
 		else if(mina.getConfig().isSupernode())
 			mina.getCCM().sendOrForwardMessageTo("ReqConn", rc, rc.getToNodeId());

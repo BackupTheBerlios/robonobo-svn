@@ -237,13 +237,8 @@ public class StreamConnsMgr {
 				Attempt getCCAttempt = new GetCCAttempt(mina.getConfig().getMessageTimeout(), ss);
 				pendingCons.put(nodeId, getCCAttempt);
 				getCCAttempt.start();
-				if (mina.getCCM().haveRunningOrPendingCCTo(nodeId)) {
-					log.debug("Adding request to listen to " + sm.getStreamId() + " to pending connection to " + nodeId);
-					mina.getCCM().addAttemptToPendingCC(nodeId, getCCAttempt);
-				} else {
-					log.debug("Making connection to " + nodeId + " for listening to " + sm.getStreamId());
-					mina.getCCM().initiateNewCC(node, getCCAttempt);
-				}
+				log.debug("Making connection to " + nodeId + " for listening to " + sm.getStreamId());
+				mina.getCCM().makeCCTo(node, getCCAttempt);
 			}
 		} else {
 			// Already connected to this node
