@@ -57,6 +57,7 @@ public class RemoteNodeHandler implements PushDataReceiver {
 	}
 
 	public void close() {
+		log.debug("RemoteNodeHandler for "+dataChan+" closing");
 		handleAttempt.cancel();
 		dataChan.close();
 	}

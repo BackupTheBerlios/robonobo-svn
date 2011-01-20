@@ -40,8 +40,7 @@ public class PageRequestMgr {
 	}
 
 	/**
-	 * Go through our page window, and figure which pages to ask for based on
-	 * least-common-first
+	 * Go through our page window, and figure which pages to ask for based on least-common-first
 	 * 
 	 * @syncpriority 90
 	 */
@@ -50,16 +49,18 @@ public class PageRequestMgr {
 		StreamPosition thisSourceSp = spMap.get(sourceId);
 
 		updateWindow();
-//		log.debug("PRM requesting " + numPages + " pages for s:" + sm.getStreamId() + "/n:" + sourceId + " win:" + winStart + "-" + winEnd);
+		// log.debug("PRM requesting " + numPages + " pages for s:" + sm.getStreamId() + "/n:" + sourceId + " win:" +
+		// winStart + "-" + winEnd);
+		
 		// Count how many sources have each page in this window
-
 		int winSz = (int) ((winEnd - winStart) + 1);
 		int[] windowCounts = new int[winSz];
 		for (int i = 0; i < windowCounts.length; i++) {
 			long thisPn = winStart + i;
 			// If we already have this page, or it's pending, or it's beyond the
 			// end of the stream, mark it as 0 and don't ask for it
-			if (sm.getPageBuffer().haveGotPage(thisPn) || pendingPages.contains(thisPn) || thisPn >= sm.getPageBuffer().getTotalPages()) {
+			if (sm.getPageBuffer().haveGotPage(thisPn) || pendingPages.contains(thisPn)
+					|| thisPn >= sm.getPageBuffer().getTotalPages()) {
 				windowCounts[i] = 0;
 				continue;
 			}
@@ -70,16 +71,16 @@ public class PageRequestMgr {
 			}
 			windowCounts[i] = numSources;
 		}
-//		StringBuffer sb = new StringBuffer("PRM win counts: ");
-//		for (int i = 0; i < windowCounts.length; i++) {
-//			if (i > 0)
-//				sb.append(", ");
-//			sb.append(windowCounts[i]);
-//		}
-//		log.debug(sb);
+		// StringBuffer sb = new StringBuffer("PRM win counts: ");
+		// for (int i = 0; i < windowCounts.length; i++) {
+		// if (i > 0)
+		// sb.append(", ");
+		// sb.append(windowCounts[i]);
+		// }
+		// log.debug(sb);
 
 		// Figure out which pages to ask for
-//		sb = new StringBuffer("PRM select: ");
+		// sb = new StringBuffer("PRM select: ");
 		List<Long> candidates = new ArrayList<Long>();
 		nextPage: while (result.size() < numPages) {
 			// Overdue pages first
@@ -88,10 +89,10 @@ public class PageRequestMgr {
 				Long pn = opIter.next();
 				// Don't ask the source who was supposed to give it to us first
 				// time around
-				if (!alreadyReqdPages.contains(pn)) {
+				if (thisSourceSp.includesPage(pn) && !alreadyReqdPages.contains(pn)) {
 					opIter.remove();
 					if (!sm.getPageBuffer().haveGotPage(pn)) {
-//						sb.append(pn).append("(o) ");
+						// sb.append(pn).append("(o) ");
 						result.add(pn);
 						continue nextPage;
 					}
@@ -100,7 +101,7 @@ public class PageRequestMgr {
 			// Now find the least-common pages
 			int minCount = Integer.MAX_VALUE;
 			candidates.clear();
-//			sb.append("{ ");
+			// sb.append("{ ");
 			for (int i = 0; i < windowCounts.length; i++) {
 				int thisCount = windowCounts[i];
 				if (thisCount == 0)
@@ -112,29 +113,29 @@ public class PageRequestMgr {
 					continue;
 				if (thisCount == minCount) {
 					candidates.add(thisPn);
-//					sb.append("+c:").append(thisPn).append(" ");
+					// sb.append("+c:").append(thisPn).append(" ");
 				} else if (thisCount < minCount) {
 					candidates.clear();
-//					sb.append(".c:").append(thisPn).append(" ");
+					// sb.append(".c:").append(thisPn).append(" ");
 					candidates.add(thisPn);
 					minCount = thisCount;
 				}
 			}
-//			sb.append("} ");
+			// sb.append("} ");
 			if (candidates.size() == 0)
 				break nextPage;
 			else if (candidates.size() == 1) {
 				result.add(candidates.get(0));
-//				sb.append(candidates.get(0)).append(" ");
+				// sb.append(candidates.get(0)).append(" ");
 			} else {
 				Long winner = candidates.get(rand.nextInt(candidates.size()));
-//				sb.append("[");
-//				for (int i = 0; i < candidates.size(); i++) {
-//					if (i > 0)
-//						sb.append(",");
-//					sb.append(candidates.get(i));
-//				}
-//				sb.append("]=").append(winner).append(" ");
+				// sb.append("[");
+				// for (int i = 0; i < candidates.size(); i++) {
+				// if (i > 0)
+				// sb.append(",");
+				// sb.append(candidates.get(i));
+				// }
+				// sb.append("]=").append(winner).append(" ");
 				result.add(winner);
 			}
 		}
@@ -142,16 +143,16 @@ public class PageRequestMgr {
 		// after that, ask them for one of those
 		if (result.size() == 0 && thisSourceSp.highestIncludedPage() > winEnd) {
 			for (long pn = winEnd + 1; pn <= thisSourceSp.highestIncludedPage(); pn++) {
-				if (!thisSourceSp.includesPage(pn)) 
+				if (!thisSourceSp.includesPage(pn))
 					continue;
 				if (sm.getPageBuffer().haveGotPage(pn) || pendingPages.contains(pn))
 					continue;
-//				sb.append(pn).append("(ex)");
+				// sb.append(pn).append("(ex)");
 				result.add(pn);
 				break;
 			}
 		}
-//		log.debug(sb);
+		// log.debug(sb);
 		// Mark these pages as pending
 		for (Long pn : result) {
 			pendingPages.add(pn);
@@ -163,23 +164,22 @@ public class PageRequestMgr {
 	 * Must be called only from inside sync block
 	 */
 	private void updateWindow() {
-		// Always grab page 0 & 1first - hopefully enough to start playback
-		if(winStart < 0) {
+		// Always grab page 0 & 1 first - hopefully enough to start playback
+		if (winStart < 0) {
 			winStart = 0;
 			winEnd = 1;
-			return;
 		}
 		long lastContigPage = sm.getPageBuffer().getLastContiguousPage();
-		if(lastContigPage >= winEnd) {
+		if (lastContigPage >= winEnd) {
 			// We have everything in our window, update
-			winStart = lastContigPage +1;
-			winEnd = winStart + windowSize() -1;
+			winStart = lastContigPage + 1;
+			winEnd = winStart + windowSize() - 1;
 			long totPgs = sm.getPageBuffer().getTotalPages();
-			if(winEnd >= totPgs)
+			if (winEnd >= totPgs)
 				winEnd = totPgs - 1;
 		}
 	}
-	
+
 	private int windowSize() {
 		if (sm.getPageBuffer().getAvgPageSize() <= 0)
 			return MIN_PAGE_WINDOW;

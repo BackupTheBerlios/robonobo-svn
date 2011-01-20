@@ -106,8 +106,9 @@ public class ControlConnection implements PushDataReceiver {
 		nodeDesc = helHelper.getHello().getNode();
 		nodeId = nodeDesc.getId();
 		if (nodeDesc.getSupernode() && mina.getConfig().isSupernode()) {
+			// TODO Fix me when supernodes are done properly
 			log.error("Error - node " + nodeId + " is a supernode, it cannot connect to me");
-			close(true, "Supernodes cannot connect to supernodes");
+			close("Supernodes cannot connect to supernodes");
 			return;
 		}
 		this.scf = scf;
@@ -138,21 +139,22 @@ public class ControlConnection implements PushDataReceiver {
 	}
 
 	public void providerClosed() {
+		log.error(this+": network error - closing");
 		close();
 	}
 
 	public void close() {
-		close(false, null);
+		close(null);
 	}
 
 	/**
 	 * @syncpriority 60
 	 */
-	public synchronized void close(boolean sendByeMsg, String reason) {
+	public synchronized void close(String reason) {
 		if (closing)
 			return;
 		closing = true;
-		if (sendByeMsg) {
+		if (reason != null) {
 			try {
 				Bye bye = Bye.newBuilder().setReason(reason).build();
 				sendMessage("Bye", bye, false);
@@ -181,6 +183,7 @@ public class ControlConnection implements PushDataReceiver {
 	 * @syncpriority 60
 	 */
 	public synchronized void abort() {
+		log.debug(this+": aborting");
 		if (pingTask != null)
 			pingTask.cancel(true);
 		if (helloAttempt != null)
@@ -283,7 +286,7 @@ public class ControlConnection implements PushDataReceiver {
 	public void updateDetails(Node newNodeDesc) {
 		String newNodeId = newNodeDesc.getId();
 		if (!newNodeId.equals(nodeId))
-			close(true, "You're not allowed to change your node ID");
+			close("You're not allowed to change your node ID");
 		nodeDesc = newNodeDesc;
 	}
 
@@ -334,7 +337,7 @@ public class ControlConnection implements PushDataReceiver {
 			helloAttempt.failed();
 			log.error("Error: attempting to connect to ID " + nodeId + ", but node claims its ID as "
 					+ hello.getNode().getId());
-			close(true, "Your Node ID is not the one I was expecting");
+			close("Your Node ID is not the one I was expecting");
 			return;
 		}
 		// Update details of our new buddy
@@ -434,7 +437,7 @@ public class ControlConnection implements PushDataReceiver {
 		}
 
 		if (closeNow)
-			close(true, reason);
+			close(reason);
 	}
 
 	private class CloseCCAttempt extends Attempt {
@@ -454,12 +457,12 @@ public class ControlConnection implements PushDataReceiver {
 
 		protected void onFail() {
 			log.error(ControlConnection.this + " failing attempt to close connection - closing now");
-			close(false, null);
+			close();
 		}
 
 		protected void onTimeout() {
 			log.error(ControlConnection.this + " timeout closing connection - closing now");
-			close(false, null);
+			close();
 		}
 	}
 

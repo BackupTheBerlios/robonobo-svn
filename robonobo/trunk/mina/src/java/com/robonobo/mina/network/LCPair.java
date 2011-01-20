@@ -27,8 +27,7 @@ import com.robonobo.mina.util.MinaConnectionException;
  * @syncpriority 130
  */
 public class LCPair extends ConnectionPair {
-	/** ms */
-	static final int MIN_PAGE_TIMEOUT = 30000;
+	private static final int MIN_PAGE_TIMEOUT = 60000;
 	private ListenConnection lc;
 	private boolean closing = false;
 	private Map<Long, PageAttempt> reqdPages = new HashMap<Long, PageAttempt>();
@@ -38,11 +37,12 @@ public class LCPair extends ConnectionPair {
 	// These below are used to measure page timeouts, all in ms
 	// TODO Revisit page timeouts when we have some real internetty data
 	int srtt, rttvar;
-	int rto = MIN_PAGE_TIMEOUT;
+	int rto;
 	Future<?> usefulDataTimeout = null;
 
 	public LCPair(StreamMgr sm, ControlConnection cc, SourceStatus ss) throws MinaConnectionException {
 		super(sm, cc);
+		rto = MIN_PAGE_TIMEOUT;
 		lc = cc.getSCF().getListenConnection(cc);
 		lc.setLCPair(this);
 		setLastSourceStat(ss);

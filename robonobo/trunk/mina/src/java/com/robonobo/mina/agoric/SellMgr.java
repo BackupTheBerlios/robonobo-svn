@@ -241,7 +241,7 @@ public class SellMgr {
 
 	/**
 	 * If the requesting node has enough ends to pay for the requested bytes, charge their account and return the status
-	 * index used to calculate the charge. Otherwise, return <0
+	 * index used to calculate the charge. Otherwise, sends them a PayUp demand (if they have an account) and return <0
 	 */
 	public int requestAndCharge(String nodeId, long numBytes) {
 		double charge;
@@ -402,6 +402,9 @@ public class SellMgr {
 				log.error("Ignoring erroneous nobid from " + fromNodeId);
 				return;
 			}
+			// If they haven't sent us a bid in this auction yet, use their previous one
+			if(!currentBids.containsKey(fromNodeId) && agreedBids.containsKey(fromNodeId))
+				currentBids.put(fromNodeId, agreedBids.get(fromNodeId));
 			waitingForBids.remove(fromNodeId);
 			activeBidders.remove(fromNodeId);
 		}

@@ -31,7 +31,7 @@ public class StartSourceHandler extends AbstractMessageHandler {
 			if(mina.getConfig().isAgoric() && !mina.getSellMgr().haveActiveAccount(cc.getNodeId())) {
 				Log log = mina.getLogger(getClass());
 				log.error("Error: asked to start providing stream "+streamId+" to "+cc.getNodeId()+", but they do not have an active account");
-				cc.close(true, "You asked for a stream without opening an account");
+				cc.close("You asked for a stream without opening an account");
 				return;
 			}
 			sm.getStreamConns().makeBroadcastConnectionTo(cc, ss.getEp(), ss.getPageList());

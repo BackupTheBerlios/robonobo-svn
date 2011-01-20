@@ -21,7 +21,7 @@ package com.robonobo.eon;
 import java.util.EventListener;
 
 /**
- * The generic EON Connection Listener interace, this based on the delegate event model, see the associated event objects
+ * The generic EON Connection Listener interface, this based on the delegate event model, see the associated event objects
  * @author Ray
  *
  */

@@ -1,7 +1,6 @@
 package com.robonobo.mina.network;
 
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -78,28 +77,30 @@ public class BCPair extends ConnectionPair {
 	 * @syncpriority 120
 	 */
 	public void requestPages(List<Long> pages) {
-		if(mina.getCCM().isShuttingDown()) {
-			log.debug(this+" not requesting pages - closing down");
+		if (mina.getCCM().isShuttingDown()) {
+			log.debug(this + " not requesting pages - closing down");
 			return;
 		}
 		// Bug huntin
 		if (bc == null)
 			throw new SeekInnerCalmException();
-		boolean failedPage = false;
+		List<Long> failedPages = null;
 		// Use a fair reentrant lock to make sure we don't handle reqpage requests out of order
 		reqPageLock.lock();
 		try {
 			// Get the total amount of data we want to send
 			long totalPageLen = 0;
 			if (mina.getConfig().isAgoric()) {
-				for (Iterator<Long> iter = pages.iterator(); iter.hasNext();) {
-					Long pn = iter.next();
+				for (Long pn : pages) {
 					if (sm.getPageBuffer().haveGotPage(pn)) {
 						PageInfo pi = sm.getPageBuffer().getPageInfo(pn);
 						totalPageLen += pi.getLength();
 					} else {
-						iter.remove();
-						failedPage = true;
+						// A bit odd to instantiate it here, but we will only get here very rarely (should be never,
+						// they should never ask), so no point in pointlessly instantiating the list 99.9% of the time
+						if (failedPages == null)
+							failedPages = new ArrayList<Long>();
+						failedPages.add(pn);
 						if (log.isDebugEnabled())
 							log.debug(this + " requested page " + pn + " which I do not have");
 					}
@@ -117,16 +118,16 @@ public class BCPair extends ConnectionPair {
 				return;
 			} else {
 				for (Long pn : pages) {
-					bc.addPageToQ(pn, auctStatIdx);
+					if (failedPages == null || !failedPages.contains(pn))
+						bc.addPageToQ(pn, auctStatIdx);
 				}
 			}
 		} finally {
 			reqPageLock.unlock();
 		}
 		// If they asked us for a page we didn't have, tell them where we are in the stream
-		if (failedPage) {
+		if (failedPages != null)
 			cc.sendMessage("StreamStatus", sm.buildStreamStatus(cc.getNodeId()));
-		}
 	}
 
 	public void setGamma(float gamma) {

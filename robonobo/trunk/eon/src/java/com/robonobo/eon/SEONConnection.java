@@ -21,6 +21,7 @@ package com.robonobo.eon;
 import static java.lang.Math.*;
 import static java.lang.System.*;
 
+import java.io.IOError;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.NumberFormat;
@@ -469,7 +470,7 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 
 	public synchronized void send(ByteBuffer buf) throws EONException {
 		if (state == State.Closed || state == State.Listen || state == State.FinWait || state == State.LastAck)
-			throw new EONException("Cannot send in current state");
+			throw new EONException(this + ": cannot send in current state: " + state);
 		outgoing.addBuffer(buf);
 		if (retransQ.size() == 0)
 			sendDataIfNecessary();
@@ -480,7 +481,10 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 			send(data);
 		} catch (EONException e) {
 			// Irritatingly, java <6 doesn't allow nested exceptions within IOE
-			throw new IOException("Caught EONException: " + e.getMessage());
+			if (CodeUtil.javaMajorVersion() >= 6)
+				throw new IOException(e);
+			else
+				throw new IOException("Caught EONException: " + e.getMessage());
 		}
 	}
 
@@ -946,6 +950,19 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 			notifyAll();
 		}
 		fireOnClose();
+	}
+
+	@Override
+	protected synchronized void fireOnClose() {
+		super.fireOnClose();
+		final PushDataReceiver dataRec = dataReceiver;
+		if (dataRec != null) {
+			mgr.getExecutor().execute(new CatchingRunnable() {
+				public void doRun() throws Exception {
+					dataRec.providerClosed();
+				}
+			});
+		}
 	}
 
 	/**
@@ -1747,10 +1764,9 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 				}
 				try {
 					dataRec.receiveData(buf, null);
-				} catch (IOException e) {
-					close();
 				} catch (Exception e) {
-					log.error(SEONConnection.this + " caught " + e.getClass().getSimpleName(), e);
+					log.error(SEONConnection.this + " caught " + e.getClass().getSimpleName()+" while passing async data: closing", e);
+					close();
 				}
 			}
 		}
