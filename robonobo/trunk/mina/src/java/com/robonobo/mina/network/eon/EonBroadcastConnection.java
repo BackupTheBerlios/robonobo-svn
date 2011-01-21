@@ -62,8 +62,7 @@ public class EonBroadcastConnection implements BroadcastConnection, PullDataProv
 	public void onClose(EONConnectionEvent event) {
 		if (!closed) {
 			log.debug("Network error for BC[" + bcp.getCC().getNodeId() + "/" + bcp.getSM().getStreamId());
-			bcp.getCC().sendMessage("StopSource", StopSource.newBuilder().setStreamId(bcp.getSM().getStreamId()).build());
-			bcp.die();
+			bcp.die(false);
 		}
 	}
 

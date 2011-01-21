@@ -14,16 +14,10 @@ public class StopSourceHandler extends AbstractMessageHandler {
 	public void handleMessage(MessageHolder mh) {
 		StopSource ss = (StopSource) mh.getMessage();
 		BCPair bcp = mh.getFromCC().getBCPair(ss.getStreamId());
-		if(bcp != null) {
-			bcp.die();
-			return;
-		}
-		LCPair lcp = mh.getFromCC().getLCPair(ss.getStreamId());
-		if(lcp != null) {
-			lcp.die();
-			return;
-		}
-		log.error("Node "+mh.getFromCC().getNodeId()+" sent StopSource for stream "+ss.getStreamId()+", but I have no cpair for that stream");
+		if(bcp != null)
+			bcp.die(false);
+		else
+			log.error("Node "+mh.getFromCC().getNodeId()+" sent StopSource for stream "+ss.getStreamId()+", but I have no bcp for that stream");
 	}
 
 	@Override

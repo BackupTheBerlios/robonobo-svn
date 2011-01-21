@@ -3,41 +3,7 @@ package com.robonobo.mina.instance;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.robonobo.mina.message.handlers.AbandonEscrowHandler;
-import com.robonobo.mina.message.handlers.AcctClosedHandler;
-import com.robonobo.mina.message.handlers.AdvEscrowHandler;
-import com.robonobo.mina.message.handlers.AdvSourceHandler;
-import com.robonobo.mina.message.handlers.AuctionResultHandler;
-import com.robonobo.mina.message.handlers.BeginEscrowHandler;
-import com.robonobo.mina.message.handlers.BidHandler;
-import com.robonobo.mina.message.handlers.BidUpdateHandler;
-import com.robonobo.mina.message.handlers.ByeHandler;
-import com.robonobo.mina.message.handlers.CloseAcctHandler;
-import com.robonobo.mina.message.handlers.DontWantSourceHandler;
-import com.robonobo.mina.message.handlers.EscrowBeganHandler;
-import com.robonobo.mina.message.handlers.EscrowFinishedHandler;
-import com.robonobo.mina.message.handlers.EscrowLockedHandler;
-import com.robonobo.mina.message.handlers.EscrowPaidHandler;
-import com.robonobo.mina.message.handlers.GotSourceHandler;
-import com.robonobo.mina.message.handlers.HelloHandler;
-import com.robonobo.mina.message.handlers.LockEscrowHandler;
-import com.robonobo.mina.message.handlers.MessageHandler;
-import com.robonobo.mina.message.handlers.MinChargeHandler;
-import com.robonobo.mina.message.handlers.NoBidHandler;
-import com.robonobo.mina.message.handlers.PayUpHandler;
-import com.robonobo.mina.message.handlers.PingHandler;
-import com.robonobo.mina.message.handlers.PongHandler;
-import com.robonobo.mina.message.handlers.QueryEscrowHandler;
-import com.robonobo.mina.message.handlers.ReqConnHandler;
-import com.robonobo.mina.message.handlers.ReqPageHandler;
-import com.robonobo.mina.message.handlers.ReqSourceStatusHandler;
-import com.robonobo.mina.message.handlers.SourceStatusHandler;
-import com.robonobo.mina.message.handlers.StartSourceHandler;
-import com.robonobo.mina.message.handlers.StopSourceHandler;
-import com.robonobo.mina.message.handlers.StreamStatusHandler;
-import com.robonobo.mina.message.handlers.TopUpHandler;
-import com.robonobo.mina.message.handlers.UnAdvSourceHandler;
-import com.robonobo.mina.message.handlers.WantSourceHandler;
+import com.robonobo.mina.message.handlers.*;
 
 public class MessageMgr {
 	private MinaInstance mina;
@@ -170,6 +136,10 @@ public class MessageMgr {
 		mh = new SourceStatusHandler();
 		mh.setMina(mina);
 		registerHandler("SourceStatus", mh);
+		
+		mh = new SourceStoppingHandler();
+		mh.setMina(mina);
+		registerHandler("SourceStopping", mh);
 		
 		mh = new StartSourceHandler();
 		mh.setMina(mina);

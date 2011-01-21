@@ -46,7 +46,7 @@ public class Timeout implements Runnable {
 	protected long eventFireTime = -1;
 	protected NameGetter nameGetter;
 	protected ScheduledFuture<?> future;
-	protected boolean isDebugLogging;
+	protected final boolean debugLogging;
 
 	/**
 	 * Use this NameGetter strangeness to allow the name of the timeout to change during its execution
@@ -63,7 +63,7 @@ public class Timeout implements Runnable {
 				}
 			};
 		}
-		isDebugLogging = log.isDebugEnabled();
+		debugLogging = log.isDebugEnabled();
 	}
 
 	public Timeout(ScheduledThreadPoolExecutor executor, Runnable task) {
@@ -77,20 +77,20 @@ public class Timeout implements Runnable {
 		long newEventFireTime = currentTimeMillis() + timeoutMs;
 		if (newEventFireTime < taskScheduledTime) {
 			// If our new fire time is before the task is due to be run, we need to reschedule the task
-			if (isDebugLogging)
+			if (debugLogging)
 				log.debug("Timeout '" + nameGetter.getName() + "' cancelling currently-scheduled task");
 			future.cancel(false);
 			taskScheduledTime = -1;
 		}
 		eventFireTime = newEventFireTime;
-		if (isDebugLogging)
+		if (debugLogging)
 			log.debug("Timeout '" + nameGetter.getName() + "' setting fire time to " + df.format(eventFireTime));
 		if (taskScheduledTime < 0)
 			startTimer();
 	}
 
 	public synchronized void cancel() {
-		if (isDebugLogging)
+		if (debugLogging)
 			log.debug("Timeout '" + nameGetter.getName() + "' cancelling ");
 		clear();
 		if (future != null)
@@ -103,7 +103,7 @@ public class Timeout implements Runnable {
 	 */
 	public synchronized void clear() {
 		eventFireTime = -1;
-		if (isDebugLogging)
+		if (debugLogging)
 			log.debug("Timeout '" + nameGetter.getName() + "' clearing timeout");
 	}
 
@@ -115,33 +115,33 @@ public class Timeout implements Runnable {
 	 * Must only be called inside a sync block
 	 */
 	protected void startTimer() {
-		if (isDebugLogging)
+		if (debugLogging)
 			log.debug("Timeout '" + nameGetter.getName() + "' scheduling task to run at " + df.format(eventFireTime));
 		future = executor.schedule(this, eventFireTime - currentTimeMillis(), TimeUnit.MILLISECONDS);
 		taskScheduledTime = eventFireTime;
 	}
 
 	public void run() {
-		if (isDebugLogging)
+		if (debugLogging)
 			log.debug("Timeout '" + nameGetter.getName() + "' task running");
 		synchronized (this) {
 			taskScheduledTime = -1;
 			// If we're not yet scheduled to run, wait until we are
 			if (currentTimeMillis() < eventFireTime) {
-				if (isDebugLogging)
+				if (debugLogging)
 					log.debug("Timeout '" + nameGetter.getName() + "' - timeout moved, rescheduling");
 				startTimer();
 				return;
 			}
 			// If we've been cleared, just return
 			if (eventFireTime < 0) {
-				if (isDebugLogging)
+				if (debugLogging)
 					log.debug("Timeout '" + nameGetter.getName() + "' - timeout cleared, task returning");
 				return;
 			}
 		}
 		// Let's rock
-		if (isDebugLogging)
+		if (debugLogging)
 			log.debug("Timeout '" + nameGetter.getName() + "' - FIRING");
 		task.run();
 	}

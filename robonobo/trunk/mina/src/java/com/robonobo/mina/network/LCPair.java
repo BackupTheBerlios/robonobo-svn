@@ -73,8 +73,8 @@ public class LCPair extends ConnectionPair {
 			mina.getBuyMgr().newAuctionState(cc.getNodeId(), new AuctionState(lastSourceStat.getAuctionState()));
 			// Set our timeout to 8 * command timeout, to allow time to open an
 			// auction and for bids to go to and fro
-			Attempt a = new Attempt(mina.getExecutor(), 8 * mina.getConfig().getMessageTimeout() * 1000, "lcp-" + sm.getStreamId()
-					+ "-" + nodeId) {
+			Attempt a = new Attempt(mina.getExecutor(), 8 * mina.getConfig().getMessageTimeout() * 1000, "lcp-"
+					+ sm.getStreamId() + "-" + nodeId) {
 				protected void onSuccess() {
 					startListening();
 				}
@@ -170,14 +170,10 @@ public class LCPair extends ConnectionPair {
 		for (PageAttempt rpa : reqdPages.values()) {
 			rpa.failed();
 		}
-		if(usefulDataTimeout != null)
+		if (usefulDataTimeout != null)
 			usefulDataTimeout.cancel(false);
-		if (sendStopSource) {
-			try {
-				sendMessage("StopSource", StopSource.newBuilder().setStreamId(sm.getStreamId()).build());
-			} catch (MinaConnectionException ignore) {
-			}
-		}
+		if (sendStopSource)
+			sendMessage("StopSource", StopSource.newBuilder().setStreamId(sm.getStreamId()).build());
 		cc.removeLCPair(this);
 		super.die();
 	}
@@ -273,13 +269,8 @@ public class LCPair extends ConnectionPair {
 						usefulDataTimeout.cancel(false);
 						usefulDataTimeout = null;
 					}
-					try {
-						sendMessage("ReqPage", ReqPage.newBuilder().setStreamId(sm.getStreamId()).addAllPage(newPages)
-								.build());
-					} catch (MinaConnectionException e) {
-						// We'll die shortly - just return
-						return;
-					}
+					sendMessage("ReqPage", ReqPage.newBuilder().setStreamId(sm.getStreamId()).addAllPage(newPages)
+							.build());
 					for (long pn : newPages) {
 						PageAttempt rpa = new PageAttempt(rto, pn, now().getTime(), statusIdx);
 						reqdPages.put(pn, rpa);

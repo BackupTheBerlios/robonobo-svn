@@ -299,13 +299,7 @@ public class StreamConnsMgr {
 			BCPair bcPair = i.next();
 			if (bcPair.getCC().getNodeId().equals(except))
 				continue;
-			try {
-				bcPair.sendMessage(msgName, msg);
-			} catch (MinaConnectionException ignore) {
-			} // The pair will get
-			// killed anyway, don't
-			// need to do anything
-			// with this
+			bcPair.sendMessage(msgName, msg);
 		}
 	}
 
@@ -325,13 +319,7 @@ public class StreamConnsMgr {
 			ConnectionPair lcPair = i.next();
 			if (lcPair.getCC().getNodeId().equals(except))
 				continue;
-			try {
-				lcPair.sendMessage(msgName, msg);
-			} catch (MinaConnectionException ignore) {
-			} // The pair will get
-			// killed anyway, don't
-			// need to do anything
-			// with this
+			lcPair.sendMessage(msgName, msg);
 		}
 	}
 
@@ -346,13 +334,7 @@ public class StreamConnsMgr {
 				continue;
 			if (bcPair.getCC().isLocal())
 				continue;
-			try {
-				bcPair.sendMessage(msgName, msg);
-			} catch (MinaConnectionException ignore) // The pair will get killed
-			// anyway, don't need to do
-			// anything with this
-			{
-			}
+			bcPair.sendMessage(msgName, msg);
 		}
 	}
 

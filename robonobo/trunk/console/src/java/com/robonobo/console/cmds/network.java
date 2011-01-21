@@ -10,6 +10,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
+import com.robonobo.common.util.TextUtil;
 import com.robonobo.common.util.TimeUtil;
 import com.robonobo.console.RobonoboConsole;
 import com.robonobo.core.RobonoboController;
@@ -32,7 +33,7 @@ public class network implements ConsoleCommand {
 				out.println(url);
 			}
 			List<ConnectedNode> nodes = controller.getConnectedNodes();
-			out.println("\nConnections:");
+			out.println("\n"+numItems(nodes, "connection")+":");
 			if (nodes.size() > 0)
 				out.println(rightPad("Id", 36) + rightPad(" Url", 37) + rightPad(" Super", 6) + rightPad(" Up", 12)
 						+ rightPad(" Down", 12) + rightPad(" My Bid", 7) + rightPad(" My " + GAMMA, 6)

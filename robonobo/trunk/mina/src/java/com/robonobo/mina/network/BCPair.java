@@ -11,6 +11,7 @@ import com.robonobo.mina.external.buffer.PageInfo;
 import com.robonobo.mina.instance.MinaInstance;
 import com.robonobo.mina.message.MessageHolder;
 import com.robonobo.mina.message.proto.MinaProtocol.ReqPage;
+import com.robonobo.mina.message.proto.MinaProtocol.SourceStopping;
 import com.robonobo.mina.stream.StreamMgr;
 import com.robonobo.mina.util.MinaConnectionException;
 
@@ -54,13 +55,24 @@ public class BCPair extends ConnectionPair {
 	/**
 	 * @syncpriority 120
 	 */
-	public synchronized void die() {
-		if (isClosed)
-			return;
-		isClosed = true;
-		log.info("Ceasing broadcast of " + sm.getStreamId() + " to " + cc.getNodeId());
-		if (bc != null)
-			bc.close();
+	public void die() {
+		die(true);
+	}
+	
+	/**
+	 * @syncpriority 120
+	 */
+	public void die(boolean sendSourceStopping) {
+		log.info(this+" closing down");
+		synchronized (this) {
+			if (isClosed)
+				return;
+			isClosed = true;			
+			if (bc != null)
+				bc.close();
+		}
+		if(sendSourceStopping)
+			cc.sendMessage("SourceStopping", SourceStopping.newBuilder().setStreamId(sm.getStreamId()).build());
 		cc.removeBCPair(this);
 		super.die();
 	}

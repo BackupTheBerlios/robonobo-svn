@@ -1,35 +1,23 @@
 package com.robonobo.mina.instance;
 
-import static com.robonobo.common.util.TimeUtil.now;
-import static com.robonobo.common.util.TimeUtil.timeInFuture;
+import static com.robonobo.common.util.TimeUtil.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 
-import com.robonobo.common.concurrent.Batcher;
-import com.robonobo.common.concurrent.CatchingRunnable;
+import com.robonobo.common.concurrent.*;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.common.util.TimeUtil;
 import com.robonobo.core.api.proto.CoreApi.Node;
 import com.robonobo.mina.message.proto.MinaProtocol.DontWantSource;
 import com.robonobo.mina.message.proto.MinaProtocol.ReqSourceStatus;
 import com.robonobo.mina.message.proto.MinaProtocol.SourceStatus;
+import com.robonobo.mina.message.proto.MinaProtocol.SourceStatus.Builder;
 import com.robonobo.mina.message.proto.MinaProtocol.StreamStatus;
 import com.robonobo.mina.message.proto.MinaProtocol.WantSource;
-import com.robonobo.mina.message.proto.MinaProtocol.SourceStatus.Builder;
 import com.robonobo.mina.network.ControlConnection;
 import com.robonobo.mina.stream.StreamMgr;
 
@@ -375,7 +363,7 @@ public class SourceMgr {
 		}
 	}
 
-	class WantSourceBatcher extends Batcher<String> {
+	class WantSourceBatcher extends UniqueBatcher<String> {
 		WantSourceBatcher() {
 			super(mina.getConfig().getSourceRequestBatchTime(), mina.getExecutor());
 		}
@@ -387,7 +375,7 @@ public class SourceMgr {
 		}
 	}
 
-	class ReqSourceStatusBatcher extends Batcher<String> {
+	class ReqSourceStatusBatcher extends UniqueBatcher<String> {
 		Node source;
 
 		ReqSourceStatusBatcher(Node source) {

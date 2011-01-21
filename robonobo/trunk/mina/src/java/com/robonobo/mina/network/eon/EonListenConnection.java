@@ -57,7 +57,7 @@ public class EonListenConnection implements ListenConnection, PushDataReceiver {
 		if (!closed) {
 			// Something bad happened at the network layer - we're closing
 			log.debug("Network error in LC " + lcPair.getCC().getNodeId() + "/" + lcPair.getSM().getStreamId());
-			lcPair.die();
+			lcPair.die(false);
 		}
 	}
 

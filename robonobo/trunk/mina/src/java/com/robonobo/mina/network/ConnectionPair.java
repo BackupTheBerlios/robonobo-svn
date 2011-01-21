@@ -41,7 +41,7 @@ public abstract class ConnectionPair {
 		return sm;
 	}
 
-	public void sendMessage(String msgName, GeneratedMessage msg) throws MinaConnectionException {
+	public void sendMessage(String msgName, GeneratedMessage msg) {
 		cc.sendMessage(msgName, msg);
 	}
 

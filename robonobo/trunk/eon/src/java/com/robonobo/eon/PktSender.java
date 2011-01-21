@@ -96,7 +96,7 @@ public class PktSender extends CatchingRunnable {
 	}
 
 	private void insertReadyConn(EONConnection conn) {
-		// Debugging...
+		// DEBUG
 		for (EONConnection testConn : readyConns) {
 			if (testConn == conn)
 				throw new SeekInnerCalmException();
@@ -118,7 +118,7 @@ public class PktSender extends CatchingRunnable {
 		it.add(conn);
 
 		// DEBUG
-		log.debug("pktSender added ready conn, now have: " + readyConns);
+		log.debug("pktSender added ready conn "+conn+", now have: " + readyConns);
 	}
 
 	@Override
@@ -126,20 +126,19 @@ public class PktSender extends CatchingRunnable {
 	 * Inner loop
 	 */
 	public void doRun() throws Exception {
-		final boolean dbgLog = debugLogging;
 		while (true) {
 			long nowTime = currentTimeMillis();
 			lock.lock();
 			try {
 				// If we're being throttled, wait until the specified time, otherwise wait until signalled
 				if (unthrottledPkts.size() == 0 && nextSendTime > nowTime) {
-					if (dbgLog)
+					if (debugLogging)
 						log.debug("Pausing pktSend: throttling - " + readyConns.size() + " ready conns");
 					noUnthrottledPkts.signal();
 					canSend.await((nextSendTime - nowTime), TimeUnit.MILLISECONDS);
 				}
 				while (unthrottledPkts.size() == 0 && readyConns.size() == 0) {
-					if (dbgLog)
+					if (debugLogging)
 						log.debug("Pausing pktSend: no more data");
 					noUnthrottledPkts.signal();
 					canSend.await();
@@ -151,11 +150,11 @@ public class PktSender extends CatchingRunnable {
 						bytesCredit = maxBytesCredit;
 				}
 				lastCreditTime = nowTime;
-				if (dbgLog)
+				if (debugLogging)
 					log.debug("pktSend running, send credit " + bytesCredit + "B");
 				// Any unthrottled pkts we have, send them now
 				for (EONPacket pkt : unthrottledPkts) {
-					if (dbgLog)
+					if (debugLogging)
 						log.debug("Sending unthrottled pkt: " + pkt);
 					sendPkt(pkt);
 				}

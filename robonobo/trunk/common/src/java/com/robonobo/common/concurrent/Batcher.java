@@ -27,7 +27,7 @@ public abstract class Batcher<T> extends CatchingRunnable {
 	private ScheduledThreadPoolExecutor executor;
 	private ScheduledFuture<?> task;
 	private List<T> queuedObjs = new ArrayList<T>();
-	private Lock lock = new ReentrantLock();
+	protected Lock lock = new ReentrantLock();
 
 	/**
 	 * @param timespan (millisecs)
