@@ -10381,6 +10381,294 @@ public final class MinaProtocol {
     // @@protoc_insertion_point(class_scope:mina.SourceStatus)
   }
   
+  public static final class SourceStopping extends
+      com.google.protobuf.GeneratedMessage {
+    // Use SourceStopping.newBuilder() to construct.
+    private SourceStopping() {
+      initFields();
+    }
+    private SourceStopping(boolean noInit) {}
+    
+    private static final SourceStopping defaultInstance;
+    public static SourceStopping getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public SourceStopping getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return com.robonobo.mina.message.proto.MinaProtocol.internal_static_mina_SourceStopping_descriptor;
+    }
+    
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return com.robonobo.mina.message.proto.MinaProtocol.internal_static_mina_SourceStopping_fieldAccessorTable;
+    }
+    
+    // required string stream_id = 1;
+    public static final int STREAM_ID_FIELD_NUMBER = 1;
+    private boolean hasStreamId;
+    private java.lang.String streamId_ = "";
+    public boolean hasStreamId() { return hasStreamId; }
+    public java.lang.String getStreamId() { return streamId_; }
+    
+    private void initFields() {
+    }
+    public final boolean isInitialized() {
+      if (!hasStreamId) return false;
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (hasStreamId()) {
+        output.writeString(1, getStreamId());
+      }
+      getUnknownFields().writeTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      if (hasStreamId()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeStringSize(1, getStreamId());
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    public static com.robonobo.mina.message.proto.MinaProtocol.SourceStopping parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static com.robonobo.mina.message.proto.MinaProtocol.SourceStopping parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static com.robonobo.mina.message.proto.MinaProtocol.SourceStopping parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static com.robonobo.mina.message.proto.MinaProtocol.SourceStopping parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static com.robonobo.mina.message.proto.MinaProtocol.SourceStopping parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static com.robonobo.mina.message.proto.MinaProtocol.SourceStopping parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static com.robonobo.mina.message.proto.MinaProtocol.SourceStopping parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static com.robonobo.mina.message.proto.MinaProtocol.SourceStopping parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static com.robonobo.mina.message.proto.MinaProtocol.SourceStopping parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static com.robonobo.mina.message.proto.MinaProtocol.SourceStopping parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(com.robonobo.mina.message.proto.MinaProtocol.SourceStopping prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder> {
+      private com.robonobo.mina.message.proto.MinaProtocol.SourceStopping result;
+      
+      // Construct using com.robonobo.mina.message.proto.MinaProtocol.SourceStopping.newBuilder()
+      private Builder() {}
+      
+      private static Builder create() {
+        Builder builder = new Builder();
+        builder.result = new com.robonobo.mina.message.proto.MinaProtocol.SourceStopping();
+        return builder;
+      }
+      
+      protected com.robonobo.mina.message.proto.MinaProtocol.SourceStopping internalGetResult() {
+        return result;
+      }
+      
+      public Builder clear() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "Cannot call clear() after build().");
+        }
+        result = new com.robonobo.mina.message.proto.MinaProtocol.SourceStopping();
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(result);
+      }
+      
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return com.robonobo.mina.message.proto.MinaProtocol.SourceStopping.getDescriptor();
+      }
+      
+      public com.robonobo.mina.message.proto.MinaProtocol.SourceStopping getDefaultInstanceForType() {
+        return com.robonobo.mina.message.proto.MinaProtocol.SourceStopping.getDefaultInstance();
+      }
+      
+      public boolean isInitialized() {
+        return result.isInitialized();
+      }
+      public com.robonobo.mina.message.proto.MinaProtocol.SourceStopping build() {
+        if (result != null && !isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return buildPartial();
+      }
+      
+      private com.robonobo.mina.message.proto.MinaProtocol.SourceStopping buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        if (!isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return buildPartial();
+      }
+      
+      public com.robonobo.mina.message.proto.MinaProtocol.SourceStopping buildPartial() {
+        if (result == null) {
+          throw new IllegalStateException(
+            "build() has already been called on this Builder.");
+        }
+        com.robonobo.mina.message.proto.MinaProtocol.SourceStopping returnMe = result;
+        result = null;
+        return returnMe;
+      }
+      
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof com.robonobo.mina.message.proto.MinaProtocol.SourceStopping) {
+          return mergeFrom((com.robonobo.mina.message.proto.MinaProtocol.SourceStopping)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+      
+      public Builder mergeFrom(com.robonobo.mina.message.proto.MinaProtocol.SourceStopping other) {
+        if (other == com.robonobo.mina.message.proto.MinaProtocol.SourceStopping.getDefaultInstance()) return this;
+        if (other.hasStreamId()) {
+          setStreamId(other.getStreamId());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder(
+            this.getUnknownFields());
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              this.setUnknownFields(unknownFields.build());
+              return this;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                this.setUnknownFields(unknownFields.build());
+                return this;
+              }
+              break;
+            }
+            case 10: {
+              setStreamId(input.readString());
+              break;
+            }
+          }
+        }
+      }
+      
+      
+      // required string stream_id = 1;
+      public boolean hasStreamId() {
+        return result.hasStreamId();
+      }
+      public java.lang.String getStreamId() {
+        return result.getStreamId();
+      }
+      public Builder setStreamId(java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  result.hasStreamId = true;
+        result.streamId_ = value;
+        return this;
+      }
+      public Builder clearStreamId() {
+        result.hasStreamId = false;
+        result.streamId_ = getDefaultInstance().getStreamId();
+        return this;
+      }
+      
+      // @@protoc_insertion_point(builder_scope:mina.SourceStopping)
+    }
+    
+    static {
+      defaultInstance = new SourceStopping(true);
+      com.robonobo.mina.message.proto.MinaProtocol.internalForceInit();
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:mina.SourceStopping)
+  }
+  
   public static final class StartSource extends
       com.google.protobuf.GeneratedMessage {
     // Use StartSource.newBuilder() to construct.
@@ -12684,6 +12972,11 @@ public final class MinaProtocol {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_mina_SourceStatus_fieldAccessorTable;
   private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_mina_SourceStopping_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_mina_SourceStopping_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
     internal_static_mina_StartSource_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -12764,17 +13057,18 @@ public final class MinaProtocol {
       "\r.coreapi.Node\022\022\n\nto_node_id\030\002 \002(\t\022,\n\rau",
       "ction_state\030\003 \001(\0132\025.mina.AuctionStateMsg" +
       "\022\036\n\007agorics\030\004 \001(\0132\r.mina.Agorics\022\036\n\002ss\030\005" +
-      " \003(\0132\022.mina.StreamStatus\"M\n\013StartSource\022" +
-      "\021\n\tstream_id\030\001 \002(\t\022\035\n\002ep\030\002 \002(\0132\021.coreapi" +
-      ".EndPoint\022\014\n\004page\030\003 \003(\003\"\037\n\nStopSource\022\021\n" +
-      "\tstream_id\030\001 \002(\t\"\220\001\n\014StreamStatus\022\021\n\tstr" +
-      "eam_id\030\001 \002(\t\022\034\n\024last_contiguous_page\030\002 \002" +
-      "(\003\022\024\n\014from_node_id\030\003 \001(\t\022\022\n\nto_node_id\030\004" +
-      " \001(\t\022\023\n\013total_pages\030\005 \001(\003\022\020\n\010page_map\030\006 " +
-      "\001(\005\"\037\n\005TopUp\022\026\n\016currency_token\030\001 \002(\014\" \n\013",
-      "UnAdvSource\022\021\n\tstream_id\030\001 \003(\t\"\037\n\nWantSo" +
-      "urce\022\021\n\tstream_id\030\001 \003(\tB/\n\037com.robonobo." +
-      "mina.message.protoB\014MinaProtocol"
+      " \003(\0132\022.mina.StreamStatus\"#\n\016SourceStoppi" +
+      "ng\022\021\n\tstream_id\030\001 \002(\t\"M\n\013StartSource\022\021\n\t" +
+      "stream_id\030\001 \002(\t\022\035\n\002ep\030\002 \002(\0132\021.coreapi.En" +
+      "dPoint\022\014\n\004page\030\003 \003(\003\"\037\n\nStopSource\022\021\n\tst" +
+      "ream_id\030\001 \002(\t\"\220\001\n\014StreamStatus\022\021\n\tstream" +
+      "_id\030\001 \002(\t\022\034\n\024last_contiguous_page\030\002 \002(\003\022" +
+      "\024\n\014from_node_id\030\003 \001(\t\022\022\n\nto_node_id\030\004 \001(" +
+      "\t\022\023\n\013total_pages\030\005 \001(\003\022\020\n\010page_map\030\006 \001(\005",
+      "\"\037\n\005TopUp\022\026\n\016currency_token\030\001 \002(\014\" \n\013UnA" +
+      "dvSource\022\021\n\tstream_id\030\001 \003(\t\"\037\n\nWantSourc" +
+      "e\022\021\n\tstream_id\030\001 \003(\tB/\n\037com.robonobo.min" +
+      "a.message.protoB\014MinaProtocol"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -13029,8 +13323,16 @@ public final class MinaProtocol {
               new java.lang.String[] { "FromNode", "ToNodeId", "AuctionState", "Agorics", "Ss", },
               com.robonobo.mina.message.proto.MinaProtocol.SourceStatus.class,
               com.robonobo.mina.message.proto.MinaProtocol.SourceStatus.Builder.class);
-          internal_static_mina_StartSource_descriptor =
+          internal_static_mina_SourceStopping_descriptor =
             getDescriptor().getMessageTypes().get(31);
+          internal_static_mina_SourceStopping_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_mina_SourceStopping_descriptor,
+              new java.lang.String[] { "StreamId", },
+              com.robonobo.mina.message.proto.MinaProtocol.SourceStopping.class,
+              com.robonobo.mina.message.proto.MinaProtocol.SourceStopping.Builder.class);
+          internal_static_mina_StartSource_descriptor =
+            getDescriptor().getMessageTypes().get(32);
           internal_static_mina_StartSource_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mina_StartSource_descriptor,
@@ -13038,7 +13340,7 @@ public final class MinaProtocol {
               com.robonobo.mina.message.proto.MinaProtocol.StartSource.class,
               com.robonobo.mina.message.proto.MinaProtocol.StartSource.Builder.class);
           internal_static_mina_StopSource_descriptor =
-            getDescriptor().getMessageTypes().get(32);
+            getDescriptor().getMessageTypes().get(33);
           internal_static_mina_StopSource_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mina_StopSource_descriptor,
@@ -13046,7 +13348,7 @@ public final class MinaProtocol {
               com.robonobo.mina.message.proto.MinaProtocol.StopSource.class,
               com.robonobo.mina.message.proto.MinaProtocol.StopSource.Builder.class);
           internal_static_mina_StreamStatus_descriptor =
-            getDescriptor().getMessageTypes().get(33);
+            getDescriptor().getMessageTypes().get(34);
           internal_static_mina_StreamStatus_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mina_StreamStatus_descriptor,
@@ -13054,7 +13356,7 @@ public final class MinaProtocol {
               com.robonobo.mina.message.proto.MinaProtocol.StreamStatus.class,
               com.robonobo.mina.message.proto.MinaProtocol.StreamStatus.Builder.class);
           internal_static_mina_TopUp_descriptor =
-            getDescriptor().getMessageTypes().get(34);
+            getDescriptor().getMessageTypes().get(35);
           internal_static_mina_TopUp_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mina_TopUp_descriptor,
@@ -13062,7 +13364,7 @@ public final class MinaProtocol {
               com.robonobo.mina.message.proto.MinaProtocol.TopUp.class,
               com.robonobo.mina.message.proto.MinaProtocol.TopUp.Builder.class);
           internal_static_mina_UnAdvSource_descriptor =
-            getDescriptor().getMessageTypes().get(35);
+            getDescriptor().getMessageTypes().get(36);
           internal_static_mina_UnAdvSource_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mina_UnAdvSource_descriptor,
@@ -13070,7 +13372,7 @@ public final class MinaProtocol {
               com.robonobo.mina.message.proto.MinaProtocol.UnAdvSource.class,
               com.robonobo.mina.message.proto.MinaProtocol.UnAdvSource.Builder.class);
           internal_static_mina_WantSource_descriptor =
-            getDescriptor().getMessageTypes().get(36);
+            getDescriptor().getMessageTypes().get(37);
           internal_static_mina_WantSource_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mina_WantSource_descriptor,
