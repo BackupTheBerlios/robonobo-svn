@@ -154,6 +154,10 @@ message SourceStatus {
 	repeated StreamStatus ss = 5;
 }
 
+message SourceStopping {
+	required string stream_id = 1;
+}
+
 message StartSource {
 	required string stream_id = 1;
 	required coreapi.EndPoint ep = 2;
