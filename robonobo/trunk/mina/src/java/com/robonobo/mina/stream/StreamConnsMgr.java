@@ -386,11 +386,7 @@ public class StreamConnsMgr {
 			synchronized (StreamConnsMgr.this) {
 				pendingCons.remove(nodeId);
 			}
-			for (StreamStatus streamStat : sourceStat.getSsList()) {
-				if (streamStat.getStreamId().equals(sm.getStreamId()))
-					mina.getSourceMgr().cachePossiblyDeadSource(sourceStat, streamStat);
-			}
-
+			mina.getSourceMgr().cachePossiblyDeadSource(sourceStat.getFromNode(), sm.getStreamId());
 			// Request more if we need them
 			sm.requestCachedSources();
 		}

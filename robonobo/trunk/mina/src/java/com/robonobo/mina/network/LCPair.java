@@ -82,7 +82,7 @@ public class LCPair extends ConnectionPair {
 				protected void onTimeout() {
 					log.error("Timeout attempting to set up connection to " + nodeId + " for stream "
 							+ sm.getStreamId());
-					mina.getSourceMgr().cachePossiblyDeadSource(lastSourceStat, lastStreamStat);
+					mina.getSourceMgr().cachePossiblyDeadSource(cc.getNodeDescriptor(), sm.getStreamId());
 					die(false);
 				}
 			};
@@ -97,11 +97,19 @@ public class LCPair extends ConnectionPair {
 		StartSource ss = StartSource.newBuilder().setStreamId(sm.getStreamId()).setEp(lc.getEndPoint())
 				.addAllPage(newPages).build();
 		cc.sendMessage("StartSource", ss);
-		for (Long pn : newPages) {
-			int statusIdx = mina.getConfig().isAgoric() ? mina.getBuyMgr().getCurrentStatusIdx(cc.getNodeId()) : 0;
-			PageAttempt rpa = new PageAttempt(rto, pn, currentTimeMillis(), statusIdx);
-			reqdPages.put(pn, rpa);
-			rpa.start();
+		// It is possible, though unlikely, that the source doesn't have any useful data to us now - they must have done
+		// when we decided to listen, but maybe in the intervening time (setting up auctions, etc) we have got the data
+		// from elsewhere. In this case, start a timeout to shut us down if we don't get any useful data within a couple
+		// of mins.
+		if (newPages.size() == 0)
+			startUsefulDataTimeout();
+		else {
+			for (Long pn : newPages) {
+				int statusIdx = mina.getConfig().isAgoric() ? mina.getBuyMgr().getCurrentStatusIdx(cc.getNodeId()) : 0;
+				PageAttempt rpa = new PageAttempt(rto, pn, currentTimeMillis(), statusIdx);
+				reqdPages.put(pn, rpa);
+				rpa.start();
+			}
 		}
 		synchronized (this) {
 			setupFinished = true;
@@ -276,31 +284,36 @@ public class LCPair extends ConnectionPair {
 						reqdPages.put(pn, rpa);
 						rpa.start();
 					}
-				} else if (reqdPages.size() == 0) {
-					// We have no pages in flight, and we just got given an
-					// empty set of pages to ask for, which means they have no
-					// pages that are useful to us... Start a timeout to shut us
-					// down if they don't offer any useful data within 2 mins
-					if (usefulDataTimeout == null) {
-						log.debug(this + " has no useful data - starting timeout of "
-								+ mina.getConfig().getUsefulDataSourceTimeout() + "s");
-						usefulDataTimeout = mina.getExecutor().schedule(new CatchingRunnable() {
-							public void doRun() throws Exception {
-								log.info(LCPair.this + " useful data timeout - closing (caching source)");
-								mina.getSourceMgr().cacheSourceUntilDataAvailable(lastSourceStat, lastStreamStat);
-								die();
-							}
-						}, mina.getConfig().getUsefulDataSourceTimeout(), TimeUnit.SECONDS);
-					}
-				}
+				} else if (reqdPages.size() == 0)
+					startUsefulDataTimeout();
 			}
 		}
 	}
 
+	/**
+	 * We have no pages in flight, and we just got given an empty set of pages to ask for, which means they have no
+	 * pages that are useful to us... Start a timeout to shut us down if they don't offer any useful data within 2 mins
+	 */
+	private void startUsefulDataTimeout() {
+		if (usefulDataTimeout == null) {
+			log.debug(this + " has no useful data - starting timeout of "
+					+ mina.getConfig().getUsefulDataSourceTimeout() + "s");
+			usefulDataTimeout = mina.getExecutor().schedule(new CatchingRunnable() {
+				public void doRun() throws Exception {
+					log.info(LCPair.this + " useful data timeout - closing (caching source)");
+					mina.getSourceMgr().cacheSourceUntilDataAvailable(cc.getNodeDescriptor(), sm.getStreamId());
+					die();
+				}
+			}, mina.getConfig().getUsefulDataSourceTimeout(), TimeUnit.SECONDS);
+		}
+	}
+
 	private int pageWindowSize() {
+		long avgPageSize = sm.getPageBuffer().getAvgPageSize();
+		if (avgPageSize == 0)
+			return 1;
 		float windowSecs = mina.getConfig().getPageRequestLookAheadTime() / 1000;
-		int result = (getFlowRate() == 0) ? 1
-				: (int) (getFlowRate() * windowSecs / sm.getPageBuffer().getAvgPageSize());
+		int result = (getFlowRate() == 0) ? 1 : (int) (getFlowRate() * windowSecs / avgPageSize);
 		if (result < 1)
 			result = 1;
 		return result;

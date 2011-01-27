@@ -4,35 +4,21 @@ import java.util.*;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 /**
- * Like Batcher, but won't add an object if it's been added already
+ * Like Batcher, but will silently drop duplicate objects (as determined by equals())
  */
 public abstract class UniqueBatcher<T> extends Batcher<T> {
-	private Set<T> set = new HashSet<T>();
-
 	public UniqueBatcher(long timespan, ScheduledThreadPoolExecutor executor) {
 		super(timespan, executor);
-	}
-
-	public void add(T obj) {
-		lock.lock();
-		try {
-			if (set.contains(obj))
-				return;
-			set.add(obj);
-		} finally {
-			lock.unlock();
-		}
-		super.add(obj);
 	}
 
 	@Override
 	public void doRun() throws Exception {
 		lock.lock();
-		try {
-			set.clear();
-		} finally {
-			lock.unlock();
-		}
-		super.doRun();
+		task = null;
+		Set<T> runObjs = new HashSet<T>();
+		runObjs.addAll(queuedObjs);
+		queuedObjs.clear();
+		lock.unlock();
+		runBatch(runObjs);
 	}
 }

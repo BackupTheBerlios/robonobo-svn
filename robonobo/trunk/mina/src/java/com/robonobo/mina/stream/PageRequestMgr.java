@@ -39,6 +39,28 @@ public class PageRequestMgr {
 		this.sm = sm;
 	}
 
+	public synchronized boolean isUsefulSource(StreamPosition pos) {
+		if (pos.highestIncludedPage() <= sm.getPageBuffer().getLastContiguousPage())
+			return false;
+		updateWindow();
+		// See if we can get any pages from our window
+		for (long pn = winStart; pn <= winEnd; pn++) {
+			if (sm.getPageBuffer().haveGotPage(pn) || pendingPages.contains(pn))
+				continue;
+			if (pos.includesPage(pn))
+				return true;
+		}
+		// If they can't get any from our window, but they can handle things beyond the window (maybe our entire window
+		// is in-flight), then they're good
+		for (long pn = winEnd + 1; pn <= pos.highestIncludedPage(); pn++) {
+			if (sm.getPageBuffer().haveGotPage(pn) || pendingPages.contains(pn))
+				continue;
+			if (pos.includesPage(pn))
+				return true;
+		}
+		return false;
+	}
+
 	/**
 	 * Go through our page window, and figure which pages to ask for based on least-common-first
 	 * 
@@ -51,7 +73,7 @@ public class PageRequestMgr {
 		updateWindow();
 		// log.debug("PRM requesting " + numPages + " pages for s:" + sm.getStreamId() + "/n:" + sourceId + " win:" +
 		// winStart + "-" + winEnd);
-		
+
 		// Count how many sources have each page in this window
 		int winSz = (int) ((winEnd - winStart) + 1);
 		int[] windowCounts = new int[winSz];

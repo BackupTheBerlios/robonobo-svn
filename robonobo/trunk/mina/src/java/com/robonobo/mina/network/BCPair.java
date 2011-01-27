@@ -58,20 +58,20 @@ public class BCPair extends ConnectionPair {
 	public void die() {
 		die(true);
 	}
-	
+
 	/**
 	 * @syncpriority 120
 	 */
 	public void die(boolean sendSourceStopping) {
-		log.info(this+" closing down");
+		log.info(this + " closing down");
 		synchronized (this) {
 			if (isClosed)
 				return;
-			isClosed = true;			
+			isClosed = true;
 			if (bc != null)
 				bc.close();
 		}
-		if(sendSourceStopping)
+		if (sendSourceStopping)
 			cc.sendMessage("SourceStopping", SourceStopping.newBuilder().setStreamId(sm.getStreamId()).build());
 		cc.removeBCPair(this);
 		super.die();
@@ -104,12 +104,12 @@ public class BCPair extends ConnectionPair {
 			long totalPageLen = 0;
 			if (mina.getConfig().isAgoric()) {
 				for (Long pn : pages) {
-					if (sm.getPageBuffer().haveGotPage(pn)) {
-						PageInfo pi = sm.getPageBuffer().getPageInfo(pn);
+					PageInfo pi = sm.getPageBuffer().getPageInfo(pn);
+					if (pi != null)
 						totalPageLen += pi.getLength();
-					} else {
-						// A bit odd to instantiate it here, but we will only get here very rarely (should be never,
-						// they should never ask), so no point in pointlessly instantiating the list 99.9% of the time
+					else {
+						// We will only get here very rarely (should be never, they should never ask), so no point in
+						// pointlessly instantiating the list 99.9% of the time
 						if (failedPages == null)
 							failedPages = new ArrayList<Long>();
 						failedPages.add(pn);

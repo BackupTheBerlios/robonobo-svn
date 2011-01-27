@@ -236,11 +236,16 @@ public class BuyMgr {
 	 * @syncpriority 140
 	 */
 	public void closeAccount(String nodeId, Attempt onClose) {
-		boolean doIt = false;
+		boolean gotAccount, alreadyGotAttempt;
 		synchronized (this) {
-			doIt = (accounts.containsKey(nodeId) && !onAcctCloseAttempts.containsKey(nodeId));
+			gotAccount = accounts.containsKey(nodeId);
+			alreadyGotAttempt = onAcctCloseAttempts.containsKey(nodeId);
 		}
-		if (doIt) {
+		if(gotAccount) {
+			if(alreadyGotAttempt) {
+				// Just return, our already-registered attempt will shut things down
+				return;
+			}
 			ControlConnection cc = mina.getCCM().getCCWithId(nodeId);
 			if (cc != null) {
 				synchronized (this) {
@@ -251,6 +256,7 @@ public class BuyMgr {
 				sentBid(nodeId, 0);
 			}
 		}
+		onClose.succeeded();
 	}
 
 	public synchronized boolean accountIsClosing(String nodeId) {
@@ -620,10 +626,6 @@ public class BuyMgr {
 			return;
 		}
 		acct.balance -= charge;
-	}
-
-	private synchronized void nukeAccount(String nodeId) {
-		accounts.remove(nodeId);
 	}
 
 	class Account {

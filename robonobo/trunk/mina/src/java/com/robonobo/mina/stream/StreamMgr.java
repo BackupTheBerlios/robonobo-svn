@@ -207,7 +207,7 @@ public class StreamMgr {
 		if (mina.getConfig().isAgoric()) {
 			if (!bidStrategy.worthConnectingTo(new AuctionState(sourceStat.getAuctionState()))) {
 				log.debug("Not connecting to node " + sourceId + " for " + streamId + " - bid strategy says no");
-				mina.getSourceMgr().cacheSourceUntilAgoricsAcceptable(sourceStat, streamStat);
+				mina.getSourceMgr().cacheSourceUntilAgoricsAcceptable(sourceStat.getFromNode(), streamId);
 				return;
 			}
 		}
@@ -215,9 +215,9 @@ public class StreamMgr {
 		// Check that they have data useful to us
 		if (pageBuf != null) {
 			StreamPosition sp = new StreamPosition(streamStat.getLastContiguousPage(), streamStat.getPageMap());
-			if (sp.highestIncludedPage() <= pageBuf.getLastContiguousPage()) {
+			if(!prm.isUsefulSource(sp)) {
 				// Useless at the moment - cache them and ask again later
-				mina.getSourceMgr().cacheSourceUntilDataAvailable(sourceStat, streamStat);
+				mina.getSourceMgr().cacheSourceUntilDataAvailable(sourceStat.getFromNode(), streamId);
 				return;
 			}
 		}
@@ -368,13 +368,7 @@ public class StreamMgr {
 				bidStrategy.cleanup(pair.getCC().getNodeId());
 				// Make note of them in case they come back
 				LCPair lcp = (LCPair) pair;
-				SourceStatus sourceStat = lcp.getLastSourceStatus();
-				if (sourceStat != null) {
-					StreamStatus streamStat = lcp.getLastStreamStatus();
-					if (streamStat == null)
-						throw new SeekInnerCalmException();
-					mina.getSourceMgr().cachePossiblyDeadSource(sourceStat, streamStat);
-				}
+				mina.getSourceMgr().cachePossiblyDeadSource(lcp.getCC().getNodeDescriptor(), streamId);
 			}
 			if (streamConns.getNumBroadcastConns() == 0 && streamConns.getNumListenConns() == 0) {
 				try {

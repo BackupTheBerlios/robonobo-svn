@@ -23,6 +23,7 @@ import com.robonobo.common.concurrent.Attempt;
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.dlugosz.Dlugosz;
 import com.robonobo.common.io.ByteBufferInputStream;
+import com.robonobo.common.util.CodeUtil;
 import com.robonobo.common.util.TimeUtil;
 import com.robonobo.core.api.proto.CoreApi.EndPoint;
 import com.robonobo.core.api.proto.CoreApi.Node;
@@ -139,8 +140,10 @@ public class ControlConnection implements PushDataReceiver {
 	}
 
 	public void providerClosed() {
-		log.error(this+": network error - closing");
-		close();
+		if (!(closing || closed)) {
+			log.error(this + ": network error - closing");
+			close();
+		}
 	}
 
 	public void close() {
@@ -183,7 +186,23 @@ public class ControlConnection implements PushDataReceiver {
 	 * @syncpriority 60
 	 */
 	public synchronized void abort() {
-		log.debug(this+": aborting");
+		log.debug(this + ": aborting");
+		if (pingTask != null)
+			pingTask.cancel(true);
+		if (helloAttempt != null)
+			helloAttempt.cancel();
+		if (pingAttempt != null)
+			pingAttempt.cancel();
+		dataChan.close();
+		closed = true;
+	}
+
+	/**
+	 * Die without shutting anything down - when we have detected a duplicate connection and we want to shut this one
+	 * down without futzing things up for the other one
+	 */
+	public synchronized void dieSilently() {
+		closing = true;
 		if (pingTask != null)
 			pingTask.cancel(true);
 		if (helloAttempt != null)
@@ -247,8 +266,11 @@ public class ControlConnection implements PushDataReceiver {
 		try {
 			dataChan.receiveData(ByteBuffer.wrap(sendData), null);
 		} catch (IOException e) {
-			if (!closing)
-				throw e;
+			if (!closing) {
+				if(CodeUtil.javaMajorVersion() >= 6)
+					throw new IOException(e);
+				throw new IOException("Caught "+e.getClass().getSimpleName()+": "+e.getMessage());
+			}
 		}
 	}
 
@@ -295,7 +317,7 @@ public class ControlConnection implements PushDataReceiver {
 	}
 
 	private void handleMessage(MessageHandler handler, final MessageHolder msgHolder) {
-		if(closed)
+		if (closed)
 			return;
 		GeneratedMessage msg = msgHolder.getMessage();
 		String msgName = msgHolder.getMsgName();
@@ -418,26 +440,25 @@ public class ControlConnection implements PushDataReceiver {
 	 * closing process has finished.
 	 */
 	public void closeGracefully(String reason) {
+		if(closing || closed)
+			return;
 		// If we have an account with them, or they with us, close it before we
 		// quit
-		boolean closeNow = true;
 		if (mina.getConfig().isAgoric() && mina.getSellMgr().haveActiveAccount(nodeId)) {
-			log.debug(this+": not closing yet as they have an account with us");
+			log.debug(this + ": not closing yet as they have an account with us");
 			CloseCCAttempt soc = new CloseCCAttempt(reason);
 			soc.start();
 			mina.getSellMgr().closeAccount(nodeId, soc);
-			closeNow = false;
+			return;
 		}
 		if (mina.getConfig().isAgoric() && mina.getBuyMgr().haveActiveAccount(nodeId)) {
-			log.debug(this+": not closing yet as we have an account with them");
+			log.debug(this + ": not closing yet as we have an account with them");
 			CloseCCAttempt boc = new CloseCCAttempt(reason);
 			boc.start();
 			mina.getBuyMgr().closeAccount(nodeId, boc);
-			closeNow = false;
+			return;
 		}
-
-		if (closeNow)
-			close(reason);
+		close(reason);
 	}
 
 	private class CloseCCAttempt extends Attempt {
@@ -450,8 +471,8 @@ public class ControlConnection implements PushDataReceiver {
 
 		protected void onSuccess() {
 			// DEBUG
-			log.debug(ControlConnection.this+" attempt succeeded - closing gracefully");
-			
+			log.debug(ControlConnection.this + " attempt succeeded - closing gracefully");
+
 			closeGracefully(closeReason);
 		}
 
@@ -562,27 +583,28 @@ public class ControlConnection implements PushDataReceiver {
 
 	protected class ConnectAttempt extends Attempt {
 		public ConnectAttempt() {
-			super(mina.getExecutor(), mina.getConfig().getMessageTimeout() * 1000, "Connect-"+nodeId);
+			super(mina.getExecutor(), mina.getConfig().getMessageTimeout() * 1000, "Connect-" + nodeId);
 		}
 
 		public void onTimeout() {
 			// We might have a simultaneous connection that got through, if so just quit silently
 			if (mina.getCCM().getCCWithId(nodeId) != null) {
 				log.debug("Attempted CC to " + nodeId + " failed, but I see a working connection - continuing");
-				abort();
+				dieSilently();
 			} else {
 				log.error("Timeout connecting to node " + nodeId + ": closing connection");
 				close();
 			}
 		}
 	}
+
 	protected class PingAttempt extends Attempt {
 		public PingAttempt() {
-			super(mina.getExecutor(), mina.getConfig().getMessageTimeout() * 1000, "Ping-"+nodeId);
+			super(mina.getExecutor(), mina.getConfig().getMessageTimeout() * 1000, "Ping-" + nodeId);
 		}
 
 		public void onTimeout() {
-			log.error("Node " + nodeId + "ping timeout: closing connection");
+			log.error("Node " + nodeId + " ping timeout: closing connection");
 			close();
 		}
 	}

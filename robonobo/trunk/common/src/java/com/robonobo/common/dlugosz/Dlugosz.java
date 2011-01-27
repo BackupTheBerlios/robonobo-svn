@@ -27,8 +27,7 @@ import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.common.io.PeekableInputStream;
 
 /**
- * For encoding longs as a variable-length sequence of bytes ; see
- * {project}/dox/dlugosz.html
+ * For encoding longs as a variable-length sequence of bytes ; see {project}/dox/dlugosz.html
  * 
  * @author macavity
  */
@@ -39,7 +38,8 @@ public class Dlugosz {
 	/**
 	 * Encoded number will be written to the buffer at its current position
 	 * 
-	 * @throws NumberFormatException If num < 0
+	 * @throws NumberFormatException
+	 *             If num < 0
 	 */
 	public static void encode(long num, ByteBuffer dst) throws NumberFormatException {
 		if (num < 0)
@@ -122,8 +122,8 @@ public class Dlugosz {
 	}
 
 	/**
-	 * Reads one long value from the channel. Increments the channel's position
-	 * by the number of bytes used by the returned value.
+	 * Reads one long value from the channel. Increments the channel's position by the number of bytes used by the
+	 * returned value.
 	 */
 	public static long readLong(ByteChannel chan) throws IOException {
 		ByteBuffer fbBuf = ByteBuffer.allocate(1);
@@ -147,9 +147,8 @@ public class Dlugosz {
 	}
 
 	/**
-	 * Returns true iff the supplied buffer contains a complete dlugosz num,
-	 * starting at the buffer's current position. The buffer's position is left
-	 * unchanged.
+	 * Returns true iff the supplied buffer contains a complete dlugosz num, starting at the buffer's current position.
+	 * The buffer's position is left unchanged.
 	 */
 	public static boolean startsWithCompleteNum(ByteBuffer buf) {
 		if (buf.remaining() == 0)
@@ -162,21 +161,19 @@ public class Dlugosz {
 	}
 
 	/**
-	 * Returns true iff the supplied stream contains a complete dlugosz num,
-	 * starting at the buffer's current position. The stream's position is left
-	 * unchanged.
+	 * Returns true iff the supplied stream contains a complete dlugosz num. The stream's position is left unchanged.
 	 */
 	public static boolean startsWithCompleteNum(PeekableInputStream is) throws IOException {
-		if(is.available() == 0)
+		if (is.available() == 0)
 			return false;
 		byte firstByte = (byte) is.peek();
 		int encLen = encLenFromFirstByte(firstByte);
 		return (is.available() >= encLen);
 	}
-	
+
 	/**
-	 * Reads one long value from the buffer. Increments the buffer's position
-	 * by the number of bytes used by the returned value.
+	 * Reads one long value from the buffer. Increments the buffer's position by the number of bytes used by the
+	 * returned value.
 	 */
 	public static long readLong(ByteBuffer buf) throws IOException {
 		byte firstByte = buf.get();
@@ -225,8 +222,8 @@ public class Dlugosz {
 	}
 
 	/**
-	 * Reads one long value from the buffer. Increments the buffer's position
-	 * by the number of bytes used by the returned value.
+	 * Reads one long value from the buffer. Increments the buffer's position by the number of bytes used by the
+	 * returned value.
 	 */
 	public static long readLong(PeekableInputStream is) throws IOException {
 		byte firstByte = readByte(is);
@@ -277,7 +274,7 @@ public class Dlugosz {
 	private static byte readByte(PeekableInputStream is) throws IOException {
 		return (byte) is.read();
 	}
-	
+
 	private static int encLenFromFirstByte(byte firstByte) {
 		if (((firstByte >> 7) & 1) == 0) {
 			return 1;
@@ -304,7 +301,7 @@ public class Dlugosz {
 	private static long offsetByteAsLong(byte b, int bitOffset) {
 		return ((long) (b & 0xff)) << bitOffset;
 	}
-	//	
+	//
 	// private static String byteAsBits(byte b) {
 	// StringBuffer sb = new StringBuffer();
 	// for(int i=7;i>=0;i--) {

@@ -2,16 +2,11 @@ package com.robonobo.mina.external.buffer;
 
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 
-/**
- * Wrap this up into a class as it allows us to provide a simultaneous
- * lastContigPage and pageMap - otherwise another page could arrive between
- * calls to getLastContig and getPageMap, giving us erroneous values
- */
 public class StreamPosition {
 	private long lastContiguousPage;
 	/**
 	 * A bitmap specifying which pages we have after lastContiguousPage. If
-	 * bit n is set, then we have page (lastContig+n)
+	 * the nth bit is set, then we have page (lastContig+n)
 	 */
 	private int pageMap;
 

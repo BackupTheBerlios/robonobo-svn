@@ -21,7 +21,6 @@ package com.robonobo.eon;
 import static java.lang.Math.*;
 import static java.lang.System.*;
 
-import java.io.IOError;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.NumberFormat;
@@ -703,7 +702,12 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 			while (iter.hasNext()) {
 				SEONPacket itPkt = iter.next();
 				if (pkt.getSequenceNumber() == itPkt.getSequenceNumber()) {
-					// Duplicate pkt - ignore
+					if (itPkt.getPayloadSize() == 0) {
+						// This is a data pkt coming after a bare ack - replace it with the data pkt
+						iter.remove();
+						iter.add(pkt);
+					}
+					// Otherwise this is just a duplicate pkt - ignore
 					break;
 				} else if (mod.lt(pkt.getSequenceNumber(), itPkt.getSequenceNumber())) {
 					// Insert the pkt *before* the current pkt
@@ -1246,6 +1250,13 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 				}
 				// If we need to resend our pkt, do it now
 				if (needToRetransmitFirstPkt) {
+					if (retransQ.size() == 0) {
+						// This pkt has been ack'd in the time between calling fastRetransmit() and getting here - just
+						// clear our fast recovery and keep on rockin
+						needToRetransmitFirstPkt = false;
+						fastRecoveryUntil = -1;
+						continue;
+					}
 					SEONPacket pkt = (SEONPacket) retransQ.peek();
 					if (pkt.getPayloadSize() > vis.bytesAvailable()) {
 						waitingForVisitor = true;
@@ -1765,7 +1776,8 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 				try {
 					dataRec.receiveData(buf, null);
 				} catch (Exception e) {
-					log.error(SEONConnection.this + " caught " + e.getClass().getSimpleName()+" while passing async data: closing", e);
+					log.error(SEONConnection.this + " caught " + e.getClass().getSimpleName()
+							+ " while passing async data: closing", e);
 					close();
 				}
 			}

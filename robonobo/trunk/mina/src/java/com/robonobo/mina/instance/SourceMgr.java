@@ -10,12 +10,10 @@ import org.apache.commons.logging.Log;
 
 import com.robonobo.common.concurrent.*;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
-import com.robonobo.common.util.TimeUtil;
 import com.robonobo.core.api.proto.CoreApi.Node;
 import com.robonobo.mina.message.proto.MinaProtocol.DontWantSource;
 import com.robonobo.mina.message.proto.MinaProtocol.ReqSourceStatus;
 import com.robonobo.mina.message.proto.MinaProtocol.SourceStatus;
-import com.robonobo.mina.message.proto.MinaProtocol.SourceStatus.Builder;
 import com.robonobo.mina.message.proto.MinaProtocol.StreamStatus;
 import com.robonobo.mina.message.proto.MinaProtocol.WantSource;
 import com.robonobo.mina.network.ControlConnection;
@@ -32,11 +30,11 @@ public class SourceMgr {
 	private MinaInstance mina;
 	Log log;
 	/** Map<StreamId, Map<NodeId, SourceStatus>> sources that are ready to go */
-	private Map<String, Map<String, SourceStatus>> readySources = Collections.synchronizedMap(new HashMap<String, Map<String, SourceStatus>>());
+	private Map<String, Map<String, SourceStatus>> readySources = new HashMap<String, Map<String, SourceStatus>>();
 	/** Stream IDs that want sources */
-	private Set<String> wantSources = Collections.synchronizedSet(new HashSet<String>());
-	private SortedSet<WaitingSourceStatus> waitSourceSet = new TreeSet<WaitingSourceStatus>();
-	private Map<String, WaitingSourceStatus> waitSourceMap = new HashMap<String, WaitingSourceStatus>();
+	private Set<String> wantSources = new HashSet<String>();
+	private SortedSet<SourceDetails> orderedSources = new TreeSet<SourceDetails>();
+	private Map<String, SourceDetails> sourcesById = new HashMap<String, SourceDetails>();
 	/** Batch up source requests, to avoid repeated requests to the same nodes */
 	private WantSourceBatcher wsBatch;
 	private Map<String, ReqSourceStatusBatcher> rssBatchers = new HashMap<String, ReqSourceStatusBatcher>();
@@ -52,7 +50,7 @@ public class SourceMgr {
 	public void start() {
 		queryTask = mina.getExecutor().scheduleAtFixedRate(new CatchingRunnable() {
 			public void doRun() throws Exception {
-				queryWaitingSources();
+				querySources();
 			}
 		}, SOURCE_CHECK_FREQ, SOURCE_CHECK_FREQ, TimeUnit.SECONDS);
 	}
@@ -65,13 +63,15 @@ public class SourceMgr {
 	 * Tells the network we want sources
 	 * 
 	 * @param tolerateDelay
-	 *            false to send the request for sources out immediately
-	 *            (otherwise waits <5sec to batch requests together)
+	 *            false to send the request for sources out immediately (otherwise waits <5sec to batch requests
+	 *            together)
 	 */
 	public void wantSources(String streamId, boolean tolerateDelay) {
-		if (wantSources.contains(streamId))
-			return;
-		wantSources.add(streamId);
+		synchronized (this) {
+			if (wantSources.contains(streamId))
+				return;
+			wantSources.add(streamId);
+		}
 		if (tolerateDelay)
 			wsBatch.add(streamId);
 		else {
@@ -80,15 +80,15 @@ public class SourceMgr {
 		}
 	}
 
-	public boolean wantsSource(String streamId) {
+	public synchronized boolean wantsSource(String streamId) {
 		return wantSources.contains(streamId);
 	}
 
 	public void dontWantSources(String streamId) {
-		if (!wantSources.contains(streamId))
-			return;
-		wantSources.remove(streamId);
-		synchronized (readySources) {
+		synchronized (this) {
+			if (!wantSources.contains(streamId))
+				return;
+			wantSources.remove(streamId);
 			readySources.remove(streamId);
 		}
 		// We don't send DontWantSources on shutdown, so don't bother batching
@@ -97,8 +97,10 @@ public class SourceMgr {
 	}
 
 	public void gotSource(String streamId, Node source) {
-		if (!wantSources.contains(streamId))
-			return;
+		synchronized (this) {
+			if (!wantSources.contains(streamId))
+				return;
+		}
 		if (source.getId().equals(mina.getMyNodeId().toString()))
 			return;
 		if (mina.getBadNodeList().checkBadNode(source.getId())) {
@@ -111,20 +113,35 @@ public class SourceMgr {
 		}
 		StreamMgr sm = mina.getSmRegister().getSM(streamId);
 		if (sm == null)
-			throw new SeekInnerCalmException();
-		queryStatus(source, streamId, sm.tolerateDelay());
+			return;
+		cacheSourceInitially(source, streamId);
+		SourceDetails sd;
+		synchronized (this) {
+			sd = sourcesById.get(source.getId());
+		}
+		queryStatus(sd, sm.tolerateDelay());
 	}
 
 	public void gotSourceStatus(SourceStatus sourceStat) {
 		// Remove it from our list of waiting sources - sm.foundSource() might add it again
-		synchronized (waitSourceSet) {
-			WaitingSourceStatus wss = waitSourceMap.remove(sourceStat.getFromNode().getId());
-			if(wss != null)
-				waitSourceSet.remove(wss);
+		synchronized (this) {
+			String sourceId = sourceStat.getFromNode().getId();
+			SourceDetails sd = sourcesById.get(sourceId);
+			if (sd != null) {
+				for (StreamStatus ss : sourceStat.getSsList()) {
+					sd.streamIds.remove(ss.getStreamId());
+				}
+				if (sd.streamIds.size() == 0) {
+					sourcesById.remove(sourceId);
+					orderedSources.remove(sd);
+				}
+			}
 		}
 		for (StreamStatus streamStat : sourceStat.getSsList()) {
-			if (!wantSources.contains(streamStat.getStreamId()))
-				continue;
+			synchronized (this) {
+				if (!wantSources.contains(streamStat.getStreamId()))
+					continue;
+			}
 			StreamMgr sm = mina.getSmRegister().getSM(streamStat.getStreamId());
 			if (sm != null)
 				sm.foundSource(sourceStat, streamStat);
@@ -132,164 +149,164 @@ public class SourceMgr {
 	}
 
 	/**
-	 * Called when this source does not have a listener slot open, or else one
-	 * is too expensive
+	 * Called when this source does not have a listener slot open, or else one is too expensive
 	 */
-	public void cacheSourceUntilAgoricsAcceptable(SourceStatus sourceStat, StreamStatus streamStat) {
-		cacheSourceUntil(sourceStat, streamStat, 1000 * mina.getConfig().getSourceAgoricsFailWaitTime());
+	public void cacheSourceUntilAgoricsAcceptable(Node node, String streamId) {
+		cacheSourceUntil(node, streamId, 1000 * mina.getConfig().getSourceAgoricsFailWaitTime(), "agorics unacceptable");
 	}
 
 	/** Called when this source does not enough data to serve us */
-	public void cacheSourceUntilDataAvailable(SourceStatus sourceStat, StreamStatus streamStat) {
-		cacheSourceUntil(sourceStat, streamStat, 1000 * mina.getConfig().getSourceDataFailWaitTime());
+	public void cacheSourceUntilDataAvailable(Node node, String streamId) {
+		cacheSourceUntil(node, streamId, 1000 * mina.getConfig().getSourceDataFailWaitTime(), "no useful data");
 	}
 
 	/**
-	 * When a connection to a node dies unexpectedly, it might be network
-	 * randomness between us and them, so wait for a while then retry them
+	 * When a connection to a node dies unexpectedly, it might be network randomness between us and them, so wait for a
+	 * while then retry them
 	 */
-	public void cachePossiblyDeadSource(SourceStatus sourceStat, StreamStatus streamStat) {
-		cacheSourceUntil(sourceStat, streamStat, 1000 * mina.getConfig().getDeadSourceQueryTime());
+	public void cachePossiblyDeadSource(Node node, String streamId) {
+		cacheSourceUntil(node, streamId, 1000 * mina.getConfig().getDeadSourceQueryTime(), "network issue");
 	}
 
-	private void cacheSourceUntil(SourceStatus sourceStat, StreamStatus streamStat, int waitMs) {
+	private void cacheSourceInitially(Node node, String streamId) {
+		cacheSourceUntil(node, streamId, 1000 * mina.getConfig().getInitialSourceQueryTime(), "initial query");
+	}
+
+	private synchronized void cacheSourceUntil(Node node, String streamId, int waitMs, String reason) {
 		Date waitUntil = timeInFuture(waitMs);
-		log.debug("Caching source "+sourceStat.getFromNode().getId()+" for stream "+streamStat.getStreamId()+" until "+TimeUtil.getTimeFormat().format(waitUntil));
-		synchronized (waitSourceSet) {
-			WaitingSourceStatus wss;
-			if (waitSourceMap.containsKey(sourceStat.getFromNode().getId())) {
-				wss = waitSourceMap.get(sourceStat.getFromNode().getId());
-				// Make sure we're waiting on this stream
-				if (!wss.ssb.getSsList().contains(streamStat)) {
-					wss.ssb.addSs(streamStat);
-					waitSourceSet.remove(wss);
-				}
-				// See if we should check sooner
-				if (wss.nextQuery.after(waitUntil))
-					waitSourceSet.remove(wss);
-				wss.nextQuery = waitUntil;
-				// If this wasn't previously removed, this will do nothing
-				waitSourceSet.add(wss);
-				waitSourceMap.put(sourceStat.getFromNode().getId(), wss);
-			} else {
-				wss = new WaitingSourceStatus(waitUntil, waitMs*2, SourceStatus.newBuilder(sourceStat));
-				// Make sure we're waiting on this stream
-				if (!wss.ssb.getSsList().contains(streamStat))
-					wss.ssb.addSs(streamStat);
-				waitSourceSet.add(wss);
-				waitSourceMap.put(sourceStat.getFromNode().getId(), wss);
+		SourceDetails sourceDetails;
+		if (sourcesById.containsKey(node.getId())) {
+			sourceDetails = sourcesById.get(node.getId());
+			// Make sure we're waiting on this stream
+			if (!sourceDetails.streamIds.contains(streamId)) {
+				sourceDetails.streamIds.add(streamId);
+				orderedSources.remove(sourceDetails);
 			}
+			// See if we should check sooner
+			if (sourceDetails.nextQuery.after(waitUntil))
+				orderedSources.remove(sourceDetails);
+			sourceDetails.nextQuery = waitUntil;
+			// If this wasn't previously removed, this will do nothing
+			orderedSources.add(sourceDetails);
+			sourcesById.put(node.getId(), sourceDetails);
+		} else {
+			sourceDetails = new SourceDetails(node, waitUntil, waitMs * 2);
+			sourceDetails.streamIds.add(streamId);
+			orderedSources.add(sourceDetails);
+			sourcesById.put(node.getId(), sourceDetails);
 		}
+		// DEBUG
+		log.debug("Caching source " + node.getId() + " for stream " + streamId + " (" + reason + ") until "
+				+ getTimeFormat().format(waitUntil) + " - now have " + sourceDetails.streamIds.size() + " ss count");
 	}
 
 	/** Query all sources whose time has come */
-	private void queryWaitingSources() {
-		synchronized (waitSourceSet) {
-			while (true) {
-				if (waitSourceSet.size() == 0)
+	private void querySources() {
+		// DEBUG - all the logging in this method should be removed
+		log.debug("Querying sources");
+		while (true) {
+			SourceDetails sourceDetails;
+			synchronized (this) {
+				StringBuffer sb = new StringBuffer("Inspecting sources for query: ");
+				for (SourceDetails sd : orderedSources) {
+					sb.append(sd).append(" ");
+				}
+				log.debug(sb);
+
+				if (orderedSources.size() == 0)
 					return;
-				WaitingSourceStatus wss = waitSourceSet.first();
-				if (wss.nextQuery.after(now()))
+				sourceDetails = orderedSources.first();
+				if (sourceDetails.nextQuery.after(now()))
 					return;
-				waitSourceSet.remove(wss);
-				Node source = wss.ssb.getFromNode();
-				waitSourceMap.remove(source.getId());
+
+				// DEBUG - are we removing these damn things?
+				int szBefore = orderedSources.size();
+				orderedSources.remove(sourceDetails);
+				if (orderedSources.size() == szBefore)
+					throw new SeekInnerCalmException("flarp!");
+
+				Node source = sourceDetails.node;
+				sourcesById.remove(source.getId());
+
+				log.debug("Examining source " + sourceDetails);
+
 				// Check that we still want sources for all these streams
 				boolean wantIt = false;
-				for (StreamStatus ss : wss.ssb.getSsList()) {
-					if(wantSources.contains(ss.getStreamId())) {
+				for (String sid : sourceDetails.streamIds) {
+					if (wantSources.contains(sid)) {
 						wantIt = true;
 						break;
 					}
 				}
-				if(!wantIt)
+				if (!wantIt)
 					continue;
-				if(wss.retries < mina.getConfig().getSourceQueryRetries()) {
+
+				log.debug("Approved source " + sourceDetails);
+				if (sourceDetails.retries < mina.getConfig().getSourceQueryRetries()) {
 					// Re-add it again in case it doesn't answer - if it does, it'll get removed
-					wss.retries = wss.retries+1;
-					wss.nextQuery = timeInFuture(wss.retryAfterMs);
-					wss.retryAfterMs = wss.retryAfterMs * 2;
-					waitSourceSet.add(wss);
-					waitSourceMap.put(source.getId(), wss);
+					sourceDetails.retries = sourceDetails.retries + 1;
+					sourceDetails.nextQuery = timeInFuture(sourceDetails.retryAfterMs);
+					sourceDetails.retryAfterMs = sourceDetails.retryAfterMs * 2;
+					log.debug("Re-adding source " + sourceDetails);
+					orderedSources.add(sourceDetails);
+					sourcesById.put(source.getId(), sourceDetails);
 				}
 
-				List<String> rssList = new ArrayList<String>();
-				for (StreamStatus ss : wss.ssb.getSsList()) {
-					rssList.add(ss.getStreamId());
+				List<String> sidList = new ArrayList<String>();
+				for (String sid : sourceDetails.streamIds) {
+					sidList.add(sid);
 				}
-				queryStatus(source, rssList);
+				log.debug("Querying source " + sourceDetails);
 			}
+			queryStatus(sourceDetails, true);
 		}
 	}
 
-	private void queryStatus(Node source, List<String> streamIdList) {
-		ReqSourceStatusBatcher rssb;
-		synchronized (rssBatchers) {
-			if (rssBatchers.containsKey(source.getId()))
-				rssb = rssBatchers.get(source.getId());
-			else {
-				rssb = new ReqSourceStatusBatcher(source);
-				rssBatchers.put(source.getId(), rssb);
-			}
-		}
-		for (String streamId : streamIdList) {
-			rssb.add(streamId);
-		}
-	}
-
-	private void queryStatus(Node source, String streamId, boolean tolerateDelay) {
+	private void queryStatus(SourceDetails sd, boolean tolerateDelay) {
 		if (tolerateDelay) {
 			ReqSourceStatusBatcher rssb;
-			synchronized (rssBatchers) {
-				if (rssBatchers.containsKey(source.getId()))
-					rssb = rssBatchers.get(source.getId());
+			synchronized (this) {
+				if (rssBatchers.containsKey(sd.node.getId()))
+					rssb = rssBatchers.get(sd.node.getId());
 				else {
-					rssb = new ReqSourceStatusBatcher(source);
-					rssBatchers.put(source.getId(), rssb);
+					rssb = new ReqSourceStatusBatcher(sd.node);
+					rssBatchers.put(sd.node.getId(), rssb);
 				}
 			}
-			rssb.add(streamId);
+			rssb.addAll(sd.streamIds);
 		} else {
 			ReqSourceStatus.Builder rssb = ReqSourceStatus.newBuilder();
-			rssb.addStreamId(streamId);
-			sendReqSourceStatus(source, rssb);
+			rssb.addAllStreamId(sd.streamIds);
+			sendReqSourceStatus(sd.node, rssb);
 		}
 	}
 
 	/**
-	 * Called when this source is good to service us, but we are not ready or
-	 * able to handle it
+	 * Called when this source is good to service us, but we are not ready or able to handle it
 	 */
-	public void cacheSourceUntilReady(SourceStatus sourceStat, StreamStatus streamStat) {
-		synchronized (readySources) {
-			if (!readySources.containsKey(streamStat.getStreamId()))
-				readySources.put(streamStat.getStreamId(), new HashMap<String, SourceStatus>());
-			readySources.get(streamStat.getStreamId()).put(sourceStat.getFromNode().getId(), sourceStat);
-		}
+	public synchronized void cacheSourceUntilReady(SourceStatus sourceStat, StreamStatus streamStat) {
+		if (!readySources.containsKey(streamStat.getStreamId()))
+			readySources.put(streamStat.getStreamId(), new HashMap<String, SourceStatus>());
+		readySources.get(streamStat.getStreamId()).put(sourceStat.getFromNode().getId(), sourceStat);
 	}
 
 	/**
-	 * Returns the set of ready sources, and removes trace of them - if you want
-	 * to cache them, add them again
+	 * Returns the set of ready sources, and removes trace of them - if you want to cache them, add them again
 	 */
-	public Set<SourceStatus> getReadySources(String streamId) {
+	public synchronized Set<SourceStatus> getReadySources(String streamId) {
 		Set<SourceStatus> result = new HashSet<SourceStatus>();
-		synchronized (readySources) {
-			if (readySources.containsKey(streamId))
-				result.addAll(readySources.remove(streamId).values());
-		}
+		if (readySources.containsKey(streamId))
+			result.addAll(readySources.remove(streamId).values());
 		return result;
 	}
 
 	/**
 	 * Returns the set of ready nodes, but doesn't remove trace of them
 	 */
-	public Set<Node> getReadyNodes(String streamId) {
+	public synchronized Set<Node> getReadyNodes(String streamId) {
 		Set<Node> result = new HashSet<Node>();
-		synchronized (readySources) {
-			for (SourceStatus ss : readySources.get(streamId).values()) {
-				result.add(ss.getFromNode());
-			}
+		for (SourceStatus ss : readySources.get(streamId).values()) {
+			result.add(ss.getFromNode());
 		}
 		return result;
 	}
@@ -297,24 +314,20 @@ public class SourceMgr {
 	/**
 	 * Returns the set of ready nodes, but doesn't remove trace of them
 	 */
-	public Set<String> getReadyNodeIds(String streamId) {
+	public synchronized Set<String> getReadyNodeIds(String streamId) {
 		Set<String> result = new HashSet<String>();
-		synchronized (readySources) {
-			if (readySources.containsKey(streamId)) {
-				for (SourceStatus ss : readySources.get(streamId).values()) {
-					result.add(ss.getFromNode().getId());
-				}
+		if (readySources.containsKey(streamId)) {
+			for (SourceStatus ss : readySources.get(streamId).values()) {
+				result.add(ss.getFromNode().getId());
 			}
 		}
 		return result;
 	}
 
-	public int numReadySources(String streamId) {
-		synchronized (readySources) {
-			if (!readySources.containsKey(streamId))
-				return 0;
-			return readySources.get(streamId).size();
-		}		
+	public synchronized int numReadySources(String streamId) {
+		if (!readySources.containsKey(streamId))
+			return 0;
+		return readySources.get(streamId).size();
 	}
 
 	private void sendReqSourceStatus(Node source, ReqSourceStatus.Builder sourceBldr) {
@@ -333,37 +346,44 @@ public class SourceMgr {
 	/**
 	 * A source that we do not need now, but which we might need in a bit
 	 */
-	class WaitingSourceStatus implements Comparable<WaitingSourceStatus> {
+	class SourceDetails implements Comparable<SourceDetails> {
+		Node node;
+		Set<String> streamIds = new HashSet<String>();
 		Date nextQuery;
-		SourceStatus.Builder ssb;
 		int retryAfterMs;
 		int retries = 0;
 
-		public WaitingSourceStatus(Date nextQuery, int retryAfterMs, Builder ssb) {
+		public SourceDetails(Node node, Date nextQuery, int retryAfterMs) {
+			this.node = node;
 			this.nextQuery = nextQuery;
-			this.ssb = ssb;
 			this.retryAfterMs = retryAfterMs;
 		}
 
-		public int compareTo(WaitingSourceStatus o) {
+		public int compareTo(SourceDetails o) {
 			return nextQuery.compareTo(o.nextQuery);
 		}
 
 		@Override
 		public int hashCode() {
-			return ssb.getFromNode().getId().hashCode();
+			return node.getId().hashCode();
 		}
 
 		@Override
 		public boolean equals(Object obj) {
-			if (!(obj instanceof WaitingSourceStatus))
+			if (!(obj instanceof SourceDetails))
 				return false;
-			WaitingSourceStatus o = (WaitingSourceStatus) obj;
-			return ssb.getFromNode().getId().equals(o.ssb.getFromNode().getId());
+			SourceDetails o = (SourceDetails) obj;
+			return node.getId().equals(o.node.getId());
+		}
+
+		@Override
+		public String toString() {
+			return "SD[" + node.getId() + ",nextq=" + getTimeFormat().format(nextQuery) + ",retries=" + retries
+					+ ",retA=" + retryAfterMs + ",sids=" + streamIds + "]";
 		}
 	}
 
-	class WantSourceBatcher extends UniqueBatcher<String> {
+	class WantSourceBatcher extends Batcher<String> {
 		WantSourceBatcher() {
 			super(mina.getConfig().getSourceRequestBatchTime(), mina.getExecutor());
 		}
@@ -375,6 +395,11 @@ public class SourceMgr {
 		}
 	}
 
+	/**
+	 * Use UniqueBatcher here as if we get multiple GotSources for the same node in quick succession, we'll have duplicate stream ids
+	 * @author macavity
+	 *
+	 */
 	class ReqSourceStatusBatcher extends UniqueBatcher<String> {
 		Node source;
 
@@ -385,7 +410,7 @@ public class SourceMgr {
 
 		@Override
 		protected void runBatch(Collection<String> streamIdCol) {
-			synchronized (rssBatchers) {
+			synchronized (SourceMgr.this) {
 				rssBatchers.remove(source.getId());
 			}
 			ReqSourceStatus.Builder rssb = ReqSourceStatus.newBuilder();

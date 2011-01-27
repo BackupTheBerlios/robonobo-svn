@@ -221,6 +221,7 @@ public class SellMgr {
 	}
 
 	public void cmdPendingOpenAccount(final MessageHolder mh) {
+		log.debug("SellMgr handling command pending open account: "+mh.getMsgName());
 		String nodeId = mh.getFromCC().getNodeId();
 		// The account may already be open due to threading
 		synchronized (this) {
@@ -661,15 +662,19 @@ public class SellMgr {
 
 	public void closeAccount(String nodeId, Attempt onClose) {
 		ControlConnection cc = mina.getCCM().getCCWithId(nodeId);
-		if (cc == null)
+		if (cc == null) {
+			onClose.succeeded();
 			return;
+		}
 
 		Account acct;
 		synchronized (this) {
 			acct = accounts.remove(nodeId);
 		}
-		if (acct == null)
+		if (acct == null) {
+			onClose.succeeded();
 			return;
+		}
 
 		// Put in a bid of zero to remove this guy from our auctions
 		removeBidder(nodeId);

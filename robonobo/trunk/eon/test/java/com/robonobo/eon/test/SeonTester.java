@@ -93,7 +93,6 @@ public class SeonTester {
 	}
 
 	void doSend(final SEONConnection conn) {
-		// DEBUG
 //		eonMgr.setMaxOutboundBps(262144);
 		
 		System.out.println("Starting send");
@@ -104,21 +103,20 @@ public class SeonTester {
 
 			public ByteBuffer getMoreData() {
 				ByteBuffer buf = ByteBuffer.allocate(16384);
-				// DEBUG - just send them random data
-//				byte b = (byte) (mod.add(lastSentByte, 1) & 0xff);
-//				for (int i = 0; i < buf.limit(); i++) {
-//					buf.put(b);
-//				}
-//				lastSentByte = (b & 0xff);
+				byte b = (byte) (mod.add(lastSentByte, 1) & 0xff);
+				for (int i = 0; i < buf.limit(); i++) {
+					buf.put(b);
+				}
+				lastSentByte = (b & 0xff);
 				if(msElapsedSince(lastLog) > 1000L) {
 					if(conn.getOutFlowRate() > 0)
 						System.out.println("Sending data at "+FileUtil.humanReadableSize(conn.getOutFlowRate())+"/s");
 					lastLog = now();
 				}
-//				buf.flip();
-//				StringBuffer sb = new StringBuffer("Tester sending buffer: ");
-//				ByteUtil.printBuf(buf, sb);
-//				log.info(sb);
+				buf.flip();
+				StringBuffer sb = new StringBuffer("Tester sending buffer: ");
+				ByteUtil.printBuf(buf, sb);
+				log.info(sb);
 				return buf;
 			}
 		});
@@ -131,22 +129,21 @@ public class SeonTester {
 			int numReceived = 0;
 			long lastLog = currentTimeMillis();
 			public void receiveData(ByteBuffer data, Object ignore) throws IOException {
-				// DEBUG - just throw it away
-//				StringBuffer sb = new StringBuffer("Tester receiving buffer: ");
-//				ByteUtil.printBuf(data, sb);
-//				log.info(sb);
-//				while (data.remaining() > 0) {
-//					byte b = data.get();
-//					if(lastByte < 0)
-//						lastByte = b;
-//					if(b != lastByte)
-//						throw new SeekInnerCalmException();
-//					numReceived++;
-//					if(numReceived == 16384) {
-//						lastByte = -1;
-//						numReceived = 0;
-//					}
-//				}
+				StringBuffer sb = new StringBuffer("Tester receiving buffer: ");
+				ByteUtil.printBuf(data, sb);
+				log.info(sb);
+				while (data.remaining() > 0) {
+					byte b = data.get();
+					if(lastByte < 0)
+						lastByte = b;
+					if(b != lastByte)
+						throw new SeekInnerCalmException();
+					numReceived++;
+					if(numReceived == 16384) {
+						lastByte = -1;
+						numReceived = 0;
+					}
+				}
 				if((currentTimeMillis() - lastLog) > 1000L) {
 					if(conn.getInFlowRate() > 0)
 						System.out.println("Receiving data at "+FileUtil.humanReadableSize(conn.getInFlowRate())+"/s");

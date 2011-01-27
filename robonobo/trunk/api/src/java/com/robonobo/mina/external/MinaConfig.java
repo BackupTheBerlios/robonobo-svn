@@ -66,6 +66,10 @@ public class MinaConfig implements Cloneable, Serializable {
 	 */
 	int deadSourceQueryTime = 60;
 	/**
+	 * When we first hear about a source and query it, retry after this many secs
+	 */
+	int initialSourceQueryTime = 60;
+	/**
 	 * If a source doesn't answer a query for status, retry this many times
 	 * before giving up (doubling wait time each time)
 	 */
@@ -419,5 +423,13 @@ public class MinaConfig implements Cloneable, Serializable {
 
 	public void setMaxOutboundBps(int maxOutboundBps) {
 		this.maxOutboundBps = maxOutboundBps;
+	}
+
+	public int getInitialSourceQueryTime() {
+		return initialSourceQueryTime;
+	}
+
+	public void setInitialSourceQueryTime(int initialSourceQueryTime) {
+		this.initialSourceQueryTime = initialSourceQueryTime;
 	}
 }
