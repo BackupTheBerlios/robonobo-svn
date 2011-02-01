@@ -1,16 +1,11 @@
 package com.robonobo.mina.network;
 
-import static com.robonobo.common.util.TimeUtil.now;
+import static com.robonobo.common.util.TimeUtil.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -24,7 +19,6 @@ import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.dlugosz.Dlugosz;
 import com.robonobo.common.io.ByteBufferInputStream;
 import com.robonobo.common.util.CodeUtil;
-import com.robonobo.common.util.TimeUtil;
 import com.robonobo.core.api.proto.CoreApi.EndPoint;
 import com.robonobo.core.api.proto.CoreApi.Node;
 import com.robonobo.mina.instance.MinaInstance;
@@ -35,7 +29,6 @@ import com.robonobo.mina.message.proto.MinaProtocol.Bye;
 import com.robonobo.mina.message.proto.MinaProtocol.Hello;
 import com.robonobo.mina.message.proto.MinaProtocol.Ping;
 import com.robonobo.mina.message.proto.MinaProtocol.Pong;
-import com.robonobo.mina.util.LocalConnHelper;
 import com.robonobo.mina.util.MinaConnectionException;
 
 /**
@@ -58,7 +51,6 @@ public class ControlConnection implements PushDataReceiver {
 	protected boolean closed = false;
 	protected EndPoint theirEp;
 	protected EndPoint myEp;
-	protected LocalConnHelper connHelper;
 	/** This provides Broadcast/Listen connections associated with this CC */
 	protected StreamConnectionFactory scf;
 	/** The gamma that will be set on any bcPairs added to this conn */
@@ -84,8 +76,6 @@ public class ControlConnection implements PushDataReceiver {
 			StreamConnectionFactory scf) {
 		this(mina);
 		nodeDesc = nd;
-		if (isLocal())
-			connHelper = new LocalConnHelper();
 		nodeId = nodeDesc.getId();
 		this.myEp = myEp;
 		this.theirEp = theirEp;
@@ -113,8 +103,6 @@ public class ControlConnection implements PushDataReceiver {
 			return;
 		}
 		this.scf = scf;
-		if (isLocal())
-			connHelper = new LocalConnHelper();
 		dataChan = helHelper.getDataChannel();
 		myEp = helHelper.getMyEp();
 		theirEp = helHelper.getTheirEp();
@@ -490,10 +478,6 @@ public class ControlConnection implements PushDataReceiver {
 			log.error(ControlConnection.this + " timeout closing connection - closing now");
 			close();
 		}
-	}
-
-	public LocalConnHelper getConnHelper() {
-		return connHelper;
 	}
 
 	/**

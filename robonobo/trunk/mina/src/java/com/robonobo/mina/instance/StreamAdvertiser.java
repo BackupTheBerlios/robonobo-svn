@@ -26,7 +26,8 @@ public class StreamAdvertiser extends Batcher<String> {
 		// If we don't yet have a connection to a supernode, don't advertise, as
 		// when we do connect we will send an advert for all [re]broadcasting
 		// streams, and we'd like to avoid sending duplicate streams on startup
-		if (mina.getCCM().haveSupernode())
+		// (If we have local conns, they need to know about our broadcasts)
+		if (mina.getCCM().haveSupernode() || mina.getCCM().haveLocalConn())
 			add(streamId);
 	}
 

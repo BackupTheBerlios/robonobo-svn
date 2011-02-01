@@ -20,7 +20,6 @@ public class WantSourceHandler extends AbstractMessageHandler {
 		ControlConnection cc = mh.getFromCC();
 
 		if (cc.isLocal()) {
-			cc.getConnHelper().notifyWantSource(ws);
 			for (String streamId : ws.getStreamIdList()) {
 				GotSource.Builder gsb = GotSource.newBuilder().addNode(mina.getNetMgr().getDescriptorForTalkingTo(cc.getNodeDescriptor(), true));
 				StreamMgr sm = mina.getSmRegister().getSM(streamId);

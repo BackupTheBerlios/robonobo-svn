@@ -144,7 +144,7 @@ public class DownloadService extends AbstractService implements MinaListener {
 	 * Will start the download if we have < maxRunningDownloads
 	 */
 	public void addDownload(String streamId, File dataFile) throws RobonoboException {
-		log.debug("Adding download for " + streamId);
+		log.info("Adding download for " + streamId);
 		Stream s = metadata.getStream(streamId);
 		DownloadingTrack d = new DownloadingTrack(s, dataFile, DownloadStatus.Paused);
 		long startTime = now().getTime();

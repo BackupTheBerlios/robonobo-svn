@@ -13,12 +13,8 @@ public class UnAdvSourceHandler extends AbstractMessageHandler {
 	public void handleMessage(MessageHolder mh) {
 		UnAdvSource uas = (UnAdvSource) mh.getMessage();
 		ControlConnection cc = mh.getFromCC();
-		if (cc.isLocal())
-			cc.getConnHelper().notifyUnAdvSource(uas);
-
 		if (mina.getConfig().isSupernode())
 			mina.getSupernodeMgr().notifyUnAdvSource(mh);
-
 	}
 
 	@Override

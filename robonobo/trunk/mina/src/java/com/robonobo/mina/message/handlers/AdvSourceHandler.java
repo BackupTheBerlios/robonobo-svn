@@ -22,7 +22,6 @@ public class AdvSourceHandler extends AbstractMessageHandler {
 		if (cc.isLocal()) {
 			List<Node> sources = new ArrayList<Node>();
 			sources.add(cc.getNodeDescriptor());
-			cc.getConnHelper().notifyAdvSource(as);
 			for (String streamId : as.getStreamIdList()) {
 				GotSource gs = GotSource.newBuilder().setStreamId(streamId).addAllNode(sources).build();
 				MessageHolder gsMh = new MessageHolder("GotSource", gs, cc, TimeUtil.now());

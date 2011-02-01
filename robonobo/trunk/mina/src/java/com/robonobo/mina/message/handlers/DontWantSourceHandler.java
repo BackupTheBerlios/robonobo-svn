@@ -13,9 +13,7 @@ public class DontWantSourceHandler extends AbstractMessageHandler {
 	public void handleMessage(MessageHolder mh) {
 		ControlConnection cc = mh.getFromCC();
 		DontWantSource dws = (DontWantSource) mh.getMessage();
-		if(cc.isLocal())
-			cc.getConnHelper().notifyDontWantSource(dws);
-		else if(mina.getConfig().isSupernode())
+		if(mina.getConfig().isSupernode())
 			mina.getSupernodeMgr().notifyDontWantSource(mh);
 	}
 

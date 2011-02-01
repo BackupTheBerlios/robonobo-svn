@@ -144,6 +144,17 @@ public class CCMgr {
 	/**
 	 * @syncpriority 140
 	 */
+	public synchronized boolean haveLocalConn() {
+		for (ControlConnection con : cons.values()) {
+			if (con.isLocal())
+				return true;
+		}
+		return false;
+	}
+
+	/**
+	 * @syncpriority 140
+	 */
 	public synchronized ControlConnection getCCWithId(String nodeId) {
 		return cons.get(nodeId);
 	}
