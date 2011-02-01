@@ -27,7 +27,6 @@ public class GenericAudioPlayback extends CatchingRunnable {
 	AudioInputStream din = null;
 
 	public GenericAudioPlayback() {
-		super("AudioPlayback");
 	}
 
 	public GenericAudioPlayback(InputStream in) {

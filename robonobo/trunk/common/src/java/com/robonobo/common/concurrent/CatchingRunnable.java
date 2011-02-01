@@ -26,26 +26,15 @@ package com.robonobo.common.concurrent;
  *
  */
 public abstract class CatchingRunnable implements Runnable {
-	protected String threadName = "Anon-Task";
-	
-	public CatchingRunnable(String threadName) {
-		super();
-		this.threadName = threadName;
-	}
-
 	public CatchingRunnable() {
 		super();
 	}
-	
+
 	public final void run() {
-		String oldName = Thread.currentThread().getName();
-		Thread.currentThread().setName(threadName);
 		try {
 			doRun();
 		} catch(Throwable t) {
 			SafetyNet.notifyException(t, this);
-		} finally {
-			Thread.currentThread().setName(oldName);			
 		}
 	}
 

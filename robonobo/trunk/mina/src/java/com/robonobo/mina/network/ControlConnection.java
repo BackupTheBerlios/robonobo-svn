@@ -267,9 +267,9 @@ public class ControlConnection implements PushDataReceiver {
 			dataChan.receiveData(ByteBuffer.wrap(sendData), null);
 		} catch (IOException e) {
 			if (!closing) {
-				if(CodeUtil.javaMajorVersion() >= 6)
+				if (CodeUtil.javaMajorVersion() >= 6)
 					throw new IOException(e);
-				throw new IOException("Caught "+e.getClass().getSimpleName()+": "+e.getMessage());
+				throw new IOException("Caught " + e.getClass().getSimpleName() + ": " + e.getMessage());
 			}
 		}
 	}
@@ -343,7 +343,7 @@ public class ControlConnection implements PushDataReceiver {
 	protected void startPinging() {
 		double pingFreq = mina.getConfig().getMessageTimeout();
 		// We +/- 10% randomly on this, as this means that it's much less likely
-		// that two nodes ping each other simultaneously, which wastes bandwidth
+		// that two nodes ping each other simultaneously, which wastes bandwidth (not much, but often)
 		int rnd = new Random().nextInt(20);
 		double var = (pingFreq / 100) * (10 - rnd);
 		pingFreq += var;
@@ -440,7 +440,7 @@ public class ControlConnection implements PushDataReceiver {
 	 * closing process has finished.
 	 */
 	public void closeGracefully(String reason) {
-		if(closing || closed)
+		if (closing || closed)
 			return;
 		// If we have an account with them, or they with us, close it before we
 		// quit
@@ -470,18 +470,23 @@ public class ControlConnection implements PushDataReceiver {
 		}
 
 		protected void onSuccess() {
+			if (closed || closing)
+				return;
 			// DEBUG
 			log.debug(ControlConnection.this + " attempt succeeded - closing gracefully");
-
 			closeGracefully(closeReason);
 		}
 
 		protected void onFail() {
+			if (closed || closing)
+				return;
 			log.error(ControlConnection.this + " failing attempt to close connection - closing now");
 			close();
 		}
 
 		protected void onTimeout() {
+			if (closed || closing)
+				return;
 			log.error(ControlConnection.this + " timeout closing connection - closing now");
 			close();
 		}
@@ -562,10 +567,6 @@ public class ControlConnection implements PushDataReceiver {
 	}
 
 	protected class KillCPairsRunner extends CatchingRunnable {
-		public KillCPairsRunner() {
-			super("KillCPairs");
-		}
-
 		public void doRun() {
 			mina.getCCM().notifyDeadConnection(ControlConnection.this);
 			ConnectionPair[] pairs = new ConnectionPair[lcPairs.size()];
@@ -666,10 +667,6 @@ public class ControlConnection implements PushDataReceiver {
 
 	protected class PingChecker extends CatchingRunnable {
 		Random rand = new Random();
-
-		public PingChecker() {
-			super("PingChecker");
-		}
 
 		public void doRun() {
 			synchronized (ControlConnection.this) {

@@ -381,16 +381,17 @@ public class CCMgr {
 	 * @syncpriority 140
 	 */
 	public void notifyDeadConnection(ControlConnection cc) {
+		String nodeId = cc.getNodeId();
 		boolean wasConnected = false;
 		Attempt a;
-		log.debug("Cleaning up CC " + cc.getNodeId());
+		log.debug("Cleaning up CC " + nodeId);
 		if (mina.getConfig().isSupernode())
 			mina.getSupernodeMgr().notifyDeadConnection(cc.getNodeDescriptor());
 		synchronized (this) {
-			inProgressCons.remove(cc.getNodeId());
-			waitingForCons.remove(cc.getNodeId());
-			wasConnected = cons.containsKey(cc.getNodeId());
-			cons.remove(cc.getNodeId());
+			inProgressCons.remove(nodeId);
+			waitingForCons.remove(nodeId);
+			wasConnected = cons.containsKey(nodeId);
+			cons.remove(nodeId);
 			// If we've lost our supernode, ask for more
 			if (cc.getNodeDescriptor().getSupernode() && !mina.getConfig().isSupernode() && !shuttingDown) {
 				int numSupernodes = 0;
@@ -401,7 +402,7 @@ public class CCMgr {
 				if (numSupernodes == 0)
 					mina.getNetMgr().locateMoreNodes();
 			}
-			a = connectAttempts.remove(cc.getNodeId());
+			a = connectAttempts.remove(nodeId);
 		}
 		if (a instanceof ConnectAttempt)
 			((ConnectAttempt) a).tryNextMethodOrFail();
@@ -410,8 +411,8 @@ public class CCMgr {
 		if (wasConnected)
 			mina.getEventMgr().fireNodeDisconnected(buildConnectedNode(cc));
 		if (mina.getConfig().isAgoric()) {
-			mina.getSellMgr().removeBidder(cc.getNodeId());
-			mina.getBuyMgr().notifyDeadConnection(cc.getNodeId());
+			mina.getSellMgr().notifyDeadConnection(nodeId);
+			mina.getBuyMgr().notifyDeadConnection(nodeId);
 		}
 	}
 

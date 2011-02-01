@@ -165,7 +165,7 @@ public class Robonobo {
 		if (consoleOnly) {
 			BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 			PrintWriter out = new PrintWriter(System.out);
-			RobonoboConsole console = new RobonoboConsole("Console", control, in, out);
+			RobonoboConsole console = new RobonoboConsole(control, in, out);
 			Thread consoleThread = new Thread(console);
 			consoleThread.start();
 			// If the user has login details entered, perform the login here (gui handles this in RobonoboFrame.setVisible() to show the login sheet)

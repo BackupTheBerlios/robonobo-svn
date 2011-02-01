@@ -116,9 +116,11 @@ public class NetworkMgr {
 		builder.setProtocolVersion(MinaInstance.MINA_PROTOCOL_VERSION);
 		builder.setId(myNodeId);
 		builder.setApplicationUri(myAppUri);
-		builder.setSupernode(iAmSuper);
+		if(iAmSuper)
+			builder.setSupernode(true);
+		if(isLocal)
+			builder.setLocal(true);
 		builder.addAllEndPoint(eps);
-		builder.setLocal(isLocal);
 		return builder.build();
 	}
 
@@ -263,10 +265,6 @@ public class NetworkMgr {
 	}
 
 	private class LocateNodesRunner extends CatchingRunnable {
-		public LocateNodesRunner() {
-			super("NodeLocator");
-		}
-
 		public void doRun() {
 			if (mina.getConfig().getLocateLocalNodes())
 				locateLocalNodes();

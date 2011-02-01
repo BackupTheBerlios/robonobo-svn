@@ -221,7 +221,7 @@ public class SellMgr {
 	}
 
 	public void cmdPendingOpenAccount(final MessageHolder mh) {
-		log.debug("SellMgr handling command pending open account: "+mh.getMsgName());
+		log.debug("SellMgr handling command pending open account: " + mh.getMsgName());
 		String nodeId = mh.getFromCC().getNodeId();
 		// The account may already be open due to threading
 		synchronized (this) {
@@ -327,6 +327,15 @@ public class SellMgr {
 		updateAuctionStatus();
 	}
 
+	public void notifyDeadConnection(String nodeId) {
+		removeBidder(nodeId);
+		// TODO: We should try and keep their account open so that it's still there when they reconnect - but then we
+		// need a way of synchronizing account state when they reconnect - look at this when we're implementing escrow
+		synchronized (this) {
+			accounts.remove(nodeId);
+		}
+	}
+
 	public void bid(final String bidderNodeId, final double newBid) {
 		if (newBid < mina.getMyAgorics().getMinBid()) {
 			log.error("Ignoring too-low bid " + newBid + " from " + bidderNodeId);
@@ -365,24 +374,24 @@ public class SellMgr {
 							+ " - can't decrease bid during auction");
 					return;
 				}
+			} else {
+				// They sent the same bid as before - they shouldn't do this, but we'll be nice and just take it as a
+				// NoBid rather than Casting them into Outer Darkness
+				log.error(bidderNodeId+" bid the same as before - being nice, taking it as NoBid");
+				noBid(bidderNodeId);
+				return;
 			}
 
 			if (auctionInProgress) {
 				if ((!agreedBids.containsKey(bidderNodeId)) && (!currentBids.containsKey(bidderNodeId))) {
 					// Here comes a new challenger!
 					activeBidders.add(bidderNodeId);
-					bidFrozen.add(bidderNodeId);
 				} else if (!activeBidders.contains(bidderNodeId)) {
 					log.error("Node " + bidderNodeId + " bid " + newBid + ", but is no longer an active bidder");
 					return;
-				}
+				} 
+				currentBids.put(bidderNodeId, newBid);
 				waitingForBids.remove(bidderNodeId);
-				if (currentBids.containsKey(bidderNodeId) && currentBids.get(bidderNodeId) == newBid) {
-					// They shouldn't do this, but we'll be nice and not Cast
-					// them Into Outer Darkness - take it as a NoBid
-					activeBidders.remove(bidderNodeId);
-				} else
-					currentBids.put(bidderNodeId, newBid);
 				// Anyone who bids at least once during the auction is bid frozen after that auction ends (to prevent
 				// them playing silly buggers by bidding, dropping out, then bidding again when the auction closes)
 				bidFrozen.add(bidderNodeId);
@@ -404,7 +413,7 @@ public class SellMgr {
 				return;
 			}
 			// If they haven't sent us a bid in this auction yet, use their previous one
-			if(!currentBids.containsKey(fromNodeId) && agreedBids.containsKey(fromNodeId))
+			if (!currentBids.containsKey(fromNodeId) && agreedBids.containsKey(fromNodeId))
 				currentBids.put(fromNodeId, agreedBids.get(fromNodeId));
 			waitingForBids.remove(fromNodeId);
 			activeBidders.remove(fromNodeId);
@@ -435,7 +444,8 @@ public class SellMgr {
 					currentBids.putAll(agreedBids);
 					finished = true;
 				} else if ((agreedBids.size() == 0) || agreedBids.keySet().equals(currentBids.keySet())) {
-					// There is a small chance we might have more than one bidder in currentBids if the threading winds are blowing very strangely
+					// There is a small chance we might have more than one bidder in currentBids if the threading winds
+					// are blowing very strangely
 					if (log.isDebugEnabled()) {
 						StringBuffer sb = new StringBuffer("Finishing short auction with bids from: ");
 						for (String nodeId : currentBids.keySet()) {
@@ -629,12 +639,12 @@ public class SellMgr {
 			sendList.addAll(waitingForBids);
 			for (String bNodeId : bidMap.keySet()) {
 				templateBldr.addListenerId(getNodeIdToken(bNodeId));
-				if(currentBids.containsKey(bNodeId))
+				if (currentBids.containsKey(bNodeId))
 					templateBldr.addBidAmount(currentBids.get(bNodeId));
-				else if(agreedBids.containsKey(bNodeId))
+				else if (agreedBids.containsKey(bNodeId))
 					templateBldr.addBidAmount(agreedBids.get(bNodeId));
 				else
-					throw new SeekInnerCalmException("Couldn't find bid for node "+bNodeId);
+					throw new SeekInnerCalmException("Couldn't find bid for node " + bNodeId);
 			}
 		}
 		if (log.isDebugEnabled()) {
@@ -663,7 +673,8 @@ public class SellMgr {
 	public void closeAccount(String nodeId, Attempt onClose) {
 		ControlConnection cc = mina.getCCM().getCCWithId(nodeId);
 		if (cc == null) {
-			onClose.succeeded();
+			if (onClose != null)
+				onClose.succeeded();
 			return;
 		}
 
@@ -672,7 +683,8 @@ public class SellMgr {
 			acct = accounts.remove(nodeId);
 		}
 		if (acct == null) {
-			onClose.succeeded();
+			if (onClose != null)
+				onClose.succeeded();
 			return;
 		}
 

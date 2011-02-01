@@ -64,7 +64,6 @@ public class DefaultBidStrategy extends BidStrategy {
 		double myNewBid = getPreferredBid(cleanBids(bu), ag.getIncrement());
 		if (myNewBid == as.getLastSentBid()) {
 			// No bid
-			log.debug("DEBUG: bid same as last sent");
 			return 0;
 		}
 		if (myNewBid < as.getLastSentBid()) {
@@ -72,7 +71,6 @@ public class DefaultBidStrategy extends BidStrategy {
 				canReduceBid.put(nodeId, false);
 				return myNewBid;
 			}
-			log.debug("DEBUG: can't reduce bid");
 			return 0;
 		}
 		return myNewBid;
@@ -100,9 +98,10 @@ public class DefaultBidStrategy extends BidStrategy {
 		// that as high as we're willing to go
 		double maxBid = maxBid();
 		double highestCurBid = bids.get(bids.size() - 1).getBid();
-		if (maxBid < (highestCurBid * MAX_OVERPAY))
+		double overpayBid = highestCurBid * MAX_OVERPAY;
+		if (maxBid < overpayBid)
 			return maxBid;
-		return (highestCurBid * MAX_OVERPAY);
+		return overpayBid;
 	}
 
 	private double maxBid() {

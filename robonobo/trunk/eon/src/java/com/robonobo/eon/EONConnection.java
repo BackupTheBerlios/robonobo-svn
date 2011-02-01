@@ -89,7 +89,6 @@ public abstract class EONConnection {
 		private final EONConnectionEvent event;
 
 		public CloseRunner(EONConnectionListener listener, EONConnectionEvent event) {
-			super("CloseEONConn");
 			this.listener = listener;
 			this.event = event;
 		}

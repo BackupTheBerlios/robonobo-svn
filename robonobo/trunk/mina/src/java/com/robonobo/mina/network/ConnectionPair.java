@@ -23,7 +23,7 @@ public abstract class ConnectionPair {
 
 	public void die() {
 		// Calling higher syncpriority (than subclass), use separate thread
-		mina.getExecutor().execute(new CatchingRunnable("KillCPair") {
+		mina.getExecutor().execute(new CatchingRunnable() {
 			public void doRun() {
 				sm.notifyDeadConnection(ConnectionPair.this);
 			}

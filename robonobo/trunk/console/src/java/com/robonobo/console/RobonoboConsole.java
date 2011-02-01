@@ -18,8 +18,7 @@ public class RobonoboConsole extends CatchingRunnable {
 	private PrintWriter out;
 	private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
-	public RobonoboConsole(String threadName, RobonoboController controller, BufferedReader in, PrintWriter out) {
-		super(threadName);
+	public RobonoboConsole(RobonoboController controller, BufferedReader in, PrintWriter out) {
 		this.controller = controller;
 		this.in = in;
 		this.out = out;

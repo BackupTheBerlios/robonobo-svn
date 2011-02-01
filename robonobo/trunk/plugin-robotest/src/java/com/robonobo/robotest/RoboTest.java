@@ -108,7 +108,6 @@ public class RoboTest {
 		private List<String> sidsToDownload;
 		
 		public AddDownloadsTask(List<String> sidsToDownload) {
-			super("RoboTest");
 			this.sidsToDownload = sidsToDownload;
 		}
 

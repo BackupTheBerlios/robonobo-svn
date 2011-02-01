@@ -4,7 +4,8 @@ import java.io.Serializable;
 
 @SuppressWarnings("serial")
 public class RobonoboConfig implements Serializable {
-	int threadPoolSize = 4;
+	/** Our thread pool will contain one thread per processor, plus this value */
+	int threadPoolOverhead = 2;
 	int upnpTimeout = 2000; // ms
 	int upnpDefaultPort = 17235;
 	int upnpPortsToTry = 50;
@@ -49,8 +50,8 @@ public class RobonoboConfig implements Serializable {
 		return maxRunningDownloads;
 	}
 
-	public int getThreadPoolSize() {
-		return threadPoolSize;
+	public int getThreadPoolOverhead() {
+		return threadPoolOverhead;
 	}
 
 	public int getUpnpDefaultPort() {
@@ -77,8 +78,8 @@ public class RobonoboConfig implements Serializable {
 		this.maxRunningDownloads = maxRunningDownloads;
 	}
 
-	public void setThreadPoolSize(int threadPoolSize) {
-		this.threadPoolSize = threadPoolSize;
+	public void setThreadPoolOverhead(int threadPoolOverhead) {
+		this.threadPoolOverhead = threadPoolOverhead;
 	}
 
 	public void setUpnpDefaultPort(int upnpDefaultPort) {

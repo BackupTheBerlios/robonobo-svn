@@ -31,6 +31,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hsqldb.util.ShutdownServer;
 
 import com.robonobo.common.async.*;
 import com.robonobo.common.concurrent.CatchingRunnable;
@@ -153,6 +154,8 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 	PullDataProvider dataProvider;
 	PushDataReceiver dataReceiver;
 	boolean dataReceiverRunning = false;
+	/** Shut us down as soon as we're done passing all our data up */
+	boolean closeAfterDataReceiver = false;
 	boolean waitingForVisitor = false;
 	/** Used to make sure the datareceiver is called in order */
 	ReentrantLock receiveLock = new ReentrantLock(true);
@@ -383,7 +386,7 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 		}
 	}
 
-	/** Must only be called from inside sync(receiveLock) block */
+	/** Must only be called when receiveLock is locked */
 	private void fireAsyncReceiver() {
 		dataReceiverRunning = true;
 		mgr.getExecutor().execute(asyncReceiver);
@@ -661,9 +664,14 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 						restartRetransmissionTimer(rto);
 					}
 				} else {
+					// Take note to send our FinAck when the visitor gets to us
+					shouldSendFinAck = true;
+					// If we have been told to close but have not yet accepted the visitor, shouldSendFin will be set -
+					// clear it, it will mess things up as we will try to close the connection twice and the second time
+					// the other end will have already exited
+					shouldSendFin = false;
 					noDelay = true;
 					recvNext = mod.add(pkt.getSequenceNumber(), 1);
-					shouldSendFinAck = true;
 					sendDataIfNecessary();
 				}
 			}
@@ -937,6 +945,19 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 
 	@SuppressWarnings("static-access")
 	private void closeConnection() {
+		// If our async receiver is currently running, don't shut us down until we've finished passing data up,
+		// otherwise we'll signal that we've closed before we pass all our data up
+		receiveLock.lock();
+		try {
+			if (dataReceiverRunning) {
+				if (debugLogging)
+					log.debug(this + " waiting to close connection until async receiver returns");
+				closeAfterDataReceiver = true;
+				return;
+			}
+		} finally {
+			receiveLock.unlock();
+		}
 		// Take note if we're listening, but close before we call returnPort()
 		// as the connholder might be waiting on us to close
 		boolean wasListening = (state == state.Listen);
@@ -1086,9 +1107,8 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 
 	/** All packets in the retrans queue are regarded as lost */
 	private void markInTransitPktsAsLost() {
-		// Add everything in retransQ to lostQ, inserting at the correct places
-		// -
-		// both lists are already sorted so this isn't too bad
+		// Add everything in retransQ to lostQ, inserting at the correct places - both lists are already sorted so this
+		// isn't too bad
 		ListIterator<SEONPacket> lostIter = lostQ.listIterator();
 		SEONPacket curLostPkt = lostIter.hasNext() ? lostIter.next() : null;
 		while (retransQ.size() > 0) {
@@ -1544,6 +1564,9 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 		mgr.sendPktImmediate(pkt);
 	}
 
+	/**
+	 * Must only be called inside sync block
+	 */
 	private void setState(State state) {
 		if (!this.state.equals(state)) {
 			if (debugLogging)
@@ -1758,6 +1781,8 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 
 	private final class AsyncReceiver extends CatchingRunnable {
 		public void doRun() throws Exception {
+			if (debugLogging)
+				log.debug(SEONConnection.this + " - async receiver running");
 			while (true) {
 				// Grab a copy of our datareceiver in case it's set to null
 				PushDataReceiver dataRec = null;
@@ -1766,13 +1791,23 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 				try {
 					dataRec = dataReceiver;
 					if (dataRec == null || incomingDataBufs.size() == 0) {
+						if (debugLogging)
+							log.debug(SEONConnection.this + " - async receiver returning");
 						dataReceiverRunning = false;
+						// If we were waiting to shut down, do it now
+						if (closeAfterDataReceiver) {
+							synchronized (SEONConnection.this) {
+								closeConnection();
+							}
+						}
 						return;
 					}
 					buf = incomingDataBufs.removeFirst();
 				} finally {
 					receiveLock.unlock();
 				}
+				if (debugLogging)
+					log.debug(SEONConnection.this + " - async receiver passing data");
 				try {
 					dataRec.receiveData(buf, null);
 				} catch (Exception e) {

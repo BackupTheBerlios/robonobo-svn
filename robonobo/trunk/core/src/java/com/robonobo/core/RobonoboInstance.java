@@ -74,8 +74,11 @@ public class RobonoboInstance implements Robonobo {
 	}
 
 	protected void startExecutor() {
-		if (executor == null)
-			executor = new ScheduledThreadPoolExecutor(getConfig().getThreadPoolSize());
+		if (executor == null) {
+			int poolSz = Runtime.getRuntime().availableProcessors() + getConfig().getThreadPoolOverhead();
+			log.info("Starting thread pool with "+poolSz+" threads");
+			executor = new ScheduledThreadPoolExecutor(poolSz);			
+		}
 	}
 
 	protected void registerServices() {

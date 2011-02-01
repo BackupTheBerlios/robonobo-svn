@@ -3,6 +3,7 @@ package com.robonobo.mina.message.handlers;
 import java.io.IOException;
 import java.io.InputStream;
 
+import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.mina.message.MessageHolder;
 import com.robonobo.mina.message.proto.MinaProtocol.Bid;
 import com.robonobo.mina.message.proto.MinaProtocol.BidUpdate;
@@ -24,7 +25,8 @@ public class BidUpdateHandler extends AbstractMessageHandler {
 			if(thisBid > answeringBid)
 				answeringBid = thisBid;
 		}
-		if(answeringBid == 0)
+		// If we are replying with the same bid, just send a NoBid instead
+		if(answeringBid == 0 || answeringBid == myBid(bu))
 			cc.sendMessage("NoBid", NoBid.getDefaultInstance());
 		else
 			cc.sendMessage("Bid", Bid.newBuilder().setAmount(answeringBid).build());
@@ -38,4 +40,19 @@ public class BidUpdateHandler extends AbstractMessageHandler {
 		return BidUpdate.newBuilder().mergeFrom(is).build();
 	}
 
+	private double myBid(BidUpdate bu) {
+		if(!bu.hasYouAre())
+			return 0d;
+		String myListenerId = bu.getYouAre();
+		int myIdx = -1;
+		for(int i=0;i<bu.getListenerIdCount();i++) {
+			if(myListenerId.equals(bu.getListenerId(i))) {
+				myIdx = i;
+				break;
+			}
+		}
+		if(myIdx < 0)
+			throw new SeekInnerCalmException();
+		return bu.getBidAmount(myIdx);
+	}
 }

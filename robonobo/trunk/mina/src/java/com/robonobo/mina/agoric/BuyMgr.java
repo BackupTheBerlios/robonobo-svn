@@ -241,8 +241,8 @@ public class BuyMgr {
 			gotAccount = accounts.containsKey(nodeId);
 			alreadyGotAttempt = onAcctCloseAttempts.containsKey(nodeId);
 		}
-		if(gotAccount) {
-			if(alreadyGotAttempt) {
+		if (gotAccount) {
+			if (alreadyGotAttempt) {
 				// Just return, our already-registered attempt will shut things down
 				return;
 			}
@@ -254,6 +254,7 @@ public class BuyMgr {
 				CloseAcct ca = CloseAcct.newBuilder().build();
 				cc.sendMessage("CloseAcct", ca);
 				sentBid(nodeId, 0);
+				return;
 			}
 		}
 		onClose.succeeded();
@@ -283,13 +284,13 @@ public class BuyMgr {
 				log.error("Error when depositing token from " + nodeId, e);
 			}
 			Attempt onClose = onAcctCloseAttempts.remove(nodeId);
-			
+
 			// DEBUG
-			String msg = "Successfully closed account with "+nodeId;
-			if(onClose != null)
+			String msg = "Successfully closed account with " + nodeId;
+			if (onClose != null)
 				msg += ": firing onclose attempt";
 			log.debug(msg);
-			
+
 			if (onClose != null)
 				onClose.succeeded();
 		}
@@ -597,10 +598,14 @@ public class BuyMgr {
 	}
 
 	public synchronized void notifyDeadConnection(String nodeId) {
-		// TODO Non-sucking payment methods
+		// TODO: We should try and keep account info so that it's still there when we reconnect - but then we
+		// need a way of synchronizing account state when they reconnect - look at this when we're implementing escrow
 		log.debug("BuyMgr cleaning up after " + nodeId);
 		asMap.remove(nodeId);
 		agMap.remove(nodeId);
+		accounts.remove(nodeId);
+		onAcctCloseAttempts.remove(nodeId);
+		onConfirmedBidAttempts.remove(nodeId);
 	}
 
 	/**

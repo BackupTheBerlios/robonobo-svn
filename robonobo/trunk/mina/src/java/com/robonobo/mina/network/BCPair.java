@@ -39,7 +39,7 @@ public class BCPair extends ConnectionPair {
 		}
 		// This will set our gamma
 		cc.addBCPair(this);
-		log.info("Created broadcast conn to " + cc.getNodeId() + " for stream " + sm.getStreamId());
+		log.info("Starting broadcast of " + sm.getStreamId() + " to node " + cc.getNodeId());
 		requestPages(pages);
 	}
 
@@ -63,7 +63,7 @@ public class BCPair extends ConnectionPair {
 	 * @syncpriority 120
 	 */
 	public void die(boolean sendSourceStopping) {
-		log.info(this + " closing down");
+		log.info("Stopping broadcast of " + sm.getStreamId() + " to node " + cc.getNodeId());
 		synchronized (this) {
 			if (isClosed)
 				return;
