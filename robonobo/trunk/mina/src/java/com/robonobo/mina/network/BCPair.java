@@ -126,7 +126,7 @@ public class BCPair extends ConnectionPair {
 			if (auctStatIdx < 0) {
 				// Ask again when they've paid up
 				ReqPage rp = ReqPage.newBuilder().setStreamId(sm.getStreamId()).addAllPage(pages).build();
-				mina.getSellMgr().cmdPendingOpenAccount(new MessageHolder("ReqPage", rp, cc, TimeUtil.now()));
+				mina.getSellMgr().msgPendingAgreedBid(new MessageHolder("ReqPage", rp, cc, TimeUtil.now()));
 				return;
 			} else {
 				for (Long pn : pages) {

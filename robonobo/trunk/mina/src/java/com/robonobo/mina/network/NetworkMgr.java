@@ -8,11 +8,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import org.apache.commons.logging.Log;
 
+import com.robonobo.common.concurrent.Attempt;
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.api.proto.CoreApi.EndPoint;
 import com.robonobo.core.api.proto.CoreApi.Node;
@@ -29,7 +29,7 @@ public class NetworkMgr {
 	// private InetSocketAddress provPublicDetails;
 	// private boolean testedHolepunching = false;
 	private ScheduledFuture nodeLocatorTask;
-	private final NodeLocatorList nodeLocators = new NodeLocatorList();
+	private List<NodeLocator> nodeLocators = new ArrayList<NodeLocator>();
 	private List<EndPointMgr> endPointMgrs = new ArrayList<EndPointMgr>();
 	private List<NodeFilter> nodeFilters = new ArrayList<NodeFilter>();
 	private String myNodeId;
@@ -233,7 +233,7 @@ public class NetworkMgr {
 	}
 
 	/**
-	 * Don't call this method directly, use CCMgr.initiateNewCC(). This method may not return for 30+secs
+	 * Don't call this method directly, use CCMgr.makeCCTo(). This method may not return for 30+secs
 	 */
 	public ControlConnection makeCCTo(Node node, List<EndPoint> triedEps) {
 		for (EndPointMgr epMgr : endPointMgrs) {
@@ -264,6 +264,19 @@ public class NetworkMgr {
 		}
 	}
 
+	public List<EndPointMgr> getEndPointMgrs() {
+		return endPointMgrs;
+	}
+
+	private void connectToSupernode(List<Node> supernodes) {
+		if(supernodes.size() == 0)
+			return;
+		Node tryNode = supernodes.remove(0);
+		ConnectToSupernodeAttempt a = new ConnectToSupernodeAttempt(supernodes);
+		a.start();
+		mina.getCCM().makeCCTo(tryNode, a);
+	}
+	
 	private class LocateNodesRunner extends CatchingRunnable {
 		public void doRun() {
 			if (mina.getConfig().getLocateLocalNodes())
@@ -275,7 +288,7 @@ public class NetworkMgr {
 		}
 
 		private void sendDetailsToLocator() {
-			for (NodeLocator locator : nodeLocators.getLocators()) {
+			for (NodeLocator locator : nodeLocators) {
 				locator.locateSuperNodes(publicNodeDesc);
 			}
 		}
@@ -288,45 +301,33 @@ public class NetworkMgr {
 
 		private void locateSupernodes() {
 			log.debug("Locating supernodes");
-			NodeLocator[] locators = nodeLocators.getLocators();
-			for (int i = 0; i < locators.length; i++) {
-				NodeLocator nl = locators[i];
+			for (NodeLocator nl : nodeLocators) {
 				List<Node> nodeList = nl.locateSuperNodes(publicNodeDesc);
-				if (nodeList != null) {
-					Iterator<Node> iter = nodeList.iterator();
-					while (iter.hasNext()) {
-						Node thisNode = iter.next();
-						log.debug("Checking remote node " + thisNode);
-						try {
-							mina.getCCM().makeCCTo(thisNode, null);
-						} catch (MinaConnectionException e) {
-							log.error("Error connecting to node " + thisNode.getId(), e);
-						}
-					}
-				}
+				if (nodeList != null)
+					connectToSupernode(nodeList);
 			}
 		}
 	}
 
-	private class NodeLocatorList {
-		private final Set locators = new HashSet();
+	private class ConnectToSupernodeAttempt extends Attempt {
+		private List<Node> remainingSupernodes;
 
-		synchronized void add(NodeLocator locator) {
-			locators.add(locator);
+		public ConnectToSupernodeAttempt(List<Node> remainingSupernodes) {
+			super(mina.getExecutor(), mina.getConfig().getMessageTimeout(), "ConnectToSupernodeAttempt");
+			this.remainingSupernodes = remainingSupernodes;
 		}
-
-		synchronized NodeLocator[] getLocators() {
-			NodeLocator[] arr = new NodeLocator[locators.size()];
-			locators.toArray(arr);
-			return arr;
+		
+		@Override
+		protected void onFail() {
+			if(remainingSupernodes.size() == 0)
+				log.error("Failed to connect to any supernodes... :-(");
+			else
+				connectToSupernode(remainingSupernodes);
 		}
-
-		synchronized void remove(NodeLocator locator) {
-			locators.remove(locator);
+		
+		@Override
+		protected void onTimeout() {
+			onFail();
 		}
-	}
-
-	public List<EndPointMgr> getEndPointMgrs() {
-		return endPointMgrs;
 	}
 }

@@ -3,6 +3,7 @@ package com.robonobo.mina.message.handlers;
 import java.io.IOException;
 import java.io.InputStream;
 
+import com.robonobo.core.api.proto.CoreApi.Node;
 import com.robonobo.mina.message.MessageHolder;
 import com.robonobo.mina.message.proto.MinaProtocol.ReqConn;
 
@@ -13,7 +14,11 @@ public class ReqConnHandler extends AbstractMessageHandler {
 		if(rc.getToNodeId().equals(mina.getMyNodeId())) {
 			// Make a ControlConnection to this host
 			// TODO: #CC limits
-			mina.getCCM().makeCCTo(rc.getFromNode(), null, false, null);
+			Node fromNode = rc.getFromNode();
+			if(mina.getNetMgr().canConnectTo(fromNode))
+				mina.getCCM().makeCCTo(fromNode, null, false, null);
+			else
+				log.error("Received ReqConn from node "+fromNode.getId()+", but I cannot connect to them");
 		}
 		else if(mina.getConfig().isSupernode())
 			mina.getCCM().sendOrForwardMessageTo("ReqConn", rc, rc.getToNodeId());

@@ -218,11 +218,7 @@ public class EonEndPointMgr implements EndPointMgr {
 				else {
 					if (!mina.getCCM().haveRunningOrPendingCCTo(otherNode.getId())) {
 						log.debug("Received local node request from " + otherNode.getId());
-						try {
-							mina.getCCM().makeCCTo(otherNode, null);
-						} catch (MinaConnectionException e) {
-							log.error("Caught exception attempting to make CC to local node " + otherNode.getId(), e);
-						}
+						mina.getCCM().makeCCTo(otherNode, null);
 					}
 				}
 			} catch (InvalidProtocolBufferException e) {

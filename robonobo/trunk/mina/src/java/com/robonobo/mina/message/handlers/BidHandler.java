@@ -23,7 +23,7 @@ public class BidHandler extends AbstractMessageHandler {
 			else
 				sellMgr.bid(cc.getNodeId(), b.getAmount());
 		} else
-			sellMgr.cmdPendingOpenAccount(mh);
+			sellMgr.msgPendingOpenAccount(mh);
 	}
 
 	@Override

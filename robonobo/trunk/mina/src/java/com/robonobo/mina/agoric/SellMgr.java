@@ -2,18 +2,9 @@ package com.robonobo.mina.agoric;
 
 import static com.robonobo.common.util.TimeUtil.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 
@@ -37,7 +28,6 @@ import com.robonobo.mina.message.proto.MinaProtocol.ReceivedBid;
 import com.robonobo.mina.message.proto.MinaProtocol.SourceStatus;
 import com.robonobo.mina.message.proto.MinaProtocol.StreamStatus;
 import com.robonobo.mina.network.ControlConnection;
-import com.robonobo.mina.stream.StreamMgr;
 
 /**
  * Handles auctions of this node's bandwidth, and accounts that others have with us
@@ -62,6 +52,7 @@ public class SellMgr {
 	Set<String> bidFrozen = new HashSet<String>();
 	Timeout bidTimeout;
 	Map<String, List<MessageHolder>> msgsWaitingForAcct = new HashMap<String, List<MessageHolder>>();
+	Map<String, List<MessageHolder>> msgsWaitingForAgreedBid = new HashMap<String, List<MessageHolder>>();
 	/**
 	 * We use an incrementing (mod 64) index to track versions of auction state. This index is sent with each page, so
 	 * both sides can agree on page cost
@@ -147,6 +138,10 @@ public class SellMgr {
 		}
 	}
 
+	public synchronized boolean haveAgreedBid(String nodeId) {
+		return agreedBids.containsKey(nodeId);
+	}
+
 	public synchronized double getAgreedBidFrom(String nodeId) {
 		if (agreedBids.containsKey(nodeId))
 			return agreedBids.get(nodeId);
@@ -161,19 +156,26 @@ public class SellMgr {
 		return nodeIdTokens.get(nodeId);
 	}
 
-	private synchronized void cleanUp() {
-		// Prevents memory leaks
-		Iterator<Entry<String, String>> tokIter = nodeIdTokens.entrySet().iterator();
-		while (tokIter.hasNext()) {
-			Entry<String, String> entry = tokIter.next();
-			if (!agreedBids.containsKey(entry.getKey()))
-				tokIter.remove();
-		}
-		Iterator<Entry<String, List<MessageHolder>>> msgIter = msgsWaitingForAcct.entrySet().iterator();
-		while (msgIter.hasNext()) {
-			Entry<String, List<MessageHolder>> entry = msgIter.next();
-			if (!agreedBids.containsKey(entry.getKey()))
-				msgIter.remove();
+	private void cleanUp() {
+		// Clean any data for nodes we no longer have connections too
+		Set<String> liveNodes = mina.getCCM().getConnectedNodeIds();
+		synchronized (this) {
+			Iterator<Entry<String, String>> tokIter = nodeIdTokens.entrySet().iterator();
+			while (tokIter.hasNext()) {
+				Entry<String, String> entry = tokIter.next();
+				if (!liveNodes.contains(entry.getKey()))
+					tokIter.remove();
+			}
+			Iterator<Entry<String, List<MessageHolder>>> msgIter = msgsWaitingForAcct.entrySet().iterator();
+			while (msgIter.hasNext()) {
+				if(!liveNodes.contains(msgIter.next().getKey()))
+					msgIter.remove();
+			}
+			msgIter = msgsWaitingForAgreedBid.entrySet().iterator();
+			while (msgIter.hasNext()) {
+				if(!liveNodes.contains(msgIter.next().getKey()))
+					msgIter.remove();
+			}
 		}
 	}
 
@@ -220,10 +222,8 @@ public class SellMgr {
 		return acct != null && (acct.balance > 0) && !acct.needsTopUp;
 	}
 
-	public void cmdPendingOpenAccount(final MessageHolder mh) {
-		log.debug("SellMgr handling command pending open account: " + mh.getMsgName());
+	public void msgPendingOpenAccount(final MessageHolder mh) {
 		String nodeId = mh.getFromCC().getNodeId();
-		// The account may already be open due to threading
 		synchronized (this) {
 			// Might already be open due to threading
 			if (haveActiveAccount(nodeId)) {
@@ -236,6 +236,24 @@ public class SellMgr {
 				if (!msgsWaitingForAcct.containsKey(nodeId))
 					msgsWaitingForAcct.put(nodeId, new ArrayList<MessageHolder>());
 				msgsWaitingForAcct.get(nodeId).add(mh);
+			}
+		}
+	}
+
+	public void msgPendingAgreedBid(final MessageHolder mh) {
+		String nodeId = mh.getFromCC().getNodeId();
+		synchronized (this) {
+			// Might already have agreed bid due to threading
+			if (haveAgreedBid(nodeId)) {
+				mina.getExecutor().execute(new CatchingRunnable() {
+					public void doRun() throws Exception {
+						handleMsg(mh);
+					}
+				});
+			} else {
+				if (!msgsWaitingForAgreedBid.containsKey(nodeId))
+					msgsWaitingForAgreedBid.put(nodeId, new ArrayList<MessageHolder>());
+				msgsWaitingForAgreedBid.get(nodeId).add(mh);
 			}
 		}
 	}
@@ -377,7 +395,7 @@ public class SellMgr {
 			} else {
 				// They sent the same bid as before - they shouldn't do this, but we'll be nice and just take it as a
 				// NoBid rather than Casting them into Outer Darkness
-				log.error(bidderNodeId+" bid the same as before - being nice, taking it as NoBid");
+				log.error(bidderNodeId + " bid the same as before - being nice, taking it as NoBid");
 				noBid(bidderNodeId);
 				return;
 			}
@@ -389,7 +407,7 @@ public class SellMgr {
 				} else if (!activeBidders.contains(bidderNodeId)) {
 					log.error("Node " + bidderNodeId + " bid " + newBid + ", but is no longer an active bidder");
 					return;
-				} 
+				}
 				currentBids.put(bidderNodeId, newBid);
 				waitingForBids.remove(bidderNodeId);
 				// Anyone who bids at least once during the auction is bid frozen after that auction ends (to prevent
@@ -513,6 +531,8 @@ public class SellMgr {
 		// bidder is paying at least the minimum charge
 		String tbNode = null;
 		double tbCharge = 0;
+		// Any messages that are pending an agreed bid, handle them afterwards
+		List<MessageHolder> msgsToHandle = new ArrayList<MessageHolder>();
 		synchronized (this) {
 			if (topBidder != null) {
 				Account topAcct = accounts.get(topBidder);
@@ -561,6 +581,12 @@ public class SellMgr {
 				else
 					openForBidsTime = now();
 			}
+			// See which messages we can now handle
+			for (String nodeId : agreedBids.keySet()) {
+				List<MessageHolder> msgs = msgsWaitingForAgreedBid.remove(nodeId);
+				if(msgs != null)
+					msgsToHandle.addAll(msgs);
+			}
 		}
 
 		if (tbNode != null) {
@@ -600,7 +626,11 @@ public class SellMgr {
 				cc.sendMessage("AuctionResult", arBldr.build());
 			useCache = true;
 		}
-		// Make sure we only keep tokens for current bidders
+		// Handle those messages
+		for (MessageHolder mh : msgsToHandle) {
+			handleMsg(mh);
+		}
+		// Remove any old messages hanging around
 		cleanUp();
 	}
 

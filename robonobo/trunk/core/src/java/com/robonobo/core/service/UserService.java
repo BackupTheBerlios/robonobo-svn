@@ -135,7 +135,7 @@ public class UserService extends AbstractService {
 					lookupUserConfig();
 				}
 			});
-			if (rbnb.getMina().isConnectedToSupernode()) {
+			if (rbnb.getMina() != null & rbnb.getMina().isConnectedToSupernode()) {
 				rbnb.setStatus(RobonoboStatus.Connected);
 				rbnb.getEventService().fireStatusChanged();
 			}

@@ -152,6 +152,11 @@ public class CCMgr {
 		return false;
 	}
 
+	public synchronized Set<String> getConnectedNodeIds() {
+		HashSet<String> result = new HashSet<String>();
+		result.addAll(cons.keySet());
+		return result;
+	}
 	/**
 	 * @syncpriority 140
 	 */
@@ -200,7 +205,7 @@ public class CCMgr {
 	 * 
 	 * @syncpriority 140
 	 */
-	public void makeCCTo(Node nd, Attempt onCompletionAttempt) throws MinaConnectionException {
+	public void makeCCTo(Node nd, Attempt onCompletionAttempt) {
 		makeCCTo(nd, onCompletionAttempt, true, null);
 	}
 

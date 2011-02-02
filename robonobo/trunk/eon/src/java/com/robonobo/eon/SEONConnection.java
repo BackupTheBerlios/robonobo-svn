@@ -1344,21 +1344,7 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 						waitingForVisitor = true;
 						return true;
 					}
-					byte[] payloadArr = new byte[numBytes];
-					try {
-						outgoing.read(payloadArr, 0, payloadArr.length);
-					} catch (IOException e) {
-						throw new EONException("Failed to read from the pipestream", e);
-					}
-					ByteBuffer payload = ByteBuffer.wrap(payloadArr);
-					SEONPacket pkt = new SEONPacket(localEP, remoteEP, payload);
-					pkt.setSequenceNumber(sendNext);
-					sendNext = mod.add(sendNext, numBytes);
-					pkt.setACK(true);
-					pkt.setAckNumber(recvNext);
-					addToRetransQ(pkt);
-					outFlowRate.notifyData(pkt.getPayloadSize());
-					vis.sendPkt(pkt);
+					sendFreshDataPkt(vis, numBytes);
 					pktsSent++;
 				} else {
 					// Nagle's algorithm
@@ -1367,45 +1353,18 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 							waitingForVisitor = true;
 							return true;
 						}
-						byte[] payloadArr = new byte[MSS];
-						try {
-							outgoing.read(payloadArr, 0, payloadArr.length);
-						} catch (IOException e) {
-							throw new EONException("Failed to read from the pipestream", e);
-						}
-						ByteBuffer payload = ByteBuffer.wrap(payloadArr);
-						SEONPacket pkt = new SEONPacket(localEP, remoteEP, payload);
-						pkt.setSequenceNumber(sendNext);
-						sendNext = mod.add(sendNext, MSS);
-						pkt.setACK(true);
-						pkt.setAckNumber(recvNext);
-						addToRetransQ(pkt);
-						outFlowRate.notifyData(pkt.getPayloadSize());
-						vis.sendPkt(pkt);
+						sendFreshDataPkt(vis, MSS);
 						pktsSent++;
 					} else {
 						// Partial packet - only send if we have no
 						// unconfirmed data
 						if (retransQ.size() == 0) {
-							int bytesToSend = (int) outgoing.available();
-							if (bytesToSend > vis.bytesAvailable()) {
+							int numBytes = (int) outgoing.available();
+							if (numBytes > vis.bytesAvailable()) {
 								waitingForVisitor = true;
 								return true;
 							}
-							byte[] payloadArr = new byte[bytesToSend];
-							try {
-								outgoing.read(payloadArr, 0, payloadArr.length);
-							} catch (IOException e) {
-								throw new EONException("Failed to read from the pipestream", e);
-							}
-							ByteBuffer payload = ByteBuffer.wrap(payloadArr);
-							SEONPacket pkt = new SEONPacket(localEP, remoteEP, payload);
-							pkt.setSequenceNumber(sendNext);
-							sendNext = mod.add(sendNext, payloadArr.length);
-							pkt.setACK(true);
-							pkt.setAckNumber(recvNext);
-							outFlowRate.notifyData(pkt.getPayloadSize());
-							vis.sendPkt(pkt);
+							sendFreshDataPkt(vis, numBytes);
 							pktsSent++;
 						} else {
 							if (debugLogging)
@@ -1423,6 +1382,24 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 		}
 	}
 
+	private void sendFreshDataPkt(PktSendVisitor vis, int numBytes) throws EONException {
+		byte[] payloadArr = new byte[numBytes];
+		try {
+			outgoing.read(payloadArr, 0, payloadArr.length);
+		} catch (IOException e) {
+			throw new EONException("Failed to read from the bbis", e);
+		}
+		ByteBuffer payload = ByteBuffer.wrap(payloadArr);
+		SEONPacket pkt = new SEONPacket(localEP, remoteEP, payload);
+		pkt.setSequenceNumber(sendNext);
+		sendNext = mod.add(sendNext, numBytes);
+		pkt.setACK(true);
+		pkt.setAckNumber(recvNext);
+		addToRetransQ(pkt);
+		outFlowRate.notifyData(numBytes);
+		vis.sendPkt(pkt);
+	}
+	
 	/**
 	 * @param seqNumOfCausingPkt
 	 *            The sequence number of the out-of-order packet that we've just received, causing us to send this dup
