@@ -33,7 +33,6 @@ message Agorics {
 
 message AuctionResult {
 	required AuctionStateMsg auction_state = 1;
-	required int32 max_running_listeners = 2;
 }
 
 message ReceivedBid {
@@ -44,9 +43,10 @@ message ReceivedBid {
 
 message AuctionStateMsg {
 	required int32 index = 1;
-	optional int32 bids_open = 2;
-	optional string you_are = 3;
-	repeated ReceivedBid bid = 4;
+	required int32 max_running_listeners = 2;
+	optional int32 bids_open = 3;
+	optional string you_are = 4;
+	repeated ReceivedBid bid = 5;
 }
 
 message BeginEscrow {
@@ -150,10 +150,9 @@ message ReqSourceStatus {
 message SourceStatus {
 	required coreapi.Node from_node = 1;
 	required string to_node_id = 2;
-	required int32 max_running_listeners = 3;
-	optional AuctionStateMsg auction_state = 4;
-	optional Agorics agorics = 5;
-	repeated StreamStatus ss = 6;
+	optional AuctionStateMsg auction_state = 3;
+	optional Agorics agorics = 4;
+	repeated StreamStatus ss = 5;
 }
 
 message SourceStopping {
