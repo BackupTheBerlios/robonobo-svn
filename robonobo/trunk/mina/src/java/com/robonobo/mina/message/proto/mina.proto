@@ -33,6 +33,7 @@ message Agorics {
 
 message AuctionResult {
 	required AuctionStateMsg auction_state = 1;
+	required int32 max_running_listeners = 2;
 }
 
 message ReceivedBid {
@@ -43,10 +44,9 @@ message ReceivedBid {
 
 message AuctionStateMsg {
 	required int32 index = 1;
-	required int32 max_running_listeners = 2;
-	optional int32 bids_open = 3;
-	optional string you_are = 4;
-	repeated ReceivedBid bid = 5;
+	optional int32 bids_open = 2;
+	optional string you_are = 3;
+	repeated ReceivedBid bid = 4;
 }
 
 message BeginEscrow {
