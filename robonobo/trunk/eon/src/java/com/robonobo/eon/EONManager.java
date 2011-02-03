@@ -56,6 +56,7 @@ public class EONManager implements StartStopable {
 	Modulo mod;
 	Date uploadCheckLastBase = new Date();
 	int bytesUploadedSinceBase = 0;
+	final boolean debugLogging;
 
 	public static InetAddress getWildcardAddress() {
 		try {
@@ -78,6 +79,7 @@ public class EONManager implements StartStopable {
 			throws EONException {
 		this.instanceName = instanceName;
 		log = getLogger(getClass());
+		debugLogging = log.isDebugEnabled();
 		this.executor = executor;
 		try {
 			chan = DatagramChannel.open();
@@ -218,6 +220,7 @@ public class EONManager implements StartStopable {
 			// Loop, picking up packets and passing them off to connections as
 			// necessary
 			while (true) {
+				// Awooga! Awooga! Inner loop alert!
 				InetSocketAddress remoteEP = null;
 				try {
 					// Allocate a new buffer every time, as it means we don't
@@ -238,9 +241,10 @@ public class EONManager implements StartStopable {
 					// Set the IP data on the packet
 					thisPacket.getSourceSocketAddress().setAddress(remoteEP.getAddress());
 					thisPacket.getSourceSocketAddress().setUdpPort(remoteEP.getPort());
-					thisPacket.getDestSocketAddress().setAddress(((InetSocketAddress) getLocalSocketAddress()).getAddress());
-					thisPacket.getDestSocketAddress().setUdpPort(((InetSocketAddress) getLocalSocketAddress()).getPort());
-					if (log.isDebugEnabled()) {
+					InetSocketAddress locSockAddr = getLocalSocketAddress();
+					thisPacket.getDestSocketAddress().setAddress(locSockAddr.getAddress());
+					thisPacket.getDestSocketAddress().setUdpPort(locSockAddr.getPort());
+					if (debugLogging) {
 						String logStr = "r " + thisPacket.toString();
 						log.debug(logStr);
 					}

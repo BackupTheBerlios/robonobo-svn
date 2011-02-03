@@ -998,11 +998,8 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 		StringBuffer sb = null;
 		// Mark first pkt as being lost
 		SEONPacket pkt = retransQ.peek();
-		if (pkt == null) {
-			// Shouldn't happen - bug huntin
-			log.error("ERROR: fast retransmit, but no pkts in retrans queue");
+		if (pkt == null)
 			return;
-		}
 		needToRetransmitFirstPkt = true;
 		if (debugLogging)
 			sb = new StringBuffer(toString()).append(": marking pkt " + (pkt).getSequenceNumber()

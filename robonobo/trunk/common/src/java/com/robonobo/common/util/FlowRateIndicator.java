@@ -19,19 +19,21 @@ package com.robonobo.common.util;
 */
 
 
+import static java.lang.System.*;
+
 import java.util.Date;
 
 public class FlowRateIndicator {
 	/** We keep a rolling average over this many secs */
 	private static final int SECS_HISTORY = 5;
 	private int[] hist = new int[SECS_HISTORY];
-	private Date lastCheckpoint;
+	private long lastCheckpoint;
 	private int bytesSinceCheckpoint;
 	private int flowRate;
 	
 	public FlowRateIndicator() {
 		bytesSinceCheckpoint = 0;
-		lastCheckpoint = new Date();
+		lastCheckpoint = currentTimeMillis();
 	}
 	
 	public synchronized void notifyData(int numBytes) {
@@ -45,8 +47,8 @@ public class FlowRateIndicator {
 	}
 
 	private void checkAndRecalc() {
-		Date nowDate = new Date();
-		long elapsedMs = nowDate.getTime() - lastCheckpoint.getTime();
+		long now = currentTimeMillis();
+		long elapsedMs = now - lastCheckpoint;
 		if(elapsedMs > 1000) {
 			// Recalculate the rate
 			for(int i=hist.length-1;i>0;i--) {
@@ -59,7 +61,7 @@ public class FlowRateIndicator {
 			}
 			flowRate = newRate;
 			bytesSinceCheckpoint = 0;
-			lastCheckpoint = nowDate;
+			lastCheckpoint = now;
 		}
 	}
 }

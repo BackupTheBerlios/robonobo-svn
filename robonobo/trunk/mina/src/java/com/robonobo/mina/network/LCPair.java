@@ -268,8 +268,9 @@ public class LCPair extends ConnectionPair {
 		int statusIdx = (mina.getConfig().isAgoric()) ? mina.getBuyMgr().getCurrentStatusIdx(cc.getNodeId()) : 0;
 		int pgWin = pageWindowSize();
 		synchronized (this) {
-			if (reqdPages.size() < pgWin) {
-				int pagesToReq = pgWin - reqdPages.size();
+			int reqdPgSz = reqdPages.size();
+			if (reqdPgSz < pgWin) {
+				int pagesToReq = pgWin - reqdPgSz;
 				SortedSet<Long> newPages = sm.getPRM()
 						.getPagesToRequest(cc.getNodeId(), pagesToReq, reqdPages.keySet());
 				if (newPages.size() > 0) {
@@ -284,7 +285,7 @@ public class LCPair extends ConnectionPair {
 						reqdPages.put(pn, rpa);
 						rpa.start();
 					}
-				} else if (reqdPages.size() == 0)
+				} else if (reqdPgSz == 0)
 					startUsefulDataTimeout();
 			}
 		}

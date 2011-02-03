@@ -41,9 +41,10 @@ abstract public class AbstractPageBuffer implements PageBuffer {
 	}
 
 	public long getAvgPageSize() {
-		if (getPagesReceived() == 0)
+		long pagesRecvd = getPagesReceived();
+		if (pagesRecvd == 0)
 			return 0;
-		return getBytesReceived() / getPagesReceived();
+		return getBytesReceived() / pagesRecvd;
 	}
 
 	public long getPagesReceived() {

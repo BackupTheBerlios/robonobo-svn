@@ -63,7 +63,7 @@ public class SellMgr {
 	 * We use token values to refer to our nodes, so their bids can be identified without giving out their node ids
 	 */
 	Map<String, String> nodeIdTokens = new HashMap<String, String>();
-	int lastNodeIdToken = 0;
+	long lastNodeIdToken = 0;
 	Map<String, Account> accounts = new HashMap<String, Account>();
 	/**
 	 * The node id of the top bidder. This guy is charged at a minimum rate to prevent him DoSing
@@ -90,22 +90,18 @@ public class SellMgr {
 	}
 
 	public AuctionStateMsg getState(boolean useCache, String forNodeId) {
-		// TODO Keep a separate set of bid-frozen nodes - it's not just those with agreed bids, it's also folks who have
-		// dropped out recently
 		synchronized (this) {
 			if (useCache && cachedStateMsg != null
 					&& timeInPast(mina.getConfig().getAuctionStateCacheTime()).before(cachedStateTime)) {
 				AuctionStateMsg.Builder bldr = AuctionStateMsg.newBuilder(cachedStateMsg);
-				if (agreedBids.containsKey(forNodeId)) {
+				if (agreedBids.containsKey(forNodeId))
 					bldr.setYouAre(getNodeIdToken(forNodeId));
-					if (now().after(openForBidsTime))
-						bldr.setBidsOpen(0);
-					else
-						bldr.setBidsOpen((int) msUntil(openForBidsTime));
-				} else {
-					bldr.setYouAre("");
+				else
+					bldr.clearYouAre();
+				if (bidFrozen.contains(forNodeId) && now().before(openForBidsTime))
+					bldr.setBidsOpen((int) msUntil(openForBidsTime));
+				else
 					bldr.clearBidsOpen();
-				}
 				return bldr.build();
 			}
 		}
@@ -115,12 +111,10 @@ public class SellMgr {
 			asmBldr.setIndex(stateIndex);
 			// If we have an agreed bid for this guy, he's not allowed to bid until we open again - if he's a new node,
 			// he can bid when he likes
-			if (agreedBids.containsKey(forNodeId)) {
-				if (now().after(openForBidsTime))
-					asmBldr.setBidsOpen(0);
-				else
-					asmBldr.setBidsOpen((int) msUntil(openForBidsTime));
-			}
+			if (bidFrozen.contains(forNodeId) && now().before(openForBidsTime))
+				asmBldr.setBidsOpen((int) msUntil(openForBidsTime));
+			if (agreedBids.containsKey(forNodeId))
+				asmBldr.setYouAre(getNodeIdToken(forNodeId));
 			for (ConnectedNode cn : conNodes) {
 				if (agreedBids.containsKey(cn.nodeId)) {
 					ReceivedBid.Builder bidBldr = ReceivedBid.newBuilder();
@@ -130,8 +124,6 @@ public class SellMgr {
 					asmBldr.addBid(bidBldr);
 				}
 			}
-			if (agreedBids.containsKey(forNodeId))
-				asmBldr.setYouAre(getNodeIdToken(forNodeId));
 			cachedStateMsg = asmBldr.build();
 			cachedStateTime = now();
 			return cachedStateMsg;
@@ -168,12 +160,12 @@ public class SellMgr {
 			}
 			Iterator<Entry<String, List<MessageHolder>>> msgIter = msgsWaitingForAcct.entrySet().iterator();
 			while (msgIter.hasNext()) {
-				if(!liveNodes.contains(msgIter.next().getKey()))
+				if (!liveNodes.contains(msgIter.next().getKey()))
 					msgIter.remove();
 			}
 			msgIter = msgsWaitingForAgreedBid.entrySet().iterator();
 			while (msgIter.hasNext()) {
-				if(!liveNodes.contains(msgIter.next().getKey()))
+				if (!liveNodes.contains(msgIter.next().getKey()))
 					msgIter.remove();
 			}
 		}
@@ -462,8 +454,8 @@ public class SellMgr {
 					currentBids.putAll(agreedBids);
 					finished = true;
 				} else if ((agreedBids.size() == 0) || agreedBids.keySet().equals(currentBids.keySet())) {
-					// There is a small chance we might have more than one bidder in currentBids if the threading winds
-					// are blowing very strangely
+					// There is a small chance we might have more than one bidder in currentBids if the
+					// threading/networking winds are blowing very strangely
 					if (log.isDebugEnabled()) {
 						StringBuffer sb = new StringBuffer("Finishing short auction with bids from: ");
 						for (String nodeId : currentBids.keySet()) {
@@ -495,7 +487,7 @@ public class SellMgr {
 							continue;
 						activeBidders.add(node);
 						// We add their agreed bid (from the last auction) here - if they have sent us a more recent
-						// bid, this will be used, see below
+						// bid, it will be in currentBids and will overwrite this
 						updateBidMap.put(node, agreedBids.get(node));
 						// If they have a current bid here, we're not waiting to hear from them
 						if (!currentBids.containsKey(node))
@@ -584,7 +576,7 @@ public class SellMgr {
 			// See which messages we can now handle
 			for (String nodeId : agreedBids.keySet()) {
 				List<MessageHolder> msgs = msgsWaitingForAgreedBid.remove(nodeId);
-				if(msgs != null)
+				if (msgs != null)
 					msgsToHandle.addAll(msgs);
 			}
 		}

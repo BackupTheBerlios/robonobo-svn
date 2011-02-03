@@ -70,5 +70,8 @@ public class Updater {
 		deleteDirectory(configDir);
 		File dbDir = new File(homeDir, "db");
 		deleteDirectory(dbDir);
+		// log4j props file name changed
+		File log4jFile = new File(homeDir, "robonobo-log4j.properties");
+		log4jFile.delete();
 	}
 }

@@ -38,8 +38,8 @@ import com.robonobo.mina.external.MinaControl;
 import com.robonobo.spi.RuntimeService;
 
 /**
- * Central class that controls a robonobo instance; handles startup, and holds
- * references to services that do the actual work
+ * Central class that controls a robonobo instance; handles startup, and holds references to services that do the actual
+ * work
  * 
  * @author macavity
  * 
@@ -76,8 +76,8 @@ public class RobonoboInstance implements Robonobo {
 	protected void startExecutor() {
 		if (executor == null) {
 			int poolSz = Runtime.getRuntime().availableProcessors() + getConfig().getThreadPoolOverhead();
-			log.info("Starting thread pool with "+poolSz+" threads");
-			executor = new ScheduledThreadPoolExecutor(poolSz);			
+			log.info("Starting thread pool with " + poolSz + " threads");
+			executor = new ScheduledThreadPoolExecutor(poolSz);
 		}
 	}
 
@@ -98,7 +98,7 @@ public class RobonoboInstance implements Robonobo {
 		serviceMgr.registerService(new UserService());
 		serviceMgr.registerService(new TaskService());
 		serviceMgr.registerService(new LibraryService());
-		
+
 		if (getConfig().isAgoric())
 			serviceMgr.registerService(new WangService());
 		if (Platform.getPlatform().iTunesAvailable())
@@ -177,7 +177,7 @@ public class RobonoboInstance implements Robonobo {
 				throw new IOException("Error loading config class " + cfgClassName);
 			}
 		}
-		
+
 		// First time through, set the default download dir
 		if (getConfig().getDownloadDirectory() == null) {
 			File dd = Platform.getPlatform().getDefaultDownloadDirectory();
@@ -185,7 +185,7 @@ public class RobonoboInstance implements Robonobo {
 			String ddPath = dd.getAbsolutePath();
 			getConfig().setDownloadDirectory(ddPath);
 		}
-		
+
 		saveConfig();
 	}
 
@@ -202,8 +202,7 @@ public class RobonoboInstance implements Robonobo {
 	}
 
 	/**
-	 * Overrides config properties with values specified in
-	 * 'cfg_<cfgName>_<propName>' environment vars
+	 * Overrides config properties with values specified in 'cfg_<cfgName>_<propName>' environment vars
 	 */
 	protected void overrideConfigWithEnv() {
 		ConfigBeanSerializer cbs = new ConfigBeanSerializer();
@@ -249,7 +248,7 @@ public class RobonoboInstance implements Robonobo {
 	public LibraryService getLibraryService() {
 		return (LibraryService) serviceMgr.getService("core.library");
 	}
-	
+
 	public ITunesService getITunesService() {
 		return (ITunesService) serviceMgr.getService("core.itunes");
 	}
@@ -339,9 +338,11 @@ public class RobonoboInstance implements Robonobo {
 		// If there isn't a log4j properties file in our homedir, copy one from
 		// the jar
 		try {
-			File log4jCfgFile = new File(homeDir, "robonobo-log4j.properties");
+			File log4jCfgFile = new File(homeDir, "log4j.properties");
 			if (!log4jCfgFile.exists()) {
-				InputStream is = getClass().getResourceAsStream("/log4j.properties");
+				// Note, if we call the props file in the jar "log4j.properties", then log4j will detect and use it,
+				// ignoring what we have on the filesystem
+				InputStream is = getClass().getResourceAsStream("/log4j.props.skel");
 				OutputStream os = new FileOutputStream(log4jCfgFile);
 				byte[] arr = new byte[1024];
 				int numRead;
@@ -350,6 +351,7 @@ public class RobonoboInstance implements Robonobo {
 				is.close();
 				os.close();
 			}
+
 			PropertyConfigurator.configureAndWatch(log4jCfgFile.getAbsolutePath());
 			log = LogFactory.getLog(getClass());
 			log.fatal("O HAI!  robonobo starting using homedir " + homeDir.getAbsolutePath());
@@ -369,7 +371,7 @@ public class RobonoboInstance implements Robonobo {
 		Updater updater = new Updater(homeDir);
 		updater.runUpdate();
 	}
-	
+
 	public FormatService getFormatService() {
 		return (FormatService) serviceMgr.getService("core.format");
 	}
@@ -391,7 +393,7 @@ public class RobonoboInstance implements Robonobo {
 	}
 
 	public void setStatus(RobonoboStatus status) {
-		log.debug("New status: "+status);
+		log.debug("New status: " + status);
 		this.status = status;
 	}
 }
