@@ -1717,19 +1717,11 @@ public final class MinaProtocol {
     public boolean hasAuctionState() { return hasAuctionState; }
     public com.robonobo.mina.message.proto.MinaProtocol.AuctionStateMsg getAuctionState() { return auctionState_; }
     
-    // required int32 max_running_listeners = 2;
-    public static final int MAX_RUNNING_LISTENERS_FIELD_NUMBER = 2;
-    private boolean hasMaxRunningListeners;
-    private int maxRunningListeners_ = 0;
-    public boolean hasMaxRunningListeners() { return hasMaxRunningListeners; }
-    public int getMaxRunningListeners() { return maxRunningListeners_; }
-    
     private void initFields() {
       auctionState_ = com.robonobo.mina.message.proto.MinaProtocol.AuctionStateMsg.getDefaultInstance();
     }
     public final boolean isInitialized() {
       if (!hasAuctionState) return false;
-      if (!hasMaxRunningListeners) return false;
       if (!getAuctionState().isInitialized()) return false;
       return true;
     }
@@ -1739,9 +1731,6 @@ public final class MinaProtocol {
       getSerializedSize();
       if (hasAuctionState()) {
         output.writeMessage(1, getAuctionState());
-      }
-      if (hasMaxRunningListeners()) {
-        output.writeInt32(2, getMaxRunningListeners());
       }
       getUnknownFields().writeTo(output);
     }
@@ -1755,10 +1744,6 @@ public final class MinaProtocol {
       if (hasAuctionState()) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, getAuctionState());
-      }
-      if (hasMaxRunningListeners()) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(2, getMaxRunningListeners());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -1921,9 +1906,6 @@ public final class MinaProtocol {
         if (other.hasAuctionState()) {
           mergeAuctionState(other.getAuctionState());
         }
-        if (other.hasMaxRunningListeners()) {
-          setMaxRunningListeners(other.getMaxRunningListeners());
-        }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
       }
@@ -1956,10 +1938,6 @@ public final class MinaProtocol {
               }
               input.readMessage(subBuilder, extensionRegistry);
               setAuctionState(subBuilder.buildPartial());
-              break;
-            }
-            case 16: {
-              setMaxRunningListeners(input.readInt32());
               break;
             }
           }
@@ -2001,24 +1979,6 @@ public final class MinaProtocol {
       public Builder clearAuctionState() {
         result.hasAuctionState = false;
         result.auctionState_ = com.robonobo.mina.message.proto.MinaProtocol.AuctionStateMsg.getDefaultInstance();
-        return this;
-      }
-      
-      // required int32 max_running_listeners = 2;
-      public boolean hasMaxRunningListeners() {
-        return result.hasMaxRunningListeners();
-      }
-      public int getMaxRunningListeners() {
-        return result.getMaxRunningListeners();
-      }
-      public Builder setMaxRunningListeners(int value) {
-        result.hasMaxRunningListeners = true;
-        result.maxRunningListeners_ = value;
-        return this;
-      }
-      public Builder clearMaxRunningListeners() {
-        result.hasMaxRunningListeners = false;
-        result.maxRunningListeners_ = 0;
         return this;
       }
       
@@ -2435,22 +2395,29 @@ public final class MinaProtocol {
     public boolean hasIndex() { return hasIndex; }
     public int getIndex() { return index_; }
     
-    // optional int32 bids_open = 2;
-    public static final int BIDS_OPEN_FIELD_NUMBER = 2;
+    // required int32 max_running_listeners = 2;
+    public static final int MAX_RUNNING_LISTENERS_FIELD_NUMBER = 2;
+    private boolean hasMaxRunningListeners;
+    private int maxRunningListeners_ = 0;
+    public boolean hasMaxRunningListeners() { return hasMaxRunningListeners; }
+    public int getMaxRunningListeners() { return maxRunningListeners_; }
+    
+    // optional int32 bids_open = 3;
+    public static final int BIDS_OPEN_FIELD_NUMBER = 3;
     private boolean hasBidsOpen;
     private int bidsOpen_ = 0;
     public boolean hasBidsOpen() { return hasBidsOpen; }
     public int getBidsOpen() { return bidsOpen_; }
     
-    // optional string you_are = 3;
-    public static final int YOU_ARE_FIELD_NUMBER = 3;
+    // optional string you_are = 4;
+    public static final int YOU_ARE_FIELD_NUMBER = 4;
     private boolean hasYouAre;
     private java.lang.String youAre_ = "";
     public boolean hasYouAre() { return hasYouAre; }
     public java.lang.String getYouAre() { return youAre_; }
     
-    // repeated .mina.ReceivedBid bid = 4;
-    public static final int BID_FIELD_NUMBER = 4;
+    // repeated .mina.ReceivedBid bid = 5;
+    public static final int BID_FIELD_NUMBER = 5;
     private java.util.List<com.robonobo.mina.message.proto.MinaProtocol.ReceivedBid> bid_ =
       java.util.Collections.emptyList();
     public java.util.List<com.robonobo.mina.message.proto.MinaProtocol.ReceivedBid> getBidList() {
@@ -2465,6 +2432,7 @@ public final class MinaProtocol {
     }
     public final boolean isInitialized() {
       if (!hasIndex) return false;
+      if (!hasMaxRunningListeners) return false;
       for (com.robonobo.mina.message.proto.MinaProtocol.ReceivedBid element : getBidList()) {
         if (!element.isInitialized()) return false;
       }
@@ -2477,14 +2445,17 @@ public final class MinaProtocol {
       if (hasIndex()) {
         output.writeInt32(1, getIndex());
       }
+      if (hasMaxRunningListeners()) {
+        output.writeInt32(2, getMaxRunningListeners());
+      }
       if (hasBidsOpen()) {
-        output.writeInt32(2, getBidsOpen());
+        output.writeInt32(3, getBidsOpen());
       }
       if (hasYouAre()) {
-        output.writeString(3, getYouAre());
+        output.writeString(4, getYouAre());
       }
       for (com.robonobo.mina.message.proto.MinaProtocol.ReceivedBid element : getBidList()) {
-        output.writeMessage(4, element);
+        output.writeMessage(5, element);
       }
       getUnknownFields().writeTo(output);
     }
@@ -2499,17 +2470,21 @@ public final class MinaProtocol {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(1, getIndex());
       }
+      if (hasMaxRunningListeners()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(2, getMaxRunningListeners());
+      }
       if (hasBidsOpen()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(2, getBidsOpen());
+          .computeInt32Size(3, getBidsOpen());
       }
       if (hasYouAre()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeStringSize(3, getYouAre());
+          .computeStringSize(4, getYouAre());
       }
       for (com.robonobo.mina.message.proto.MinaProtocol.ReceivedBid element : getBidList()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(4, element);
+          .computeMessageSize(5, element);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -2676,6 +2651,9 @@ public final class MinaProtocol {
         if (other.hasIndex()) {
           setIndex(other.getIndex());
         }
+        if (other.hasMaxRunningListeners()) {
+          setMaxRunningListeners(other.getMaxRunningListeners());
+        }
         if (other.hasBidsOpen()) {
           setBidsOpen(other.getBidsOpen());
         }
@@ -2718,14 +2696,18 @@ public final class MinaProtocol {
               break;
             }
             case 16: {
+              setMaxRunningListeners(input.readInt32());
+              break;
+            }
+            case 24: {
               setBidsOpen(input.readInt32());
               break;
             }
-            case 26: {
+            case 34: {
               setYouAre(input.readString());
               break;
             }
-            case 34: {
+            case 42: {
               com.robonobo.mina.message.proto.MinaProtocol.ReceivedBid.Builder subBuilder = com.robonobo.mina.message.proto.MinaProtocol.ReceivedBid.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
               addBid(subBuilder.buildPartial());
@@ -2754,7 +2736,25 @@ public final class MinaProtocol {
         return this;
       }
       
-      // optional int32 bids_open = 2;
+      // required int32 max_running_listeners = 2;
+      public boolean hasMaxRunningListeners() {
+        return result.hasMaxRunningListeners();
+      }
+      public int getMaxRunningListeners() {
+        return result.getMaxRunningListeners();
+      }
+      public Builder setMaxRunningListeners(int value) {
+        result.hasMaxRunningListeners = true;
+        result.maxRunningListeners_ = value;
+        return this;
+      }
+      public Builder clearMaxRunningListeners() {
+        result.hasMaxRunningListeners = false;
+        result.maxRunningListeners_ = 0;
+        return this;
+      }
+      
+      // optional int32 bids_open = 3;
       public boolean hasBidsOpen() {
         return result.hasBidsOpen();
       }
@@ -2772,7 +2772,7 @@ public final class MinaProtocol {
         return this;
       }
       
-      // optional string you_are = 3;
+      // optional string you_are = 4;
       public boolean hasYouAre() {
         return result.hasYouAre();
       }
@@ -2793,7 +2793,7 @@ public final class MinaProtocol {
         return this;
       }
       
-      // repeated .mina.ReceivedBid bid = 4;
+      // repeated .mina.ReceivedBid bid = 5;
       public java.util.List<com.robonobo.mina.message.proto.MinaProtocol.ReceivedBid> getBidList() {
         return java.util.Collections.unmodifiableList(result.bid_);
       }
@@ -9885,29 +9885,22 @@ public final class MinaProtocol {
     public boolean hasToNodeId() { return hasToNodeId; }
     public java.lang.String getToNodeId() { return toNodeId_; }
     
-    // required int32 max_running_listeners = 3;
-    public static final int MAX_RUNNING_LISTENERS_FIELD_NUMBER = 3;
-    private boolean hasMaxRunningListeners;
-    private int maxRunningListeners_ = 0;
-    public boolean hasMaxRunningListeners() { return hasMaxRunningListeners; }
-    public int getMaxRunningListeners() { return maxRunningListeners_; }
-    
-    // optional .mina.AuctionStateMsg auction_state = 4;
-    public static final int AUCTION_STATE_FIELD_NUMBER = 4;
+    // optional .mina.AuctionStateMsg auction_state = 3;
+    public static final int AUCTION_STATE_FIELD_NUMBER = 3;
     private boolean hasAuctionState;
     private com.robonobo.mina.message.proto.MinaProtocol.AuctionStateMsg auctionState_;
     public boolean hasAuctionState() { return hasAuctionState; }
     public com.robonobo.mina.message.proto.MinaProtocol.AuctionStateMsg getAuctionState() { return auctionState_; }
     
-    // optional .mina.Agorics agorics = 5;
-    public static final int AGORICS_FIELD_NUMBER = 5;
+    // optional .mina.Agorics agorics = 4;
+    public static final int AGORICS_FIELD_NUMBER = 4;
     private boolean hasAgorics;
     private com.robonobo.mina.message.proto.MinaProtocol.Agorics agorics_;
     public boolean hasAgorics() { return hasAgorics; }
     public com.robonobo.mina.message.proto.MinaProtocol.Agorics getAgorics() { return agorics_; }
     
-    // repeated .mina.StreamStatus ss = 6;
-    public static final int SS_FIELD_NUMBER = 6;
+    // repeated .mina.StreamStatus ss = 5;
+    public static final int SS_FIELD_NUMBER = 5;
     private java.util.List<com.robonobo.mina.message.proto.MinaProtocol.StreamStatus> ss_ =
       java.util.Collections.emptyList();
     public java.util.List<com.robonobo.mina.message.proto.MinaProtocol.StreamStatus> getSsList() {
@@ -9926,7 +9919,6 @@ public final class MinaProtocol {
     public final boolean isInitialized() {
       if (!hasFromNode) return false;
       if (!hasToNodeId) return false;
-      if (!hasMaxRunningListeners) return false;
       if (!getFromNode().isInitialized()) return false;
       if (hasAuctionState()) {
         if (!getAuctionState().isInitialized()) return false;
@@ -9949,17 +9941,14 @@ public final class MinaProtocol {
       if (hasToNodeId()) {
         output.writeString(2, getToNodeId());
       }
-      if (hasMaxRunningListeners()) {
-        output.writeInt32(3, getMaxRunningListeners());
-      }
       if (hasAuctionState()) {
-        output.writeMessage(4, getAuctionState());
+        output.writeMessage(3, getAuctionState());
       }
       if (hasAgorics()) {
-        output.writeMessage(5, getAgorics());
+        output.writeMessage(4, getAgorics());
       }
       for (com.robonobo.mina.message.proto.MinaProtocol.StreamStatus element : getSsList()) {
-        output.writeMessage(6, element);
+        output.writeMessage(5, element);
       }
       getUnknownFields().writeTo(output);
     }
@@ -9978,21 +9967,17 @@ public final class MinaProtocol {
         size += com.google.protobuf.CodedOutputStream
           .computeStringSize(2, getToNodeId());
       }
-      if (hasMaxRunningListeners()) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(3, getMaxRunningListeners());
-      }
       if (hasAuctionState()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(4, getAuctionState());
+          .computeMessageSize(3, getAuctionState());
       }
       if (hasAgorics()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(5, getAgorics());
+          .computeMessageSize(4, getAgorics());
       }
       for (com.robonobo.mina.message.proto.MinaProtocol.StreamStatus element : getSsList()) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(6, element);
+          .computeMessageSize(5, element);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -10162,9 +10147,6 @@ public final class MinaProtocol {
         if (other.hasToNodeId()) {
           setToNodeId(other.getToNodeId());
         }
-        if (other.hasMaxRunningListeners()) {
-          setMaxRunningListeners(other.getMaxRunningListeners());
-        }
         if (other.hasAuctionState()) {
           mergeAuctionState(other.getAuctionState());
         }
@@ -10215,11 +10197,7 @@ public final class MinaProtocol {
               setToNodeId(input.readString());
               break;
             }
-            case 24: {
-              setMaxRunningListeners(input.readInt32());
-              break;
-            }
-            case 34: {
+            case 26: {
               com.robonobo.mina.message.proto.MinaProtocol.AuctionStateMsg.Builder subBuilder = com.robonobo.mina.message.proto.MinaProtocol.AuctionStateMsg.newBuilder();
               if (hasAuctionState()) {
                 subBuilder.mergeFrom(getAuctionState());
@@ -10228,7 +10206,7 @@ public final class MinaProtocol {
               setAuctionState(subBuilder.buildPartial());
               break;
             }
-            case 42: {
+            case 34: {
               com.robonobo.mina.message.proto.MinaProtocol.Agorics.Builder subBuilder = com.robonobo.mina.message.proto.MinaProtocol.Agorics.newBuilder();
               if (hasAgorics()) {
                 subBuilder.mergeFrom(getAgorics());
@@ -10237,7 +10215,7 @@ public final class MinaProtocol {
               setAgorics(subBuilder.buildPartial());
               break;
             }
-            case 50: {
+            case 42: {
               com.robonobo.mina.message.proto.MinaProtocol.StreamStatus.Builder subBuilder = com.robonobo.mina.message.proto.MinaProtocol.StreamStatus.newBuilder();
               input.readMessage(subBuilder, extensionRegistry);
               addSs(subBuilder.buildPartial());
@@ -10306,25 +10284,7 @@ public final class MinaProtocol {
         return this;
       }
       
-      // required int32 max_running_listeners = 3;
-      public boolean hasMaxRunningListeners() {
-        return result.hasMaxRunningListeners();
-      }
-      public int getMaxRunningListeners() {
-        return result.getMaxRunningListeners();
-      }
-      public Builder setMaxRunningListeners(int value) {
-        result.hasMaxRunningListeners = true;
-        result.maxRunningListeners_ = value;
-        return this;
-      }
-      public Builder clearMaxRunningListeners() {
-        result.hasMaxRunningListeners = false;
-        result.maxRunningListeners_ = 0;
-        return this;
-      }
-      
-      // optional .mina.AuctionStateMsg auction_state = 4;
+      // optional .mina.AuctionStateMsg auction_state = 3;
       public boolean hasAuctionState() {
         return result.hasAuctionState();
       }
@@ -10361,7 +10321,7 @@ public final class MinaProtocol {
         return this;
       }
       
-      // optional .mina.Agorics agorics = 5;
+      // optional .mina.Agorics agorics = 4;
       public boolean hasAgorics() {
         return result.hasAgorics();
       }
@@ -10398,7 +10358,7 @@ public final class MinaProtocol {
         return this;
       }
       
-      // repeated .mina.StreamStatus ss = 6;
+      // repeated .mina.StreamStatus ss = 5;
       public java.util.List<com.robonobo.mina.message.proto.MinaProtocol.StreamStatus> getSsList() {
         return java.util.Collections.unmodifiableList(result.ss_);
       }
@@ -13105,52 +13065,51 @@ public final class MinaProtocol {
       "\007Agorics\022\024\n\014currency_url\030\001 \002(\t\022\036\n\026accept" +
       "_payment_methods\030\002 \002(\t\022\017\n\007min_bid\030\003 \002(\001\022" +
       "\021\n\tincrement\030\004 \002(\001\022\024\n\014min_top_rate\030\005 \002(\005",
-      "\"\\\n\rAuctionResult\022,\n\rauction_state\030\001 \002(\013" +
-      "2\025.mina.AuctionStateMsg\022\035\n\025max_running_l" +
-      "isteners\030\002 \002(\005\"E\n\013ReceivedBid\022\023\n\013listene" +
-      "r_id\030\001 \002(\t\022\013\n\003bid\030\002 \002(\001\022\024\n\tflow_rate\030\003 \001" +
-      "(\005:\0010\"d\n\017AuctionStateMsg\022\r\n\005index\030\001 \002(\005\022" +
-      "\021\n\tbids_open\030\002 \001(\005\022\017\n\007you_are\030\003 \001(\t\022\036\n\003b" +
-      "id\030\004 \003(\0132\021.mina.ReceivedBid\"0\n\013BeginEscr" +
-      "ow\022\016\n\006amount\030\001 \002(\001\022\021\n\tescrow_id\030\002 \002(\t\"\025\n" +
-      "\003Bid\022\016\n\006amount\030\001 \002(\001\"E\n\tBidUpdate\022\017\n\007you" +
-      "_are\030\001 \001(\t\022\023\n\013listener_id\030\002 \003(\t\022\022\n\nbid_a",
-      "mount\030\003 \003(\001\"\025\n\003Bye\022\016\n\006reason\030\001 \001(\t\"\013\n\tCl" +
-      "oseAcct\"#\n\016DontWantSource\022\021\n\tstream_id\030\001" +
-      " \003(\t\"0\n\013EscrowBegan\022\016\n\006amount\030\001 \002(\001\022\021\n\te" +
-      "scrow_id\030\002 \002(\t\"8\n\016EscrowFinished\022\023\n\013amou" +
-      "nt_left\030\001 \002(\001\022\021\n\tescrow_id\030\002 \002(\t\"1\n\014Escr" +
-      "owLocked\022\016\n\006amount\030\001 \002(\001\022\021\n\tescrow_id\030\002 " +
-      "\002(\t\"/\n\nEscrowPaid\022\016\n\006amount\030\001 \002(\001\022\021\n\tesc" +
-      "row_id\030\002 \002(\t\";\n\tGotSource\022\021\n\tstream_id\030\001" +
-      " \002(\t\022\033\n\004node\030\002 \003(\0132\r.coreapi.Node\"$\n\005Hel" +
-      "lo\022\033\n\004node\030\001 \002(\0132\r.coreapi.Node\"\037\n\nLockE",
-      "scrow\022\021\n\tescrow_id\030\001 \002(\t\"\033\n\tMinCharge\022\016\n" +
-      "\006amount\030\001 \002(\001\"\007\n\005NoBid\"\030\n\005PayUp\022\017\n\007balan" +
-      "ce\030\001 \002(\001\"\027\n\004Ping\022\017\n\007ping_id\030\001 \001(\t\"\027\n\004Pon" +
-      "g\022\017\n\007ping_id\030\001 \001(\t\"\r\n\013QueryEscrow\"?\n\007Req" +
-      "Conn\022\022\n\nto_node_id\030\001 \002(\t\022 \n\tfrom_node\030\002 " +
-      "\002(\0132\r.coreapi.Node\"*\n\007ReqPage\022\021\n\tstream_" +
-      "id\030\001 \002(\t\022\014\n\004page\030\002 \003(\003\"Z\n\017ReqSourceStatu" +
-      "s\022 \n\tfrom_node\030\001 \001(\0132\r.coreapi.Node\022\022\n\nt" +
-      "o_node_id\030\002 \001(\t\022\021\n\tstream_id\030\003 \003(\t\"\321\001\n\014S" +
-      "ourceStatus\022 \n\tfrom_node\030\001 \002(\0132\r.coreapi",
-      ".Node\022\022\n\nto_node_id\030\002 \002(\t\022\035\n\025max_running" +
-      "_listeners\030\003 \002(\005\022,\n\rauction_state\030\004 \001(\0132" +
-      "\025.mina.AuctionStateMsg\022\036\n\007agorics\030\005 \001(\0132" +
-      "\r.mina.Agorics\022\036\n\002ss\030\006 \003(\0132\022.mina.Stream" +
-      "Status\"#\n\016SourceStopping\022\021\n\tstream_id\030\001 " +
-      "\002(\t\"M\n\013StartSource\022\021\n\tstream_id\030\001 \002(\t\022\035\n" +
-      "\002ep\030\002 \002(\0132\021.coreapi.EndPoint\022\014\n\004page\030\003 \003" +
-      "(\003\"\037\n\nStopSource\022\021\n\tstream_id\030\001 \002(\t\"\220\001\n\014" +
-      "StreamStatus\022\021\n\tstream_id\030\001 \002(\t\022\034\n\024last_" +
-      "contiguous_page\030\002 \002(\003\022\024\n\014from_node_id\030\003 ",
-      "\001(\t\022\022\n\nto_node_id\030\004 \001(\t\022\023\n\013total_pages\030\005" +
-      " \001(\003\022\020\n\010page_map\030\006 \001(\005\"\037\n\005TopUp\022\026\n\016curre" +
-      "ncy_token\030\001 \002(\014\" \n\013UnAdvSource\022\021\n\tstream" +
-      "_id\030\001 \003(\t\"\037\n\nWantSource\022\021\n\tstream_id\030\001 \003" +
-      "(\tB/\n\037com.robonobo.mina.message.protoB\014M" +
-      "inaProtocol"
+      "\"=\n\rAuctionResult\022,\n\rauction_state\030\001 \002(\013" +
+      "2\025.mina.AuctionStateMsg\"E\n\013ReceivedBid\022\023" +
+      "\n\013listener_id\030\001 \002(\t\022\013\n\003bid\030\002 \002(\001\022\024\n\tflow" +
+      "_rate\030\003 \001(\005:\0010\"\203\001\n\017AuctionStateMsg\022\r\n\005in" +
+      "dex\030\001 \002(\005\022\035\n\025max_running_listeners\030\002 \002(\005" +
+      "\022\021\n\tbids_open\030\003 \001(\005\022\017\n\007you_are\030\004 \001(\t\022\036\n\003" +
+      "bid\030\005 \003(\0132\021.mina.ReceivedBid\"0\n\013BeginEsc" +
+      "row\022\016\n\006amount\030\001 \002(\001\022\021\n\tescrow_id\030\002 \002(\t\"\025" +
+      "\n\003Bid\022\016\n\006amount\030\001 \002(\001\"E\n\tBidUpdate\022\017\n\007yo" +
+      "u_are\030\001 \001(\t\022\023\n\013listener_id\030\002 \003(\t\022\022\n\nbid_",
+      "amount\030\003 \003(\001\"\025\n\003Bye\022\016\n\006reason\030\001 \001(\t\"\013\n\tC" +
+      "loseAcct\"#\n\016DontWantSource\022\021\n\tstream_id\030" +
+      "\001 \003(\t\"0\n\013EscrowBegan\022\016\n\006amount\030\001 \002(\001\022\021\n\t" +
+      "escrow_id\030\002 \002(\t\"8\n\016EscrowFinished\022\023\n\013amo" +
+      "unt_left\030\001 \002(\001\022\021\n\tescrow_id\030\002 \002(\t\"1\n\014Esc" +
+      "rowLocked\022\016\n\006amount\030\001 \002(\001\022\021\n\tescrow_id\030\002" +
+      " \002(\t\"/\n\nEscrowPaid\022\016\n\006amount\030\001 \002(\001\022\021\n\tes" +
+      "crow_id\030\002 \002(\t\";\n\tGotSource\022\021\n\tstream_id\030" +
+      "\001 \002(\t\022\033\n\004node\030\002 \003(\0132\r.coreapi.Node\"$\n\005He" +
+      "llo\022\033\n\004node\030\001 \002(\0132\r.coreapi.Node\"\037\n\nLock",
+      "Escrow\022\021\n\tescrow_id\030\001 \002(\t\"\033\n\tMinCharge\022\016" +
+      "\n\006amount\030\001 \002(\001\"\007\n\005NoBid\"\030\n\005PayUp\022\017\n\007bala" +
+      "nce\030\001 \002(\001\"\027\n\004Ping\022\017\n\007ping_id\030\001 \001(\t\"\027\n\004Po" +
+      "ng\022\017\n\007ping_id\030\001 \001(\t\"\r\n\013QueryEscrow\"?\n\007Re" +
+      "qConn\022\022\n\nto_node_id\030\001 \002(\t\022 \n\tfrom_node\030\002" +
+      " \002(\0132\r.coreapi.Node\"*\n\007ReqPage\022\021\n\tstream" +
+      "_id\030\001 \002(\t\022\014\n\004page\030\002 \003(\003\"Z\n\017ReqSourceStat" +
+      "us\022 \n\tfrom_node\030\001 \001(\0132\r.coreapi.Node\022\022\n\n" +
+      "to_node_id\030\002 \001(\t\022\021\n\tstream_id\030\003 \003(\t\"\262\001\n\014" +
+      "SourceStatus\022 \n\tfrom_node\030\001 \002(\0132\r.coreap",
+      "i.Node\022\022\n\nto_node_id\030\002 \002(\t\022,\n\rauction_st" +
+      "ate\030\003 \001(\0132\025.mina.AuctionStateMsg\022\036\n\007agor" +
+      "ics\030\004 \001(\0132\r.mina.Agorics\022\036\n\002ss\030\005 \003(\0132\022.m" +
+      "ina.StreamStatus\"#\n\016SourceStopping\022\021\n\tst" +
+      "ream_id\030\001 \002(\t\"M\n\013StartSource\022\021\n\tstream_i" +
+      "d\030\001 \002(\t\022\035\n\002ep\030\002 \002(\0132\021.coreapi.EndPoint\022\014" +
+      "\n\004page\030\003 \003(\003\"\037\n\nStopSource\022\021\n\tstream_id\030" +
+      "\001 \002(\t\"\220\001\n\014StreamStatus\022\021\n\tstream_id\030\001 \002(" +
+      "\t\022\034\n\024last_contiguous_page\030\002 \002(\003\022\024\n\014from_" +
+      "node_id\030\003 \001(\t\022\022\n\nto_node_id\030\004 \001(\t\022\023\n\013tot",
+      "al_pages\030\005 \001(\003\022\020\n\010page_map\030\006 \001(\005\"\037\n\005TopU" +
+      "p\022\026\n\016currency_token\030\001 \002(\014\" \n\013UnAdvSource" +
+      "\022\021\n\tstream_id\030\001 \003(\t\"\037\n\nWantSource\022\021\n\tstr" +
+      "eam_id\030\001 \003(\tB/\n\037com.robonobo.mina.messag" +
+      "e.protoB\014MinaProtocol"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -13202,7 +13161,7 @@ public final class MinaProtocol {
           internal_static_mina_AuctionResult_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mina_AuctionResult_descriptor,
-              new java.lang.String[] { "AuctionState", "MaxRunningListeners", },
+              new java.lang.String[] { "AuctionState", },
               com.robonobo.mina.message.proto.MinaProtocol.AuctionResult.class,
               com.robonobo.mina.message.proto.MinaProtocol.AuctionResult.Builder.class);
           internal_static_mina_ReceivedBid_descriptor =
@@ -13218,7 +13177,7 @@ public final class MinaProtocol {
           internal_static_mina_AuctionStateMsg_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mina_AuctionStateMsg_descriptor,
-              new java.lang.String[] { "Index", "BidsOpen", "YouAre", "Bid", },
+              new java.lang.String[] { "Index", "MaxRunningListeners", "BidsOpen", "YouAre", "Bid", },
               com.robonobo.mina.message.proto.MinaProtocol.AuctionStateMsg.class,
               com.robonobo.mina.message.proto.MinaProtocol.AuctionStateMsg.Builder.class);
           internal_static_mina_BeginEscrow_descriptor =
@@ -13402,7 +13361,7 @@ public final class MinaProtocol {
           internal_static_mina_SourceStatus_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mina_SourceStatus_descriptor,
-              new java.lang.String[] { "FromNode", "ToNodeId", "MaxRunningListeners", "AuctionState", "Agorics", "Ss", },
+              new java.lang.String[] { "FromNode", "ToNodeId", "AuctionState", "Agorics", "Ss", },
               com.robonobo.mina.message.proto.MinaProtocol.SourceStatus.class,
               com.robonobo.mina.message.proto.MinaProtocol.SourceStatus.Builder.class);
           internal_static_mina_SourceStopping_descriptor =
