@@ -14,6 +14,7 @@ import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.core.api.StreamVelocity;
 import com.robonobo.core.api.proto.CoreApi.Node;
 import com.robonobo.mina.agoric.AuctionState;
+import com.robonobo.mina.agoric.BuyMgr;
 import com.robonobo.mina.external.FoundSourceListener;
 import com.robonobo.mina.external.StreamingDetails;
 import com.robonobo.mina.external.buffer.Page;
@@ -205,8 +206,14 @@ public class StreamMgr {
 
 		// Not listening to this node - let's see if we should
 		if (mina.getConfig().isAgoric()) {
-			if (!bidStrategy.worthConnectingTo(new AuctionState(sourceStat.getAuctionState()))) {
+			AuctionState as = new AuctionState(sourceStat.getAuctionState());
+			if (!bidStrategy.worthConnectingTo(as)) {
 				log.debug("Not connecting to node " + sourceId + " for " + streamId + " - bid strategy says no");
+				mina.getSourceMgr().cacheSourceUntilAgoricsAcceptable(sourceStat.getFromNode(), streamId);
+				return;
+			}
+			if(!mina.getBuyMgr().canListenTo(as, getStreamVelocity())) {
+				log.debug("Not connecting to node " + sourceId + " for " + streamId + " - no available listener slots at my price level");
 				mina.getSourceMgr().cacheSourceUntilAgoricsAcceptable(sourceStat.getFromNode(), streamId);
 				return;
 			}

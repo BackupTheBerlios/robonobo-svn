@@ -106,6 +106,7 @@ public class SellMgr {
 			}
 		}
 		AuctionStateMsg.Builder asmBldr = AuctionStateMsg.newBuilder();
+		asmBldr.setMaxRunningListeners(mina.getConfig().getMaxRunningListeners());
 		ConnectedNode[] conNodes = mina.getCCM().getConnectedNodes();
 		synchronized (this) {
 			asmBldr.setIndex(stateIndex);
@@ -171,6 +172,9 @@ public class SellMgr {
 		}
 	}
 
+	/**
+	 * @syncpriority 140
+	 */
 	public void topUpAccount(String nodeId, byte[] currencyToken) {
 		double tokVal;
 		try {
@@ -182,6 +186,7 @@ public class SellMgr {
 		}
 		log.debug("Node " + nodeId + " topped up their account with value " + tokVal);
 		List<MessageHolder> msgsToHandle = null;
+		final Map<String, Float> gammas;
 		synchronized (this) {
 			if (!accounts.containsKey(nodeId))
 				accounts.put(nodeId, new Account());
@@ -189,10 +194,9 @@ public class SellMgr {
 			acct.balance += tokVal;
 			acct.needsTopUp = false;
 			msgsToHandle = msgsWaitingForAcct.remove(nodeId);
+			gammas = calculateGammas();
 		}
-
-		adjustGammas();
-
+		mina.getCCM().updateGammas(gammas);
 		if (msgsToHandle != null) {
 			for (MessageHolder mh : msgsToHandle) {
 				handleMsg(mh);
@@ -214,7 +218,7 @@ public class SellMgr {
 		return acct != null && (acct.balance > 0) && !acct.needsTopUp;
 	}
 
-	public void msgPendingOpenAccount(final MessageHolder mh) {
+	public void msgPendingActiveAccount(final MessageHolder mh) {
 		String nodeId = mh.getFromCC().getNodeId();
 		synchronized (this) {
 			// Might already be open due to threading
@@ -253,6 +257,7 @@ public class SellMgr {
 	/**
 	 * If the requesting node has enough ends to pay for the requested bytes, charge their account and return the status
 	 * index used to calculate the charge. Otherwise, sends them a PayUp demand (if they have an account) and return <0
+	 * @syncpriority 140
 	 */
 	public int requestAndCharge(String nodeId, long numBytes) {
 		double charge;
@@ -280,16 +285,18 @@ public class SellMgr {
 
 	/**
 	 * If the charge fails, will note the account as needing to pay, send out a payup command and adjust gammas
-	 * 
+	 * @syncpriority 140
 	 * @return Did this charge succeed?
 	 */
 	private boolean chargeAcct(String nodeId, double charge) {
 		double payUpBalance;
+		final Map<String, Float> gammas;
 		synchronized (this) {
 			Account acct = accounts.get(nodeId);
 			if (acct.balance < charge) {
 				payUpBalance = acct.balance;
 				acct.needsTopUp = true;
+				gammas = calculateGammas();
 			} else {
 				acct.balance -= charge;
 				return true;
@@ -297,7 +304,7 @@ public class SellMgr {
 		}
 		// Oops, not enough ends... readjust our gammas to knock them out, and
 		// tell them the bad news
-		adjustGammas();
+		mina.getCCM().updateGammas(gammas);
 
 		ControlConnection cc = mina.getCCM().getCCWithId(nodeId);
 		PayUp pu = PayUp.newBuilder().setBalance(payUpBalance).build();
@@ -318,183 +325,181 @@ public class SellMgr {
 		return ssBldr.build();
 	}
 
-	public void removeBidder(String fromNodeId) {
-		synchronized (this) {
-			if (!(agreedBids.containsKey(fromNodeId) || currentBids.containsKey(fromNodeId))) {
-				log.debug("Not removing bidder " + fromNodeId + ": no current or agreed bid");
-				return;
-			}
-			if (auctionInProgress) {
-				// TODO: They're only allowed to drop out if they're not top bidder - otherwise they get charged 30s of
-				// min_top_rate, to stop them DOSing by inflating the top bid and dropping out
-			}
-			agreedBids.remove(fromNodeId);
-			currentBids.remove(fromNodeId);
-			waitingForBids.remove(fromNodeId);
-			activeBidders.remove(fromNodeId);
-			// We don't remove them from bidFrozen here - that will be done when the next proper auction starts
+	public synchronized void removeBidder(String fromNodeId) {
+		if (!(agreedBids.containsKey(fromNodeId) || currentBids.containsKey(fromNodeId))) {
+			log.debug("Not removing bidder " + fromNodeId + ": no current or agreed bid");
+			return;
 		}
+		if (auctionInProgress) {
+			// TODO: They're only allowed to drop out if they're not top bidder - otherwise they get charged 30s of
+			// min_top_rate, to stop them DOSing by inflating the top bid and dropping out
+		}
+		agreedBids.remove(fromNodeId);
+		currentBids.remove(fromNodeId);
+		waitingForBids.remove(fromNodeId);
+		activeBidders.remove(fromNodeId);
+		// We don't remove them from bidFrozen here - that will be done when the next proper auction starts
 		updateAuctionStatus();
 	}
 
 	public void notifyDeadConnection(String nodeId) {
-		removeBidder(nodeId);
 		// TODO: We should try and keep their account open so that it's still there when they reconnect - but then we
 		// need a way of synchronizing account state when they reconnect - look at this when we're implementing escrow
 		synchronized (this) {
 			accounts.remove(nodeId);
 		}
+		removeBidder(nodeId);
 	}
 
-	public void bid(final String bidderNodeId, final double newBid) {
+	public synchronized void bid(final String bidderNodeId, final double newBid) {
 		if (newBid < mina.getMyAgorics().getMinBid()) {
 			log.error("Ignoring too-low bid " + newBid + " from " + bidderNodeId);
 			return;
 		}
-		synchronized (this) {
-			// Not allowed to bid before opening time unless they're a new node
-			if (bidFrozen.contains(bidderNodeId) && now().before(openForBidsTime)) {
-				log.error("Ignoring bid [" + newBid + "] from " + bidderNodeId + ": bids not open yet");
-				ControlConnection cc = mina.getCCM().getCCWithId(bidderNodeId);
-				SourceStatus ss = buildSourceStatus(cc.getNodeDescriptor(), null);
-				cc.sendMessage("SourceStatus", ss);
+		// Not allowed to bid before opening time unless they're a new node
+		if (bidFrozen.contains(bidderNodeId) && now().before(openForBidsTime)) {
+			log.error("Ignoring bid [" + newBid + "] from " + bidderNodeId + ": bids not open yet");
+			// Run it on the thread pool to come out of the sync
+			mina.getExecutor().execute(new CatchingRunnable() {
+				public void doRun() throws Exception {
+					ControlConnection cc = mina.getCCM().getCCWithId(bidderNodeId);
+					SourceStatus ss = buildSourceStatus(cc.getNodeDescriptor(), null);
+					cc.sendMessage("SourceStatus", ss);
+				}
+			});
+			return;
+		}
+		double oldBid;
+		if (currentBids.containsKey(bidderNodeId))
+			oldBid = currentBids.get(bidderNodeId);
+		else if (agreedBids.containsKey(bidderNodeId))
+			oldBid = agreedBids.get(bidderNodeId);
+		else
+			oldBid = 0;
+
+		// Check that this bid is acceptable
+		if (newBid > oldBid) {
+			// Check they're increasing by enough
+			if ((newBid - oldBid) < mina.getMyAgorics().getIncrement()) {
+				log.debug("Not allowing bid of " + newBid + " from " + bidderNodeId
+						+ " - not increasing by min increment");
 				return;
 			}
-			double oldBid;
-			if (currentBids.containsKey(bidderNodeId))
-				oldBid = currentBids.get(bidderNodeId);
-			else if (agreedBids.containsKey(bidderNodeId))
-				oldBid = agreedBids.get(bidderNodeId);
-			else
-				oldBid = 0;
-
-			// Check that this bid is acceptable
-			if (newBid > oldBid) {
-				// Check they're increasing by enough
-				if ((newBid - oldBid) < mina.getMyAgorics().getIncrement()) {
-					log.debug("Not allowing bid of " + newBid + " from " + bidderNodeId
-							+ " - not increasing by min increment");
-					return;
-				}
-			} else if (newBid < oldBid) {
-				// They're allowed to decrease their bid only as their first bid
-				// of the auction
-				if (currentBids.containsKey(bidderNodeId)) {
-					log.error("Not allowing bid of " + newBid + " from " + bidderNodeId
-							+ " - can't decrease bid during auction");
-					return;
-				}
-			} else {
-				// They sent the same bid as before - they shouldn't do this, but we'll be nice and just take it as a
-				// NoBid rather than Casting them into Outer Darkness
-				log.error(bidderNodeId + " bid the same as before - being nice, taking it as NoBid");
-				noBid(bidderNodeId);
+		} else if (newBid < oldBid) {
+			// They're allowed to decrease their bid only as their first bid
+			// of the auction
+			if (currentBids.containsKey(bidderNodeId)) {
+				log.error("Not allowing bid of " + newBid + " from " + bidderNodeId
+						+ " - can't decrease bid during auction");
 				return;
 			}
+		} else {
+			// They sent the same bid as before - they shouldn't do this, but we'll be nice and just take it as a
+			// NoBid rather than Casting them into Outer Darkness
+			log.error(bidderNodeId + " bid the same as before - being nice, taking it as NoBid");
+			noBid(bidderNodeId);
+			return;
+		}
 
-			if (auctionInProgress) {
-				if ((!agreedBids.containsKey(bidderNodeId)) && (!currentBids.containsKey(bidderNodeId))) {
-					// Here comes a new challenger!
-					activeBidders.add(bidderNodeId);
-				} else if (!activeBidders.contains(bidderNodeId)) {
-					log.error("Node " + bidderNodeId + " bid " + newBid + ", but is no longer an active bidder");
-					return;
-				}
-				currentBids.put(bidderNodeId, newBid);
-				waitingForBids.remove(bidderNodeId);
-				// Anyone who bids at least once during the auction is bid frozen after that auction ends (to prevent
-				// them playing silly buggers by bidding, dropping out, then bidding again when the auction closes)
-				bidFrozen.add(bidderNodeId);
-			} else {
-				if (!waitingForBids.isEmpty())
-					throw new SeekInnerCalmException();
-				currentBids.put(bidderNodeId, newBid);
-				// updateAuctionStatus will start a new auction
+		if (auctionInProgress) {
+			if ((!agreedBids.containsKey(bidderNodeId)) && (!currentBids.containsKey(bidderNodeId))) {
+				// Here comes a new challenger!
+				activeBidders.add(bidderNodeId);
+			} else if (!activeBidders.contains(bidderNodeId)) {
+				log.error("Node " + bidderNodeId + " bid " + newBid + ", but is no longer an active bidder");
+				return;
 			}
+			currentBids.put(bidderNodeId, newBid);
+			waitingForBids.remove(bidderNodeId);
+			// Anyone who bids at least once during the auction is bid frozen after that auction ends (to prevent
+			// them playing silly buggers by bidding, dropping out, then bidding again when the auction closes)
+			bidFrozen.add(bidderNodeId);
+		} else {
+			if (!waitingForBids.isEmpty())
+				throw new SeekInnerCalmException();
+			currentBids.put(bidderNodeId, newBid);
+			// updateAuctionStatus will start a new auction
 		}
 		updateAuctionStatus();
 	}
 
-	public void noBid(String fromNodeId) {
-		synchronized (this) {
-			if (!auctionInProgress) {
-				// wat
-				log.error("Ignoring erroneous nobid from " + fromNodeId);
-				return;
-			}
-			// If they haven't sent us a bid in this auction yet, use their previous one
-			if (!currentBids.containsKey(fromNodeId) && agreedBids.containsKey(fromNodeId))
-				currentBids.put(fromNodeId, agreedBids.get(fromNodeId));
-			waitingForBids.remove(fromNodeId);
-			activeBidders.remove(fromNodeId);
+	public synchronized void noBid(String fromNodeId) {
+		if (!auctionInProgress) {
+			// wat
+			log.error("Ignoring erroneous nobid from " + fromNodeId);
+			return;
 		}
+		// If they haven't sent us a bid in this auction yet, use their previous one
+		if (!currentBids.containsKey(fromNodeId) && agreedBids.containsKey(fromNodeId))
+			currentBids.put(fromNodeId, agreedBids.get(fromNodeId));
+		waitingForBids.remove(fromNodeId);
+		activeBidders.remove(fromNodeId);
 		updateAuctionStatus();
 	}
 
+	/** Must only be called inside sync block */
 	private void updateAuctionStatus() {
 		boolean finished = false;
 		Map<String, Double> updateBidMap = null;
-		synchronized (this) {
-			if (auctionInProgress) {
-				finished = (activeBidders.size() <= 1 && waitingForBids.size() == 0);
-				if (finished)
-					log.debug("No more bids - auction finished");
-				else {
-					if (waitingForBids.size() == 0) {
-						updateBidMap = new HashMap<String, Double>();
-						updateBidMap.putAll(currentBids);
-						waitingForBids.addAll(activeBidders);
-					}
-				}
-			} else {
-				if (currentBids.size() == 0) {
-					// Someone just dropped out, null auction
-					log.debug("Sending null auction result");
-					// Put agreedBids into currentBids to make auctionFinished() work properly
-					currentBids.putAll(agreedBids);
-					finished = true;
-				} else if ((agreedBids.size() == 0) || agreedBids.keySet().equals(currentBids.keySet())) {
-					// There is a small chance we might have more than one bidder in currentBids if the
-					// threading/networking winds are blowing very strangely
-					if (log.isDebugEnabled()) {
-						StringBuffer sb = new StringBuffer("Finishing short auction with bids from: ");
-						for (String nodeId : currentBids.keySet()) {
-							sb.append(nodeId).append(" ");
-						}
-						log.debug(sb);
-					}
-					finished = true;
-				} else {
-					// Start a new auction
-					if (log.isDebugEnabled()) {
-						StringBuffer sb = new StringBuffer("Starting auction with opening bids from: ");
-						for (String nodeId : currentBids.keySet()) {
-							sb.append(nodeId).append(" ");
-						}
-						log.debug(sb);
-					}
-					auctionInProgress = true;
-					// Bid frozen nodes are no longer frozen
-					bidFrozen.clear();
-					bidFrozen.addAll(currentBids.keySet());
-					// Build a map of current bids to send out as a new AuctionStatus
+		if (auctionInProgress) {
+			finished = (activeBidders.size() <= 1 && waitingForBids.size() == 0);
+			if (finished)
+				log.debug("No more bids - auction finished");
+			else {
+				if (waitingForBids.size() == 0) {
 					updateBidMap = new HashMap<String, Double>();
-					// Turn all our listeners into active bidders
-					for (String node : agreedBids.keySet()) {
-						// If they don't have enough ends, they can't bid, so don't
-						// tell them to
-						if (!haveActiveAccount(node))
-							continue;
-						activeBidders.add(node);
-						// We add their agreed bid (from the last auction) here - if they have sent us a more recent
-						// bid, it will be in currentBids and will overwrite this
-						updateBidMap.put(node, agreedBids.get(node));
-						// If they have a current bid here, we're not waiting to hear from them
-						if (!currentBids.containsKey(node))
-							waitingForBids.add(node);
-					}
 					updateBidMap.putAll(currentBids);
+					waitingForBids.addAll(activeBidders);
 				}
+			}
+		} else {
+			if (currentBids.size() == 0) {
+				// Someone just dropped out, null auction
+				log.debug("Sending null auction result");
+				// Put agreedBids into currentBids to make auctionFinished() work properly
+				currentBids.putAll(agreedBids);
+				finished = true;
+			} else if ((agreedBids.size() == 0) || agreedBids.keySet().equals(currentBids.keySet())) {
+				// There is a small chance we might have more than one bidder in currentBids if the
+				// threading/networking winds are blowing very strangely
+				if (log.isDebugEnabled()) {
+					StringBuffer sb = new StringBuffer("Finishing short auction with bids from: ");
+					for (String nodeId : currentBids.keySet()) {
+						sb.append(nodeId).append(" ");
+					}
+					log.debug(sb);
+				}
+				finished = true;
+			} else {
+				// Start a new auction
+				if (log.isDebugEnabled()) {
+					StringBuffer sb = new StringBuffer("Starting auction with opening bids from: ");
+					for (String nodeId : currentBids.keySet()) {
+						sb.append(nodeId).append(" ");
+					}
+					log.debug(sb);
+				}
+				auctionInProgress = true;
+				// Bid frozen nodes are no longer frozen
+				bidFrozen.clear();
+				bidFrozen.addAll(currentBids.keySet());
+				// Build a map of current bids to send out as a new AuctionStatus
+				updateBidMap = new HashMap<String, Double>();
+				// Turn all our listeners into active bidders
+				for (String node : agreedBids.keySet()) {
+					// If they don't have enough ends, they can't bid, so don't
+					// tell them to
+					if (!haveActiveAccount(node))
+						continue;
+					activeBidders.add(node);
+					// We add their agreed bid (from the last auction) here - if they have sent us a more recent
+					// bid, it will be in currentBids and will overwrite this
+					updateBidMap.put(node, agreedBids.get(node));
+					// If they have a current bid here, we're not waiting to hear from them
+					if (!currentBids.containsKey(node))
+						waitingForBids.add(node);
+				}
+				updateBidMap.putAll(currentBids);
 			}
 		}
 		if (finished)
@@ -516,6 +521,7 @@ public class SellMgr {
 		}
 	}
 
+	/** Must only be called from inside sync block */
 	private void auctionFinished() {
 		bidTimeout.clear();
 		Set<String> sendResultSet = new HashSet<String>();
@@ -524,70 +530,56 @@ public class SellMgr {
 		String tbNode = null;
 		double tbCharge = 0;
 		// Any messages that are pending an agreed bid, handle them afterwards
-		List<MessageHolder> msgsToHandle = new ArrayList<MessageHolder>();
-		synchronized (this) {
-			if (topBidder != null) {
-				Account topAcct = accounts.get(topBidder);
-				if (topAcct != null) {
-					long msSinceAuct = msElapsedSince(auctionFinishTime);
-					long minChargeBytes = (long) (mina.getMyAgorics().getMinTopRate() * (msSinceAuct / 1000f));
-					long bytesToCharge = minChargeBytes - topAcct.bytesSinceLastAuction;
-					if (bytesToCharge > 0) {
-						tbNode = topBidder;
-						tbCharge = (bytesToCharge / (1024d * 1024d)) * agreedBids.get(topBidder);
-					}
+		final List<MessageHolder> msgsToHandle = new ArrayList<MessageHolder>();
+		// Prune anyone who didn't make our cut
+		List<String> prunedBids = pruneCurrentBids();
+		// Apply the min-charge to them if necessary
+		if (topBidder != null) {
+			Account topAcct = accounts.get(topBidder);
+			Double topBid = agreedBids.get(topBidder);
+			if (topAcct != null && topBid != null) {
+				long msSinceAuct = msElapsedSince(auctionFinishTime);
+				long minChargeBytes = (long) (mina.getMyAgorics().getMinTopRate() * (msSinceAuct / 1000f));
+				long bytesToCharge = minChargeBytes - topAcct.bytesSinceLastAuction;
+				if (bytesToCharge > 0) {
+					tbNode = topBidder;
+					tbCharge = (bytesToCharge / (1024d * 1024d)) * topBid;
 				}
-			}
-
-			auctionInProgress = false;
-			auctionFinishTime = now();
-			// Update our agreed bids
-			double topBid = 0;
-			topBidder = null;
-			// Make sure everyone who had an agreed bid from the last auction
-			// gets a result, even if they don't have one from this auction
-			sendResultSet.addAll(agreedBids.keySet());
-			agreedBids.clear();
-			for (String nodeId : currentBids.keySet()) {
-				double newBid = currentBids.get(nodeId);
-				if (newBid != 0) {
-					if (newBid > topBid) {
-						topBidder = nodeId;
-						topBid = newBid;
-					}
-					agreedBids.put(nodeId, newBid);
-					sendResultSet.add(nodeId);
-				}
-			}
-			// Clear everything
-			activeBidders.clear();
-			currentBids.clear();
-			waitingForBids.clear();
-			// Increment our index
-			stateIndex = AuctionState.INDEX_MOD.add(stateIndex, 1);
-			// If we were still within our bid freeze, we've just had a null auction due to someone dropping out, so
-			// keep the openForBids time the same
-			if (now().after(openForBidsTime)) {
-				if (agreedBids.size() > 0)
-					openForBidsTime = timeInFuture(mina.getConfig().getMinTimeBetweenAuctions());
-				else
-					openForBidsTime = now();
-			}
-			// See which messages we can now handle
-			for (String nodeId : agreedBids.keySet()) {
-				List<MessageHolder> msgs = msgsWaitingForAgreedBid.remove(nodeId);
-				if (msgs != null)
-					msgsToHandle.addAll(msgs);
-			}
+			} else
+				log.error("Node " + topBidder
+						+ " should be eating a min-charge, but they have either no account or no agreed bid");
 		}
 
-		if (tbNode != null) {
-			ControlConnection cc = mina.getCCM().getCCWithId(tbNode);
-			if (cc != null) {
-				MinCharge mc = MinCharge.newBuilder().setAmount(tbCharge).build();
-				cc.sendMessage("MinCharge", mc);
-			}
-			chargeAcct(tbNode, tbCharge);
+		auctionInProgress = false;
+		auctionFinishTime = now();
+		// Update our agreed bids
+		topBidder = (prunedBids.size() == 0) ? null : prunedBids.get(0);
+		// Make sure everyone who had an agreed bid from the last auction
+		// gets a result, even if they don't have one from this auction
+		sendResultSet.addAll(agreedBids.keySet());
+		sendResultSet.addAll(currentBids.keySet());
+		agreedBids.clear();
+		for (String nid : prunedBids) {
+			agreedBids.put(nid, currentBids.get(nid));
+		}
+		activeBidders.clear();
+		currentBids.clear();
+		waitingForBids.clear();
+		// Increment our index
+		stateIndex = AuctionState.INDEX_MOD.add(stateIndex, 1);
+		// If we were still within our bid freeze, we've just had a null auction due to someone dropping out, so
+		// keep the openForBids time the same
+		if (now().after(openForBidsTime)) {
+			if (agreedBids.size() > 0)
+				openForBidsTime = timeInFuture(mina.getConfig().getMinTimeBetweenAuctions());
+			else
+				openForBidsTime = now();
+		}
+		// See which messages we can now handle
+		for (String nodeId : agreedBids.keySet()) {
+			List<MessageHolder> msgs = msgsWaitingForAgreedBid.remove(nodeId);
+			if (msgs != null)
+				msgsToHandle.addAll(msgs);
 		}
 
 		if (log.isDebugEnabled()) {
@@ -604,112 +596,176 @@ public class SellMgr {
 			log.debug(sb);
 		}
 
-		adjustGammas();
-
-		// Make an auction result msg and send it to everyone - use cached for
-		// all except the first one
+		final String ftbNode = tbNode;
+		final double ftbCharge = tbCharge;
+		final Map<String, Float> gammas = calculateGammas();
+		final Map<String, AuctionStateMsg> auctionStates = new HashMap<String, AuctionStateMsg>();
+		// Build our auctionstates - use cached for all except the first one
 		boolean useCache = false;
 		for (String nodeId : sendResultSet) {
-			AuctionResult.Builder arBldr = AuctionResult.newBuilder();
 			AuctionStateMsg asm = getState(useCache, nodeId);
-			arBldr.setAuctionState(asm);
-			ControlConnection cc = mina.getCCM().getCCWithId(nodeId);
-			if (cc != null)
-				cc.sendMessage("AuctionResult", arBldr.build());
+			auctionStates.put(nodeId, asm);
 			useCache = true;
 		}
-		// Handle those messages
-		for (MessageHolder mh : msgsToHandle) {
-			handleMsg(mh);
-		}
-		// Remove any old messages hanging around
-		cleanUp();
+		// Fire off the results via the thread pool to come out of this sync
+		mina.getExecutor().execute(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				// Charge our laggardly top bidder
+				if (ftbNode != null) {
+					ControlConnection cc = mina.getCCM().getCCWithId(ftbNode);
+					if (cc != null) {
+						MinCharge mc = MinCharge.newBuilder().setAmount(ftbCharge).build();
+						cc.sendMessage("MinCharge", mc);
+					}
+					chargeAcct(ftbNode, ftbCharge);
+				}
+				// Adjust our gammas
+				mina.getCCM().updateGammas(gammas);
+				// Send out the auction result to everyone
+				for (String nodeId : auctionStates.keySet()) {
+					AuctionResult.Builder arBldr = AuctionResult.newBuilder();
+					arBldr.setAuctionState(auctionStates.get(nodeId));
+					ControlConnection cc = mina.getCCM().getCCWithId(nodeId);
+					if (cc != null)
+						cc.sendMessage("AuctionResult", arBldr.build());
+				}
+				// Handle messages
+				for (MessageHolder mh : msgsToHandle) {
+					handleMsg(mh);
+				}
+				// Remove any old messages hanging around
+				cleanUp();
+			}
+		});
 	}
 
-	private void adjustGammas() {
-		Map<String, Float> gammas = new HashMap<String, Float>();
+	/**
+	 * Orders our current bidders in descending order (by bid amount, then by connection lifespan), and prunes any
+	 * bidders beyond our maxRunningListener limit
+	 */
+	private List<String> pruneCurrentBids() {
+		List<String> result = new ArrayList<String>();
+		result.addAll(currentBids.keySet());
+		Collections.sort(result, new Comparator<String>() {
+			public int compare(String nid1, String nid2) {
+				// We are sorting descending, so flip the return value
+				// First check their bid
+				double bid1 = currentBids.get(nid1);
+				double bid2 = currentBids.get(nid2);
+				if (bid1 > bid2)
+					return -1;
+				if (bid2 > bid1)
+					return 1;
+				// Now check their age
+				ControlConnection cc1 = mina.getCCM().getCCWithId(nid1);
+				ControlConnection cc2 = mina.getCCM().getCCWithId(nid2);
+				if (cc1 == null)
+					return 1;
+				if (cc2 == null)
+					return -1;
+				if (cc1.getAge() > cc2.getAge())
+					return -1;
+				if (cc1.getAge() < cc2.getAge())
+					return 1;
+				return 0;
+			}
+		});
+		// Now, prune those who don't make our maxRunningListener limit
+		int numRL = 0;
+		int maxRL = mina.getConfig().getMaxRunningListeners();
+		Iterator<String> it = result.iterator();
+		while (it.hasNext()) {
+			String nid = it.next();
+			ControlConnection cc = mina.getCCM().getCCWithId(nid);
+			if (cc.getUpFlowRate() > 0) {
+				numRL++;
+				if (numRL >= maxRL) {
+					// Everyone else: thanks for bidding, it's been really... useful
+					while (it.hasNext()) {
+						it.next();
+						it.remove();
+					}
+				}
+			}
+		}
+		return result;
+	}
+
+	/** Must only be called inside sync block */
+	private Map<String, Float> calculateGammas() {
+		Map<String, Float> result = new HashMap<String, Float>();
 		double highBid = 0;
-		synchronized (this) {
-			// Figure out our highest bid, he receives gamma=1 and the others
-			// are based on him
-			for (String nodeId : agreedBids.keySet()) {
-				Account acct = accounts.get(nodeId);
-				if (acct == null || acct.needsTopUp || acct.balance <= 0)
-					continue;
-				double bid = agreedBids.get(nodeId);
-				if (bid > highBid)
-					highBid = bid;
-			}
-			for (String nodeId : agreedBids.keySet()) {
-				Account acct = accounts.get(nodeId);
-				float gamma;
-				if (acct == null || acct.needsTopUp || acct.balance <= 0)
-					gamma = 0;
-				else
-					gamma = (float) (agreedBids.get(nodeId) / highBid);
-				gammas.put(nodeId, gamma);
-			}
+		// Figure out our highest bid, he receives gamma=1 and the others
+		// are based on him
+		for (String nodeId : agreedBids.keySet()) {
+			Account acct = accounts.get(nodeId);
+			if (acct == null || acct.needsTopUp || acct.balance <= 0)
+				continue;
+			double bid = agreedBids.get(nodeId);
+			if (bid > highBid)
+				highBid = bid;
 		}
-		mina.getCCM().updateGammas(gammas);
+		for (String nodeId : agreedBids.keySet()) {
+			Account acct = accounts.get(nodeId);
+			float gamma;
+			if (acct == null || acct.needsTopUp || acct.balance <= 0)
+				gamma = 0;
+			else
+				gamma = (float) (agreedBids.get(nodeId) / highBid);
+			result.put(nodeId, gamma);
+		}
+		return result;
 	}
 
-	/** Sends an bid update to everyone in waitingForBids */
+	/** Must only be called inside sync block */
 	private void sendBidUpdate(Map<String, Double> bidMap) {
-		List<String> sendList = new ArrayList<String>();
 		BidUpdate.Builder templateBldr = BidUpdate.newBuilder();
-		synchronized (this) {
-			sendList.addAll(waitingForBids);
-			for (String bNodeId : bidMap.keySet()) {
-				templateBldr.addListenerId(getNodeIdToken(bNodeId));
-				if (currentBids.containsKey(bNodeId))
-					templateBldr.addBidAmount(currentBids.get(bNodeId));
-				else if (agreedBids.containsKey(bNodeId))
-					templateBldr.addBidAmount(agreedBids.get(bNodeId));
-				else
-					throw new SeekInnerCalmException("Couldn't find bid for node " + bNodeId);
-			}
+		for (String bNodeId : bidMap.keySet()) {
+			templateBldr.addListenerId(getNodeIdToken(bNodeId));
+			templateBldr.addBidAmount(bidMap.get(bNodeId));
 		}
-		if (log.isDebugEnabled()) {
-			StringBuffer sb = new StringBuffer("Sending bidupdate to: ");
-			boolean first = true;
-			for (String nId : sendList) {
-				if (first)
-					first = false;
-				else
-					sb.append(", ");
-				sb.append(nId);
-			}
-			log.debug(sb);
-		}
-
-		for (String sNodeId : sendList) {
+		final Map<String, BidUpdate> buMap = new HashMap<String, BidUpdate>();
+		for (String sNodeId : waitingForBids) {
 			BidUpdate.Builder bldr = templateBldr.clone();
 			bldr.setYouAre(getNodeIdToken(sNodeId));
-			ControlConnection cc = mina.getCCM().getCCWithId(sNodeId);
-			if (cc != null)
-				cc.sendMessage("BidUpdate", bldr.build());
+			buMap.put(sNodeId, bldr.build());
 		}
 		bidTimeout.set(mina.getConfig().getBidTimeout());
+		// Come out of the sync by using the thread pool
+		mina.getExecutor().execute(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				if (log.isDebugEnabled()) {
+					StringBuffer sb = new StringBuffer("Sending bidupdate to: ");
+					boolean first = true;
+					for (String nId : buMap.keySet()) {
+						if (first)
+							first = false;
+						else
+							sb.append(", ");
+						sb.append(nId);
+					}
+					log.debug(sb);
+				}
+				for (String nodeId : buMap.keySet()) {
+					ControlConnection cc = mina.getCCM().getCCWithId(nodeId);
+					if( cc == null)
+						continue;
+					cc.sendMessage("BidUpdate", buMap.get(nodeId));
+				}
+			}
+		});
 	}
 
-	public void closeAccount(String nodeId, Attempt onClose) {
+	public void closeAccount(String nodeId) {
 		ControlConnection cc = mina.getCCM().getCCWithId(nodeId);
-		if (cc == null) {
-			if (onClose != null)
-				onClose.succeeded();
+		if (cc == null)
 			return;
-		}
-
 		Account acct;
 		synchronized (this) {
 			acct = accounts.remove(nodeId);
 		}
-		if (acct == null) {
-			if (onClose != null)
-				onClose.succeeded();
+		if (acct == null)
 			return;
-		}
-
 		// Put in a bid of zero to remove this guy from our auctions
 		removeBidder(nodeId);
 		// Send the remaining balance
@@ -721,11 +777,8 @@ public class SellMgr {
 		} catch (CurrencyException e) {
 			log.error("Error withdrawing tokens to pay owed balance to " + nodeId);
 		}
-		// TODO The attempt is actually unnecessary at the moment as this
-		// happens instantaneously, but once we have real payment methods it
-		// won't be (probably)
-		if (onClose != null)
-			onClose.succeeded();
+		// TODO Once we have escrow, this will get more complicated
+		cc.closeGracefully();
 	}
 
 	class Account {

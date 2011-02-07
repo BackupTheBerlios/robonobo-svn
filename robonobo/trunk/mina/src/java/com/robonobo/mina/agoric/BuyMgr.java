@@ -13,6 +13,7 @@ import com.robonobo.common.concurrent.Attempt;
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.core.api.CurrencyException;
+import com.robonobo.core.api.StreamVelocity;
 import com.robonobo.mina.external.buffer.PageBuffer;
 import com.robonobo.mina.instance.MinaInstance;
 import com.robonobo.mina.message.proto.MinaProtocol.Agorics;
@@ -21,6 +22,7 @@ import com.robonobo.mina.message.proto.MinaProtocol.BidUpdate;
 import com.robonobo.mina.message.proto.MinaProtocol.CloseAcct;
 import com.robonobo.mina.message.proto.MinaProtocol.EscrowBegan;
 import com.robonobo.mina.message.proto.MinaProtocol.ReceivedBid;
+import com.robonobo.mina.message.proto.MinaProtocol.SourceStatus;
 import com.robonobo.mina.message.proto.MinaProtocol.TopUp;
 import com.robonobo.mina.network.ControlConnection;
 import com.robonobo.mina.network.LCPair;
@@ -36,8 +38,7 @@ public class BuyMgr {
 	Map<String, AuctionState> asMap = new HashMap<String, AuctionState>();
 	Map<String, Agorics> agMap = new HashMap<String, Agorics>();
 	Map<String, Account> accounts = new HashMap<String, Account>();
-	Map<String, List<Attempt>> onConfirmedBidAttempts = new HashMap<String, List<Attempt>>();
-	Map<String, Attempt> onAcctCloseAttempts = new HashMap<String, Attempt>();
+	Set<String> accountsInProgress = new HashSet<String>();
 	Log log;
 
 	public BuyMgr(MinaInstance mina) {
@@ -101,33 +102,8 @@ public class BuyMgr {
 		return as.getIndex();
 	}
 
-	public void setupAccountAndBid(final String nodeId, final double openingBid, final Attempt onBidSuccess) {
-		if (haveActiveAccount(nodeId))
-			openBidding(nodeId, openingBid, onBidSuccess);
-		else {
-			Attempt openAcctAttempt = new Attempt(mina.getExecutor(), 0, "openAcct-" + nodeId) {
-				protected void onSuccess() {
-					openBidding(nodeId, openingBid, onBidSuccess);
-				}
-			};
-			setupAccount(nodeId, openAcctAttempt);
-		}
-	}
-
-	private void setupAccount(final String nodeId, final Attempt onAcctCreation) {
-		// TODO Non-sucking payment methods
-		boolean doneAlready = false;
-		synchronized (this) {
-			// Are we already in the process of setting up this account?
-			Account account = accounts.get(nodeId);
-			if (account != null)
-				doneAlready = true;
-		}
-		if (doneAlready) {
-			onAcctCreation.succeeded();
-			return;
-		}
-
+	public void setupAccount(SourceStatus ss) {
+		String nodeId = ss.getFromNode().getId();
 		// If our currency client isn't ready yet (fast connection, this one!),
 		// wait until it is
 		while (!mina.getCurrencyClient().isReady()) {
@@ -136,44 +112,37 @@ public class BuyMgr {
 			} catch (InterruptedException e) {
 				return;
 			}
-			if (mina.getCCM().isShuttingDown()) {
-				onAcctCreation.cancel();
+			if (mina.getCCM().isShuttingDown())
 				return;
-			}
 		}
-		if (!haveAuctionState(nodeId)) {
-			log.error("Not attempting to setup account - we have no auctionstatus from node " + nodeId);
-			onAcctCreation.failed();
-			return;
-		}
-
-		Agorics ag;
 		synchronized (this) {
-			ag = agMap.get(nodeId);
+			if (accounts.containsKey(nodeId) || accountsInProgress.contains(nodeId))
+				return;
+			accountsInProgress.add(nodeId);
+			asMap.put(nodeId, new AuctionState(ss.getAuctionState()));
+			agMap.put(nodeId, ss.getAgorics());
 		}
-		String paymentMethod = getBestPaymentMethod(ag);
+		String paymentMethod = getBestPaymentMethod(ss.getAgorics());
 		if (paymentMethod == null) {
 			log.info("Failed to setup account with " + nodeId + " - no acceptable payment methods");
-			onAcctCreation.failed();
 			return;
 		}
 		if (paymentMethod.equals("upfront")) {
-			setupUpfrontAccount(nodeId, onAcctCreation);
+			setupUpfrontAccount(nodeId);
 			return;
 		} else if (paymentMethod.startsWith("escrow:")) {
 			String escrowProvId = paymentMethod.substring(7);
-			setupEscrowAccount(nodeId, escrowProvId, onAcctCreation);
+			setupEscrowAccount(nodeId, escrowProvId);
 			return;
 		}
 		log.error("Error: could not setup account with " + nodeId + " - unknown payment method '" + paymentMethod + "'");
 	}
 
-	private void setupUpfrontAccount(final String nodeId, Attempt onAcctCreation) {
+	private void setupUpfrontAccount(final String nodeId) {
 		log.info("Setting up upfront account with node " + nodeId);
 		ControlConnection cc = mina.getCCM().getCCWithId(nodeId);
 		if (cc == null) {
 			log.error("No cc for setting up account with " + nodeId);
-			onAcctCreation.failed();
 			return;
 		}
 		double cashToSend = mina.getCurrencyClient().getOpeningBalance();
@@ -181,8 +150,7 @@ public class BuyMgr {
 		try {
 			token = mina.getCurrencyClient().withdrawToken(cashToSend, "Setting up account with node " + nodeId);
 		} catch (CurrencyException e) {
-			log.error("Error withdrawing token of value " + cashToSend + " trying to open account with " + nodeId);
-			onAcctCreation.failed();
+			log.error("Error withdrawing token of value " + cashToSend + " while trying to open account with " + nodeId);
 			return;
 		}
 		synchronized (this) {
@@ -207,10 +175,13 @@ public class BuyMgr {
 		synchronized (this) {
 			accounts.get(nodeId).balance += cashToSend;
 		}
-		onAcctCreation.succeeded();
+		accountSetupSucceeded(nodeId);
 	}
 
-	private void setupEscrowAccount(final String nodeId, final String escrowProvId, final Attempt onAcctCreation) {
+	private void setupEscrowAccount(final String nodeId, final String escrowProvId) {
+		// TODO This attempt-based stuff lacks wang... just tell the escrow mgr to open the account, and have it call
+		// our accountSetupSucceeded when it's done
+		// TODO Possibly split off upfront stuff into own UpfrontAccountMgr, and have sibling EscrowAccountMgr...?
 		Attempt a = new Attempt(mina.getExecutor(), mina.getConfig().getMessageTimeout(), "escrow-" + nodeId) {
 			protected void onSuccess() {
 				// We're now connected to the escrow provider
@@ -228,40 +199,28 @@ public class BuyMgr {
 				}
 			}
 		};
-		a.addContingentAttempt(onAcctCreation);
 		mina.getEscrowMgr().setupEscrowAccount(escrowProvId, a);
+		// TODO finish this - end up by calling accountSetupSucceeded somewhere
 	}
 
 	/**
 	 * @syncpriority 140
 	 */
-	public void closeAccount(String nodeId, Attempt onClose) {
-		boolean gotAccount, alreadyGotAttempt;
+	public void closeAccount(String nodeId) {
+		boolean gotAccount;
 		synchronized (this) {
 			gotAccount = accounts.containsKey(nodeId);
-			alreadyGotAttempt = onAcctCloseAttempts.containsKey(nodeId);
 		}
+		ControlConnection cc = mina.getCCM().getCCWithId(nodeId);
 		if (gotAccount) {
-			if (alreadyGotAttempt) {
-				// Just return, our already-registered attempt will shut things down
-				return;
-			}
-			ControlConnection cc = mina.getCCM().getCCWithId(nodeId);
 			if (cc != null) {
-				synchronized (this) {
-					onAcctCloseAttempts.put(nodeId, onClose);
-				}
 				CloseAcct ca = CloseAcct.newBuilder().build();
 				cc.sendMessage("CloseAcct", ca);
 				sentBid(nodeId, 0);
 				return;
 			}
-		}
-		onClose.succeeded();
-	}
-
-	public synchronized boolean accountIsClosing(String nodeId) {
-		return onAcctCloseAttempts.containsKey(nodeId);
+		} else
+			cc.closeGracefully();
 	}
 
 	public void accountClosed(String nodeId, byte[] currencyToken) {
@@ -283,73 +242,59 @@ public class BuyMgr {
 			} catch (CurrencyException e) {
 				log.error("Error when depositing token from " + nodeId, e);
 			}
-			Attempt onClose = onAcctCloseAttempts.remove(nodeId);
-
-			// DEBUG
-			String msg = "Successfully closed account with " + nodeId;
-			if (onClose != null)
-				msg += ": firing onclose attempt";
-			log.debug(msg);
-
-			if (onClose != null)
-				onClose.succeeded();
+			log.debug("Successfully closed account with " + nodeId);
+			mina.getCCM().getCCWithId(nodeId).closeGracefully();
 		}
 	}
 
-	public void openBidding(final String sellerNodeId, final double bidAmount, final Attempt... onConfirmedBids) {
-		// Check the auction state - we might not be able to bid yet, if so,
-		// wait until we can
+	private void accountSetupSucceeded(final String sellerNodeId) {
+		// w00t. Now, we bid
+		long timeUntilBid;
 		synchronized (this) {
+			accountsInProgress.remove(sellerNodeId);
 			AuctionState as = asMap.get(sellerNodeId);
 			if (as == null)
 				throw new SeekInnerCalmException();
-
-			// If we're already waiting for a confirmed bid, just add our
-			// attempt, it'll be called when we're done
-			if (onConfirmedBidAttempts.containsKey(sellerNodeId)) {
-				List<Attempt> list = onConfirmedBidAttempts.get(sellerNodeId);
-				for (Attempt a : onConfirmedBids) {
-					list.add(a);
-				}
-				return;
-			}
-
-			// Make sure we're allowed to send the bid now
-			if (as.getBidsOpen() > 0) {
-				Date bidsOpenTime = new Date(as.getTimeReceived().getTime() + as.getBidsOpen());
-				if (bidsOpenTime.after(now())) {
-					// Not allowed to open bids yet - call us back when we can
-					long msUntilBid = msUntil(bidsOpenTime);
-					log.debug("Waiting " + msUntilBid + "ms to open bid to " + sellerNodeId);
-					mina.getExecutor().schedule(new CatchingRunnable() {
-						public void doRun() throws Exception {
-							openBidding(sellerNodeId, bidAmount, onConfirmedBids);
-						}
-					}, msUntilBid, TimeUnit.MILLISECONDS);
-					return;
-				}
-			}
-
-			// Take note of the attempt
-			onConfirmedBidAttempts.put(sellerNodeId, new ArrayList<Attempt>());
-			List<Attempt> list = onConfirmedBidAttempts.get(sellerNodeId);
-			for (Attempt a : onConfirmedBids) {
-				list.add(a);
-			}
+			timeUntilBid = as.getBidsOpen();
 		}
+		if (timeUntilBid <= 0)
+			openBidding(sellerNodeId);
+		else {
+			log.debug("Waiting " + timeUntilBid + "ms to open bid to " + sellerNodeId);
+			mina.getExecutor().schedule(new CatchingRunnable() {
+				public void doRun() throws Exception {
+					openBidding(sellerNodeId);
+				}
+			}, timeUntilBid, TimeUnit.MILLISECONDS);
+		}
+	}
+
+	public void openBidding(final String sellerNodeId) {
 		ControlConnection cc = mina.getCCM().getCCWithId(sellerNodeId);
 		if (cc == null) {
 			log.error("Not opening bidding to " + sellerNodeId + " - no connection");
-			onConfirmedBidAttempts.remove(sellerNodeId);
-			for (Attempt a : onConfirmedBids) {
-				a.failed();
-			}
 			return;
 		}
-		// Let's get this party started
-		Bid bidMsg = Bid.newBuilder().setAmount(bidAmount).build();
+		synchronized (this) {
+			if(!accounts.containsKey(sellerNodeId)) {
+				log.error("Not opening bidding to "+sellerNodeId+" - no account");
+				return;
+			}
+		}
+		// Poll everyone interested in this guy, use the highest bid
+		double topBid = 0;
+		for (LCPair lcp : cc.getLCPairs()) {
+			double thisBid = lcp.getSM().getBidStrategy().getOpeningBid(sellerNodeId);
+			if (thisBid > topBid)
+				topBid = thisBid;
+		}
+		if (topBid == 0) {
+			log.error("Setup account with " + sellerNodeId + ", but now nobody wants to bid!");
+			return;
+		}
+		Bid bidMsg = Bid.newBuilder().setAmount(topBid).build();
 		cc.sendMessage("Bid", bidMsg);
-		sentBid(sellerNodeId, bidAmount);
+		sentBid(sellerNodeId, topBid);
 	}
 
 	/**
@@ -361,10 +306,10 @@ public class BuyMgr {
 			log.error("Received bidupdate from " + fromNodeId + ", but I have no auctionstate");
 			return;
 		}
-		as.setBids(mungeBids(as, bu));
+		as.setBids(getUpdatedBids(as, bu));
 	}
 
-	private List<ReceivedBid> mungeBids(AuctionState as, BidUpdate bu) {
+	private List<ReceivedBid> getUpdatedBids(AuctionState as, BidUpdate bu) {
 		Map<String, ReceivedBid> map = new HashMap<String, ReceivedBid>();
 		for (ReceivedBid bid : as.getBids()) {
 			map.put(bid.getListenerId(), bid);
@@ -383,12 +328,58 @@ public class BuyMgr {
 		return list;
 	}
 
-	public void newAuctionState(final String nodeId, AuctionState as) {
+	/**
+	 * Are we able to bid high enough in this auction to get any data?
+	 */
+	public boolean canListenTo(AuctionState as, StreamVelocity sv) {
+		if (as.getMyBid() > 0) {
+			// wat
+			return true;
+		}
+		int maxRL = as.getMaxRunningListeners();
+		if (as.getBids().size() < maxRL)
+			return true;
+		double myMaxBid = mina.getCurrencyClient().getMaxBid(sv);
+		int numRLsAboveMe = 0;
+		for (ReceivedBid b : as.getBids()) {
+			if (b.getFlowRate() > 0 && b.getBid() >= myMaxBid)
+				numRLsAboveMe++;
+		}
+		return (numRLsAboveMe < maxRL);
+	}
+
+	private void bidFailure(final String sellerNodeId, AuctionState as) {
+		// We bid in this auction, but we weren't in the result
+		// Figure out if we are too cheap for this guy - work out our highest streamvelocity in order to do so
+		ControlConnection cc = mina.getCCM().getCCWithId(sellerNodeId);
+		if (cc == null)
+			return;
+		// TODO Real-time streamvelocity
+		StreamVelocity sv = StreamVelocity.LowestCost;
+		LCPair[] lcps = cc.getLCPairs();
+		for (LCPair lcp : lcps) {
+			if (lcp.getSM().getStreamVelocity() == StreamVelocity.MaxRate)
+				sv = StreamVelocity.MaxRate;
+		}
+		if (!canListenTo(as, sv)) {
+			log.debug("Failed to successfully bid with " + sellerNodeId + ": they're full and/or we are cheap");
+			for (LCPair lcp : lcps) {
+				lcp.agoricsFailure();
+			}
+			return;
+		}
+		// We can listen to this auctionstate... just some networking wibbles maybe
+		// Fire off a task to open bidding again when we're allowed
+		mina.getExecutor().schedule(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				openBidding(sellerNodeId);
+			}
+		}, as.getBidsOpen(), TimeUnit.MILLISECONDS);
+	}
+
+	public void newAuctionState(final String nodeId, final AuctionState as) {
 		as.setTimeReceived(now());
-		List<Attempt> attempts = null;
 		boolean gotConfirmedBid;
-		// When next should we consider bidding on this auction?
-		Date considerBiddingTime = null;
 		synchronized (this) {
 			// Check our quoted bid, check it conforms to the last one we sent
 			AuctionState oldAs = asMap.get(nodeId);
@@ -399,25 +390,14 @@ public class BuyMgr {
 				}
 				double myLastBid = oldAs.getLastSentBid();
 				if (myLastBid > 0) {
-					if (isEmpty(as.getYouAre())) {
-						// I am not in this auction result, and I expect to be -
-						// probably bidding had just finished as our bid arrived, or else we didn't make it into the
-						// top-enough bidders
-						if (onConfirmedBidAttempts.get(nodeId).size() > 0) {
-							final double openingBid = myLastBid;
-							List<Attempt> myAttempts = onConfirmedBidAttempts.remove(nodeId);
-							final Attempt[] myAttemptArr = new Attempt[myAttempts.size()];
-							myAttempts.toArray(myAttemptArr);
-							int openBidTime = as.getBidsOpen();
-							log.debug("Got AS from " + nodeId
-									+ " which I am not in, but expected to be... opening bidding again in "
-									+ openBidTime + "ms");
-							mina.getExecutor().schedule(new CatchingRunnable() {
-								public void doRun() throws Exception {
-									openBidding(nodeId, openingBid, myAttemptArr);
-								}
-							}, openBidTime, TimeUnit.MILLISECONDS);
-						}
+					if (as.getMyBid() == 0) {
+						// Oops, I'm not in this result and I expected to be
+						// Spawn a thread to get out of this sync
+						mina.getExecutor().execute(new CatchingRunnable() {
+							public void doRun() throws Exception {
+								bidFailure(nodeId, as);
+							}
+						});
 					} else {
 						double quotedBid = as.getMyBid();
 						if ((quotedBid - myLastBid) != 0) {
@@ -432,15 +412,13 @@ public class BuyMgr {
 			// Keep track of this AS
 			if (accounts.containsKey(nodeId))
 				accounts.get(nodeId).addRecentAs(as);
-			attempts = onConfirmedBidAttempts.remove(nodeId);
 			gotConfirmedBid = (as.getMyBid() > 0);
 			asMap.put(nodeId, as);
 		}
-		if (gotConfirmedBid && attempts != null) {
-			// We've got a confirmed bid in this auction state - if we've
-			// got attempts waiting on such a thing, fire them
-			for (Attempt a : attempts) {
-				a.succeeded();
+		if (gotConfirmedBid) {
+			// Let everybody know
+			for (LCPair lcp : mina.getCCM().getCCWithId(nodeId).getLCPairs()) {
+				lcp.gotAgreedBid();
 			}
 		}
 		// TODO Poll our interested SMs at intervals to see if our bid should change
@@ -604,8 +582,7 @@ public class BuyMgr {
 		asMap.remove(nodeId);
 		agMap.remove(nodeId);
 		accounts.remove(nodeId);
-		onAcctCloseAttempts.remove(nodeId);
-		onConfirmedBidAttempts.remove(nodeId);
+		accountsInProgress.remove(nodeId);
 	}
 
 	/**

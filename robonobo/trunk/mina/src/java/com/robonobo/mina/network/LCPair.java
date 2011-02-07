@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.robonobo.common.concurrent.Attempt;
 import com.robonobo.common.concurrent.CatchingRunnable;
+import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.common.util.FileUtil;
 import com.robonobo.mina.agoric.AuctionState;
 import com.robonobo.mina.external.buffer.Page;
@@ -32,6 +33,7 @@ public class LCPair extends ConnectionPair {
 	private boolean closing = false;
 	private Map<Long, PageAttempt> reqdPages = new HashMap<Long, PageAttempt>();
 	private boolean setupFinished = false;
+	private Attempt startAttempt;
 	private SourceStatus lastSourceStat;
 	private StreamStatus lastStreamStat;
 	// These below are used to measure page timeouts, all in ms
@@ -40,45 +42,22 @@ public class LCPair extends ConnectionPair {
 	int rto;
 	Future<?> usefulDataTimeout = null;
 
-	public LCPair(StreamMgr sm, ControlConnection cc, SourceStatus ss) throws MinaConnectionException {
-		super(sm, cc);
+	public LCPair(StreamMgr streamMgr, ControlConnection ccon, SourceStatus ss) throws MinaConnectionException {
+		super(streamMgr, ccon);
 		rto = MIN_PAGE_TIMEOUT;
-		lc = cc.getSCF().getListenConnection(cc);
+		lc = ccon.getSCF().getListenConnection(ccon);
 		lc.setLCPair(this);
 		setLastSourceStat(ss);
-		cc.addLCPair(this);
-		startListening();
-	}
-
-	@Override
-	public int getFlowRate() {
-		return lc.getFlowRate();
-	}
-
-	/**
-	 * 
-	 */
-	protected void startListening() {
-		synchronized (this) {
-			if (setupFinished)
-				return;
-		}
-		// If we don't yet have a confirmed bid, make one, and call us back when
-		// they do
-		// TODO: We might need to change our bid if this new stream demands a
-		// higher rate
-		final String nodeId = cc.getNodeId();
-		if (mina.getConfig().isAgoric() && mina.getBuyMgr().getAgreedBidTo(nodeId) <= 0) {
-			mina.getBuyMgr().gotAgorics(cc.getNodeId(), lastSourceStat.getAgorics());
-			mina.getBuyMgr().newAuctionState(cc.getNodeId(), new AuctionState(lastSourceStat.getAuctionState()));
-			// Set our timeout to 8 * command timeout, to allow time to open an
-			// auction and for bids to go to and fro
-			Attempt a = new Attempt(mina.getExecutor(), 8 * mina.getConfig().getMessageTimeout() * 1000, "lcp-"
+		ccon.addLCPair(this);
+		// If we have an account and an agreed bid with these guys already, we can start listening now
+		final String nodeId = ccon.getNodeId();
+		if (mina.getConfig().isAgoric() && mina.getBuyMgr().getAgreedBidTo(nodeId) > 0)
+			startListening();
+		else {
+			// No account/agreed bid yet
+			// BuyMgr will post back to us when we get an agreed bid - start an attempt to shut us down if we fail
+			startAttempt = new Attempt(mina.getExecutor(), 8 * mina.getConfig().getMessageTimeout() * 1000, "lcp-"
 					+ sm.getStreamId() + "-" + nodeId) {
-				protected void onSuccess() {
-					startListening();
-				}
-
 				protected void onTimeout() {
 					log.error("Timeout attempting to set up connection to " + nodeId + " for stream "
 							+ sm.getStreamId());
@@ -86,11 +65,29 @@ public class LCPair extends ConnectionPair {
 					die(false);
 				}
 			};
-			a.start();
-			mina.getBuyMgr().setupAccountAndBid(nodeId, sm.getBidStrategy().getOpeningBid(nodeId), a);
-			return;
+			startAttempt.start();
+			mina.getBuyMgr().setupAccount(ss);
 		}
+	}
 
+	@Override
+	public int getFlowRate() {
+		return lc.getFlowRate();
+	}
+
+	public void gotAgreedBid() {
+		if (setupFinished)
+			return;
+		// w00t, let's go
+		startListening();
+	}
+
+	protected void startListening() {
+		if (setupFinished)
+			throw new SeekInnerCalmException();
+		setupFinished = true;
+		if (startAttempt != null)
+			startAttempt.cancel();
 		// Let's get this party started
 		sm.getPRM().notifyStreamStatus(cc.getNodeId(), lastStreamStat);
 		SortedSet<Long> newPages = sm.getPRM().getPagesToRequest(cc.getNodeId(), 1, reqdPages.keySet());
@@ -111,11 +108,12 @@ public class LCPair extends ConnectionPair {
 				rpa.start();
 			}
 		}
-		synchronized (this) {
-			setupFinished = true;
-		}
 	}
 
+	public void agoricsFailure() {
+		die(true);
+	}
+	
 	public void notifySourceStatus(SourceStatus sourceStat) {
 		setLastSourceStat(sourceStat);
 		for (StreamStatus streamStat : sourceStat.getSsList()) {

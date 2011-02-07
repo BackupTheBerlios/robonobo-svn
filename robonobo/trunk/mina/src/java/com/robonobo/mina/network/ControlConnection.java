@@ -46,9 +46,11 @@ public class ControlConnection implements PushDataReceiver {
 	protected Set<LCPair> lcPairs;
 	protected Set<BCPair> bcPairs;
 	protected List<MessageHolder> waitingMsgs; // Messages received before Hello
-	protected boolean handshakeComplete;
-	protected boolean closing;
+	protected boolean handshakeComplete = false;
+	protected boolean closing = false;
 	protected boolean closed = false;
+	protected Attempt closeAttempt;
+	protected String closeReason = null;
 	protected EndPoint theirEp;
 	protected EndPoint myEp;
 	/** This provides Broadcast/Listen connections associated with this CC */
@@ -60,6 +62,7 @@ public class ControlConnection implements PushDataReceiver {
 	private ByteBufferInputStream incoming;
 	private String msgName = null;
 	private int serialMsgLength = -1;
+	private Date creationDate = new Date();
 
 	private ControlConnection(MinaInstance mina) {
 		this.mina = mina;
@@ -67,8 +70,6 @@ public class ControlConnection implements PushDataReceiver {
 		lcPairs = new HashSet<LCPair>();
 		bcPairs = new HashSet<BCPair>();
 		waitingMsgs = new ArrayList<MessageHolder>();
-		handshakeComplete = false;
-		closing = false;
 	}
 
 	/** Called when we are connecting to a remote endpoint */
@@ -122,6 +123,10 @@ public class ControlConnection implements PushDataReceiver {
 		dataChan.setDataReceiver(this);
 	}
 
+	public long getAge() {
+		return msElapsedSince(creationDate);
+	}
+	
 	@Override
 	public String toString() {
 		return "CC[" + nodeId + "]";
@@ -162,6 +167,8 @@ public class ControlConnection implements PushDataReceiver {
 			helloAttempt.cancel();
 		if (pingAttempt != null)
 			pingAttempt.cancel();
+		if(closeAttempt != null)
+			closeAttempt.cancel();
 		dataChan.close();
 		closed = true;
 	}
@@ -413,8 +420,10 @@ public class ControlConnection implements PushDataReceiver {
 	private void closeIfUnused() {
 		if (closing)
 			return;
-		if (!isInUse())
-			closeGracefully("Connection no longer in use");
+		if (!isInUse()) {
+			closeReason = "Connection no longer in use";
+			closeGracefully();
+		}
 	}
 
 	private synchronized boolean isInUse() {
@@ -422,47 +431,45 @@ public class ControlConnection implements PushDataReceiver {
 				|| bcPairs.size() > 0;
 	}
 
+	public void closeGracefully(String reason) {
+		closeReason = reason;
+		closeGracefully();
+	}
+	
 	/**
 	 * Shuts down any pending state we have with the other end, eg currency accounts. Guaranteed to close down after a
 	 * timeout, whatever happens with state. Note: this method will return immediately - check isClosed() to see if the
 	 * closing process has finished.
 	 */
-	public void closeGracefully(String reason) {
-		if (closing || closed)
-			return;
+	public void closeGracefully() {
+		synchronized (this) {
+			if (closing || closed)
+				return;
+			if (closeAttempt == null) {
+				closeAttempt = new CloseCCAttempt();
+				closeAttempt.start();
+			}
+		}
 		// If we have an account with them, or they with us, close it before we
 		// quit
 		if (mina.getConfig().isAgoric() && mina.getSellMgr().haveActiveAccount(nodeId)) {
 			log.debug(this + ": not closing yet as they have an account with us");
-			CloseCCAttempt soc = new CloseCCAttempt(reason);
-			soc.start();
-			mina.getSellMgr().closeAccount(nodeId, soc);
+			// SellMgr will call closeGracefully() on us when acct is closed
+			mina.getSellMgr().closeAccount(nodeId);
 			return;
 		}
 		if (mina.getConfig().isAgoric() && mina.getBuyMgr().haveActiveAccount(nodeId)) {
 			log.debug(this + ": not closing yet as we have an account with them");
-			CloseCCAttempt boc = new CloseCCAttempt(reason);
-			boc.start();
-			mina.getBuyMgr().closeAccount(nodeId, boc);
+			// BuyMgr will call closeGracefully() on us when acct is closed
+			mina.getBuyMgr().closeAccount(nodeId);
 			return;
 		}
-		close(reason);
+		close();
 	}
 
 	private class CloseCCAttempt extends Attempt {
-		private String closeReason;
-
-		public CloseCCAttempt(String closeReason) {
+		public CloseCCAttempt() {
 			super(mina.getExecutor(), mina.getConfig().getMessageTimeout() * 1000, "CloseCC-" + nodeId);
-			this.closeReason = closeReason;
-		}
-
-		protected void onSuccess() {
-			if (closed || closing)
-				return;
-			// DEBUG
-			log.debug(ControlConnection.this + " attempt succeeded - closing gracefully");
-			closeGracefully(closeReason);
 		}
 
 		protected void onFail() {

@@ -1,5 +1,7 @@
 package com.robonobo.mina.agoric;
 
+import static com.robonobo.common.util.TextUtil.*;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -7,6 +9,7 @@ import java.util.List;
 
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.common.util.Modulo;
+import com.robonobo.common.util.TextUtil;
 import com.robonobo.mina.message.proto.MinaProtocol.AuctionStateMsg;
 import com.robonobo.mina.message.proto.MinaProtocol.ReceivedBid;
 
@@ -44,6 +47,8 @@ public class AuctionState {
 	List<ReceivedBid> bids = new ArrayList<ReceivedBid>();
 	/** This is not serialized, just allows quick retrieval of my bid */
 	int myBidIndex = -1;
+	/** Max number of listeners with flow rate > 0 that the source can support */
+	int maxRunningListeners;
 	/** Underlying message */
 	AuctionStateMsg asm;
 
@@ -52,6 +57,7 @@ public class AuctionState {
 		bidsOpen = asm.hasBidsOpen() ? asm.getBidsOpen() : 0;
 		youAre = asm.getYouAre();
 		index = asm.getIndex();
+		maxRunningListeners = asm.getMaxRunningListeners();
 		for (ReceivedBid recBid : asm.getBidList()) {
 			bids.add(recBid);
 		}
@@ -64,7 +70,7 @@ public class AuctionState {
 	}
 	
 	public double getMyBid() {
-		if (youAre == null || youAre.length() == 0)
+		if (isEmpty(youAre))
 			return 0;
 		calcMyBidIndex();
 		// Bug huntin
@@ -131,5 +137,9 @@ public class AuctionState {
 
 	public void setBids(List<ReceivedBid> bids) {
 		this.bids = bids;
+	}
+
+	public int getMaxRunningListeners() {
+		return maxRunningListeners;
 	}
 }

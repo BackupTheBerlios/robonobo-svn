@@ -86,7 +86,7 @@ public class BCPair extends ConnectionPair {
 	}
 
 	/**
-	 * @syncpriority 120
+	 * @syncpriority 140
 	 */
 	public void requestPages(List<Long> pages) {
 		if (mina.getCCM().isShuttingDown()) {
@@ -126,8 +126,17 @@ public class BCPair extends ConnectionPair {
 			if (auctStatIdx < 0) {
 				// Ask again when they've paid up
 				ReqPage rp = ReqPage.newBuilder().setStreamId(sm.getStreamId()).addAllPage(pages).build();
-				mina.getSellMgr().msgPendingAgreedBid(new MessageHolder("ReqPage", rp, cc, TimeUtil.now()));
-				return;
+				MessageHolder mh = new MessageHolder("ReqPage", rp, cc, TimeUtil.now());
+				if (!mina.getSellMgr().haveActiveAccount(cc.getNodeId())) {
+					mina.getSellMgr().msgPendingActiveAccount(mh);
+					return;
+				}
+				if (!mina.getSellMgr().haveAgreedBid(cc.getNodeId())) {
+					mina.getSellMgr().msgPendingAgreedBid(mh);
+					return;
+				}
+				// wtf? we have an account and an agreed bid, something's not right
+				log.error(this+" failed to charge sellmgr, but i'm not sure why!");
 			} else {
 				for (Long pn : pages) {
 					if (failedPages == null || !failedPages.contains(pn))

@@ -3,13 +3,10 @@ package com.robonobo.mina.instance;
 import static com.robonobo.common.util.TimeUtil.*;
 
 import java.util.*;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 
 import com.robonobo.common.concurrent.*;
-import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.core.api.proto.CoreApi.Node;
 import com.robonobo.mina.message.proto.MinaProtocol.DontWantSource;
 import com.robonobo.mina.message.proto.MinaProtocol.ReqSourceStatus;
@@ -29,36 +26,36 @@ public class SourceMgr {
 	static final int SOURCE_CHECK_FREQ = 30; // Secs
 	private MinaInstance mina;
 	Log log;
-	/** Map<StreamId, Map<NodeId, SourceStatus>> sources that are ready to go */
 	private Map<String, Map<String, SourceStatus>> readySources = new HashMap<String, Map<String, SourceStatus>>();
 	/** Stream IDs that want sources */
 	private Set<String> wantSources = new HashSet<String>();
-	private SortedSet<SourceDetails> orderedSources = new TreeSet<SourceDetails>();
-	private Map<String, SourceDetails> sourcesById = new HashMap<String, SourceDetails>();
+	/** Information on possible sources, including when to query them next */
+	private Map<String, SourceDetails> possSourcesById = new HashMap<String, SourceDetails>();
+	/**
+	 * Which sources to query next - this is not kept updated for performance, so there might be stale
+	 * entries in here - possSourcesById contains authoritative next query times
+	 */
+	private Queue<PossibleSource> possSourceQ = new PriorityQueue<PossibleSource>();
+	private Timeout queryTimeout;
 	/** Batch up source requests, to avoid repeated requests to the same nodes */
 	private WantSourceBatcher wsBatch;
 	private Map<String, ReqSourceStatusBatcher> rssBatchers = new HashMap<String, ReqSourceStatusBatcher>();
-
-	private ScheduledFuture<?> queryTask;
 
 	public SourceMgr(MinaInstance mina) {
 		this.mina = mina;
 		log = mina.getLogger(getClass());
 		wsBatch = new WantSourceBatcher();
-	}
-
-	public void start() {
-		queryTask = mina.getExecutor().scheduleAtFixedRate(new CatchingRunnable() {
+		queryTimeout = new Timeout(mina.getExecutor(), new CatchingRunnable() {
 			public void doRun() throws Exception {
 				querySources();
 			}
-		}, SOURCE_CHECK_FREQ, SOURCE_CHECK_FREQ, TimeUnit.SECONDS);
+		});
 	}
 
 	public void stop() {
-		queryTask.cancel(true);
+		queryTimeout.cancel();
 	}
-
+	
 	/**
 	 * Tells the network we want sources
 	 * 
@@ -117,7 +114,7 @@ public class SourceMgr {
 		cacheSourceInitially(source, streamId);
 		SourceDetails sd;
 		synchronized (this) {
-			sd = sourcesById.get(source.getId());
+			sd = possSourcesById.get(source.getId());
 		}
 		queryStatus(sd, sm.tolerateDelay());
 	}
@@ -126,15 +123,13 @@ public class SourceMgr {
 		// Remove it from our list of waiting sources - sm.foundSource() might add it again
 		synchronized (this) {
 			String sourceId = sourceStat.getFromNode().getId();
-			SourceDetails sd = sourcesById.get(sourceId);
+			SourceDetails sd = possSourcesById.get(sourceId);
 			if (sd != null) {
 				for (StreamStatus ss : sourceStat.getSsList()) {
 					sd.streamIds.remove(ss.getStreamId());
 				}
-				if (sd.streamIds.size() == 0) {
-					sourcesById.remove(sourceId);
-					orderedSources.remove(sd);
-				}
+				if (sd.streamIds.size() == 0)
+					possSourcesById.remove(sourceId);
 			}
 		}
 		for (StreamStatus streamStat : sourceStat.getSsList()) {
@@ -172,67 +167,69 @@ public class SourceMgr {
 		cacheSourceUntil(node, streamId, 1000 * mina.getConfig().getInitialSourceQueryTime(), "initial query");
 	}
 
-	private synchronized void cacheSourceUntil(Node node, String streamId, int waitMs, String reason) {
-		Date waitUntil = timeInFuture(waitMs);
-		SourceDetails sourceDetails;
-		if (sourcesById.containsKey(node.getId())) {
-			sourceDetails = sourcesById.get(node.getId());
-			// Make sure we're waiting on this stream
-			if (!sourceDetails.streamIds.contains(streamId)) {
-				sourceDetails.streamIds.add(streamId);
-				orderedSources.remove(sourceDetails);
-			}
-			// See if we should check sooner
-			if (sourceDetails.nextQuery.after(waitUntil))
-				orderedSources.remove(sourceDetails);
-			sourceDetails.nextQuery = waitUntil;
-			// If this wasn't previously removed, this will do nothing
-			orderedSources.add(sourceDetails);
-			sourcesById.put(node.getId(), sourceDetails);
-		} else {
-			sourceDetails = new SourceDetails(node, waitUntil, waitMs * 2);
-			sourceDetails.streamIds.add(streamId);
-			orderedSources.add(sourceDetails);
-			sourcesById.put(node.getId(), sourceDetails);
+	/** Must only be called from inside sync block! 
+	 */
+	private void setTimeout() {
+		PossibleSource ps = possSourceQ.peek();
+		if(ps == null) {
+			queryTimeout.clear();
+			return;
 		}
-		// DEBUG
-		log.debug("Caching source " + node.getId() + " for stream " + streamId + " (" + reason + ") until "
-				+ getTimeFormat().format(waitUntil) + " - now have " + sourceDetails.streamIds.size() + " ss count");
+		queryTimeout.set(msUntil(ps.nextQ));
+	}
+	
+	private synchronized void cacheSourceUntil(Node node, String streamId, int waitMs, String reason) {
+		Date nextQ = timeInFuture(waitMs);
+		SourceDetails sd;
+		if(log.isDebugEnabled())
+			log.debug("Caching source "+node.getId()+" for stream "+streamId+" until "+getTimeFormat().format(nextQ));
+		boolean addSourceToQ = false;
+		if (possSourcesById.containsKey(node.getId())) {
+			sd = possSourcesById.get(node.getId());
+			if(nextQ.before(sd.nextQ)) {
+				sd.nextQ = nextQ;
+				addSourceToQ = true;
+			}
+			if (!sd.streamIds.contains(streamId))
+				sd.streamIds.add(streamId);
+		} else {
+			sd = new SourceDetails(node, nextQ, waitMs * 2);
+			sd.streamIds.add(streamId);
+			addSourceToQ = true;
+			possSourcesById.put(node.getId(), sd);
+		}
+		// This might result in duplicate entries in possSourceQ, but we live with that by checking the nextQ time in
+		// possSourcesById when we pop off possSourceQ
+		if(addSourceToQ) {
+			possSourceQ.add(new PossibleSource(node.getId(), nextQ));
+			setTimeout();
+		}
 	}
 
 	/** Query all sources whose time has come */
 	private void querySources() {
-		// DEBUG - all the logging in this method should be removed
-		log.debug("Querying sources");
 		while (true) {
-			SourceDetails sourceDetails;
+			SourceDetails sd;
 			synchronized (this) {
-				StringBuffer sb = new StringBuffer("Inspecting sources for query: ");
-				for (SourceDetails sd : orderedSources) {
-					sb.append(sd).append(" ");
+				if (possSourceQ.size() == 0)
+					return;
+				PossibleSource ps = possSourceQ.peek();
+				Date now = now();
+				if(ps.nextQ.after(now)) {
+					setTimeout();
+					return;
 				}
-				log.debug(sb);
-
-				if (orderedSources.size() == 0)
-					return;
-				sourceDetails = orderedSources.first();
-				if (sourceDetails.nextQuery.after(now()))
-					return;
-
-				// DEBUG - are we removing these damn things?
-				int szBefore = orderedSources.size();
-				orderedSources.remove(sourceDetails);
-				if (orderedSources.size() == szBefore)
-					throw new SeekInnerCalmException("flarp!");
-
-				Node source = sourceDetails.node;
-				sourcesById.remove(source.getId());
-
-				log.debug("Examining source " + sourceDetails);
-
+				possSourceQ.remove();
+				sd = possSourcesById.get(ps.nodeId);
+				if(sd == null || sd.nextQ.after(now)) {
+					// Duff entry in possSourceQ, just continue
+					continue;
+				}
+				Node source = sd.node;
+				possSourcesById.remove(source.getId());
 				// Check that we still want sources for all these streams
 				boolean wantIt = false;
-				for (String sid : sourceDetails.streamIds) {
+				for (String sid : sd.streamIds) {
 					if (wantSources.contains(sid)) {
 						wantIt = true;
 						break;
@@ -240,29 +237,24 @@ public class SourceMgr {
 				}
 				if (!wantIt)
 					continue;
-
-				log.debug("Approved source " + sourceDetails);
-				if (sourceDetails.retries < mina.getConfig().getSourceQueryRetries()) {
+				if (sd.retries < mina.getConfig().getSourceQueryRetries()) {
 					// Re-add it again in case it doesn't answer - if it does, it'll get removed
-					sourceDetails.retries = sourceDetails.retries + 1;
-					sourceDetails.nextQuery = timeInFuture(sourceDetails.retryAfterMs);
-					sourceDetails.retryAfterMs = sourceDetails.retryAfterMs * 2;
-					log.debug("Re-adding source " + sourceDetails);
-					orderedSources.add(sourceDetails);
-					sourcesById.put(source.getId(), sourceDetails);
+					sd.retries = sd.retries + 1;
+					sd.nextQ = timeInFuture(sd.retryAfterMs);
+					sd.retryAfterMs = sd.retryAfterMs * 2;
+					possSourceQ.add(new PossibleSource(source.getId(), sd.nextQ));
+					possSourcesById.put(source.getId(), sd);
+					if(log.isDebugEnabled())
+						log.debug("Setting retry time for possible source "+source.getId()+" to "+getTimeFormat().format(sd.nextQ));
 				}
-
-				List<String> sidList = new ArrayList<String>();
-				for (String sid : sourceDetails.streamIds) {
-					sidList.add(sid);
-				}
-				log.debug("Querying source " + sourceDetails);
 			}
-			queryStatus(sourceDetails, true);
+			queryStatus(sd, true);
 		}
 	}
 
 	private void queryStatus(SourceDetails sd, boolean tolerateDelay) {
+		if(log.isDebugEnabled())
+			log.debug("Querying source "+sd.node.getId()+" for streams "+sd.streamIds);
 		if (tolerateDelay) {
 			ReqSourceStatusBatcher rssb;
 			synchronized (this) {
@@ -343,43 +335,35 @@ public class SourceMgr {
 		}
 	}
 
+	class PossibleSource implements Comparable<PossibleSource> {
+		String nodeId;
+		Date nextQ;
+
+		public PossibleSource(String nodeId, Date nextQ) {
+			this.nodeId = nodeId;
+			this.nextQ = nextQ;
+		}
+
+		@Override
+		public int compareTo(PossibleSource o) {
+			return nextQ.compareTo(o.nextQ);
+		}
+	}
+
 	/**
 	 * A source that we do not need now, but which we might need in a bit
 	 */
-	class SourceDetails implements Comparable<SourceDetails> {
+	class SourceDetails {
 		Node node;
 		Set<String> streamIds = new HashSet<String>();
-		Date nextQuery;
+		Date nextQ;
 		int retryAfterMs;
 		int retries = 0;
 
-		public SourceDetails(Node node, Date nextQuery, int retryAfterMs) {
+		public SourceDetails(Node node, Date nextQ, int retryAfterMs) {
 			this.node = node;
-			this.nextQuery = nextQuery;
+			this.nextQ = nextQ;
 			this.retryAfterMs = retryAfterMs;
-		}
-
-		public int compareTo(SourceDetails o) {
-			return nextQuery.compareTo(o.nextQuery);
-		}
-
-		@Override
-		public int hashCode() {
-			return node.getId().hashCode();
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (!(obj instanceof SourceDetails))
-				return false;
-			SourceDetails o = (SourceDetails) obj;
-			return node.getId().equals(o.node.getId());
-		}
-
-		@Override
-		public String toString() {
-			return "SD[" + node.getId() + ",nextq=" + getTimeFormat().format(nextQuery) + ",retries=" + retries
-					+ ",retA=" + retryAfterMs + ",sids=" + streamIds + "]";
 		}
 	}
 
@@ -396,9 +380,11 @@ public class SourceMgr {
 	}
 
 	/**
-	 * Use UniqueBatcher here as if we get multiple GotSources for the same node in quick succession, we'll have duplicate stream ids
+	 * Use UniqueBatcher here as if we get multiple GotSources for the same node in quick succession, we'll have
+	 * duplicate stream ids
+	 * 
 	 * @author macavity
-	 *
+	 * 
 	 */
 	class ReqSourceStatusBatcher extends UniqueBatcher<String> {
 		Node source;

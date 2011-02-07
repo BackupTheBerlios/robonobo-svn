@@ -240,22 +240,8 @@ public class StreamConnsMgr {
 				log.debug("Making connection to " + nodeId + " for listening to " + sm.getStreamId());
 				mina.getCCM().makeCCTo(node, getCCAttempt);
 			}
-		} else {
-			// Already connected to this node
-			// There is an edge case here where we have a connection to the node, but we have already asked them to close our account and shut down. This
-			// isn't the end of the world - we'll just fail and the sourcemgr will ask them again in a bit - but it leaves the user hanging unnecessarily, so we
-			// hack a bit and just try again in 5s
-			if(mina.getBuyMgr().accountIsClosing(nodeId)) {
-				log.debug("Not connecting to "+nodeId+" as we're closing acct - sleeping 5s and trying again");
-				mina.getExecutor().schedule(new CatchingRunnable() {
-					public void doRun() throws Exception {
-						makeListenConnectionTo(ss);
-					}
-				}, 5, TimeUnit.SECONDS);
-				return;
-			}
+		} else
 			startListeningTo(cc, ss);
-		}
 	}
 
 	/**

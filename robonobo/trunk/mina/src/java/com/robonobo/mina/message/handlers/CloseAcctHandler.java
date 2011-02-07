@@ -11,7 +11,7 @@ public class CloseAcctHandler extends AbstractMessageHandler {
 	@Override
 	public void handleMessage(MessageHolder mh) {
 		if(mina.getConfig().isAgoric())
-			mina.getSellMgr().closeAccount(mh.getFromCC().getNodeId(), null);
+			mina.getSellMgr().closeAccount(mh.getFromCC().getNodeId());
 	}
 
 	@Override

@@ -265,7 +265,6 @@ public class MinaInstance implements MinaControl {
 		try {
 			log.info(Tagline.getTagLine());
 			netMgr.start();
-			sourceMgr.start();
 			started = true;
 			eventMgr.fireMinaStarted();
 		} catch (MinaException e) {

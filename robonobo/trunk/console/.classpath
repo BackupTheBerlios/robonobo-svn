@@ -7,5 +7,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/eon"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/mina"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/plugin-mp3"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/api"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

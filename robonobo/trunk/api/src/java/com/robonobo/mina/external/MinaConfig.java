@@ -27,6 +27,7 @@ public class MinaConfig implements Cloneable, Serializable {
 	int locateNodesFreq = 120; // Seconds
 	int maxSources = 16; // Maximum number of sources to receive from - per
 	// stream
+	int maxRunningListeners = 8; // Max number of nodes receiving from us at more than 0bps - global
 	int logRateFreq = 1000; // Millisecs - 0 to disable
 	boolean logFlowRates = false;
 	boolean locateLocalNodes = true;
@@ -431,5 +432,13 @@ public class MinaConfig implements Cloneable, Serializable {
 
 	public void setInitialSourceQueryTime(int initialSourceQueryTime) {
 		this.initialSourceQueryTime = initialSourceQueryTime;
+	}
+
+	public int getMaxRunningListeners() {
+		return maxRunningListeners;
+	}
+
+	public void setMaxRunningListeners(int maxListeners) {
+		this.maxRunningListeners = maxListeners;
 	}
 }
