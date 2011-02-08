@@ -165,20 +165,23 @@ public class CCMgr {
 	}
 
 	/**
-	 * @syncpriority 140
+	 * @syncpriority 170
 	 */
-	public synchronized ConnectedNode[] getConnectedNodes() {
-		ConnectedNode[] ids = new ConnectedNode[cons.size()];
-		Iterator<ControlConnection> iter = cons.values().iterator();
-		int i = 0;
-		while (iter.hasNext()) {
-			ControlConnection cc = iter.next();
-			ConnectedNode node = buildConnectedNode(cc);
-			ids[i++] = node;
+	public List<ConnectedNode> getConnectedNodes() {
+		List<ControlConnection> ccList;
+		synchronized(this) {
+			ccList = new ArrayList<ControlConnection>(cons.values());
 		}
-		return ids;
+		List<ConnectedNode> result = new ArrayList<ConnectedNode>(ccList.size());
+		for (ControlConnection cc : ccList) {
+			result.add(buildConnectedNode(cc));
+		}
+		return result;
 	}
 
+	/**
+	 * @syncpriority 170
+	 */
 	public ConnectedNode buildConnectedNode(ControlConnection cc) {
 		ConnectedNode node = new ConnectedNode();
 		String nodeId = cc.getNodeId();
@@ -394,7 +397,7 @@ public class CCMgr {
 	}
 
 	/**
-	 * @syncpriority 140
+	 * @syncpriority 170
 	 */
 	public void notifyDeadConnection(ControlConnection cc) {
 		String nodeId = cc.getNodeId();

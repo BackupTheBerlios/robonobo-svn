@@ -206,7 +206,7 @@ public class PageRequestMgr {
 		if (sm.getPageBuffer().getAvgPageSize() <= 0)
 			return MIN_PAGE_WINDOW;
 		float windowSecs = mina.getConfig().getPageWindowTime() / 1000;
-		int windowBytes = (int) (windowSecs * sm.getReceivingFlowRate());
+		int windowBytes = (int) (windowSecs * sm.getListeningFlowRate());
 		int result = (int) (windowBytes / sm.getPageBuffer().getAvgPageSize());
 		if (result < MIN_PAGE_WINDOW)
 			result = MIN_PAGE_WINDOW;

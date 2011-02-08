@@ -35,7 +35,7 @@ public interface MinaControl {
 
 	public List<String> getMyEndPointUrls();
 
-	public ConnectedNode[] getConnectedNodes();
+	public List<ConnectedNode> getConnectedNodes();
 
 	public List<String> getConnectedSources(String streamId);
 	

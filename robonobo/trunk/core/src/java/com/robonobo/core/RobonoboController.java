@@ -206,7 +206,7 @@ public class RobonoboController {
 	}
 
 	public List<ConnectedNode> getConnectedNodes() {
-		return Arrays.asList(inst.getMina().getConnectedNodes());
+		return inst.getMina().getConnectedNodes();
 	}
 
 	public List<String> getConnectedSources(String streamId) {

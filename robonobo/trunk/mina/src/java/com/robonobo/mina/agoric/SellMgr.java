@@ -31,6 +31,8 @@ import com.robonobo.mina.network.ControlConnection;
 
 /**
  * Handles auctions of this node's bandwidth, and accounts that others have with us
+ * 
+ * @syncpriority 160
  */
 public class SellMgr {
 	MinaInstance mina;
@@ -85,56 +87,62 @@ public class SellMgr {
 		});
 	}
 
-	public AuctionStateMsg getState(String forNodeId) {
+	/**
+	 * @syncpriority 160
+	 */
+	private synchronized AuctionStateMsg getState(String forNodeId) {
 		return getState(true, forNodeId);
 	}
 
-	public AuctionStateMsg getState(boolean useCache, String forNodeId) {
-		synchronized (this) {
-			if (useCache && cachedStateMsg != null
-					&& timeInPast(mina.getConfig().getAuctionStateCacheTime()).before(cachedStateTime)) {
-				AuctionStateMsg.Builder bldr = AuctionStateMsg.newBuilder(cachedStateMsg);
-				if (agreedBids.containsKey(forNodeId))
-					bldr.setYouAre(getNodeIdToken(forNodeId));
-				else
-					bldr.clearYouAre();
-				if (bidFrozen.contains(forNodeId) && now().before(openForBidsTime))
-					bldr.setBidsOpen((int) msUntil(openForBidsTime));
-				else
-					bldr.clearBidsOpen();
-				return bldr.build();
-			}
+	/** Must only be called inside sync block */
+	private AuctionStateMsg getState(boolean useCache, String forNodeId) {
+		if (useCache && cachedStateMsg != null
+				&& timeInPast(mina.getConfig().getAuctionStateCacheTime()).before(cachedStateTime)) {
+			AuctionStateMsg.Builder bldr = AuctionStateMsg.newBuilder(cachedStateMsg);
+			if (agreedBids.containsKey(forNodeId))
+				bldr.setYouAre(getNodeIdToken(forNodeId));
+			else
+				bldr.clearYouAre();
+			if (bidFrozen.contains(forNodeId) && now().before(openForBidsTime))
+				bldr.setBidsOpen((int) msUntil(openForBidsTime));
+			else
+				bldr.clearBidsOpen();
+			return bldr.build();
 		}
 		AuctionStateMsg.Builder asmBldr = AuctionStateMsg.newBuilder();
 		asmBldr.setMaxRunningListeners(mina.getConfig().getMaxRunningListeners());
-		ConnectedNode[] conNodes = mina.getCCM().getConnectedNodes();
-		synchronized (this) {
-			asmBldr.setIndex(stateIndex);
-			// If we have an agreed bid for this guy, he's not allowed to bid until we open again - if he's a new node,
-			// he can bid when he likes
-			if (bidFrozen.contains(forNodeId) && now().before(openForBidsTime))
-				asmBldr.setBidsOpen((int) msUntil(openForBidsTime));
-			if (agreedBids.containsKey(forNodeId))
-				asmBldr.setYouAre(getNodeIdToken(forNodeId));
-			for (ConnectedNode cn : conNodes) {
-				if (agreedBids.containsKey(cn.nodeId)) {
-					ReceivedBid.Builder bidBldr = ReceivedBid.newBuilder();
-					bidBldr.setListenerId(getNodeIdToken(cn.nodeId));
-					bidBldr.setBid(agreedBids.get(cn.nodeId));
-					bidBldr.setFlowRate(cn.uploadRate);
-					asmBldr.addBid(bidBldr);
-				}
+		List<ConnectedNode> conNodes = mina.getCCM().getConnectedNodes();
+		asmBldr.setIndex(stateIndex);
+		// If we have an agreed bid for this guy, he's not allowed to bid until we open again - if he's a new node,
+		// he can bid when he likes
+		if (bidFrozen.contains(forNodeId) && now().before(openForBidsTime))
+			asmBldr.setBidsOpen((int) msUntil(openForBidsTime));
+		if (agreedBids.containsKey(forNodeId))
+			asmBldr.setYouAre(getNodeIdToken(forNodeId));
+		for (ConnectedNode cn : conNodes) {
+			if (agreedBids.containsKey(cn.nodeId)) {
+				ReceivedBid.Builder bidBldr = ReceivedBid.newBuilder();
+				bidBldr.setListenerId(getNodeIdToken(cn.nodeId));
+				bidBldr.setBid(agreedBids.get(cn.nodeId));
+				bidBldr.setFlowRate(cn.uploadRate);
+				asmBldr.addBid(bidBldr);
 			}
-			cachedStateMsg = asmBldr.build();
-			cachedStateTime = now();
-			return cachedStateMsg;
 		}
+		cachedStateMsg = asmBldr.build();
+		cachedStateTime = now();
+		return cachedStateMsg;
 	}
 
+	/**
+	 * @syncpriority 160
+	 */
 	public synchronized boolean haveAgreedBid(String nodeId) {
 		return agreedBids.containsKey(nodeId);
 	}
 
+	/**
+	 * @syncpriority 160
+	 */
 	public synchronized double getAgreedBidFrom(String nodeId) {
 		if (agreedBids.containsKey(nodeId))
 			return agreedBids.get(nodeId);
@@ -173,7 +181,7 @@ public class SellMgr {
 	}
 
 	/**
-	 * @syncpriority 140
+	 * @syncpriority 160
 	 */
 	public void topUpAccount(String nodeId, byte[] currencyToken) {
 		double tokVal;
@@ -213,11 +221,17 @@ public class SellMgr {
 		handler.handleMessage(mh);
 	}
 
+	/**
+	 * @syncpriority 160
+	 */
 	public synchronized boolean haveActiveAccount(String nodeId) {
 		Account acct = accounts.get(nodeId);
 		return acct != null && (acct.balance > 0) && !acct.needsTopUp;
 	}
 
+	/**
+	 * @syncpriority 160
+	 */
 	public void msgPendingActiveAccount(final MessageHolder mh) {
 		String nodeId = mh.getFromCC().getNodeId();
 		synchronized (this) {
@@ -236,6 +250,9 @@ public class SellMgr {
 		}
 	}
 
+	/**
+	 * @syncpriority 160
+	 */
 	public void msgPendingAgreedBid(final MessageHolder mh) {
 		String nodeId = mh.getFromCC().getNodeId();
 		synchronized (this) {
@@ -257,7 +274,8 @@ public class SellMgr {
 	/**
 	 * If the requesting node has enough ends to pay for the requested bytes, charge their account and return the status
 	 * index used to calculate the charge. Otherwise, sends them a PayUp demand (if they have an account) and return <0
-	 * @syncpriority 140
+	 * 
+	 * @syncpriority 160
 	 */
 	public int requestAndCharge(String nodeId, long numBytes) {
 		double charge;
@@ -285,7 +303,8 @@ public class SellMgr {
 
 	/**
 	 * If the charge fails, will note the account as needing to pay, send out a payup command and adjust gammas
-	 * @syncpriority 140
+	 * 
+	 * @syncpriority 160
 	 * @return Did this charge succeed?
 	 */
 	private boolean chargeAcct(String nodeId, double charge) {
@@ -312,6 +331,9 @@ public class SellMgr {
 		return false;
 	}
 
+	/**
+	 * @syncpriority 160
+	 */
 	public SourceStatus buildSourceStatus(Node reqNode, Collection<StreamStatus> ssList) {
 		SourceStatus.Builder ssBldr = SourceStatus.newBuilder();
 		ssBldr.setFromNode(mina.getNetMgr().getDescriptorForTalkingTo(reqNode, false));
@@ -325,6 +347,9 @@ public class SellMgr {
 		return ssBldr.build();
 	}
 
+	/**
+	 * @syncpriority 160
+	 */
 	public synchronized void removeBidder(String fromNodeId) {
 		if (!(agreedBids.containsKey(fromNodeId) || currentBids.containsKey(fromNodeId))) {
 			log.debug("Not removing bidder " + fromNodeId + ": no current or agreed bid");
@@ -342,6 +367,9 @@ public class SellMgr {
 		updateAuctionStatus();
 	}
 
+	/**
+	 * @syncpriority 160
+	 */
 	public void notifyDeadConnection(String nodeId) {
 		// TODO: We should try and keep their account open so that it's still there when they reconnect - but then we
 		// need a way of synchronizing account state when they reconnect - look at this when we're implementing escrow
@@ -351,6 +379,9 @@ public class SellMgr {
 		removeBidder(nodeId);
 	}
 
+	/**
+	 * @syncpriority 160
+	 */
 	public synchronized void bid(final String bidderNodeId, final double newBid) {
 		if (newBid < mina.getMyAgorics().getMinBid()) {
 			log.error("Ignoring too-low bid " + newBid + " from " + bidderNodeId);
@@ -423,6 +454,9 @@ public class SellMgr {
 		updateAuctionStatus();
 	}
 
+	/**
+	 * @syncpriority 160
+	 */
 	public synchronized void noBid(String fromNodeId) {
 		if (!auctionInProgress) {
 			// wat
@@ -748,7 +782,7 @@ public class SellMgr {
 				}
 				for (String nodeId : buMap.keySet()) {
 					ControlConnection cc = mina.getCCM().getCCWithId(nodeId);
-					if( cc == null)
+					if (cc == null)
 						continue;
 					cc.sendMessage("BidUpdate", buMap.get(nodeId));
 				}
@@ -756,6 +790,9 @@ public class SellMgr {
 		});
 	}
 
+	/**
+	 * @syncpriority 160
+	 */
 	public void closeAccount(String nodeId) {
 		ControlConnection cc = mina.getCCM().getCCWithId(nodeId);
 		if (cc == null)
@@ -789,9 +826,5 @@ public class SellMgr {
 		 */
 		boolean needsTopUp = false;
 		long bytesSinceLastAuction = 0;
-	}
-
-	public synchronized int getStateIndex() {
-		return stateIndex;
 	}
 }

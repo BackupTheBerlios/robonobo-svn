@@ -30,12 +30,10 @@ Rules:
 
 Priorities:
 ===========
-RemoteNodeHandler		210
-StreamManager			200
-DataImporter			190
-StreamConns				160
-BroadcasterCache		150
-CommandBatcher			145
+StreamMgr				200
+StreamConnsMgr			180
+BuyMgr					170
+SellMgr					160
 CCM						140
 LCPair					130
 BCPair					120
@@ -44,11 +42,9 @@ BC						100
 PageRequestManager		90
 DataReceiver			85
 PageBuffer				80
-BroadcastVisitor		70
 CC						60
 BadNodeList				50
 SRT						40
 FlowRateIndicator		30
 SMRegister				25
-CommandIDRegister		20
 LogVisitor				10

@@ -167,7 +167,7 @@ public class MinaInstance implements MinaControl {
 		return config;
 	}
 
-	public ConnectedNode[] getConnectedNodes() {
+	public List<ConnectedNode> getConnectedNodes() {
 		return ccm.getConnectedNodes();
 	}
 
@@ -328,7 +328,7 @@ public class MinaInstance implements MinaControl {
 		// the SMs into it every second - and then every SM makes a copy of its broadcast conns and adds that...
 		for (StreamMgr sm : smRegister.getSMs()) {
 			int upload = sm.getBroadcastingFlowRate();
-			int download = sm.getReceivingFlowRate();
+			int download = sm.getListeningFlowRate();
 			if (upload > 0 || download > 0)
 				result.put(sm.getStreamId(), new TransferSpeed(sm.getStreamId(), download, upload));
 		}

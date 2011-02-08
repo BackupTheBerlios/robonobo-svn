@@ -64,7 +64,7 @@ public class MinaService extends AbstractService {
 		transferSpeedsTask = getRobonobo().getExecutor().scheduleAtFixedRate(new CatchingRunnable() {
 			public void doRun() throws Exception {
 				Map<String, TransferSpeed> speedsByStream = mina.getTransferSpeeds();
-				ConnectedNode[] nodeArr = mina.getConnectedNodes();
+				List<ConnectedNode> nodeArr = mina.getConnectedNodes();
 				Map<String, TransferSpeed> speedsByNode = new HashMap<String, TransferSpeed>();
 				for (ConnectedNode node : nodeArr) {
 					TransferSpeed ts = new TransferSpeed(node.nodeId, node.downloadRate, node.uploadRate);

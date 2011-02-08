@@ -31,6 +31,9 @@ public class DefaultBidStrategy extends BidStrategy {
 	// We can only reduce our bid as the first bid in any auction
 	Map<String, Boolean> canReduceBid = Collections.synchronizedMap(new HashMap<String, Boolean>());
 
+	/**
+	 * @syncpriority 170
+	 */
 	@Override
 	public double getOpeningBid(String nodeId) {
 		AuctionState as = getAuctionState(nodeId);
@@ -49,6 +52,9 @@ public class DefaultBidStrategy extends BidStrategy {
 		return getPreferredBid(bids, ag.getIncrement());
 	}
 
+	/**
+	 * @syncpriority 170
+	 */
 	@Override
 	public double getAnsweringBid(String nodeId, BidUpdate bu) {
 		AuctionState as = getAuctionState(nodeId);
@@ -108,10 +114,16 @@ public class DefaultBidStrategy extends BidStrategy {
 		return mina.getCurrencyClient().getMaxBid(streamVelocity);
 	}
 
+	/**
+	 * @syncpriority 170
+	 */
 	private AuctionState getAuctionState(String nodeId) {
 		return mina.getBuyMgr().getAuctionState(nodeId);
 	}
 
+	/**
+	 * @syncpriority 170
+	 */
 	private Agorics getAgorics(String nodeId) {
 		return mina.getBuyMgr().getAgorics(nodeId);
 	}

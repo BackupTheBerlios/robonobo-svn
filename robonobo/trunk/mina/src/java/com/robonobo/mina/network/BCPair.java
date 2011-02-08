@@ -86,7 +86,7 @@ public class BCPair extends ConnectionPair {
 	}
 
 	/**
-	 * @syncpriority 140
+	 * @syncpriority 160
 	 */
 	public void requestPages(List<Long> pages) {
 		if (mina.getCCM().isShuttingDown()) {

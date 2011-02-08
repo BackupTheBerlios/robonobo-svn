@@ -25,7 +25,7 @@ import com.robonobo.mina.network.LCPair;
 import com.robonobo.mina.util.MinaConnectionException;
 
 /**
- * @syncpriority 160
+ * @syncpriority 180
  */
 public class StreamConnsMgr {
 	private final Log log;
@@ -61,7 +61,7 @@ public class StreamConnsMgr {
 	}
 
 	/**
-	 * @syncpriority 160
+	 * @syncpriority 180
 	 */
 	public synchronized void closeAll() {
 		closeAllListenConns();
@@ -71,7 +71,7 @@ public class StreamConnsMgr {
 	/**
 	 * Close everyone we are broadcasting to
 	 * 
-	 * @syncpriority 160
+	 * @syncpriority 180
 	 */
 	public synchronized void closeAllBroadcastConns() {
 		BCPair[] tmpPairs = new BCPair[bcPairs.size()];
@@ -84,7 +84,7 @@ public class StreamConnsMgr {
 	/**
 	 * Close everyone we are listening to
 	 * 
-	 * @syncpriority 160
+	 * @syncpriority 180
 	 */
 	public synchronized void closeAllListenConns() {
 		ConnectionPair[] tmpPairs = new ConnectionPair[lcPairs.size()];
@@ -97,7 +97,7 @@ public class StreamConnsMgr {
 	/**
 	 * Copied out, so safe to iterate over
 	 * 
-	 * @syncpriority 160
+	 * @syncpriority 180
 	 */
 	public synchronized LCPair[] getAllListenConns() {
 		LCPair[] pairs = new LCPair[lcPairs.size()];
@@ -106,7 +106,7 @@ public class StreamConnsMgr {
 	}
 
 	/**
-	 * @syncpriority 160
+	 * @syncpriority 180
 	 */
 	public synchronized BCPair getBroadcastConn(String nodeId) {
 		return bcPairs.get(nodeId);
@@ -115,7 +115,7 @@ public class StreamConnsMgr {
 	/**
 	 * Copied out, so safe to iterate over
 	 * 
-	 * @syncpriority 160
+	 * @syncpriority 180
 	 */
 	public synchronized BCPair[] getBroadcastConns() {
 		BCPair[] pairs = new BCPair[bcPairs.size()];
@@ -124,7 +124,7 @@ public class StreamConnsMgr {
 	}
 
 	/**
-	 * @syncpriority 160
+	 * @syncpriority 180
 	 */
 	public synchronized LCPair getListenConn(String nodeId) {
 		return lcPairs.get(nodeId);
@@ -133,7 +133,7 @@ public class StreamConnsMgr {
 	/**
 	 * The number of people we are broadcasting to
 	 * 
-	 * @syncpriority 160
+	 * @syncpriority 180
 	 */
 	public synchronized int getNumBroadcastConns() {
 		return bcPairs.size();
@@ -142,14 +142,14 @@ public class StreamConnsMgr {
 	/**
 	 * The number of people we are listening to
 	 * 
-	 * @syncpriority 160
+	 * @syncpriority 180
 	 */
 	public synchronized int getNumListenConns() {
 		return lcPairs.size();
 	}
 
 	/**
-	 * @syncpriority 160
+	 * @syncpriority 180
 	 */
 	public synchronized int getNumLocalLCPairs() {
 		int numPairs = 0;
@@ -163,7 +163,7 @@ public class StreamConnsMgr {
 	}
 
 	/**
-	 * @syncpriority 160
+	 * @syncpriority 180
 	 */
 	public synchronized int getNumPendingCons() {
 		return pendingCons.size();
@@ -180,14 +180,14 @@ public class StreamConnsMgr {
 	}
 
 	/**
-	 * @syncpriority 160
+	 * @syncpriority 180
 	 */
 	public synchronized boolean haveBroadcastConnWithId(String thisNodeId) {
 		return bcPairs.containsKey(thisNodeId);
 	}
 
 	/**
-	 * @syncpriority 160
+	 * @syncpriority 180
 	 */
 	public synchronized boolean haveListenConnWithId(String thisNodeId) {
 		return lcPairs.containsKey(thisNodeId);
@@ -195,7 +195,7 @@ public class StreamConnsMgr {
 
 	/**
 	 * @param pages
-	 * @syncpriority 160
+	 * @syncpriority 180
 	 */
 	public synchronized void makeBroadcastConnectionTo(ControlConnection cc, EndPoint listenEp, List<Long> pages) {
 		if(mina.getCCM().isShuttingDown()) {
@@ -266,7 +266,7 @@ public class StreamConnsMgr {
 	}
 
 	/**
-	 * @syncpriority 160
+	 * @syncpriority 180
 	 */
 	public synchronized void removeConnectionPair(ConnectionPair pair) {
 		if (pair instanceof LCPair) {
@@ -277,7 +277,7 @@ public class StreamConnsMgr {
 	}
 
 	/**
-	 * @syncpriority 160
+	 * @syncpriority 180
 	 */
 	public synchronized void sendToBroadcastConns(String msgName, GeneratedMessage msg, String except) {
 		Iterator<BCPair> i = bcPairs.values().iterator();
@@ -290,14 +290,14 @@ public class StreamConnsMgr {
 	}
 
 	/**
-	 * @syncpriority 160
+	 * @syncpriority 180
 	 */
 	public synchronized void sendToListenConns(String msgName, GeneratedMessage msg) {
 		sendToListenConns(msgName, msg, null);
 	}
 
 	/**
-	 * @syncpriority 160
+	 * @syncpriority 180
 	 */
 	public synchronized void sendToListenConns(String msgName, GeneratedMessage msg, String except) {
 		Iterator<LCPair> i = lcPairs.values().iterator();
@@ -310,7 +310,7 @@ public class StreamConnsMgr {
 	}
 
 	/**
-	 * @syncpriority 160
+	 * @syncpriority 180
 	 */
 	public synchronized void sendToNonLocalBroadcastConns(String msgName, GeneratedMessage msg, String except) {
 		Iterator<BCPair> i = bcPairs.values().iterator();
@@ -325,7 +325,7 @@ public class StreamConnsMgr {
 	}
 
 	/**
-	 * @syncpriority 160
+	 * @syncpriority 180
 	 */
 	private synchronized StreamingNode[] getBroadcastStreamingNodes() {
 		StreamingNode[] bNodes = new StreamingNode[bcPairs.size()];
@@ -338,7 +338,7 @@ public class StreamConnsMgr {
 	}
 
 	/**
-	 * @syncpriority 1n60
+	 * @syncpriority 180
 	 */
 	private synchronized StreamingNode[] getListenStreamingNodes() {
 		int i;
@@ -365,7 +365,7 @@ public class StreamConnsMgr {
 		}
 
 		/**
-		 * @syncpriority 160
+		 * @syncpriority 180
 		 */
 		protected void onFail() {
 			log.info("Failed to connect to " + nodeId + " for stream '" + sm.getStreamId() + "'");
@@ -395,7 +395,7 @@ public class StreamConnsMgr {
 		}
 
 		/**
-		 * @syncpriority 160
+		 * @syncpriority 180
 		 */
 		protected void onTimeout() {
 			onFail();

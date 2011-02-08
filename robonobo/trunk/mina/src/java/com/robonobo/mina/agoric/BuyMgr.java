@@ -29,7 +29,7 @@ import com.robonobo.mina.network.LCPair;
 
 /**
  * Handles accounts we have with other nodes, and their auction states
- * 
+ * @syncpriority 170
  * @author macavity
  */
 public class BuyMgr {
@@ -46,23 +46,29 @@ public class BuyMgr {
 		log = mina.getLogger(getClass());
 	}
 
-	public synchronized boolean haveAuctionState(String nodeId) {
-		return asMap.containsKey(nodeId);
-	}
-
+	/**
+	 * @syncpriority 170
+	 */
 	public synchronized AuctionState getAuctionState(String nodeId) {
 		return asMap.get(nodeId);
 	}
 
+	/**
+	 * @syncpriority 170
+	 */
 	public synchronized Agorics getAgorics(String nodeId) {
 		return agMap.get(nodeId);
 	}
 
+	/**
+	 * @syncpriority 170
+	 */
 	public synchronized boolean haveActiveAccount(String nodeId) {
 		return accounts.containsKey(nodeId);
 	}
 
 	/**
+	 * @syncpriority 170
 	 * @return <=0 if no agreed bid yet
 	 */
 	public synchronized double getAgreedBidTo(String nodeId) {
@@ -74,6 +80,9 @@ public class BuyMgr {
 		return as.getMyBid();
 	}
 
+	/**
+	 * @syncpriority 170
+	 */
 	public synchronized float calculateMyGamma(String nodeId) {
 		Account ac = accounts.get(nodeId);
 		if (ac == null)
@@ -92,6 +101,7 @@ public class BuyMgr {
 	 * Gets the most recent auction status index in nodeId's auction
 	 * 
 	 * @return -1 If no auction status yet received
+	 * @syncpriority 170
 	 */
 	public synchronized int getCurrentStatusIdx(String nodeId) {
 		if (!accounts.containsKey(nodeId))
@@ -102,6 +112,9 @@ public class BuyMgr {
 		return as.getIndex();
 	}
 
+	/**
+	 * @syncpriority 170
+	 */
 	public void setupAccount(SourceStatus ss) {
 		String nodeId = ss.getFromNode().getId();
 		// If our currency client isn't ready yet (fast connection, this one!),
@@ -204,7 +217,7 @@ public class BuyMgr {
 	}
 
 	/**
-	 * @syncpriority 140
+	 * @syncpriority 170
 	 */
 	public void closeAccount(String nodeId) {
 		boolean gotAccount;
@@ -223,6 +236,9 @@ public class BuyMgr {
 			cc.closeGracefully();
 	}
 
+	/**
+	 * @syncpriority 170
+	 */
 	public void accountClosed(String nodeId, byte[] currencyToken) {
 		Account acct;
 		synchronized (this) {
@@ -243,7 +259,9 @@ public class BuyMgr {
 				log.error("Error when depositing token from " + nodeId, e);
 			}
 			log.debug("Successfully closed account with " + nodeId);
-			mina.getCCM().getCCWithId(nodeId).closeGracefully();
+			ControlConnection cc = mina.getCCM().getCCWithId(nodeId);
+			if(cc != null)
+				cc.closeGracefully();
 		}
 	}
 
@@ -269,7 +287,7 @@ public class BuyMgr {
 		}
 	}
 
-	public void openBidding(final String sellerNodeId) {
+	private void openBidding(final String sellerNodeId) {
 		ControlConnection cc = mina.getCCM().getCCWithId(sellerNodeId);
 		if (cc == null) {
 			log.error("Not opening bidding to " + sellerNodeId + " - no connection");
@@ -299,6 +317,7 @@ public class BuyMgr {
 
 	/**
 	 * An auction has moved on - update the bids
+	 * @syncpriority 170
 	 */
 	public synchronized void bidUpdate(String fromNodeId, BidUpdate bu) {
 		AuctionState as = asMap.get(fromNodeId);
@@ -377,6 +396,9 @@ public class BuyMgr {
 		}, as.getBidsOpen(), TimeUnit.MILLISECONDS);
 	}
 
+	/**
+	 * @syncpriority 170
+	 */
 	public void newAuctionState(final String nodeId, final AuctionState as) {
 		as.setTimeReceived(now());
 		boolean gotConfirmedBid;
@@ -424,6 +446,9 @@ public class BuyMgr {
 		// TODO Poll our interested SMs at intervals to see if our bid should change
 	}
 
+	/**
+	 * @syncpriority 170
+	 */
 	public void sentBid(String nodeId, double bid) {
 		synchronized (this) {
 			AuctionState as = asMap.get(nodeId);
@@ -465,10 +490,9 @@ public class BuyMgr {
 		return null;
 	}
 
-	public synchronized void gotAgorics(String nodeId, Agorics agorics) {
-		agMap.put(nodeId, agorics);
-	}
-
+	/**
+	 * @syncpriority 170
+	 */
 	public void receivedPage(String fromNodeId, int statusIdx, long pageLen) {
 		synchronized (this) {
 			Account acct = accounts.get(fromNodeId);
@@ -535,6 +559,9 @@ public class BuyMgr {
 		}
 	}
 
+	/**
+	 * @syncpriority 170
+	 */
 	public void gotPayUpDemand(String fromNodeId, double toldBalance) {
 		gotPayUpDemand(fromNodeId, toldBalance, false);
 	}
@@ -575,6 +602,9 @@ public class BuyMgr {
 		checkAcctBalance(fromNodeId);
 	}
 
+	/**
+	 * @syncpriority 170
+	 */
 	public synchronized void notifyDeadConnection(String nodeId) {
 		// TODO: We should try and keep account info so that it's still there when we reconnect - but then we
 		// need a way of synchronizing account state when they reconnect - look at this when we're implementing escrow
@@ -588,6 +618,7 @@ public class BuyMgr {
 	/**
 	 * Notifies that we have had a minimum charge applied to us, as we were the top bidder and weren't receiving data
 	 * fast enough
+	 * @syncpriority 170
 	 */
 	public synchronized void minCharge(String nodeId, double charge) {
 		// You trying to jack me, vato?

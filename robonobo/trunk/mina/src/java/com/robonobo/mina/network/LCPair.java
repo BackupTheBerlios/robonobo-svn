@@ -42,6 +42,9 @@ public class LCPair extends ConnectionPair {
 	int rto;
 	Future<?> usefulDataTimeout = null;
 
+	/**
+	 * @syncpriority 170
+	 */
 	public LCPair(StreamMgr streamMgr, ControlConnection ccon, SourceStatus ss) throws MinaConnectionException {
 		super(streamMgr, ccon);
 		rto = MIN_PAGE_TIMEOUT;
@@ -75,6 +78,9 @@ public class LCPair extends ConnectionPair {
 		return lc.getFlowRate();
 	}
 
+	/**
+	 * @syncpriority 170
+	 */
 	public void gotAgreedBid() {
 		if (setupFinished)
 			return;
@@ -82,6 +88,9 @@ public class LCPair extends ConnectionPair {
 		startListening();
 	}
 
+	/**
+	 * @syncpriority 170
+	 */
 	protected void startListening() {
 		if (setupFinished)
 			throw new SeekInnerCalmException();
@@ -114,6 +123,9 @@ public class LCPair extends ConnectionPair {
 		die(true);
 	}
 	
+	/**
+	 * @syncpriority 170
+	 */
 	public void notifySourceStatus(SourceStatus sourceStat) {
 		setLastSourceStat(sourceStat);
 		for (StreamStatus streamStat : sourceStat.getSsList()) {
@@ -125,7 +137,7 @@ public class LCPair extends ConnectionPair {
 	}
 
 	/**
-	 * @syncpriority 90
+	 * @syncpriority 170
 	 */
 	public void notifyStreamStatus(StreamStatus streamStat) {
 		this.lastStreamStat = streamStat;
@@ -246,7 +258,7 @@ public class LCPair extends ConnectionPair {
 	}
 
 	/**
-	 * @syncpriority 120
+	 * @syncpriority 170
 	 */
 	private void sendReqPageIfNecessary() {
 		if (closing || !sm.isReceiving() || mina.getCCM().isShuttingDown())

@@ -431,6 +431,9 @@ public class ControlConnection implements PushDataReceiver {
 				|| bcPairs.size() > 0;
 	}
 
+	/**
+	 * @syncpriority 170
+	 */
 	public void closeGracefully(String reason) {
 		closeReason = reason;
 		closeGracefully();
@@ -440,6 +443,7 @@ public class ControlConnection implements PushDataReceiver {
 	 * Shuts down any pending state we have with the other end, eg currency accounts. Guaranteed to close down after a
 	 * timeout, whatever happens with state. Note: this method will return immediately - check isClosed() to see if the
 	 * closing process has finished.
+	 * @syncpriority 170
 	 */
 	public void closeGracefully() {
 		synchronized (this) {

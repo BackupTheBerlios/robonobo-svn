@@ -52,6 +52,8 @@ public class StreamMgr {
 	private Set<FoundSourceListener> listeners = new HashSet<FoundSourceListener>();
 	int priority;
 	BidStrategy bidStrategy;
+	int bFlowRate, lFlowRate;
+	long lastFRUpdate = 0;
 
 	/**
 	 * Don't use this ctor - use SMRegister.getOrCreateCM() instead
@@ -258,18 +260,6 @@ public class StreamMgr {
 		});
 	}
 
-	/**
-	 * @syncpriority 160
-	 */
-	public int getBroadcastingFlowRate() {
-		int result = 0;
-		BCPair[] pairs = getStreamConns().getBroadcastConns();
-		for (int i = 0; i < pairs.length; i++) {
-			result += pairs[i].getFlowRate();
-		}
-		return result;
-	}
-
 	public MinaInstance getMinaInstance() {
 		return mina;
 	}
@@ -284,22 +274,46 @@ public class StreamMgr {
 
 	/**
 	 * Bytes per second
-	 * 
-	 * @syncpriority 160
 	 */
-	public int getReceivingFlowRate() {
-		if (isBroadcasting())
-			return 0;
-		else {
-			int result = 0;
-			ConnectionPair[] pairs = getStreamConns().getAllListenConns();
-			for (int i = 0; i < pairs.length; i++) {
-				result += pairs[i].getFlowRate();
-			}
-			return result;
-		}
+	public int getBroadcastingFlowRate() {
+		checkAndUpdateFlowRates();
+		return bFlowRate;
+	}
+	
+	/**
+	 * Bytes per second
+	 */
+	public int getListeningFlowRate() {
+		checkAndUpdateFlowRates();
+		return lFlowRate;
 	}
 
+	private void checkAndUpdateFlowRates() {
+		// If it's been more than a second, fire off a thread to update the flow rate
+		// Avoids repeated iteration over connections, and nary a synch block in sight
+		// This means this flowrate data might be out of date, but this shouldn't matter
+		long now = System.currentTimeMillis();
+		if((now - lastFRUpdate) > 1000l) {
+			lastFRUpdate = now;
+			mina.getExecutor().execute(new CatchingRunnable() {
+				public void doRun() throws Exception {
+					int bfr = 0;
+					BCPair[] bcps = getStreamConns().getBroadcastConns();
+					for (int i = 0; i < bcps.length; i++) {
+						bfr += bcps[i].getFlowRate();
+					}
+					bFlowRate = bfr;
+					int lfr = 0;
+					LCPair[] lcps = getStreamConns().getAllListenConns();
+					for (int i = 0; i < lcps.length; i++) {
+						lfr += lcps[i].getFlowRate();
+					}
+					lFlowRate = lfr;
+				}
+			});
+		}
+	}
+	
 	public StreamConnsMgr getStreamConns() {
 		return streamConns;
 	}
