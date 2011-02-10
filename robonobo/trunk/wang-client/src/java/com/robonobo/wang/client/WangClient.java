@@ -207,7 +207,7 @@ public class WangClient {
 					first = false;
 				else
 					sb.append(", ");
-				sb.append(cMap.get(d)+"x"+d);
+				sb.append(cMap.get(d)).append("x").append(d);
 			}
 			log.info(sb);
 		}
@@ -255,15 +255,19 @@ public class WangClient {
 		List<CoinRequestPrivate> privReqs = new ArrayList<CoinRequestPrivate>();
 		CoinRequestListMsg.Builder crlBldr = CoinRequestListMsg.newBuilder();
 		// Create coin requests
-		for (Integer denomExp : numCoins.keySet()) {
-			DenominationPublic denom = denoms.get(denomExp);
-			int numToGet = numCoins.get(denomExp);
-			for (int i = 0; i < numToGet; i++) {
-				CoinRequestPrivate privReq = lucre.createCoinRequest(denom);
-				privReqs.add(privReq);
-				crlBldr.addCoinRequest(new CoinRequestPublic(privReq).toMsg());
-			}
+		synchronized (this) {
+			for (Integer denomExp : numCoins.keySet()) {
+				DenominationPublic denom = denoms.get(denomExp);
+				int numToGet = numCoins.get(denomExp);
+				for (int i = 0; i < numToGet; i++) {
+					CoinRequestPrivate privReq = lucre.createCoinRequest(denom);
+					privReqs.add(privReq);
+					crlBldr.addCoinRequest(new CoinRequestPublic(privReq).toMsg());
+				}
+			}			
 		}
+		// DEBUGSPAM
+		
 		// Send coin requests to bank, get back coin signatures
 		CoinRequestListMsg crl = crlBldr.build();
 		BlindedCoinListMsg blCoins = bank.getCoins(crl);
@@ -313,10 +317,8 @@ public class WangClient {
 			return;
 		floatUpdaterThread = new Thread(new CatchingRunnable() {
 			public void doRun() throws Exception {
-				synchronized (WangClient.this) {
-					withdrawCoins(floatCoinsToReq);
-					floatUpdaterThread = null;
-				}
+				floatUpdaterThread = null;
+				withdrawCoins(floatCoinsToReq);
 			}
 		});
 		floatUpdaterThread.setName("Wang Float Updater");

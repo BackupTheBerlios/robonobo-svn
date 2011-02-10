@@ -53,13 +53,24 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.math.BigInteger;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Random;
 
 class Util {
 	static PrintStream strDump;
 	public final static BigInteger ONE = BigInteger.valueOf(1);
 	public final static BigInteger TWO = BigInteger.valueOf(2);
+	static Random rand;
 
+	static {
+		try {
+			rand = SecureRandom.getInstance("SHA1PRNG");
+		} catch (NoSuchAlgorithmException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
 	static void setDumper(PrintStream str) {
 		strDump = str;
 	}
@@ -141,7 +152,7 @@ class Util {
 	}
 
 	static Random randomGenerator() {
-		return new Random();
+		return rand;
 	}
 
 	static BigInteger random(BigInteger lower, BigInteger upper) {

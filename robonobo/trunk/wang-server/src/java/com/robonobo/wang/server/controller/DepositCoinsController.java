@@ -1,5 +1,7 @@
 package com.robonobo.wang.server.controller;
 
+import static com.robonobo.common.util.TextUtil.*;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.robonobo.common.util.TextUtil;
 import com.robonobo.wang.beans.Coin;
 import com.robonobo.wang.beans.DenominationPrivate;
 import com.robonobo.wang.client.LucreFacade;
@@ -68,7 +71,13 @@ public class DepositCoinsController extends BaseController implements Initializi
 				Coin coin = new Coin(coinMsg);
 				if (denom == null)
 					throw new IOException("Malformed coin, no denomination");
-				if (!lucre.verifyCoin(denom, coin) || doubleSpendDao.isDoubleSpend(coinMsg.getCoinId())) {
+				boolean lucreSaysOk = lucre.verifyCoin(denom, coin);
+				boolean isDoubleSpend = doubleSpendDao.isDoubleSpend(coinMsg.getCoinId());
+				
+				// DEBUGSPAM
+				log.debug("deposit coin "+coinMsg.getCoinId()+" hash "+longHash(coinMsg.getCoinId()));
+				
+				if (!lucreSaysOk || isDoubleSpend) {
 					dBldr.setStatus(Status.Error);
 					dBldr.addBadCoinId(coinMsg.getCoinId());
 					continue;

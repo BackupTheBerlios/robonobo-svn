@@ -54,93 +54,90 @@ import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 
 public class DoubleCoinRequest extends PublicCoinRequest {
-    private BigInteger m_biBlindingFactorY;
-    private BigInteger m_biBlindingFactorG;
-    private UnsignedCoin m_coin=new UnsignedCoin();
+	private BigInteger m_biBlindingFactorY;
+	private BigInteger m_biBlindingFactorG;
+	private UnsignedCoin m_coin = new UnsignedCoin();
 
-    public DoubleCoinRequest() {
+	public DoubleCoinRequest() {
 	}
-    
-    public DoubleCoinRequest(BigInteger coinId, BigInteger blindingY, BigInteger blindingG, BigInteger coinRequest) {
-    	super(coinRequest);
-    	m_coin = new UnsignedCoin(coinId);
-    	m_biBlindingFactorY = blindingY;
-    	m_biBlindingFactorG = blindingG;
-    }
-    
-    public DoubleCoinRequest(PublicBank bank)
-      throws NoSuchAlgorithmException {
-	BigInteger y;
 
-	m_coin.random(bank);
-	y=m_coin.generateCoinNumber(bank);
+	public DoubleCoinRequest(BigInteger coinId, BigInteger blindingY, BigInteger blindingG, BigInteger coinRequest) {
+		super(coinRequest);
+		m_coin = new UnsignedCoin(coinId);
+		m_biBlindingFactorY = blindingY;
+		m_biBlindingFactorG = blindingG;
+	}
 
-	// choose b_y
-	BigInteger p1=bank.getPrime().subtract(Util.ONE);
-	for( ; ; )
-	    {
-	    m_biBlindingFactorY=Util.random(1,bank.getPrime()
-					    .subtract(Util.ONE));
-	    Util.dumpNumber("by=       ",m_biBlindingFactorY);
+	public DoubleCoinRequest(PublicBank bank) throws NoSuchAlgorithmException {
+		BigInteger y;
 
-	    // y has to be an invertible exponent, so ensure it has an inverse
-	    // mod p-1.
-	    if(m_biBlindingFactorY.gcd(p1).equals(Util.ONE))
-		break;
-	    }
+		m_coin.random(bank);
+		y = m_coin.generateCoinNumber(bank);
 
-	// choose b_g
-	m_biBlindingFactorG=Util.random(1,bank.getPrime().subtract(Util.ONE));
-	Util.dumpNumber("bg=       ",m_biBlindingFactorG);
+		// choose b_y
+		BigInteger p1 = bank.getPrime().subtract(Util.ONE);
+		for (;;) {
+			m_biBlindingFactorY = Util.random(1, bank.getPrime().subtract(Util.ONE));
+			Util.dumpNumber("by=       ", m_biBlindingFactorY);
 
-	// calculate A->B: y^b_y g^b_g
-	m_biCoinRequest=bank.getGenerator().modPow(m_biBlindingFactorG,
-						   bank.getPrime());
-	y=y.modPow(m_biBlindingFactorY,bank.getPrime());
-	m_biCoinRequest=m_biCoinRequest.multiply(y).mod(bank.getPrime());
-	Util.dumpNumber("A->B=     ",m_biCoinRequest);
-    }	
-    public DoubleCoinRequest(BufferedReader rdr)
-      throws IOException {
-	read(rdr);
-    }
-    public DoubleCoinRequest(String szFile)
-      throws IOException {
-	this(Util.newBufferedFileReader(szFile));
-    }
-    public void write(PrintStream str) {
-	super.writePublic(str);
-	m_coin.write(str);
-	Util.dumpNumber(str,"blindingY=",m_biBlindingFactorY);
-	Util.dumpNumber(str,"blindingG=",m_biBlindingFactorG);
-    }
-    public void read(BufferedReader rdr)
-      throws IOException {
-	super.read(rdr);
-	m_coin.read(rdr);
-	m_biBlindingFactorY=Util.readNumber(rdr,"blindingY=");
-	m_biBlindingFactorG=Util.readNumber(rdr,"blindingG=");
-    }
-    BigInteger unblind(BigInteger biSignedCoin,PublicBank bank) {
-	BigInteger z=bank.getPublicKey().modPow(m_biBlindingFactorG,
-						bank.getPrime());
-	z=z.modInverse(bank.getPrime());
-	z=z.multiply(biSignedCoin);
-	z=z.mod(bank.getPrime());
+			// y has to be an invertible exponent, so ensure it has an inverse
+			// mod p-1.
+			if (m_biBlindingFactorY.gcd(p1).equals(Util.ONE))
+				break;
+		}
 
-	BigInteger p1=bank.getPrime().subtract(Util.ONE);
-	BigInteger byinv=m_biBlindingFactorY.modInverse(p1);
-	z=z.modPow(byinv,bank.getPrime());
+		// choose b_g
+		m_biBlindingFactorG = Util.random(1, bank.getPrime().subtract(Util.ONE));
+		Util.dumpNumber("bg=       ", m_biBlindingFactorG);
 
-	return z;
-    }
-    public Coin processResponse(PublicBank bank,
-			 BigInteger biSignedCoinRequest) {
-	BigInteger biCoinSignature=unblind(biSignedCoinRequest,bank);
-	Util.dumpNumber("z=        ",biCoinSignature);
+		// calculate A->B: y^b_y g^b_g
+		m_biCoinRequest = bank.getGenerator().modPow(m_biBlindingFactorG, bank.getPrime());
+		y = y.modPow(m_biBlindingFactorY, bank.getPrime());
+		m_biCoinRequest = m_biCoinRequest.multiply(y).mod(bank.getPrime());
+		Util.dumpNumber("A->B=     ", m_biCoinRequest);
+	}
 
-	return new Coin(m_coin,biCoinSignature);
-    }
+	public DoubleCoinRequest(BufferedReader rdr) throws IOException {
+		read(rdr);
+	}
+
+	public DoubleCoinRequest(String szFile) throws IOException {
+		this(Util.newBufferedFileReader(szFile));
+	}
+
+	public void write(PrintStream str) {
+		super.writePublic(str);
+		m_coin.write(str);
+		Util.dumpNumber(str, "blindingY=", m_biBlindingFactorY);
+		Util.dumpNumber(str, "blindingG=", m_biBlindingFactorG);
+	}
+
+	public void read(BufferedReader rdr) throws IOException {
+		super.read(rdr);
+		m_coin.read(rdr);
+		m_biBlindingFactorY = Util.readNumber(rdr, "blindingY=");
+		m_biBlindingFactorG = Util.readNumber(rdr, "blindingG=");
+	}
+
+	BigInteger unblind(BigInteger biSignedCoin, PublicBank bank) {
+		BigInteger z = bank.getPublicKey().modPow(m_biBlindingFactorG, bank.getPrime());
+		z = z.modInverse(bank.getPrime());
+		z = z.multiply(biSignedCoin);
+		z = z.mod(bank.getPrime());
+
+		BigInteger p1 = bank.getPrime().subtract(Util.ONE);
+		BigInteger byinv = m_biBlindingFactorY.modInverse(p1);
+		z = z.modPow(byinv, bank.getPrime());
+
+		return z;
+	}
+
+	public Coin processResponse(PublicBank bank, BigInteger biSignedCoinRequest) {
+		BigInteger biCoinSignature = unblind(biSignedCoinRequest, bank);
+		Util.dumpNumber("z=        ", biCoinSignature);
+
+		return new Coin(m_coin, biCoinSignature);
+	}
 
 	public BigInteger getBlindingFactorY() {
 		return m_biBlindingFactorY;
@@ -157,12 +154,12 @@ public class DoubleCoinRequest extends PublicCoinRequest {
 	public void setBlindingFactorG(BigInteger blindingFactorG) {
 		m_biBlindingFactorG = blindingFactorG;
 	}
-    
-    public BigInteger getCoinId() {
-    	return m_coin.getCoinId();
-    }
-    
-    public void setCoinId(BigInteger coinId) {
-    	m_coin = new UnsignedCoin(coinId);
-    }
+
+	public BigInteger getCoinId() {
+		return m_coin.getCoinId();
+	}
+
+	public void setCoinId(BigInteger coinId) {
+		m_coin = new UnsignedCoin(coinId);
+	}
 }

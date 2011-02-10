@@ -19,9 +19,9 @@
             url="jdbc:postgresql://localhost/robonobo_midas"
             username=""
             password=""
-            maxActive="32"
-            maxIdle="8"
-            maxWait="-1"
+            maxActive="100"
+            maxIdle="5"
+            maxWait="1000"
             />
 
   <!-- Remoting Details so other webapps can talk to us -->
@@ -33,6 +33,5 @@
   <Parameter name="facebookCallbackUrl" value="http://midas.robonobo.com/fb-callback" override="true"/>
   <Parameter name="twitterApiKey" value="ObqWeQW3Mzkrbzbtcgl4w" override="true"/>
   <Parameter name="twitterApiSecret" value="EDITME" override="true"/>
-  <Parameter name="facebookCallbackUrl" value="http://midas.robonobo.com/fb-callback" override="true"/>
   <Parameter name="playlistShortUrlBase" value="http://rbnb.co/p/" override="true"/>
 </Context>

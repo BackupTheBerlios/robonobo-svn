@@ -17,9 +17,9 @@
             url="jdbc:postgresql://localhost/robonobo_sonar"
             username=""
             password=""
-            maxActive="32"
-            maxIdle="8"
-            maxWait="-1"
+            maxActive="100"
+            maxIdle="5"
+            maxWait="1000"
             />
   <Parameter name="maxNodeAgeMs" value="300000" override="true"/>
 </Context>
