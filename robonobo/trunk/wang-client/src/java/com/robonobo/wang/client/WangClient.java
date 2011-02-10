@@ -40,8 +40,7 @@ public class WangClient {
 	private BankFacade bank;
 	private LucreFacade lucre;
 	/**
-	 * Take note of the smallest denomination, as we round up any withdrawal
-	 * requests
+	 * Take note of the smallest denomination, as we round up any withdrawal requests
 	 */
 	private int smallestDenom;
 	/** When we do below this value of local coins, request more */
@@ -53,7 +52,8 @@ public class WangClient {
 	 */
 	private Thread floatUpdaterThread;
 	// This map is in descending key order
-	private SortedMap<Integer, DenominationPublic> denoms = new TreeMap<Integer, DenominationPublic>(new DescendingIntComp());
+	private SortedMap<Integer, DenominationPublic> denoms = new TreeMap<Integer, DenominationPublic>(
+			new DescendingIntComp());
 	private CoinStore coinStore;
 
 	public WangClient(WangConfig config) {
@@ -118,10 +118,9 @@ public class WangClient {
 	}
 
 	/**
-	 * Returns a list of coins that are at least as much as the total value, and
-	 * as close as possible to it (might be slightly over due to the requested
-	 * amount not being representable in our denoms). Once these coins are
-	 * withdrawn, the withdrawer has responsibility for them.
+	 * Returns a list of coins that are at least as much as the total value, and as close as possible to it (might be
+	 * slightly over due to the requested amount not being representable in our denoms). Once these coins are withdrawn,
+	 * the withdrawer has responsibility for them.
 	 */
 	public CoinListMsg getCoins(double totalValue) throws WangException {
 		double valSoFar = 0;
@@ -140,7 +139,8 @@ public class WangClient {
 		}
 		// If we have a shortfall, check to see if adding a smallest-denom coin
 		// will make it up
-		if (valSoFar < totalValue && valSoFar + getDenomValue(smallestDenom) >= totalValue && coinStore.numCoins(smallestDenom) > 0) {
+		if (valSoFar < totalValue && valSoFar + getDenomValue(smallestDenom) >= totalValue
+				&& coinStore.numCoins(smallestDenom) > 0) {
 			clBldr.addCoin(coinStore.getCoin(smallestDenom));
 			valSoFar += getDenomValue(smallestDenom);
 		}
@@ -195,15 +195,15 @@ public class WangClient {
 			Map<Integer, Integer> cMap = new HashMap<Integer, Integer>();
 			for (CoinMsg coin : coins.getCoinList()) {
 				int d = coin.getDenom();
-				if(cMap.containsKey(d))
-					cMap.put(d, cMap.get(d)+1);
+				if (cMap.containsKey(d))
+					cMap.put(d, cMap.get(d) + 1);
 				else
 					cMap.put(d, 1);
 			}
 			StringBuffer sb = new StringBuffer("Deposited coins: ");
 			boolean first = true;
 			for (Integer d : cMap.keySet()) {
-				if(first)
+				if (first)
 					first = false;
 				else
 					sb.append(", ");
@@ -234,8 +234,7 @@ public class WangClient {
 	}
 
 	/**
-	 * Gets the balance from the bank - waits for any pending withdrawal
-	 * requests to complete before returning
+	 * Gets the balance from the bank - waits for any pending withdrawal requests to complete before returning
 	 */
 	public double getAccurateBankBalance() throws WangException {
 		waitForFloatUpdater();
@@ -255,19 +254,15 @@ public class WangClient {
 		List<CoinRequestPrivate> privReqs = new ArrayList<CoinRequestPrivate>();
 		CoinRequestListMsg.Builder crlBldr = CoinRequestListMsg.newBuilder();
 		// Create coin requests
-		synchronized (this) {
-			for (Integer denomExp : numCoins.keySet()) {
-				DenominationPublic denom = denoms.get(denomExp);
-				int numToGet = numCoins.get(denomExp);
-				for (int i = 0; i < numToGet; i++) {
-					CoinRequestPrivate privReq = lucre.createCoinRequest(denom);
-					privReqs.add(privReq);
-					crlBldr.addCoinRequest(new CoinRequestPublic(privReq).toMsg());
-				}
-			}			
+		for (Integer denomExp : numCoins.keySet()) {
+			DenominationPublic denom = denoms.get(denomExp);
+			int numToGet = numCoins.get(denomExp);
+			for (int i = 0; i < numToGet; i++) {
+				CoinRequestPrivate privReq = lucre.createCoinRequest(denom);
+				privReqs.add(privReq);
+				crlBldr.addCoinRequest(new CoinRequestPublic(privReq).toMsg());
+			}
 		}
-		// DEBUGSPAM
-		
 		// Send coin requests to bank, get back coin signatures
 		CoinRequestListMsg crl = crlBldr.build();
 		BlindedCoinListMsg blCoins = bank.getCoins(crl);
@@ -292,19 +287,19 @@ public class WangClient {
 			Map<Integer, Integer> cMap = new HashMap<Integer, Integer>();
 			for (Coin coin : coins) {
 				int d = coin.getDenom();
-				if(cMap.containsKey(d))
-					cMap.put(d, cMap.get(d)+1);
+				if (cMap.containsKey(d))
+					cMap.put(d, cMap.get(d) + 1);
 				else
 					cMap.put(d, 1);
 			}
 			StringBuffer sb = new StringBuffer("Withdrew coins: ");
 			boolean first = true;
 			for (Integer d : cMap.keySet()) {
-				if(first)
+				if (first)
 					first = false;
 				else
 					sb.append(", ");
-				sb.append(cMap.get(d)+"x"+d);
+				sb.append(cMap.get(d)).append("x").append(d);
 			}
 			log.info(sb);
 		}
@@ -317,8 +312,8 @@ public class WangClient {
 			return;
 		floatUpdaterThread = new Thread(new CatchingRunnable() {
 			public void doRun() throws Exception {
-				floatUpdaterThread = null;
 				withdrawCoins(floatCoinsToReq);
+				floatUpdaterThread = null;
 			}
 		});
 		floatUpdaterThread.setName("Wang Float Updater");

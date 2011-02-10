@@ -73,10 +73,6 @@ public class DepositCoinsController extends BaseController implements Initializi
 					throw new IOException("Malformed coin, no denomination");
 				boolean lucreSaysOk = lucre.verifyCoin(denom, coin);
 				boolean isDoubleSpend = doubleSpendDao.isDoubleSpend(coinMsg.getCoinId());
-				
-				// DEBUGSPAM
-				log.debug("deposit coin "+coinMsg.getCoinId()+" hash "+longHash(coinMsg.getCoinId()));
-				
 				if (!lucreSaysOk || isDoubleSpend) {
 					dBldr.setStatus(Status.Error);
 					dBldr.addBadCoinId(coinMsg.getCoinId());
