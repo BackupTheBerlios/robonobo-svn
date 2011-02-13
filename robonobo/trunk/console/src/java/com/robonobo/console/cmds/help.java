@@ -5,7 +5,7 @@ import java.io.PrintWriter;
 import com.robonobo.console.RobonoboConsole;
 
 public class help implements ConsoleCommand {
-	private static String[] cmdNames = {"help", "network", "friends", "playlist", "search", "download", "login", "account", "share", "watch", "play", "pause", "quit"};
+	private static String[] cmdNames = {"help", "network", "friends", "playlist", "search", "download", "login", "account", "share", "watch", "play", "pause", "quit", "bsh"};
 	public void printHelp(PrintWriter out) {
 		out.print("Available commands: ");
 		for(int i = 0; i < cmdNames.length; i++) {

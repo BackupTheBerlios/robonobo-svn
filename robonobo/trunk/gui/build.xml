@@ -86,6 +86,7 @@
 			<fatjar.jarsource file="../core/lib/commons-jxpath-1.1.jar" relpath="." />
 			<fatjar.jarsource file="../core/lib/sbbi-jmx-1.0.jar" relpath="." />
 			<fatjar.jarsource file="../core/lib/sbbi-upnplib-1.0.3.jar" relpath="." />
+			<fatjar.jarsource file="../console/lib/bsh-2.0b4.jar" relpath="." />
 			<fatjar.jarsource file="../common/lib/tablelayout.jar" relpath="." />
 			<fatjar.jarsource file="../common/lib/jug-1.1.2.jar" relpath="." />
 			<fatjar.jarsource file="../common/lib/log4j-1.2.13.jar" relpath="." />

@@ -70,6 +70,7 @@ public class share implements ConsoleCommand {
 					} catch (Exception e) {
 						out.println("Error adding share " + f.getAbsolutePath() + " - see log for details");
 					}
+					out.flush();
 				}
 			} else {
 				Stream s = controller.addShare(file.getAbsolutePath());

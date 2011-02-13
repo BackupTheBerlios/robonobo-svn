@@ -1,21 +1,4 @@
-<project name="console" default="fatjar">
-  	<property name="ant.reuse.loader" value="true"/> 
-	<path id="fjepPath" location="../common/buildlib/fatjar-0.0.31.jar"/>
-	<taskdef name="fatjar.build" classname="net.sf.fjep.anttask.FJBuildTask" classpathref="fjepPath"/>
-	<typedef name="fatjar.manifest" classname="net.sf.fjep.anttask.FJManifestType" classpathref="fjepPath"/>
-	<typedef name="fatjar.exclude" classname="net.sf.fjep.anttask.FJExcludeType" classpathref="fjepPath"/>
-	<typedef name="fatjar.jarsource" classname="net.sf.fjep.anttask.FJJarSourceType" classpathref="fjepPath"/>
-	<typedef name="fatjar.filesource" classname="net.sf.fjep.anttask.FJFileSourceType" classpathref="fjepPath"/>
-
-	<property name="out" location="target/dist/" />
-
-	<tstamp>
-		<format property="timestamp" pattern="yyMMddhhmm" />
-	</tstamp>
-	<property name="version" value="0.1.2" />
-	<property name="zipname" value="rbnb-console-${version}" />
-
-	<target name="build-ext" depends="compile-all, build"/>
+<project name="console">
 	<target name="compile-all">
 		<ant dir="../core" inheritall="false" target="compile-all"/>
 		<ant dir="../plugin-default" inheritall="false" target="compile-all"/>
@@ -45,55 +28,8 @@
 		</copy>
 	</target>
 
-	<target name="build.deps">
-		<ant dir="../core" inheritall="false" target="build">
-			<property name="out" value="${out}"/>
-		</ant>
-		<ant dir="../plugin-default" inheritall="false" target="build">
-			<property name="out" value="${out}"/>
-		</ant>
-		<ant dir="../plugin-mp3" inheritall="false" target="build">
-			<property name="out" value="${out}"/>
-		</ant>
-	</target>
-
-	<target name="build" depends="build.deps">
-		<mkdir dir="${out}" />
-
-		<copy file="log4j.properties" todir="${out}/" />
-	</target>
-
-	<target name="fatjar" depends="build-ext">
-		<fatjar.build output="${out}/robonobo-console.jar">
-			<fatjar.manifest mergemanifests="false" mainclass="com.robonobo.console.RobonoboConsole" manifestfile="${basedir}/MANIFEST.MF" />
-			<fatjar.filesource path="${basedir}/target/classes" relpath="." />
-			<fatjar.jarsource file="${out}/lib/robonobo-core.jar" relpath="."/>
-			<fatjar.jarsource file="${out}/lib/robonobo-plugin-default.jar" relpath="."/>
-			<fatjar.jarsource file="${out}/lib/robonobo-plugin-mp3.jar" relpath="."/>
-		</fatjar.build>
-	</target>
-
-	<target name="zip" depends="fatjar">
-		<delete dir="${out}/zip" />
-		<mkdir dir="${out}/zip/${zipname}" />
-
-		<copy todir="${out}/zip/${zipname}">
-			<fileset dir="zip" />
-			<fileset dir="${out}">
-				<include name="robonobo-console.jar" />
-				<include name="robonobo-plugin-default.jar" />
-				<include name="log4j.properties" />
-			</fileset>
-		</copy>
-
-		<delete file="${out}/${zipname}.zip" />
-
-		<zip destfile="${out}/${zipname}.zip" basedir="${out}/zip" />
-	</target>
-
 	<target name="clean">
 		<delete dir="target/classes"/>
-		<delete dir="${out}"/>
 		<ant dir="../core" inheritall="false" target="clean"/>
 		<ant dir="../plugin-default" inheritall="false" target="clean"/>
 		<ant dir="../plugin-mp3" inheritall="false" target="clean"/>

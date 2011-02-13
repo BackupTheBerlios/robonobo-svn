@@ -58,11 +58,9 @@ public class MetadataService extends AbstractService {
 					return null;
 				}
 			}
-
 			Stream s = getRobonobo().getDbService().getStream(streamId);
 			if (s != null)
 				return s;
-
 			lookupStreamIds.add(streamId);
 		} finally {
 			serverLock.unlock();
