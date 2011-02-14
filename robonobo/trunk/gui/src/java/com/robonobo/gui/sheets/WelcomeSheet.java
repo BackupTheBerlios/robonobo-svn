@@ -1,4 +1,4 @@
-package com.robonobo.gui.panels;
+package com.robonobo.gui.sheets;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -15,13 +15,13 @@ import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 
 @SuppressWarnings("serial")
-public class WelcomePanel extends JPanel {
-	private RobonoboFrame frame;
+public class WelcomeSheet extends Sheet {
 	private Dimension size = new Dimension(600, 510);
 	private RCheckBox shutUpCB;
+	private RButton feckOffBtn;
 
-	public WelcomePanel(RobonoboFrame rFrame) {
-		this.frame = rFrame;
+	public WelcomeSheet(RobonoboFrame rFrame) {
+		super(rFrame);
 		setPreferredSize(size);
 		setSize(size);
 		double[][] cellSizen = {
@@ -56,7 +56,7 @@ public class WelcomePanel extends JPanel {
 		RButton iTunesBtn = new RGlassButton("Share from iTunes...");
 		iTunesBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				frame.undim();
+				setVisible(false);
 				frame.importITunes();
 			}
 		});
@@ -68,7 +68,7 @@ public class WelcomePanel extends JPanel {
 		RButton fileBtn = new RGlassButton("Share from files...");
 		fileBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				frame.undim();
+				setVisible(false);
 				frame.showAddSharesDialog();
 			}
 		});
@@ -76,14 +76,14 @@ public class WelcomePanel extends JPanel {
 
 		add(new Sep(), "1,18");
 
-		RButton feckOffBtn = new RGlassButton("Don't share anything");
+		feckOffBtn = new RGlassButton("Don't share anything");
 		feckOffBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if(shutUpCB.isSelected()) {
 					frame.getGuiConfig().setShowWelcomePanel(false);
 					frame.getController().saveConfig();
 				}
-				frame.undim();
+				setVisible(false);
 			}
 		});
 		addButton(feckOffBtn, "1,20");
@@ -93,6 +93,11 @@ public class WelcomePanel extends JPanel {
 		add(shutUpCB, "1,22");
 	}
 
+	@Override
+	public void onShow() {
+		feckOffBtn.requestFocusInWindow();
+	}
+	
 	private void addButton(RButton btn, String layoutPos) {
 		JPanel pnl = new JPanel();
 		pnl.setLayout(new BoxLayout(pnl, BoxLayout.X_AXIS));
@@ -123,7 +128,7 @@ public class WelcomePanel extends JPanel {
 				public void actionPerformed(ActionEvent e) {
 					JFileChooser fc = new JFileChooser(new File(tf.getText()));
 					fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-					int retVal = fc.showOpenDialog(WelcomePanel.this);
+					int retVal = fc.showOpenDialog(WelcomeSheet.this);
 					if(retVal == JFileChooser.APPROVE_OPTION) {
 						File f = fc.getSelectedFile();
 						tf.setText(f.getAbsolutePath());

@@ -35,8 +35,8 @@ import com.robonobo.core.api.RobonoboStatus;
 import com.robonobo.core.api.UserPlaylistListener;
 import com.robonobo.core.api.model.*;
 import com.robonobo.gui.GUIUtils;
-import com.robonobo.gui.panels.LoginPanel;
 import com.robonobo.gui.preferences.PrefDialog;
+import com.robonobo.gui.sheets.LoginSheet;
 
 @SuppressWarnings("serial")
 public class RobonoboFrame extends JFrame implements UserPlaylistListener {

@@ -1,4 +1,4 @@
-package com.robonobo.gui.panels;
+package com.robonobo.gui.sheets;
 
 import static com.robonobo.common.util.TextUtil.*;
 
@@ -25,9 +25,8 @@ import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 
 @SuppressWarnings("serial")
-public class SharePlaylistPanel extends JPanel implements KeyListener {
+public class SharePlaylistSheet extends Sheet {
 	private static final String DEFAULT_EMAILS = "Email1, email2...";
-	private RobonoboFrame frame;
 	private Playlist p;
 	private Dimension size = new Dimension(445, 230);
 	private JList friendList;
@@ -37,8 +36,8 @@ public class SharePlaylistPanel extends JPanel implements KeyListener {
 	private Log log = LogFactory.getLog(getClass());
 	private RobonoboController control;
 
-	public SharePlaylistPanel(RobonoboFrame frame, Playlist p) {
-		this.frame = frame;
+	public SharePlaylistSheet(RobonoboFrame frame, Playlist p) {
+		super(frame);
 		this.p = p;
 		control = frame.getController();
 		setPreferredSize(size);
@@ -82,32 +81,14 @@ public class SharePlaylistPanel extends JPanel implements KeyListener {
 		add(inviteLbl, "1,7");
 
 		add(new ButtonPanel(), "3,7,r,t");
-
-		addKeyListener(this);
 	}
 	
-	public void keyPressed(KeyEvent e) {
-		int code = e.getKeyCode();
-		int modifiers = e.getModifiers();
-		if (code == KeyEvent.VK_ESCAPE)
-			setVisible(false);
-		if (code == KeyEvent.VK_Q && modifiers == Platform.getPlatform().getCommandModifierMask())
-			frame.shutdown();
-	}
-
-	public void keyReleased(KeyEvent e) {
-	}// Do nothing
-
-	public void keyTyped(KeyEvent e) {
-	}// Do nothing
-
 	@Override
-	public void setVisible(boolean visible) {
-		super.setVisible(visible);
-		if(!visible)
-			frame.undim();
+	public void onShow() {
+		emailField.requestFocusInWindow();
+		emailField.selectAll();
 	}
-
+	
 	private class ButtonPanel extends JPanel {
 		public ButtonPanel() {
 			setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
@@ -139,20 +120,20 @@ public class SharePlaylistPanel extends JPanel implements KeyListener {
 							}
 						}
 					});
-					SharePlaylistPanel.this.setVisible(false);
+					SharePlaylistSheet.this.setVisible(false);
 				}
 			});
-			shareBtn.addKeyListener(SharePlaylistPanel.this);
+			shareBtn.addKeyListener(SharePlaylistSheet.this);
 			add(shareBtn);
 			Dimension fillerD = new Dimension(20, 1);
 			add(new Box.Filler(fillerD, fillerD, fillerD));
 			cancelBtn = new RRedGlassButton("CANCEL");
 			cancelBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent ae) {
-					SharePlaylistPanel.this.setVisible(false);
+					SharePlaylistSheet.this.setVisible(false);
 				}
 			});
-			cancelBtn.addKeyListener(SharePlaylistPanel.this);
+			cancelBtn.addKeyListener(SharePlaylistSheet.this);
 			add(cancelBtn);
 		}
 	}

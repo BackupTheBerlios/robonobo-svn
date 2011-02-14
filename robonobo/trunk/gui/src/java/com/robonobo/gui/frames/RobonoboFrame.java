@@ -28,6 +28,7 @@ import com.robonobo.gui.GUIUtils;
 import com.robonobo.gui.GuiConfig;
 import com.robonobo.gui.panels.*;
 import com.robonobo.gui.preferences.PrefDialog;
+import com.robonobo.gui.sheets.*;
 import com.robonobo.gui.tasks.ImportFilesTask;
 import com.robonobo.gui.tasks.ImportITunesTask;
 import com.robonobo.mina.external.ConnectedNode;
@@ -89,7 +90,7 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 						showWelcome();
 				}
 			};
-			final LoginPanel lp = new LoginPanel(RobonoboFrame.this, onLogin);
+			final LoginSheet lp = new LoginSheet(RobonoboFrame.this, onLogin);
 			dim();
 			showSheet(lp);
 			if (isNonEmpty(lp.getEmailField().getText())) {
@@ -211,7 +212,7 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 			SwingUtilities.invokeLater(new CatchingRunnable() {
 				public void doRun() throws Exception {
 					dim();
-					showSheet(new WelcomePanel(RobonoboFrame.this));
+					showSheet(new WelcomeSheet(RobonoboFrame.this));
 				}
 			});
 		}
@@ -295,7 +296,7 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 	public void showLogin(final Runnable onLogin) {
 		SwingUtilities.invokeLater(new CatchingRunnable() {
 			public void doRun() throws Exception {
-				LoginPanel lp = new LoginPanel(RobonoboFrame.this, onLogin);
+				LoginSheet lp = new LoginSheet(RobonoboFrame.this, onLogin);
 				dim();
 				showSheet(lp);
 			}
@@ -305,7 +306,7 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 	public void showAbout() {
 		SwingUtilities.invokeLater(new CatchingRunnable() {
 			public void doRun() throws Exception {
-				AboutPanel ap = new AboutPanel(RobonoboFrame.this);
+				AboutSheet ap = new AboutSheet(RobonoboFrame.this);
 				dim();
 				showSheet(ap);
 			}
@@ -399,7 +400,7 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 					return;
 				}
 				dim();
-				showSheet(new ConfirmClosePanel(RobonoboFrame.this));
+				showSheet(new ConfirmCloseSheet(RobonoboFrame.this));
 			}
 		});
 	}

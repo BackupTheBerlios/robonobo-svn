@@ -1,4 +1,4 @@
-package com.robonobo.gui.panels;
+package com.robonobo.gui.sheets;
 
 import java.awt.Dimension;
 import java.awt.event.*;
@@ -15,20 +15,20 @@ import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 
-public class AboutPanel extends JPanel implements KeyListener {
+public class AboutSheet extends Sheet {
 	private static final String CREDITS_PATH = "/credits.html";
 	RobonoboFrame frame;
 	Dimension sz = new Dimension(500, 400);
+	private RButton closeBtn;
 	
-	public AboutPanel(RobonoboFrame frame) {
-		this.frame = frame;
-		addKeyListener(this);
+	public AboutSheet(RobonoboFrame f) {
+		super(f);
 		double[][] cellSizen = { {10, TableLayout.FILL, 100, 10}, { 10, 25, 10, TableLayout.FILL, 10, 30, 10 } };
 		setName("playback.background.panel");
 		setLayout(new TableLayout(cellSizen));
 		setPreferredSize(sz);
 		
-		RLabel title = new RLabel14B("About robonobo (version "+frame.getController().getVersion()+")");
+		RLabel title = new RLabel14B("About robonobo (version "+f.getController().getVersion()+")");
 		add(title, "1,1,2,1,LEFT,CENTER");
 		
 		RTextPane textPane = new RTextPane();
@@ -38,7 +38,7 @@ public class AboutPanel extends JPanel implements KeyListener {
 		JScrollPane scrollPane = new JScrollPane(textPane);
 		add(scrollPane, "1,3,2,3");
 
-		RButton closeBtn = new RRedGlassButton("CLOSE");
+		closeBtn = new RRedGlassButton("CLOSE");
 		closeBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setVisible(false);
@@ -47,6 +47,11 @@ public class AboutPanel extends JPanel implements KeyListener {
 		add(closeBtn, "2,5");
 	}
 
+	@Override
+	public void onShow() {
+		closeBtn.requestFocusInWindow();
+	}
+	
 	private String getCredits() {
 		InputStream is = getClass().getResourceAsStream(CREDITS_PATH);
 		StringBuffer sb = new StringBuffer();
@@ -61,27 +66,5 @@ public class AboutPanel extends JPanel implements KeyListener {
 			throw new SeekInnerCalmException(e);
 		}
 		return sb.toString().replace("!VERSION!", frame.getController().getVersion());
-	}
-
-	public void keyPressed(KeyEvent e) {
-		int code = e.getKeyCode();
-		int modifiers = e.getModifiers();
-		if (code == KeyEvent.VK_ESCAPE)
-			setVisible(false);
-		if (code == KeyEvent.VK_Q && modifiers == Platform.getPlatform().getCommandModifierMask())
-			frame.shutdown();
-	}
-
-	public void keyReleased(KeyEvent e) {
-	}// Do nothing
-
-	public void keyTyped(KeyEvent e) {
-	}// Do nothing
-
-	@Override
-	public void setVisible(boolean visible) {
-		super.setVisible(visible);
-		if(!visible)
-			frame.undim();
 	}
 }

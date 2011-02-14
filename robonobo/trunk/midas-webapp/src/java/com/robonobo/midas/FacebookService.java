@@ -23,7 +23,7 @@ public interface FacebookService {
 
 	public abstract void postPlaylistCreateToFacebook(MidasUserConfig muc, Playlist p) throws IOException;
 
-	public abstract void postPlaylistUpdateToFacebook(MidasUserConfig muc, Playlist p) throws IOException;
+	public abstract void postPlaylistUpdateToFacebook(MidasUserConfig muc, Playlist p, String msg) throws IOException;
 
 	public abstract FacebookClient getFacebookClient(String accessToken);
 }

@@ -55,12 +55,12 @@ public class MetadataServerConfig implements Serializable {
 		return sb.toString();
 	}
 	
-	public String getFacebookPlaylistUrl(long playlistId) {
-		return baseUrl + "playlists/" + Long.toHexString(playlistId) + "/post-update?service=facebook";
+	public String getFacebookPlaylistUrl(long playlistId, String msg) {
+		return baseUrl + "playlists/" + Long.toHexString(playlistId) + "/post-update?service=facebook&msg="+urlEncode(msg);
 	}
 	
-	public String getTwitterPlaylistUrl(long playlistId) {
-		return baseUrl + "playlists/" + Long.toHexString(playlistId) + "/post-update?service=twitter";
+	public String getTwitterPlaylistUrl(long playlistId, String msg) {
+		return baseUrl + "playlists/" + Long.toHexString(playlistId) + "/post-update?service=twitter&msg="+urlEncode(msg);
 	}
 	
 	public String getStreamUrl(String streamId) {

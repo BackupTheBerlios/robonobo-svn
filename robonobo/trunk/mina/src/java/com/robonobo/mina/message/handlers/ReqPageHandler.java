@@ -18,7 +18,7 @@ public class ReqPageHandler extends AbstractMessageHandler {
 		if(bcp == null)
 			log.error("Error: received reqpage for unknown stream "+rp.getStreamId()+" from "+cc.getNodeId());
 		else
-			bcp.requestPages(rp.getPageList());
+			bcp.requestPages(rp.getRequestedPageList());
 	}
 
 	@Override

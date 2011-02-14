@@ -16,12 +16,12 @@
             auth="Container"
             type="javax.sql.DataSource"
             driverClassName="org.postgresql.Driver"
-            url="jdbc:postgresql://localhost/robonobo_midas"
+            url="jdbc:postgresql://localhost/midas"
             username=""
             password=""
             maxActive="100"
             maxIdle="5"
-            maxWait="1000"
+            maxWait="60000"
             />
 
   <!-- Remoting Details so other webapps can talk to us -->
@@ -33,5 +33,5 @@
   <Parameter name="facebookCallbackUrl" value="http://midas.robonobo.com/fb-callback" override="true"/>
   <Parameter name="twitterApiKey" value="ObqWeQW3Mzkrbzbtcgl4w" override="true"/>
   <Parameter name="twitterApiSecret" value="EDITME" override="true"/>
-  <Parameter name="playlistShortUrlBase" value="http://rbnb.co/p/" override="true"/>
+  <Parameter name="playlistShortUrlBase" value="http://localhost:8080/website/p/" override="true"/>
 </Context>

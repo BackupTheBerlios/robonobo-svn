@@ -15,7 +15,7 @@ import com.robonobo.core.Platform;
 import com.robonobo.gui.RoboColor;
 import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.frames.RobonoboFrame;
-import com.robonobo.gui.panels.OpenURIPanel;
+import com.robonobo.gui.sheets.OpenURISheet;
 
 @SuppressWarnings("serial")
 public class MenuBar extends JMenuBar {
@@ -75,7 +75,7 @@ public class MenuBar extends JMenuBar {
 		openUrl.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				frame.dim();
-				frame.showSheet(new OpenURIPanel(frame));
+				frame.showSheet(new OpenURISheet(frame));
 			}
 		});
 		fileMenu.add(openUrl);

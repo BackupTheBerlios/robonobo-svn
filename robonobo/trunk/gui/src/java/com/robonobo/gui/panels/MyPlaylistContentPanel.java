@@ -27,6 +27,7 @@ import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.model.PlaylistTableModel;
 import com.robonobo.gui.model.StreamTransfer;
+import com.robonobo.gui.sheets.*;
 import com.robonobo.gui.tasks.ImportFilesTask;
 
 @SuppressWarnings("serial")
@@ -244,7 +245,8 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			fbBtn.setToolTipText("Post playlist update to facebook");
 			fbBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					frame.getController().postFacebookUpdate(p.getPlaylistId());
+					frame.dim();
+					frame.showSheet(new PostToFacebookSheet(frame, p));
 				}
 			});
 			fbBtn.setEnabled(p.getPlaylistId() > 0);
@@ -253,7 +255,8 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			twitBtn.setToolTipText("Post playlist update to twitter");
 			twitBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					frame.getController().postTwitterUpdate(p.getPlaylistId());	
+					frame.dim();
+					frame.showSheet(new PostToTwitterSheet(frame, p));
 				}
 			});
 			twitBtn.setEnabled(p.getPlaylistId() > 0);
@@ -354,7 +357,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 				delBtn = new RRedGlassButton("DELETE");
 				delBtn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						DeletePlaylistPanel dPanel = new DeletePlaylistPanel(frame, getModel().getPlaylist());
+						DeletePlaylistSheet dPanel = new DeletePlaylistSheet(frame, getModel().getPlaylist());
 						frame.dim();
 						frame.showSheet(dPanel);
 					}
@@ -367,7 +370,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 				shareBtn = new RGlassButton("SHARE");
 				shareBtn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						SharePlaylistPanel shPanel = new SharePlaylistPanel(frame, getModel().getPlaylist());
+						SharePlaylistSheet shPanel = new SharePlaylistSheet(frame, getModel().getPlaylist());
 						frame.dim();
 						frame.showSheet(shPanel);
 					}

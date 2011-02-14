@@ -1,4 +1,4 @@
-package com.robonobo.gui.panels;
+package com.robonobo.gui.sheets;
 
 import java.awt.ComponentOrientation;
 import java.awt.HeadlessException;
@@ -17,8 +17,7 @@ import com.robonobo.gui.RoboColor;
 import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 
-public class LoginPanel extends JPanel implements KeyListener {
-	private RobonoboFrame frame;
+public class LoginSheet extends Sheet {
 	private RButton loginBtn;
 	private RButton cancelBtn;
 	private RTextField emailField;
@@ -27,8 +26,8 @@ public class LoginPanel extends JPanel implements KeyListener {
 	private Runnable onLogin;
 	private Log log = LogFactory.getLog(getClass());
 
-	public LoginPanel(RobonoboFrame rFrame, Runnable onLogin) throws HeadlessException {
-		this.frame = rFrame;
+	public LoginSheet(RobonoboFrame rFrame, Runnable onLogin) throws HeadlessException {
+		super(rFrame);
 		this.onLogin = onLogin;
 		double[][] cellSizen = { { 10, 100, 10, 180, 10 }, { 10, 25, 5, 25, 5, 25, 5, 25, 5, 20, 5, 30, 10 } };
 		setLayout(new TableLayout(cellSizen));
@@ -69,6 +68,12 @@ public class LoginPanel extends JPanel implements KeyListener {
 
 	}
 
+	@Override
+	public void onShow() {
+		emailField.requestFocusInWindow();
+		emailField.selectAll();
+	}
+	
 	public JTextField getEmailField() {
 		return emailField;
 	}
@@ -87,7 +92,7 @@ public class LoginPanel extends JPanel implements KeyListener {
 			public void doRun() throws Exception {
 				try {
 					frame.getController().login(emailField.getText(), new String(passwordField.getPassword()));
-					LoginPanel.this.setVisible(false);
+					LoginSheet.this.setVisible(false);
 					if (onLogin != null)
 						frame.getController().getExecutor().execute(onLogin);
 				} catch(UnauthorizedException e) {
@@ -105,28 +110,6 @@ public class LoginPanel extends JPanel implements KeyListener {
 		});
 	}
 
-	public void keyPressed(KeyEvent e) {
-		int code = e.getKeyCode();
-		int modifiers = e.getModifiers();
-		if (code == KeyEvent.VK_ESCAPE)
-			setVisible(false);
-		if (code == KeyEvent.VK_Q && modifiers == Platform.getPlatform().getCommandModifierMask())
-			frame.shutdown();
-	}
-
-	@Override
-	public void setVisible(boolean visible) {
-		super.setVisible(visible);
-		if (!visible)
-			frame.undim();
-	}
-
-	public void keyReleased(KeyEvent e) {
-	}// Do nothing
-
-	public void keyTyped(KeyEvent e) {
-	}// Do nothing
-
 	private class ButtonPanel extends JPanel {
 		public ButtonPanel() {
 			setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
@@ -135,13 +118,13 @@ public class LoginPanel extends JPanel implements KeyListener {
 			cancelBtn = new RRedGlassButton("CANCEL");
 			cancelBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					LoginPanel.this.setVisible(false);
+					LoginSheet.this.setVisible(false);
 				}
 			});
-			cancelBtn.addKeyListener(LoginPanel.this);
+			cancelBtn.addKeyListener(LoginSheet.this);
 			cancelBtn.getActionMap().put("ESCAPE", new AbstractAction() {
 				public void actionPerformed(ActionEvent e) {
-					LoginPanel.this.setVisible(false);
+					LoginSheet.this.setVisible(false);
 				}
 			});
 			add(cancelBtn);
@@ -154,7 +137,7 @@ public class LoginPanel extends JPanel implements KeyListener {
 					tryLogin();
 				}
 			});
-			loginBtn.addKeyListener(LoginPanel.this);
+			loginBtn.addKeyListener(LoginSheet.this);
 			add(loginBtn);
 
 		}

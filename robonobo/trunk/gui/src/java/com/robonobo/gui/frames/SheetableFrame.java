@@ -14,6 +14,7 @@ import org.debian.tablelayout.TableLayout;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.core.Platform;
 import com.robonobo.gui.RoboColor;
+import com.robonobo.gui.sheets.Sheet;
 
 import furbelow.AbstractComponentDecorator;
 
@@ -28,7 +29,7 @@ public class SheetableFrame extends JFrame {
 		glass = (JPanel) getGlassPane();
 	}
 
-	public void showSheet(JComponent sheet) {
+	public void showSheet(Sheet sheet) {
 		sheetLock.lock();
 		try {
 			log.debug("showing sheet: " + sheet);
@@ -42,6 +43,7 @@ public class SheetableFrame extends JFrame {
 		} finally {
 			sheetLock.unlock();
 		}
+		sheet.onShow();
 	}
 
 	public synchronized void dim() {
@@ -72,7 +74,7 @@ public class SheetableFrame extends JFrame {
 
 	class SheetContainer extends JPanel {
 		public SheetContainer(JComponent sheet) {
-			// Make a 1px dark border and a 5px hatched background around the sheet
+			// Make a 1px grey border and a 5px white background around the sheet
 			double[][] cellSizen = { { 3, sheet.getPreferredSize().width, 5 }, { 2, sheet.getPreferredSize().height } };
 			setLayout(new TableLayout(cellSizen));
 			add(sheet, "1,1");

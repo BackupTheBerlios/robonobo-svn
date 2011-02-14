@@ -407,18 +407,18 @@ public class RobonoboController {
 		return inst.getUsersService().getMyPlaylistByTitle(title);
 	}
 
-	public void postFacebookUpdate(final long playlistId) {
+	public void postFacebookUpdate(final long playlistId, final String msg) {
 		getExecutor().execute(new CatchingRunnable() {
 			public void doRun() throws Exception {
-				inst.getUsersService().postFacebookUpdate(playlistId);				
+				inst.getUsersService().postFacebookUpdate(playlistId, msg);				
 			}
 		});
 	}
 	
-	public void postTwitterUpdate(final long playlistId) {
+	public void postTwitterUpdate(final long playlistId, final String msg) {
 		getExecutor().execute(new CatchingRunnable() {
 			public void doRun() throws Exception {
-				inst.getUsersService().postTwitterUpdate(playlistId);				
+				inst.getUsersService().postTwitterUpdate(playlistId, msg);				
 			}
 		});		
 	}

@@ -42,12 +42,14 @@ public class TwitterServiceImpl implements InitializingBean, TwitterService{
 	}
 	
 	@Override
-	public void postPlaylistUpdateToTwitter(MidasUserConfig muc, Playlist p) {
+	public void postPlaylistUpdateToTwitter(MidasUserConfig muc, Playlist p, String msg) {
 		String accTok = muc.getItem("twitterAccessToken");
 		if(accTok == null)
 			return;
+		if(msg == null)
+			msg = "I updated my playlist '" + p.getTitle() + "': ";
 		String playlistUrl = appConfig.getInitParam("playlistShortUrlBase") + p.getPlaylistId();
-		String msg = "I updated my playlist '" + p.getTitle() + "': " + playlistUrl;
+		msg += playlistUrl;
 		postToTwitter(muc, msg);
 	}
 	

@@ -1,4 +1,4 @@
-package com.robonobo.gui.panels;
+package com.robonobo.gui.sheets;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,11 +10,12 @@ import org.debian.tablelayout.TableLayout;
 import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 
-public class ConfirmClosePanel extends JPanel {
-	RobonoboFrame frame;
+public class ConfirmCloseSheet extends Sheet {
 
-	public ConfirmClosePanel(RobonoboFrame rFrame) {
-		this.frame = rFrame;
+	private RButton exitBtn;
+
+	public ConfirmCloseSheet(RobonoboFrame rFrame) {
+		super(rFrame);
 		double[][] cellSizen = { { 10, 200, 100, 10, 100, 10 }, {10, 20, 5, 45, 5, 25, 5, 30, 5} };
 		setLayout(new TableLayout(cellSizen));
 		setName("playback.background.panel");
@@ -29,7 +30,7 @@ public class ConfirmClosePanel extends JPanel {
 		feckOffCB.setSelected(false);
 		add(feckOffCB, "1,5,4,5,CENTER,CENTER");
 		
-		RButton exitBtn = new RGlassButton("EXIT");
+		exitBtn = new RGlassButton("EXIT");
 		exitBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if(feckOffCB.isSelected()) {
@@ -48,11 +49,9 @@ public class ConfirmClosePanel extends JPanel {
 		});
 		add(cancelBtn, "4,7");
 	}
-
+	
 	@Override
-	public void setVisible(boolean visible) {
-		super.setVisible(visible);
-		if(!visible)
-			frame.undim();
+	public void onShow() {
+		exitBtn.requestFocusInWindow();
 	}
 }

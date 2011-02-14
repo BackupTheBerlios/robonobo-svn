@@ -288,7 +288,7 @@ public class LCPair extends ConnectionPair {
 						usefulDataTimeout.cancel(false);
 						usefulDataTimeout = null;
 					}
-					sendMessage("ReqPage", ReqPage.newBuilder().setStreamId(sm.getStreamId()).addAllPage(newPages)
+					sendMessage("ReqPage", ReqPage.newBuilder().setStreamId(sm.getStreamId()).addAllRequestedPage(newPages)
 							.build());
 					for (long pn : newPages) {
 						PageAttempt rpa = new PageAttempt(rto, pn, now().getTime(), statusIdx);

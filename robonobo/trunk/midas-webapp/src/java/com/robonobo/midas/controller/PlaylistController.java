@@ -1,5 +1,6 @@
 package com.robonobo.midas.controller;
 
+import static com.robonobo.common.util.TextUtil.*;
 import static com.robonobo.common.util.TimeUtil.*;
 
 import java.io.IOException;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import com.robonobo.common.exceptions.SeekInnerCalmException;
+import com.robonobo.common.util.TextUtil;
 import com.robonobo.common.util.TimeUtil;
 import com.robonobo.core.api.model.Playlist;
 import com.robonobo.core.api.model.User;
@@ -145,7 +147,8 @@ public class PlaylistController extends BaseController {
 
 	@RequestMapping("/playlists/{pIdStr}/post-update")
 	public void postPlaylistUpdate(@PathVariable("pIdStr") String pIdStr, @RequestParam("service") String service,
-			HttpServletRequest req, HttpServletResponse resp) throws IOException {
+			@RequestParam(value = "msg", required = false) String msg, HttpServletRequest req, HttpServletResponse resp)
+			throws IOException {
 		long playlistId = Long.parseLong(pIdStr, 16);
 		Playlist p = midas.getPlaylistById(playlistId);
 		MidasUser u = getAuthUser(req);
@@ -153,11 +156,13 @@ public class PlaylistController extends BaseController {
 			send401(req, resp);
 			return;
 		}
+		if(msg != null)
+			msg = urlDecode(msg);
 		MidasUserConfig muc = midas.getUserConfig(u);
 		if ("facebook".equalsIgnoreCase(service))
-			facebook.postPlaylistUpdateToFacebook(muc, p);
+			facebook.postPlaylistUpdateToFacebook(muc, p, msg);
 		else if ("twitter".equalsIgnoreCase(service))
-			twitter.postPlaylistUpdateToTwitter(muc, p);
+			twitter.postPlaylistUpdateToTwitter(muc, p, msg);
 		else
 			log.error("Error: user " + u.getEmail() + " tried to update their playlist to service: '" + service);
 	}
