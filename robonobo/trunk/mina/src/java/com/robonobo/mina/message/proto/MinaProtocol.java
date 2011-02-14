@@ -9077,16 +9077,28 @@ public final class MinaProtocol {
     public boolean hasStreamId() { return hasStreamId; }
     public java.lang.String getStreamId() { return streamId_; }
     
-    // repeated int64 page = 2;
-    public static final int PAGE_FIELD_NUMBER = 2;
-    private java.util.List<java.lang.Long> page_ =
+    // repeated int64 requested_page = 2;
+    public static final int REQUESTED_PAGE_FIELD_NUMBER = 2;
+    private java.util.List<java.lang.Long> requestedPage_ =
       java.util.Collections.emptyList();
-    public java.util.List<java.lang.Long> getPageList() {
-      return page_;
+    public java.util.List<java.lang.Long> getRequestedPageList() {
+      return requestedPage_;
     }
-    public int getPageCount() { return page_.size(); }
-    public long getPage(int index) {
-      return page_.get(index);
+    public int getRequestedPageCount() { return requestedPage_.size(); }
+    public long getRequestedPage(int index) {
+      return requestedPage_.get(index);
+    }
+    
+    // repeated int64 confirmed_page = 3;
+    public static final int CONFIRMED_PAGE_FIELD_NUMBER = 3;
+    private java.util.List<java.lang.Long> confirmedPage_ =
+      java.util.Collections.emptyList();
+    public java.util.List<java.lang.Long> getConfirmedPageList() {
+      return confirmedPage_;
+    }
+    public int getConfirmedPageCount() { return confirmedPage_.size(); }
+    public long getConfirmedPage(int index) {
+      return confirmedPage_.get(index);
     }
     
     private void initFields() {
@@ -9102,8 +9114,11 @@ public final class MinaProtocol {
       if (hasStreamId()) {
         output.writeString(1, getStreamId());
       }
-      for (long element : getPageList()) {
+      for (long element : getRequestedPageList()) {
         output.writeInt64(2, element);
+      }
+      for (long element : getConfirmedPageList()) {
+        output.writeInt64(3, element);
       }
       getUnknownFields().writeTo(output);
     }
@@ -9120,12 +9135,21 @@ public final class MinaProtocol {
       }
       {
         int dataSize = 0;
-        for (long element : getPageList()) {
+        for (long element : getRequestedPageList()) {
           dataSize += com.google.protobuf.CodedOutputStream
             .computeInt64SizeNoTag(element);
         }
         size += dataSize;
-        size += 1 * getPageList().size();
+        size += 1 * getRequestedPageList().size();
+      }
+      {
+        int dataSize = 0;
+        for (long element : getConfirmedPageList()) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeInt64SizeNoTag(element);
+        }
+        size += dataSize;
+        size += 1 * getConfirmedPageList().size();
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -9269,9 +9293,13 @@ public final class MinaProtocol {
           throw new IllegalStateException(
             "build() has already been called on this Builder.");
         }
-        if (result.page_ != java.util.Collections.EMPTY_LIST) {
-          result.page_ =
-            java.util.Collections.unmodifiableList(result.page_);
+        if (result.requestedPage_ != java.util.Collections.EMPTY_LIST) {
+          result.requestedPage_ =
+            java.util.Collections.unmodifiableList(result.requestedPage_);
+        }
+        if (result.confirmedPage_ != java.util.Collections.EMPTY_LIST) {
+          result.confirmedPage_ =
+            java.util.Collections.unmodifiableList(result.confirmedPage_);
         }
         com.robonobo.mina.message.proto.MinaProtocol.ReqPage returnMe = result;
         result = null;
@@ -9292,11 +9320,17 @@ public final class MinaProtocol {
         if (other.hasStreamId()) {
           setStreamId(other.getStreamId());
         }
-        if (!other.page_.isEmpty()) {
-          if (result.page_.isEmpty()) {
-            result.page_ = new java.util.ArrayList<java.lang.Long>();
+        if (!other.requestedPage_.isEmpty()) {
+          if (result.requestedPage_.isEmpty()) {
+            result.requestedPage_ = new java.util.ArrayList<java.lang.Long>();
           }
-          result.page_.addAll(other.page_);
+          result.requestedPage_.addAll(other.requestedPage_);
+        }
+        if (!other.confirmedPage_.isEmpty()) {
+          if (result.confirmedPage_.isEmpty()) {
+            result.confirmedPage_ = new java.util.ArrayList<java.lang.Long>();
+          }
+          result.confirmedPage_.addAll(other.confirmedPage_);
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -9328,14 +9362,27 @@ public final class MinaProtocol {
               break;
             }
             case 16: {
-              addPage(input.readInt64());
+              addRequestedPage(input.readInt64());
               break;
             }
             case 18: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
               while (input.getBytesUntilLimit() > 0) {
-                addPage(input.readInt64());
+                addRequestedPage(input.readInt64());
+              }
+              input.popLimit(limit);
+              break;
+            }
+            case 24: {
+              addConfirmedPage(input.readInt64());
+              break;
+            }
+            case 26: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              while (input.getBytesUntilLimit() > 0) {
+                addConfirmedPage(input.readInt64());
               }
               input.popLimit(limit);
               break;
@@ -9366,37 +9413,71 @@ public final class MinaProtocol {
         return this;
       }
       
-      // repeated int64 page = 2;
-      public java.util.List<java.lang.Long> getPageList() {
-        return java.util.Collections.unmodifiableList(result.page_);
+      // repeated int64 requested_page = 2;
+      public java.util.List<java.lang.Long> getRequestedPageList() {
+        return java.util.Collections.unmodifiableList(result.requestedPage_);
       }
-      public int getPageCount() {
-        return result.getPageCount();
+      public int getRequestedPageCount() {
+        return result.getRequestedPageCount();
       }
-      public long getPage(int index) {
-        return result.getPage(index);
+      public long getRequestedPage(int index) {
+        return result.getRequestedPage(index);
       }
-      public Builder setPage(int index, long value) {
-        result.page_.set(index, value);
+      public Builder setRequestedPage(int index, long value) {
+        result.requestedPage_.set(index, value);
         return this;
       }
-      public Builder addPage(long value) {
-        if (result.page_.isEmpty()) {
-          result.page_ = new java.util.ArrayList<java.lang.Long>();
+      public Builder addRequestedPage(long value) {
+        if (result.requestedPage_.isEmpty()) {
+          result.requestedPage_ = new java.util.ArrayList<java.lang.Long>();
         }
-        result.page_.add(value);
+        result.requestedPage_.add(value);
         return this;
       }
-      public Builder addAllPage(
+      public Builder addAllRequestedPage(
           java.lang.Iterable<? extends java.lang.Long> values) {
-        if (result.page_.isEmpty()) {
-          result.page_ = new java.util.ArrayList<java.lang.Long>();
+        if (result.requestedPage_.isEmpty()) {
+          result.requestedPage_ = new java.util.ArrayList<java.lang.Long>();
         }
-        super.addAll(values, result.page_);
+        super.addAll(values, result.requestedPage_);
         return this;
       }
-      public Builder clearPage() {
-        result.page_ = java.util.Collections.emptyList();
+      public Builder clearRequestedPage() {
+        result.requestedPage_ = java.util.Collections.emptyList();
+        return this;
+      }
+      
+      // repeated int64 confirmed_page = 3;
+      public java.util.List<java.lang.Long> getConfirmedPageList() {
+        return java.util.Collections.unmodifiableList(result.confirmedPage_);
+      }
+      public int getConfirmedPageCount() {
+        return result.getConfirmedPageCount();
+      }
+      public long getConfirmedPage(int index) {
+        return result.getConfirmedPage(index);
+      }
+      public Builder setConfirmedPage(int index, long value) {
+        result.confirmedPage_.set(index, value);
+        return this;
+      }
+      public Builder addConfirmedPage(long value) {
+        if (result.confirmedPage_.isEmpty()) {
+          result.confirmedPage_ = new java.util.ArrayList<java.lang.Long>();
+        }
+        result.confirmedPage_.add(value);
+        return this;
+      }
+      public Builder addAllConfirmedPage(
+          java.lang.Iterable<? extends java.lang.Long> values) {
+        if (result.confirmedPage_.isEmpty()) {
+          result.confirmedPage_ = new java.util.ArrayList<java.lang.Long>();
+        }
+        super.addAll(values, result.confirmedPage_);
+        return this;
+      }
+      public Builder clearConfirmedPage() {
+        result.confirmedPage_ = java.util.Collections.emptyList();
         return this;
       }
       
@@ -13090,26 +13171,27 @@ public final class MinaProtocol {
       "nce\030\001 \002(\001\"\027\n\004Ping\022\017\n\007ping_id\030\001 \001(\t\"\027\n\004Po" +
       "ng\022\017\n\007ping_id\030\001 \001(\t\"\r\n\013QueryEscrow\"?\n\007Re" +
       "qConn\022\022\n\nto_node_id\030\001 \002(\t\022 \n\tfrom_node\030\002" +
-      " \002(\0132\r.coreapi.Node\"*\n\007ReqPage\022\021\n\tstream" +
-      "_id\030\001 \002(\t\022\014\n\004page\030\002 \003(\003\"Z\n\017ReqSourceStat" +
-      "us\022 \n\tfrom_node\030\001 \001(\0132\r.coreapi.Node\022\022\n\n" +
-      "to_node_id\030\002 \001(\t\022\021\n\tstream_id\030\003 \003(\t\"\262\001\n\014" +
-      "SourceStatus\022 \n\tfrom_node\030\001 \002(\0132\r.coreap",
-      "i.Node\022\022\n\nto_node_id\030\002 \002(\t\022,\n\rauction_st" +
-      "ate\030\003 \001(\0132\025.mina.AuctionStateMsg\022\036\n\007agor" +
-      "ics\030\004 \001(\0132\r.mina.Agorics\022\036\n\002ss\030\005 \003(\0132\022.m" +
-      "ina.StreamStatus\"#\n\016SourceStopping\022\021\n\tst" +
-      "ream_id\030\001 \002(\t\"M\n\013StartSource\022\021\n\tstream_i" +
-      "d\030\001 \002(\t\022\035\n\002ep\030\002 \002(\0132\021.coreapi.EndPoint\022\014" +
-      "\n\004page\030\003 \003(\003\"\037\n\nStopSource\022\021\n\tstream_id\030" +
-      "\001 \002(\t\"\220\001\n\014StreamStatus\022\021\n\tstream_id\030\001 \002(" +
-      "\t\022\034\n\024last_contiguous_page\030\002 \002(\003\022\024\n\014from_" +
-      "node_id\030\003 \001(\t\022\022\n\nto_node_id\030\004 \001(\t\022\023\n\013tot",
-      "al_pages\030\005 \001(\003\022\020\n\010page_map\030\006 \001(\005\"\037\n\005TopU" +
-      "p\022\026\n\016currency_token\030\001 \002(\014\" \n\013UnAdvSource" +
-      "\022\021\n\tstream_id\030\001 \003(\t\"\037\n\nWantSource\022\021\n\tstr" +
-      "eam_id\030\001 \003(\tB/\n\037com.robonobo.mina.messag" +
-      "e.protoB\014MinaProtocol"
+      " \002(\0132\r.coreapi.Node\"L\n\007ReqPage\022\021\n\tstream" +
+      "_id\030\001 \002(\t\022\026\n\016requested_page\030\002 \003(\003\022\026\n\016con" +
+      "firmed_page\030\003 \003(\003\"Z\n\017ReqSourceStatus\022 \n\t" +
+      "from_node\030\001 \001(\0132\r.coreapi.Node\022\022\n\nto_nod" +
+      "e_id\030\002 \001(\t\022\021\n\tstream_id\030\003 \003(\t\"\262\001\n\014Source",
+      "Status\022 \n\tfrom_node\030\001 \002(\0132\r.coreapi.Node" +
+      "\022\022\n\nto_node_id\030\002 \002(\t\022,\n\rauction_state\030\003 " +
+      "\001(\0132\025.mina.AuctionStateMsg\022\036\n\007agorics\030\004 " +
+      "\001(\0132\r.mina.Agorics\022\036\n\002ss\030\005 \003(\0132\022.mina.St" +
+      "reamStatus\"#\n\016SourceStopping\022\021\n\tstream_i" +
+      "d\030\001 \002(\t\"M\n\013StartSource\022\021\n\tstream_id\030\001 \002(" +
+      "\t\022\035\n\002ep\030\002 \002(\0132\021.coreapi.EndPoint\022\014\n\004page" +
+      "\030\003 \003(\003\"\037\n\nStopSource\022\021\n\tstream_id\030\001 \002(\t\"" +
+      "\220\001\n\014StreamStatus\022\021\n\tstream_id\030\001 \002(\t\022\034\n\024l" +
+      "ast_contiguous_page\030\002 \002(\003\022\024\n\014from_node_i",
+      "d\030\003 \001(\t\022\022\n\nto_node_id\030\004 \001(\t\022\023\n\013total_pag" +
+      "es\030\005 \001(\003\022\020\n\010page_map\030\006 \001(\005\"\037\n\005TopUp\022\026\n\016c" +
+      "urrency_token\030\001 \002(\014\" \n\013UnAdvSource\022\021\n\tst" +
+      "ream_id\030\001 \003(\t\"\037\n\nWantSource\022\021\n\tstream_id" +
+      "\030\001 \003(\tB/\n\037com.robonobo.mina.message.prot" +
+      "oB\014MinaProtocol"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -13345,7 +13427,7 @@ public final class MinaProtocol {
           internal_static_mina_ReqPage_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_mina_ReqPage_descriptor,
-              new java.lang.String[] { "StreamId", "Page", },
+              new java.lang.String[] { "StreamId", "RequestedPage", "ConfirmedPage", },
               com.robonobo.mina.message.proto.MinaProtocol.ReqPage.class,
               com.robonobo.mina.message.proto.MinaProtocol.ReqPage.Builder.class);
           internal_static_mina_ReqSourceStatus_descriptor =
