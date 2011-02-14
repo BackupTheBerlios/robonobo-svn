@@ -138,7 +138,8 @@ message ReqConn {
 
 message ReqPage {
 	required string stream_id = 1;
-	repeated int64 page = 2;
+	repeated int64 requested_page = 2;
+	repeated int64 confirmed_page = 3;
 }
 
 message ReqSourceStatus {
