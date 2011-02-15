@@ -152,7 +152,25 @@ public class PlaylistController extends BaseController {
 		long playlistId = Long.parseLong(pIdStr, 16);
 		Playlist p = midas.getPlaylistById(playlistId);
 		MidasUser u = getAuthUser(req);
-		if (u == null || !p.getOwnerIds().contains(u.getUserId())) {
+		if (u == null) {
+			send401(req, resp);
+			return;
+		}
+		boolean allowed = false;
+		if(p.getOwnerIds().contains(u.getUserId()))
+			allowed = true;
+		else if(p.getVisibility().equalsIgnoreCase("all"))
+			allowed = true;
+		else if(p.getVisibility().equalsIgnoreCase("friends")) {
+			for (long ownerId : p.getOwnerIds()) {
+				User owner = midas.getUserById(ownerId);
+				if(owner.getFriendIds().contains(u.getUserId())) {
+					allowed = true;
+					break;
+				}
+			}
+		}
+		if(!allowed) {
 			send401(req, resp);
 			return;
 		}

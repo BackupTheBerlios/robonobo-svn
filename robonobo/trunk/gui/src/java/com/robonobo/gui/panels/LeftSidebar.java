@@ -153,7 +153,7 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 				PlaylistConfig pc = frame.getController().getPlaylistConfig(p.getPlaylistId());
 				// TODO Don't use friend panel, have separate public one
 				// TODO Need to change playlistChanged() as well in case public panel gets replaced
-				FriendPlaylistContentPanel cp = new FriendPlaylistContentPanel(frame, p, pc);
+				OtherPlaylistContentPanel cp = new OtherPlaylistContentPanel(frame, p, pc);
 				frame.getMainPanel().addContentPanel("playlist/"+plId, cp);
 				pubPlTree.getModel().addPlaylist(p);
 			}
@@ -224,12 +224,12 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 			if (p.getOwnerIds().contains(myUserId))
 				frame.getMainPanel().addContentPanel(panelName, new MyPlaylistContentPanel(frame, p, pc));
 			else
-				frame.getMainPanel().addContentPanel(panelName, new FriendPlaylistContentPanel(frame, p, pc));
+				frame.getMainPanel().addContentPanel(panelName, new OtherPlaylistContentPanel(frame, p, pc));
 		} else {
 			// Playlist panel already exists - check to see if I'm now an owner and wasn't (or vice versa)
 			if((pPanel instanceof MyPlaylistContentPanel) && !p.getOwnerIds().contains(myUserId)) {
-				frame.getMainPanel().addContentPanel(panelName, new FriendPlaylistContentPanel(frame, p, pc));
-			} else if((pPanel instanceof FriendPlaylistContentPanel) && p.getOwnerIds().contains(myUserId)) {
+				frame.getMainPanel().addContentPanel(panelName, new OtherPlaylistContentPanel(frame, p, pc));
+			} else if((pPanel instanceof OtherPlaylistContentPanel) && p.getOwnerIds().contains(myUserId)) {
 				frame.getMainPanel().addContentPanel(panelName, new MyPlaylistContentPanel(frame, p, pc));
 			}
 		}

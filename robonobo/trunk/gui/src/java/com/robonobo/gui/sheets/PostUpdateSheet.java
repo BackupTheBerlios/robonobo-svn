@@ -50,7 +50,6 @@ public abstract class PostUpdateSheet extends Sheet {
 			add(charRemainingLbl, "1,5");
 			msgText.addKeyListener(new KeyAdapter() {
 				public void keyReleased(KeyEvent e) {
-					log.debug("updating lbl, got text: '"+msgText.getText()+"', msg: '"+getMsg()+"'");
 					charRemainingLbl.setText(charsLeft() + " characters remaining");
 				}
 			});

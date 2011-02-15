@@ -24,9 +24,7 @@ import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.model.PlaylistTableModel;
 
 @SuppressWarnings("serial")
-public class FriendPlaylistContentPanel extends ContentPanel implements UserPlaylistListener {
-	Playlist p;
-	PlaylistConfig pc;
+public class OtherPlaylistContentPanel extends PlaylistContentPanel implements UserPlaylistListener {
 	RLabel titleField;
 	RTextPane descField;
 	RButton saveBtn;
@@ -34,10 +32,8 @@ public class FriendPlaylistContentPanel extends ContentPanel implements UserPlay
 	RCheckBox iTunesCB;
 	protected Map<String, JCheckBox> options = new HashMap<String, JCheckBox>();
 
-	public FriendPlaylistContentPanel(RobonoboFrame frame, Playlist p, PlaylistConfig pc) {
-		super(frame, new PlaylistTableModel(frame.getController(), p, false));
-		this.p = p;
-		this.pc = pc;
+	public OtherPlaylistContentPanel(RobonoboFrame frame, Playlist p, PlaylistConfig pc) {
+		super(frame, p, pc);
 		tabPane.insertTab("playlist", null, new PlaylistDetailsPanel(), null, 0);
 		tabPane.setSelectedIndex(0);
 		frame.getController().addUserPlaylistListener(this);
@@ -89,23 +85,20 @@ public class FriendPlaylistContentPanel extends ContentPanel implements UserPlay
 
 	class PlaylistDetailsPanel extends JPanel {
 		public PlaylistDetailsPanel() {
-			double[][] cellSizen = { { 5, 400, 20, TableLayout.FILL, 5 },
-					{ 0, 20, 5, TableLayout.FILL, 5, 30, 5 } };
+			double[][] cellSizen = { { 5, 420, 15, TableLayout.FILL, 5 },
+					{ 20, 5, 25, 5, TableLayout.FILL, 5, 30, 5 } };
 			setLayout(new TableLayout(cellSizen));
-
 			titleField = new RLabel18B();
-			add(titleField, "1,1");
-
+			add(titleField, "1,0");
+			add(new PlaylistToolsPanel(), "1,2");
 			descField = new RTextPane();
 			descField.setBGColor(RoboColor.MID_GRAY);
 			descField.setEditable(false);
 			JScrollPane sp = new JScrollPane(descField);
-			add(sp, "1,3,1,5");
-
+			add(sp, "1,4,1,6");
 			updateFields();
-
-			add(new OptsPanel(), "3,1,3,3");
-			add(new ButtonsPanel(), "3,5");
+			add(new OptsPanel(), "3,0,3,4");
+			add(new ButtonsPanel(), "3,6");
 		}
 	}
 

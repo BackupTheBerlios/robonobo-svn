@@ -32,10 +32,8 @@ import com.robonobo.gui.sheets.*;
 import com.robonobo.gui.tasks.ImportFilesTask;
 
 @SuppressWarnings("serial")
-public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylistListener {
-	protected PlaylistConfig pc;
+public class MyPlaylistContentPanel extends PlaylistContentPanel implements UserPlaylistListener {
 	protected RTextField titleField;
-	protected RTextField urlField;
 	protected RTextArea descField;
 	protected RButton saveBtn;
 	protected RButton shareBtn;
@@ -47,8 +45,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 	protected Map<String, RCheckBox> options = new HashMap<String, RCheckBox>();
 
 	public MyPlaylistContentPanel(RobonoboFrame frame, Playlist p, PlaylistConfig pc) {
-		super(frame, new PlaylistTableModel(frame.getController(), p, true));
-		this.pc = pc;
+		super(frame, p, pc);
 		tabPane.insertTab("playlist", null, new PlaylistDetailsPanel(), null, 0);
 		tabPane.setSelectedIndex(0);
 		if (addAsListener())
@@ -56,8 +53,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 	}
 
 	protected MyPlaylistContentPanel(RobonoboFrame frame, Playlist p, PlaylistConfig pc, PlaylistTableModel model) {
-		super(frame, model);
-		this.pc = pc;
+		super(frame, p, pc, model);
 		tabPane.insertTab("playlist", null, new PlaylistDetailsPanel(), null, 0);
 		tabPane.setSelectedIndex(0);
 		if (addAsListener())
@@ -213,13 +209,12 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 		}
 	}
 
-	class PlaylistDetailsPanel extends JPanel implements ClipboardOwner {
+	class PlaylistDetailsPanel extends JPanel {
 
 		public PlaylistDetailsPanel() {
-			double[][] cellSizen = { { 5, 35, 5, 215, 5, 30, 5, 30, 5, 90, 10, 150, 5, TableLayout.FILL, 5 },
+			double[][] cellSizen = { { 5, 35, 5, 380, 10, 150, 5, TableLayout.FILL, 5 },
 					{ 5, 25, 5, 25, 25, 0, TableLayout.FILL, 5, 30, 5 } };
 			setLayout(new TableLayout(cellSizen));
-
 			KeyListener kl = new KeyAdapter() {
 				@Override
 				public void keyTyped(KeyEvent e) {
@@ -232,118 +227,17 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			add(titleLbl, "1,1");
 			titleField = new RTextField(p.getTitle());
 			titleField.addKeyListener(kl);
-			add(titleField, "3,1,9,1");
-
-			RLabel urlLbl = new RLabel13("URL:");
-			add(urlLbl, "1,3");
-			String urlBase = frame.getController().getConfig().getPlaylistUrlBase();
-			String urlText = (p.getPlaylistId() > 0) ? urlBase + Long.toHexString(p.getPlaylistId()) : "(none)";
-			urlField = new RTextField(urlText);
-			urlField.setEnabled(false);
-			add(urlField, "3,3");
-			RButton fbBtn = new RSmallRoundButton(new ImageIcon(
-					RobonoboFrame.class.getResource("/img/icon/facebook.png")));
-			// TODO If we are not set up for facebook/twitter, take us to our account page instead...
-			fbBtn.setToolTipText("Post playlist update to facebook");
-			fbBtn.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					fbUpdateBtnPressed();
-				}
-			});
-			fbBtn.setEnabled(p.getPlaylistId() > 0);
-			add(fbBtn, "5,3");
-			RButton twitBtn = new RSmallRoundButton(new ImageIcon(
-					RobonoboFrame.class.getResource("/img/icon/twitter.png")));
-			twitBtn.setToolTipText("Post playlist update to twitter");
-			twitBtn.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					twitUpdateBtnPressed();
-				}
-			});
-			twitBtn.setEnabled(p.getPlaylistId() > 0);
-			add(twitBtn, "7,3");
-			RButton copyBtn = new RSmallRoundButton("Copy URL");
-			copyBtn.setToolTipText("Copy playlist URL to clipboard");
-			copyBtn.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					Clipboard c = Toolkit.getDefaultToolkit().getSystemClipboard();
-					StringSelection s = new StringSelection(urlField.getText());
-					c.setContents(s, PlaylistDetailsPanel.this);
-				}
-			});
-			copyBtn.setEnabled(p.getPlaylistId() > 0);
-			add(copyBtn, "9,3");
-
+			add(titleField, "3,1");
+			add(new PlaylistToolsPanel(), "1,3,3,3");
 			RLabel descLbl = new RLabel13("Description:");
-			add(descLbl, "1,4,9,4");
+			add(descLbl, "1,4,3,4");
 			descField = new RTextArea(p.getDescription());
 			descField.setBGColor(RoboColor.MID_GRAY);
 			descField.addKeyListener(kl);
-			add(new JScrollPane(descField), "1,6,9,8");
-			add(new VisPanel(), "11,1,11,6");
-			add(new OptsPanel(), "13,1,13,6");
-			add(new ButtonsPanel(), "11,8,13,8");
-		}
-
-		@Override
-		public void lostOwnership(Clipboard clipboard, Transferable contents) {
-			// Do nothing
-		}
-
-		private void fbUpdateBtnPressed() {
-			UserConfig uc = frame.getController().getMyUserConfig();
-			if (uc == null || uc.getItem("facebookId") == null) {
-				// We don't seem to be registered for facebook - fetch a fresh copy of the usercfg from midas in
-				// case they've recently added themselves to fb, but GTFOTUT
-				frame.getController().getExecutor().execute(new CatchingRunnable() {
-					public void doRun() throws Exception {
-						UserConfig freshUc = frame.getController().refreshMyUserConfig();
-						if (freshUc == null || freshUc.getItem("facebookId") == null) {
-							// They haven't associated their facebook account with their rbnb one... bounce them to
-							// their account page so they can do so
-							NetUtil.browse(frame.getController().getConfig().getUserAccountUrl());
-						} else {
-							SwingUtilities.invokeLater(new CatchingRunnable() {
-								public void doRun() throws Exception {
-									frame.dim();
-									frame.showSheet(new PostToFacebookSheet(frame, getModel().getPlaylist()));
-								}
-							});
-						}
-					}
-				});
-			} else {
-				frame.dim();
-				frame.showSheet(new PostToFacebookSheet(frame, getModel().getPlaylist()));
-			}
-		}
-		
-		private void twitUpdateBtnPressed() {
-			UserConfig uc = frame.getController().getMyUserConfig();
-			if (uc == null || uc.getItem("twitterId") == null) {
-				// We don't seem to be registered for twitter - fetch a fresh copy of the usercfg from midas in
-				// case they've recently added themselves, but GTFOTUT
-				frame.getController().getExecutor().execute(new CatchingRunnable() {
-					public void doRun() throws Exception {
-						UserConfig freshUc = frame.getController().refreshMyUserConfig();
-						if (freshUc == null || freshUc.getItem("twitterId") == null) {
-							// They haven't associated their twitter account with their rbnb one... bounce them to
-							// their account page so they can do so
-							NetUtil.browse(frame.getController().getConfig().getUserAccountUrl());
-						} else {
-							SwingUtilities.invokeLater(new CatchingRunnable() {
-								public void doRun() throws Exception {
-									frame.dim();
-									frame.showSheet(new PostToTwitterSheet(frame, getModel().getPlaylist()));
-								}
-							});
-						}
-					}
-				});
-			} else {
-				frame.dim();
-				frame.showSheet(new PostToTwitterSheet(frame, getModel().getPlaylist()));
-			}			
+			add(new JScrollPane(descField), "1,6,3,8");
+			add(new VisPanel(), "5,1,5,6");
+			add(new OptsPanel(), "7,1,7,6");
+			add(new ButtonsPanel(), "5,8,7,8");
 		}
 	}
 
