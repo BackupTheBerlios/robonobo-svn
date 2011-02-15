@@ -34,6 +34,7 @@ public class RobonoboConfig implements Serializable {
 	boolean allowLoopbackAddress = false;
 	String playlistUrlBase = "http://rbnb.co/p/";
 	String updateCheckUrl = "http://robonobo.com/checkupdate";
+	String userAccountUrl = "http://robonobo.com/account";
 
 	public RobonoboConfig() {
 	}
@@ -244,5 +245,13 @@ public class RobonoboConfig implements Serializable {
 
 	public void setUpdateCheckUrl(String updateCheckUrl) {
 		this.updateCheckUrl = updateCheckUrl;
+	}
+
+	public String getUserAccountUrl() {
+		return userAccountUrl;
+	}
+
+	public void setUserAccountUrl(String userAccountUrl) {
+		this.userAccountUrl = userAccountUrl;
 	}
 }

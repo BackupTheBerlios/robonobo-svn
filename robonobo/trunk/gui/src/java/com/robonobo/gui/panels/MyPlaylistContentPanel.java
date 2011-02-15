@@ -17,6 +17,7 @@ import org.debian.tablelayout.TableLayout;
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.common.util.FileUtil;
+import com.robonobo.common.util.NetUtil;
 import com.robonobo.core.Platform;
 import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.UserPlaylistListener;
@@ -62,7 +63,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 		if (addAsListener())
 			frame.getController().addUserPlaylistListener(this);
 	}
-	
+
 	protected boolean addAsListener() {
 		return true;
 	}
@@ -98,10 +99,10 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 		});
 	}
 
-	protected PlaylistTableModel getModel(){
+	protected PlaylistTableModel getModel() {
 		return (PlaylistTableModel) trackList.getModel();
 	}
-	
+
 	@Override
 	public void loggedIn() {
 		// Do nothing
@@ -116,12 +117,12 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 	public void libraryChanged(Library lib) {
 		// Do nothing
 	}
-	
+
 	@Override
 	public void userConfigChanged(UserConfig cfg) {
 		// Do nothing
 	}
-	
+
 	@Override
 	public void playlistChanged(Playlist p) {
 		if (p.equals(getModel().getPlaylist())) {
@@ -129,14 +130,14 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			titleField.setText(p.getTitle());
 			descField.setText(p.getDescription());
 			String vis = p.getVisibility();
-			if(vis.equals(Playlist.VIS_ALL))
+			if (vis.equals(Playlist.VIS_ALL))
 				visAllBtn.setSelected(true);
-			else if(vis.equals(Playlist.VIS_FRIENDS))
+			else if (vis.equals(Playlist.VIS_FRIENDS))
 				visFriendsBtn.setSelected(true);
-			else if(vis.equals(Playlist.VIS_ME))
+			else if (vis.equals(Playlist.VIS_ME))
 				visMeBtn.setSelected(true);
 			else
-				throw new SeekInnerCalmException("invalid visibility "+vis);
+				throw new SeekInnerCalmException("invalid visibility " + vis);
 			PlaylistTableModel ptm = (PlaylistTableModel) trackList.getModel();
 			ptm.update(p, true);
 		}
@@ -199,7 +200,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 
 	class PlaylistImportTask extends ImportFilesTask {
 		int insertRow;
-		
+
 		public PlaylistImportTask(List<File> files, int insertRow) {
 			super(frame.getController(), files);
 			this.insertRow = insertRow;
@@ -211,7 +212,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			tm.addStreams(streamIds, insertRow);
 		}
 	}
-	
+
 	class PlaylistDetailsPanel extends JPanel implements ClipboardOwner {
 
 		public PlaylistDetailsPanel() {
@@ -240,23 +241,23 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			urlField = new RTextField(urlText);
 			urlField.setEnabled(false);
 			add(urlField, "3,3");
-			RButton fbBtn = new RSmallRoundButton(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/facebook.png")));
+			RButton fbBtn = new RSmallRoundButton(new ImageIcon(
+					RobonoboFrame.class.getResource("/img/icon/facebook.png")));
 			// TODO If we are not set up for facebook/twitter, take us to our account page instead...
 			fbBtn.setToolTipText("Post playlist update to facebook");
 			fbBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					frame.dim();
-					frame.showSheet(new PostToFacebookSheet(frame, p));
+					fbUpdateBtnPressed();
 				}
 			});
 			fbBtn.setEnabled(p.getPlaylistId() > 0);
 			add(fbBtn, "5,3");
-			RButton twitBtn = new RSmallRoundButton(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/twitter.png")));
+			RButton twitBtn = new RSmallRoundButton(new ImageIcon(
+					RobonoboFrame.class.getResource("/img/icon/twitter.png")));
 			twitBtn.setToolTipText("Post playlist update to twitter");
 			twitBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					frame.dim();
-					frame.showSheet(new PostToTwitterSheet(frame, p));
+					twitUpdateBtnPressed();
 				}
 			});
 			twitBtn.setEnabled(p.getPlaylistId() > 0);
@@ -272,7 +273,7 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			});
 			copyBtn.setEnabled(p.getPlaylistId() > 0);
 			add(copyBtn, "9,3");
-			
+
 			RLabel descLbl = new RLabel13("Description:");
 			add(descLbl, "1,4,9,4");
 			descField = new RTextArea(p.getDescription());
@@ -283,10 +284,66 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			add(new OptsPanel(), "13,1,13,6");
 			add(new ButtonsPanel(), "11,8,13,8");
 		}
-		
+
 		@Override
 		public void lostOwnership(Clipboard clipboard, Transferable contents) {
 			// Do nothing
+		}
+
+		private void fbUpdateBtnPressed() {
+			UserConfig uc = frame.getController().getMyUserConfig();
+			if (uc == null || uc.getItem("facebookId") == null) {
+				// We don't seem to be registered for facebook - fetch a fresh copy of the usercfg from midas in
+				// case they've recently added themselves to fb, but GTFOTUT
+				frame.getController().getExecutor().execute(new CatchingRunnable() {
+					public void doRun() throws Exception {
+						UserConfig freshUc = frame.getController().refreshMyUserConfig();
+						if (freshUc == null || freshUc.getItem("facebookId") == null) {
+							// They haven't associated their facebook account with their rbnb one... bounce them to
+							// their account page so they can do so
+							NetUtil.browse(frame.getController().getConfig().getUserAccountUrl());
+						} else {
+							SwingUtilities.invokeLater(new CatchingRunnable() {
+								public void doRun() throws Exception {
+									frame.dim();
+									frame.showSheet(new PostToFacebookSheet(frame, getModel().getPlaylist()));
+								}
+							});
+						}
+					}
+				});
+			} else {
+				frame.dim();
+				frame.showSheet(new PostToFacebookSheet(frame, getModel().getPlaylist()));
+			}
+		}
+		
+		private void twitUpdateBtnPressed() {
+			UserConfig uc = frame.getController().getMyUserConfig();
+			if (uc == null || uc.getItem("twitterId") == null) {
+				// We don't seem to be registered for twitter - fetch a fresh copy of the usercfg from midas in
+				// case they've recently added themselves, but GTFOTUT
+				frame.getController().getExecutor().execute(new CatchingRunnable() {
+					public void doRun() throws Exception {
+						UserConfig freshUc = frame.getController().refreshMyUserConfig();
+						if (freshUc == null || freshUc.getItem("twitterId") == null) {
+							// They haven't associated their twitter account with their rbnb one... bounce them to
+							// their account page so they can do so
+							NetUtil.browse(frame.getController().getConfig().getUserAccountUrl());
+						} else {
+							SwingUtilities.invokeLater(new CatchingRunnable() {
+								public void doRun() throws Exception {
+									frame.dim();
+									frame.showSheet(new PostToTwitterSheet(frame, getModel().getPlaylist()));
+								}
+							});
+						}
+					}
+				});
+			} else {
+				frame.dim();
+				frame.showSheet(new PostToTwitterSheet(frame, getModel().getPlaylist()));
+			}			
 		}
 	}
 
@@ -309,25 +366,25 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			String vis = p.getVisibility();
 			visMeBtn = new RRadioButton("Just me");
 			visMeBtn.addActionListener(al);
-			if(vis.equals(Playlist.VIS_ME))
+			if (vis.equals(Playlist.VIS_ME))
 				visMeBtn.setSelected(true);
 			bg.add(visMeBtn);
 			add(visMeBtn);
 			visFriendsBtn = new RRadioButton("Friends");
 			visFriendsBtn.addActionListener(al);
-			if(vis.equals(Playlist.VIS_FRIENDS))
+			if (vis.equals(Playlist.VIS_FRIENDS))
 				visFriendsBtn.setSelected(true);
 			bg.add(visFriendsBtn);
 			add(visFriendsBtn);
 			visAllBtn = new RRadioButton("Everyone");
 			visAllBtn.addActionListener(al);
-			if(vis.equals(Playlist.VIS_ALL))
+			if (vis.equals(Playlist.VIS_ALL))
 				visAllBtn.setSelected(true);
 			bg.add(visAllBtn);
 			add(visAllBtn);
 		}
 	}
-	
+
 	class OptsPanel extends JPanel {
 		public OptsPanel() {
 			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -383,11 +440,11 @@ public class MyPlaylistContentPanel extends ContentPanel implements UserPlaylist
 			saveBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					Playlist p = getModel().getPlaylist();
-					if(visAllBtn.isSelected())
+					if (visAllBtn.isSelected())
 						p.setVisibility(Playlist.VIS_ALL);
-					else if(visFriendsBtn.isSelected())
+					else if (visFriendsBtn.isSelected())
 						p.setVisibility(Playlist.VIS_FRIENDS);
-					else if(visMeBtn.isSelected())
+					else if (visMeBtn.isSelected())
 						p.setVisibility(Playlist.VIS_ME);
 					pc.getItems().clear();
 					for (String opt : options.keySet()) {

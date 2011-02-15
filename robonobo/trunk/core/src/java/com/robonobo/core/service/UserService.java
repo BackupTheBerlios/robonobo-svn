@@ -37,6 +37,7 @@ import com.robonobo.core.api.proto.CoreApi.UserMsg;
 public class UserService extends AbstractService {
 	Log log = LogFactory.getLog(getClass());
 	private User me;
+	private UserConfig myUserCfg;
 	MetadataServerConfig msc;
 	/**
 	 * We keep users and playlists in a hashmap, and look them up on demand. This is because they are being updated
@@ -132,7 +133,7 @@ public class UserService extends AbstractService {
 					rbnb.getEventService().fireLoggedIn();
 					UserLookerUpper ulu = new UserLookerUpper(me);
 					ulu.doRun();
-					lookupUserConfig();
+					refreshMyUserConfig();
 				}
 			});
 			if (rbnb.getMina() != null & rbnb.getMina().isConnectedToSupernode()) {
@@ -146,13 +147,6 @@ public class UserService extends AbstractService {
 			log.error("Caught exception logging in", e);
 			throw e;
 		}
-	}
-
-	private void lookupUserConfig() throws IOException, SerializationException {
-		UserConfigMsg.Builder b = UserConfigMsg.newBuilder();
-		rbnb.getSerializationManager().getObjectFromUrl(b, msc.getUserConfigUrl(me.getUserId()));
-		UserConfig cfg = new UserConfig(b.build());
-		rbnb.getEventService().fireUserConfigChanged(cfg);
 	}
 
 	public void saveUserConfigItem(String itemName, String itemValue) {
@@ -189,6 +183,23 @@ public class UserService extends AbstractService {
 		if (me == null)
 			return null;
 		return getUser(me.getEmail());
+	}
+
+	public UserConfig getMyUserConfig() {
+		return myUserCfg;
+	}
+	
+	public UserConfig refreshMyUserConfig() {
+		UserConfigMsg.Builder b = UserConfigMsg.newBuilder();
+		try {
+			rbnb.getSerializationManager().getObjectFromUrl(b, msc.getUserConfigUrl(me.getUserId()));
+		} catch (Exception e) {
+			log.error("Caught exception fetching user config", e);
+			return null;
+		}
+		myUserCfg = new UserConfig(b.build());
+		rbnb.getEventService().fireUserConfigChanged(myUserCfg);
+		return myUserCfg;
 	}
 
 	public MetadataServerConfig getMsc() {

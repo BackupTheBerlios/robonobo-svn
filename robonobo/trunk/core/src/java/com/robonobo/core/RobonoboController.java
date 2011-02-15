@@ -375,6 +375,14 @@ public class RobonoboController {
 		return inst.getUsersService().getMyUser();
 	}
 
+	public UserConfig getMyUserConfig() {
+		return inst.getUsersService().getMyUserConfig();
+	}
+	
+	public UserConfig refreshMyUserConfig() {
+		return inst.getUsersService().refreshMyUserConfig();
+	}
+	
 	public double getBankBalance() throws RobonoboException {
 		try {
 			return inst.getWangService().getBankBalance();
