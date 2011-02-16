@@ -31,7 +31,7 @@ public abstract class ContentPanel extends JPanel {
 	protected RobonoboFrame frame;
 	protected Log log = LogFactory.getLog(getClass());
 	private List<MessagePanel> msgs = new ArrayList<MessagePanel>();
-	
+
 	public ContentPanel() {
 	}
 
@@ -48,9 +48,7 @@ public abstract class ContentPanel extends JPanel {
 		tabPane.setFont(RoboFont.getFont(16, true));
 		tabPane.setBorder(BorderFactory.createEmptyBorder(0, 1, 0, 1));
 		add(tabPane, "0,2");
-		// TODO Add the track details once we have identifiable tracks...
-		tabPane.addTab("track", new JPanel());
-		tabPane.setEnabledAt(0, false);
+		tabPane.addTab("track", new TrackTab());
 	}
 
 	/**
@@ -58,31 +56,31 @@ public abstract class ContentPanel extends JPanel {
 	 */
 	public void showMessage(String title, String htmlMsg) {
 		MessagePanel mp = new MessagePanel(title, htmlMsg);
-		if(msgs.size() == 0)
+		if (msgs.size() == 0)
 			showMessage(mp);
 		msgs.add(mp);
 	}
-	
+
 	private void showMessage(MessagePanel mp) {
 		TableLayout tl = (TableLayout) getLayout();
 		tl.insertRow(0, 5);
-		tl.insertRow(0, mp.getPreferredSize().height);		
+		tl.insertRow(0, mp.getPreferredSize().height);
 		add(mp, "0,0");
 		revalidate();
 	}
-	
+
 	private void messageClosed() {
 		TableLayout tl = (TableLayout) getLayout();
 		tl.deleteRow(0);
 		tl.deleteRow(0);
 		msgs.remove(0);
-		if(msgs.size() > 0) {
+		if (msgs.size() > 0) {
 			MessagePanel mp = msgs.get(0);
 			showMessage(mp);
 		} else
 			revalidate();
 	}
-	
+
 	public TrackList getTrackList() {
 		return trackList;
 	}
@@ -103,7 +101,7 @@ public abstract class ContentPanel extends JPanel {
 
 	private class MessagePanel extends JPanel {
 		public MessagePanel(String title, String htmlMsg) {
-			double[][] cellSizen = { {10, TableLayout.FILL, 70, 10}, {10, 25, 5, TableLayout.FILL, 10} };
+			double[][] cellSizen = { { 10, TableLayout.FILL, 70, 10 }, { 10, 25, 5, TableLayout.FILL, 10 } };
 			setName("playback.background.panel");
 			setLayout(new TableLayout(cellSizen));
 			RLabel titleLbl = new RLabel18B(title);
@@ -119,7 +117,15 @@ public abstract class ContentPanel extends JPanel {
 			add(msgPane, "1,3,2,3");
 		}
 	}
-	
+
+	class TrackTab extends JPanel {
+		public TrackTab() {
+			double[][] cellSizen = { { 5, TableLayout.FILL, 5 }, { 25, TableLayout.FILL } };
+			setLayout(new TableLayout(cellSizen));
+			add(new RLabel12B("This track has no associated information."), "1,0");
+		}
+	}
+
 	private TransferHandler createTrackListTransferHandler() {
 		return new TransferHandler() {
 			@Override
