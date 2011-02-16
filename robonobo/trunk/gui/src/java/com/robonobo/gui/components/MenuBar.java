@@ -41,7 +41,7 @@ public class MenuBar extends JMenuBar {
 		JMenuItem showWelcome = new JMenuItem("Show welcome page...");
 		showWelcome.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				frame.showWelcome();
+				frame.showWelcome(true);
 			}
 		});
 		fileMenu.add(showWelcome);

@@ -88,7 +88,7 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 					// If the tracks haven't loaded yet, show the welcome when they have
 					shownLogin = true;
 					if (tracksLoaded)
-						showWelcome();
+						showWelcome(false);
 				}
 			};
 			final LoginSheet lp = new LoginSheet(RobonoboFrame.this, onLogin);
@@ -146,7 +146,7 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 		handleArgs();
 		// If we haven't shown the login sheet yet, show the welcome later
 		if (shownLogin)
-			showWelcome();
+			showWelcome(false);
 	}
 
 	private void handleArgs() {
@@ -205,10 +205,10 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 		log.error("Received invalid rbnb uri: "+uri);
 	}
 	
-	public void showWelcome() {
-		// If we have no shares, show the welcome dialog
+	public void showWelcome(boolean forceShow) {
+		// If we have no shares (or we're forcing it), show the welcome dialog
 		final boolean gotShares = (control.getShares().size() > 0);
-		if (!gotShares && guiConfig.getShowWelcomePanel()) {
+		if (forceShow || (!gotShares && guiConfig.getShowWelcomePanel())) {
 			SwingUtilities.invokeLater(new CatchingRunnable() {
 				public void doRun() throws Exception {
 					showSheet(new WelcomeSheet(RobonoboFrame.this));

@@ -89,7 +89,7 @@ public class WelcomeSheet extends Sheet {
 		addButton(feckOffBtn, "1,20");
 
 		shutUpCB = new RCheckBox("Don't show this screen on startup");
-		shutUpCB.setSelected(false);
+		shutUpCB.setSelected(!frame.getGuiConfig().getShowWelcomePanel());
 		add(shutUpCB, "1,22");
 	}
 
