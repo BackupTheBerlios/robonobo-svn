@@ -72,6 +72,10 @@ public class MyPlaylistContentPanel extends PlaylistContentPanel implements User
 		return true;
 	}
 
+	protected boolean showITunes() {
+		return true;
+	}
+	
 	protected boolean detailsChanged() {
 		return isNonEmpty(titleField.getText());
 	}
@@ -85,9 +89,10 @@ public class MyPlaylistContentPanel extends PlaylistContentPanel implements User
 				try {
 					// This creates the playlist's id if it doesn't already
 					// exist, so update the playlist config
-					frame.getController().putPlaylistConfig(pc);
 					frame.getController().addOrUpdatePlaylist(p);
 					pc.setPlaylistId(p.getPlaylistId());
+					frame.getController().putPlaylistConfig(pc);
+					frame.getController().checkPlaylistUpdate(p.getPlaylistId());
 				} catch (RobonoboException e) {
 					log.error("Error creating playlist", e);
 				}
@@ -288,7 +293,7 @@ public class MyPlaylistContentPanel extends PlaylistContentPanel implements User
 					saveBtn.setEnabled(detailsChanged());
 				}
 			};
-			if (Platform.getPlatform().iTunesAvailable()) {
+			if (showITunes() && Platform.getPlatform().iTunesAvailable()) {
 				iTunesCB = new RCheckBox("Export playlist to iTunes");
 				iTunesCB.setSelected("true".equalsIgnoreCase(pc.getItem("iTunesExport")));
 				options.put("iTunesExport", iTunesCB);

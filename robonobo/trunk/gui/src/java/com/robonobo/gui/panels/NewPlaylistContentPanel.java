@@ -29,8 +29,6 @@ public class NewPlaylistContentPanel extends MyPlaylistContentPanel {
 				// Create the new playlist in midas
 				try {
 					p.getOwnerIds().add(control.getMyUser().getUserId());
-					pc.setPlaylistId(p.getPlaylistId());
-					control.putPlaylistConfig(pc);
 					final Playlist updatedP = control.addOrUpdatePlaylist(p);
 					SwingUtilities.invokeLater(new CatchingRunnable() {
 						public void doRun() throws Exception {
@@ -47,6 +45,7 @@ public class NewPlaylistContentPanel extends MyPlaylistContentPanel {
 							getModel().setPlaylist(newP);
 						}
 					});
+					control.checkPlaylistUpdate(updatedP.getPlaylistId());
 				} catch (RobonoboException e) {
 					log.error("Error creating playlist", e);
 					return;
@@ -68,5 +67,10 @@ public class NewPlaylistContentPanel extends MyPlaylistContentPanel {
 	@Override
 	protected boolean addAsListener() {
 		return false;		
+	}
+	
+	@Override
+	protected boolean showITunes() {
+		return false;
 	}
 }

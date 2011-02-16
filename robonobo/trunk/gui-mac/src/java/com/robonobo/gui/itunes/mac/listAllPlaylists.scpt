@@ -1,14 +1,22 @@
 set linefeed to ASCII character 10
 set outputList to {}
 set myPlaylistRefs to {}
+
 tell application "iTunes"
 	set allUserPlaylists to (get a reference to (every user playlist))
 	repeat with pRef in allUserPlaylists
 		try
+         set isRbnbList to false
 			set p to (contents of pRef)
+         if exists parent of p then
+            set par to (parent of p)
+            if (exists parent of par) and (parent of par is folder playlist "robonobo") then
+               set isRbnbList to true
+            end if
+         end if
 			set pKind to (special kind of p)
 			set pSmart to (smart of p)
-			if (not pSmart) and (pKind is none) then
+			if (not isRbnbList) and (not pSmart) and (pKind is none) then
 				copy pRef to the end of myPlaylistRefs
 			end if
 		end try

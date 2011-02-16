@@ -62,7 +62,6 @@ public class OtherPlaylistContentPanel extends PlaylistContentPanel implements U
 	@Override
 	public void playlistChanged(Playlist p) {
 		if (p.equals(this.p)) {
-			// TODO Left over from old GUI - is this needed?
 			if (p.getOwnerIds().contains(frame.getController().getMyUser().getUserId())) {
 				log.debug("DEBUG: not updating playlist content panel for playlist '" + p.getTitle()
 						+ "' - I am an owner!");
