@@ -100,7 +100,6 @@ public abstract class PlaylistContentPanel extends ContentPanel implements Clipb
 					} else {
 						SwingUtilities.invokeLater(new CatchingRunnable() {
 							public void doRun() throws Exception {
-								frame.dim();
 								frame.showSheet(new PostToFacebookSheet(frame, p));
 							}
 						});
@@ -108,7 +107,6 @@ public abstract class PlaylistContentPanel extends ContentPanel implements Clipb
 				}
 			});
 		} else {
-			frame.dim();
 			frame.showSheet(new PostToFacebookSheet(frame, p));
 		}
 	}
@@ -128,7 +126,6 @@ public abstract class PlaylistContentPanel extends ContentPanel implements Clipb
 					} else {
 						SwingUtilities.invokeLater(new CatchingRunnable() {
 							public void doRun() throws Exception {
-								frame.dim();
 								frame.showSheet(new PostToTwitterSheet(frame, p));
 							}
 						});
@@ -136,7 +133,6 @@ public abstract class PlaylistContentPanel extends ContentPanel implements Clipb
 				}
 			});
 		} else {
-			frame.dim();
 			frame.showSheet(new PostToTwitterSheet(frame, p));
 		}			
 	}

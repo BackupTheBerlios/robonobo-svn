@@ -33,27 +33,21 @@ public class LoginSheet extends Sheet {
 		setLayout(new TableLayout(cellSizen));
 		setName("playback.background.panel");
 
-		RLabel title = new RLabel14B("Please login to robonobo");
-		add(title, "1,1,3,1,CENTER,CENTER");
+		add(new RLabel14B("Please login to robonobo"), "1,1,3,1,CENTER,CENTER");
 
 		String blurbTxt = "<html><center>Visit <a href=\"http://robonobo.com\">http://robonobo.com</a> for an account.<br><br></center></html>";
-		HyperlinkPane blurbLbl = new HyperlinkPane(blurbTxt, RoboColor.MID_GRAY);
-		add(blurbLbl, "1,3,3,3");
+		add(new HyperlinkPane(blurbTxt, RoboColor.MID_GRAY), "1,3,3,3");
 
-		RLabel emailLbl = new RLabel12("Email:");
-		add(emailLbl, "1,5,r,f");
+		add(new RLabel12("Email:"), "1,5,r,f");
 		emailField = new RTextField();
-		emailField.addKeyListener(this);
 		String email = frame.getController().getConfig().getMetadataServerUsername();
 		if(email != null)
 			emailField.setText(email);
 		add(emailField, "3,5");
 
-		RLabel pwdLbl = new RLabel12("Password:");
-		add(pwdLbl, "1,7,r,f");
+		add(new RLabel12("Password:"), "1,7,r,f");
 
 		passwordField = new RPasswordField();
-		passwordField.addKeyListener(this);
 		String pwd = frame.getController().getConfig().getMetadataServerPassword();
 		if(pwd != null)
 			passwordField.setText(pwd);
@@ -62,9 +56,7 @@ public class LoginSheet extends Sheet {
 		statusLbl = new RLabel12("");
 		add(statusLbl, "1,9,3,9,RIGHT,CENTER");
 
-		ButtonPanel btnPanel = new ButtonPanel();
-		btnPanel.addKeyListener(this);
-		add(btnPanel, "1,11,3,11");
+		add(new ButtonPanel(), "1,11,3,11");
 
 	}
 
@@ -72,6 +64,11 @@ public class LoginSheet extends Sheet {
 	public void onShow() {
 		emailField.requestFocusInWindow();
 		emailField.selectAll();
+	}
+
+	@Override
+	public JButton defaultButton() {
+		return loginBtn;
 	}
 	
 	public JTextField getEmailField() {
@@ -121,7 +118,7 @@ public class LoginSheet extends Sheet {
 					LoginSheet.this.setVisible(false);
 				}
 			});
-			cancelBtn.addKeyListener(LoginSheet.this);
+//			cancelBtn.addKeyListener(LoginSheet.this);
 			cancelBtn.getActionMap().put("ESCAPE", new AbstractAction() {
 				public void actionPerformed(ActionEvent e) {
 					LoginSheet.this.setVisible(false);
@@ -137,7 +134,7 @@ public class LoginSheet extends Sheet {
 					tryLogin();
 				}
 			});
-			loginBtn.addKeyListener(LoginSheet.this);
+//			loginBtn.addKeyListener(LoginSheet.this);
 			add(loginBtn);
 
 		}

@@ -25,6 +25,8 @@ public abstract class PostUpdateSheet extends Sheet {
 	private String playlistUrl;
 	private RTextArea msgText;
 	private RLabel charRemainingLbl;
+	RButton postBtn;
+	RButton cancelBtn;
 	Log log = LogFactory.getLog(getClass());
 
 	public PostUpdateSheet(RobonoboFrame f, Playlist pl) {
@@ -94,10 +96,15 @@ public abstract class PostUpdateSheet extends Sheet {
 		msgText.selectAll();
 	}
 	
+	@Override
+	public JButton defaultButton() {
+		return postBtn;
+	}
+	
 	class ButtonPanel extends JPanel {
 		public ButtonPanel() {
 			setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-			RButton postBtn = new RGlassButton("POST UPDATE");
+			postBtn = new RGlassButton("POST UPDATE");
 			postBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					frame.getController().getExecutor().execute(new CatchingRunnable() {
@@ -108,16 +115,14 @@ public abstract class PostUpdateSheet extends Sheet {
 					PostUpdateSheet.this.setVisible(false);
 				}
 			});
-			postBtn.addKeyListener(PostUpdateSheet.this);
 			add(postBtn);
 			add(Box.createHorizontalStrut(10));
-			RButton cancelBtn = new RRedGlassButton("CANCEL");
+			cancelBtn = new RRedGlassButton("CANCEL");
 			cancelBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					PostUpdateSheet.this.setVisible(false);
 				}
 			});
-			cancelBtn.addKeyListener(PostUpdateSheet.this);
 			add(cancelBtn);
 		}
 	}

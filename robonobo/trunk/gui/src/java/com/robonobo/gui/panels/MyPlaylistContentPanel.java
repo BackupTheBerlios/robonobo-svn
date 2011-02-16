@@ -309,7 +309,6 @@ public class MyPlaylistContentPanel extends PlaylistContentPanel implements User
 				delBtn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						DeletePlaylistSheet dPanel = new DeletePlaylistSheet(frame, getModel().getPlaylist());
-						frame.dim();
 						frame.showSheet(dPanel);
 					}
 				});
@@ -322,7 +321,6 @@ public class MyPlaylistContentPanel extends PlaylistContentPanel implements User
 				shareBtn.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						SharePlaylistSheet shPanel = new SharePlaylistSheet(frame, getModel().getPlaylist());
-						frame.dim();
 						frame.showSheet(shPanel);
 					}
 				});

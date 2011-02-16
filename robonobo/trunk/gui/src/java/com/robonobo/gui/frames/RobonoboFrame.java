@@ -4,8 +4,7 @@ import static com.robonobo.common.util.TextUtil.*;
 import static javax.swing.SwingUtilities.*;
 
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.util.*;
 import java.util.List;
@@ -75,6 +74,8 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 			setupPrefDialog();
 		control.addTrackListener(this);
 		control.addRobonoboStatusListener(this);
+		// Grab our events...
+		KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventHandler());
 	}
 
 	@Override
@@ -91,7 +92,6 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 				}
 			};
 			final LoginSheet lp = new LoginSheet(RobonoboFrame.this, onLogin);
-			dim();
 			showSheet(lp);
 			if (isNonEmpty(lp.getEmailField().getText())) {
 				invokeLater(new CatchingRunnable() {
@@ -211,7 +211,6 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 		if (!gotShares && guiConfig.getShowWelcomePanel()) {
 			SwingUtilities.invokeLater(new CatchingRunnable() {
 				public void doRun() throws Exception {
-					dim();
 					showSheet(new WelcomeSheet(RobonoboFrame.this));
 				}
 			});
@@ -297,7 +296,6 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 		SwingUtilities.invokeLater(new CatchingRunnable() {
 			public void doRun() throws Exception {
 				LoginSheet lp = new LoginSheet(RobonoboFrame.this, onLogin);
-				dim();
 				showSheet(lp);
 			}
 		});
@@ -307,7 +305,6 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 		SwingUtilities.invokeLater(new CatchingRunnable() {
 			public void doRun() throws Exception {
 				AboutSheet ap = new AboutSheet(RobonoboFrame.this);
-				dim();
 				showSheet(ap);
 			}
 		});
@@ -399,7 +396,6 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 					shutdown();
 					return;
 				}
-				dim();
 				showSheet(new ConfirmCloseSheet(RobonoboFrame.this));
 			}
 		});
@@ -408,6 +404,25 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 	class CloseListener extends WindowAdapter {
 		public void windowClosing(WindowEvent e) {
 			confirmThenShutdown();
+		}
+	}
+	
+	class KeyEventHandler implements KeyEventDispatcher {
+		@Override
+		public boolean dispatchKeyEvent(KeyEvent e) {
+			int code = e.getKeyCode();
+			int modifiers = e.getModifiers();
+			if (code == KeyEvent.VK_ESCAPE) {
+				if(isShowingSheet()) {
+					undim();
+					return true;
+				}
+			}
+			if (code == KeyEvent.VK_Q && modifiers == Platform.getPlatform().getCommandModifierMask()) {
+				shutdown();
+				return true;
+			}
+			return false;
 		}
 	}
 }

@@ -74,7 +74,6 @@ public class MenuBar extends JMenuBar {
 		JMenuItem openUrl = new JMenuItem("Open 'rbnb:' URI...");
 		openUrl.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				frame.dim();
 				frame.showSheet(new OpenURISheet(frame));
 			}
 		});

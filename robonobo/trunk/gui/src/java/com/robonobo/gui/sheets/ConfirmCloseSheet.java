@@ -3,6 +3,7 @@ package com.robonobo.gui.sheets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import org.debian.tablelayout.TableLayout;
@@ -11,7 +12,6 @@ import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 
 public class ConfirmCloseSheet extends Sheet {
-
 	private RButton exitBtn;
 
 	public ConfirmCloseSheet(RobonoboFrame rFrame) {
@@ -52,6 +52,10 @@ public class ConfirmCloseSheet extends Sheet {
 	
 	@Override
 	public void onShow() {
-		exitBtn.requestFocusInWindow();
+	}
+	
+	@Override
+	public JButton defaultButton() {
+		return exitBtn;
 	}
 }

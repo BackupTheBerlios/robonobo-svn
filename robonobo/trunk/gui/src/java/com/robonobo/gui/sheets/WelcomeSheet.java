@@ -95,7 +95,11 @@ public class WelcomeSheet extends Sheet {
 
 	@Override
 	public void onShow() {
-		feckOffBtn.requestFocusInWindow();
+	}
+	
+	@Override
+	public JButton defaultButton() {
+		return feckOffBtn;
 	}
 	
 	private void addButton(RButton btn, String layoutPos) {

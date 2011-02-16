@@ -71,7 +71,6 @@ public class SharePlaylistSheet extends Sheet {
 					emailField.setText("");
 			}
 		});
-		emailField.addKeyListener(this);
 		add(emailField, "3,5");
 
 		int invitesLeft = control.getMyUser().getInvitesLeft();
@@ -87,6 +86,11 @@ public class SharePlaylistSheet extends Sheet {
 	public void onShow() {
 		emailField.requestFocusInWindow();
 		emailField.selectAll();
+	}
+	
+	@Override
+	public JButton defaultButton() {
+		return shareBtn;
 	}
 	
 	private class ButtonPanel extends JPanel {
@@ -123,7 +127,6 @@ public class SharePlaylistSheet extends Sheet {
 					SharePlaylistSheet.this.setVisible(false);
 				}
 			});
-			shareBtn.addKeyListener(SharePlaylistSheet.this);
 			add(shareBtn);
 			Dimension fillerD = new Dimension(20, 1);
 			add(new Box.Filler(fillerD, fillerD, fillerD));
@@ -133,7 +136,6 @@ public class SharePlaylistSheet extends Sheet {
 					SharePlaylistSheet.this.setVisible(false);
 				}
 			});
-			cancelBtn.addKeyListener(SharePlaylistSheet.this);
 			add(cancelBtn);
 		}
 	}

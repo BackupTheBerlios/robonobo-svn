@@ -49,7 +49,11 @@ public class AboutSheet extends Sheet {
 
 	@Override
 	public void onShow() {
-		closeBtn.requestFocusInWindow();
+	}
+
+	@Override
+	public JButton defaultButton() {
+		return closeBtn;
 	}
 	
 	private String getCredits() {

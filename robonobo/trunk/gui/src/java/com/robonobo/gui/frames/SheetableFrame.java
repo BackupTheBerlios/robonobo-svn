@@ -21,7 +21,7 @@ import furbelow.AbstractComponentDecorator;
 public class SheetableFrame extends JFrame {
 	private Dimmer dimmer;
 	private JPanel glass;
-	protected JComponent sheet;
+	protected Sheet sheet;
 	Log log = LogFactory.getLog(getClass());
 	protected ReentrantLock sheetLock = new ReentrantLock(); // One at a time, fellas
 
@@ -30,9 +30,15 @@ public class SheetableFrame extends JFrame {
 	}
 
 	public void showSheet(Sheet sheet) {
+		if(sheet == null) {
+			undim();
+			return;
+		}
 		sheetLock.lock();
 		try {
-			log.debug("showing sheet: " + sheet);
+			if (dimmer == null)
+				dimmer = new Dimmer();
+			this.sheet = sheet;
 			SheetContainer sc = new SheetContainer(sheet);
 			glass.removeAll();
 			double[][] cellSizen = { { TableLayout.FILL, sc.getPreferredSize().width, TableLayout.FILL },
@@ -40,38 +46,39 @@ public class SheetableFrame extends JFrame {
 			glass.setLayout(new TableLayout(cellSizen));
 			glass.add(sc, "1,0");
 			glass.setVisible(true);
+			getRootPane().setDefaultButton(sheet.defaultButton());
 		} finally {
 			sheetLock.unlock();
 		}
 		sheet.onShow();
 	}
 
-	public synchronized void dim() {
-		sheetLock.lock();
-		try {
-			log.debug("dimming");
-			if (dimmer == null)
-				dimmer = new Dimmer();
-		} finally {
-			sheetLock.unlock();
-		}
-	}
-
 	public synchronized void undim() {
 		sheetLock.lock();
 		try {
-			log.debug("undimming");
+			if(sheet == null)
+				return;
+			sheet.onUndim();
 			glass.setVisible(false);
 			if (dimmer != null) {
 				dimmer.dispose();
 				dimmer = null;
 			}
 			sheet = null;
+			getRootPane().setDefaultButton(null);
 		} finally {
 			sheetLock.unlock();
 		}
 	}
 
+	public boolean isShowingSheet() {
+		sheetLock.lock();
+		try {
+			return (sheet != null);
+		} finally {
+			sheetLock.unlock();
+		}
+	}
 	class SheetContainer extends JPanel {
 		public SheetContainer(JComponent sheet) {
 			// Make a 1px grey border and a 5px white background around the sheet

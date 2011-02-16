@@ -2,6 +2,7 @@ package com.robonobo.gui.sheets;
 
 import java.awt.event.*;
 
+import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import org.apache.commons.logging.Log;
@@ -24,10 +25,8 @@ public class OpenURISheet extends Sheet {
 		setName("playback.background.panel");
 		add(new RLabel14B("Open URI"), "1,1,3,1");
 		uriField = new RTextField();
-		uriField.addKeyListener(this);
 		add(uriField, "1,3,3,3");
 		openBtn = new RGlassButton("OPEN");
-		openBtn.addKeyListener(this);
 		add(openBtn, "3,5");
 		openBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -43,6 +42,10 @@ public class OpenURISheet extends Sheet {
 	
 	@Override
 	public void onShow() {
-		uriField.requestFocusInWindow();
+	}
+	
+	@Override
+	public JButton defaultButton() {
+		return openBtn;
 	}
 }
