@@ -28,6 +28,12 @@ public class FilePageBuffer extends AbstractPageBuffer {
 		this.file = file;
 	}
 
+	/** For when we've copied/moved the data file to a new location, but we want to reuse all our page info */
+	public FilePageBuffer(FilePageBuffer oldBuffer, File newFile) {
+		super(oldBuffer.streamId, oldBuffer.pageInfoStore);
+		this.file = newFile;
+	}
+	
 	@Override
 	protected synchronized ByteBuffer getPageData(PageInfo pi) throws IOException {
 		if(sleeping)

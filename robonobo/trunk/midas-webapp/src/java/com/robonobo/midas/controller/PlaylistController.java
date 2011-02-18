@@ -99,6 +99,7 @@ public class PlaylistController extends BaseController {
 			u.setUpdated(now());
 			midas.saveUser(u);
 			writeToOutput(mp.toMsg(), resp);
+			log.info(u.getEmail() + " created playlist " + mp.getPlaylistId());
 		} else {
 			// Existing playlist
 			if (!currentP.getOwnerIds().contains(u.getUserId())) {
@@ -109,8 +110,8 @@ public class PlaylistController extends BaseController {
 			currentP.setUpdated(getUpdatedDate(currentP.getUpdated()));
 			midas.savePlaylist(currentP);
 			writeToOutput(currentP.toMsg(), resp);
+			log.info(u.getEmail() + " updated playlist " + playlistId);
 		}
-		log.info(u.getEmail() + " updated playlist " + playlistId);
 	}
 
 	@RequestMapping(value = "/playlists/{pIdStr}", method = RequestMethod.DELETE)

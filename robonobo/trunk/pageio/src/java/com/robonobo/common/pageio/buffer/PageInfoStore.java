@@ -13,8 +13,6 @@ import com.robonobo.mina.external.buffer.StreamPosition;
  * 
  */
 public interface PageInfoStore {
-	public void init(String streamId);
-
 	public int getNumPageInfos(String streamId);
 
 	public boolean haveGotPage(String streamId, long pageNum);

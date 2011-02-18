@@ -1,22 +1,14 @@
 package com.robonobo.gui.platform;
 
-import static com.robonobo.common.util.CodeUtil.*;
-
-import java.awt.Dialog;
 import java.awt.Event;
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
 
-import org.debian.tablelayout.TableLayout;
-
 import com.apple.eawt.Application;
-import com.apple.eio.FileManager;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
-import com.robonobo.common.util.CodeUtil;
 import com.robonobo.core.itunes.ITunesService;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.itunes.mac.MacITunesService;
