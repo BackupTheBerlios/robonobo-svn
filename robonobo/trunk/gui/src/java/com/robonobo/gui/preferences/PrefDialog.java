@@ -1,5 +1,7 @@
 package com.robonobo.gui.preferences;
 
+import info.clearthought.layout.TableLayout;
+
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -8,8 +10,6 @@ import java.net.InetAddress;
 import java.util.*;
 
 import javax.swing.*;
-
-import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.util.NetUtil;
 import com.robonobo.gui.RoboFont;
@@ -59,7 +59,7 @@ public class PrefDialog extends JDialog {
 		JPanel bp = new JPanel();
 		bp.setLayout(new BoxLayout(bp, BoxLayout.Y_AXIS));
 
-		FilePrefPanel dfPanel = new FilePrefPanel(frame, "robo.downloadDirectory", "Downloads Folder", true);
+		FilePrefPanel dfPanel = new FilePrefPanel(frame, "robo.finishedDownloadsDirectory", "Downloads Folder", true);
 		prefPanels.add(dfPanel);
 		bp.add(dfPanel);
 		bp.add(vertSpacer());

@@ -18,7 +18,6 @@ import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.TrackListener;
 import com.robonobo.core.api.model.Stream;
 import com.robonobo.core.api.model.Track;
-import com.robonobo.oldgui.StreamComparator;
 
 /**
  * A track list containing tracks, maintained in the default stream order (see StreamComparator). Add the tracks you want in your subclass constructor and

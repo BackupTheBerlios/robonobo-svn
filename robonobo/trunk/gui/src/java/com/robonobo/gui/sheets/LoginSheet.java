@@ -1,18 +1,19 @@
 package com.robonobo.gui.sheets;
 
+import info.clearthought.layout.TableLayout;
+
 import java.awt.ComponentOrientation;
 import java.awt.HeadlessException;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.serialization.UnauthorizedException;
-import com.robonobo.core.Platform;
 import com.robonobo.gui.RoboColor;
 import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;

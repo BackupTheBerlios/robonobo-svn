@@ -1,6 +1,7 @@
 package com.robonobo.gui.panels;
 
-import java.awt.Color;
+import info.clearthought.layout.TableLayout;
+
 import java.awt.ComponentOrientation;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -8,12 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.*;
-import javax.swing.text.*;
-
-import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
-import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.core.Platform;
 import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.UserPlaylistListener;
@@ -21,7 +18,6 @@ import com.robonobo.core.api.model.*;
 import com.robonobo.gui.RoboColor;
 import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
-import com.robonobo.gui.model.PlaylistTableModel;
 
 @SuppressWarnings("serial")
 public class OtherPlaylistContentPanel extends PlaylistContentPanel implements UserPlaylistListener {

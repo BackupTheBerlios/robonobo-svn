@@ -1,8 +1,8 @@
 package com.robonobo.gui.preferences;
 
-import java.awt.Dimension;
+import info.clearthought.layout.TableLayout;
 
-import org.debian.tablelayout.TableLayout;
+import java.awt.Dimension;
 
 import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;

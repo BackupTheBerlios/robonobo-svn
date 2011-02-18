@@ -1,6 +1,7 @@
 package com.robonobo.gui.panels;
 
 import static com.robonobo.common.util.TextUtil.*;
+import info.clearthought.layout.TableLayout;
 
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -12,10 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.swing.*;
 
-import org.debian.tablelayout.TableLayout;
-
 import com.robonobo.common.concurrent.CatchingRunnable;
-import com.robonobo.common.util.TextUtil;
 import com.robonobo.core.Platform;
 import com.robonobo.core.api.UserPlaylistListener;
 import com.robonobo.core.api.model.*;

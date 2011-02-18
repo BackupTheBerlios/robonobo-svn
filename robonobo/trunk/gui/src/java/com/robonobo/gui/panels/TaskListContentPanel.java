@@ -1,5 +1,7 @@
 package com.robonobo.gui.panels;
 
+import info.clearthought.layout.TableLayout;
+
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -8,13 +10,10 @@ import java.util.Map;
 
 import javax.swing.*;
 
-import org.debian.tablelayout.TableLayout;
-
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.api.Task;
 import com.robonobo.core.api.TaskListener;
 import com.robonobo.gui.RoboColor;
-import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 

@@ -190,6 +190,7 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 
 		checkButtonsEnabled();
 		control.addPlaybackListener(this);
+		control.addTrackListener(this);
 	}
 
 	public void trackSelectionChanged() {
@@ -362,7 +363,6 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 		List<String> selSids = playingTrackList.getSelectedStreamIds();
 		if (selSids.size() > 0) {
 			playingTrackList.clearTableSelection();
-			control.spawnNecessaryDownloads(selSids);
 			control.play(selSids.get(0));
 		}
 	}
@@ -416,9 +416,10 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 			dataAvailable = 1f;
 		else if (t instanceof DownloadingTrack) {
 			DownloadingTrack dt = (DownloadingTrack) t;
-			dataAvailable = (float) playingStream.getSize() / dt.getBytesDownloaded();
+			dataAvailable = (float) dt.getBytesDownloaded() / playingStream.getSize();
 		} else
 			dataAvailable = 0;
+		log.debug("PlaybackPanel got data available: "+dataAvailable);
 		playbackProgress.setDataAvailable(dataAvailable);
 	}
 

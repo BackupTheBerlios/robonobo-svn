@@ -1,8 +1,8 @@
 package com.robonobo.gui.panels;
 
-import javax.swing.JPanel;
+import info.clearthought.layout.TableLayout;
 
-import org.debian.tablelayout.TableLayout;
+import javax.swing.JPanel;
 
 import com.robonobo.gui.frames.RobonoboFrame;
 

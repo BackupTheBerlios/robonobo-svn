@@ -1,5 +1,7 @@
 package com.robonobo.gui.panels;
 
+import info.clearthought.layout.TableLayout;
+
 import java.awt.Toolkit;
 import java.awt.datatransfer.*;
 import java.awt.event.ActionEvent;
@@ -7,16 +9,12 @@ import java.awt.event.ActionListener;
 
 import javax.swing.*;
 
-import org.debian.tablelayout.TableLayout;
-
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.util.NetUtil;
 import com.robonobo.core.api.model.*;
 import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.model.PlaylistTableModel;
-import com.robonobo.gui.model.TrackListTableModel;
-import com.robonobo.gui.panels.MyPlaylistContentPanel.PlaylistDetailsPanel;
 import com.robonobo.gui.sheets.PostToFacebookSheet;
 import com.robonobo.gui.sheets.PostToTwitterSheet;
 

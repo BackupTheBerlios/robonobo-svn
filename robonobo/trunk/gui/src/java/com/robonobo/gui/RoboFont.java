@@ -1,9 +1,10 @@
 package com.robonobo.gui;
 
+import static com.robonobo.common.util.ByteUtil.*;
+
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,11 +12,12 @@ import java.util.Map;
 import java.util.Set;
 
 import com.robonobo.common.exceptions.SeekInnerCalmException;
+import com.robonobo.common.util.ByteUtil;
 
 /**
- * robonobo only uses one font family, Bitstream Vera Sans.  We can't rely on this being available on the 
- * system, so we bundle it in our jar and build it as required.  This class keeps track of our 
- * instantiated font instances and re-uses them to save ram.
+ * robonobo only uses one font family, Bitstream Vera Sans. We can't rely on this being available on the system, so we
+ * bundle it in our jar and build it as required. This class keeps track of our instantiated font instances and re-uses
+ * them to save ram.
  * 
  * @author macavity
  */
@@ -23,7 +25,7 @@ public class RoboFont {
 	private static final String BOLD_FONT_PATH = "/font/VeraBd.ttf";
 	private static final String REG_FONT_PATH = "/font/Vera.ttf";
 	static final String FONT_NAME = "Bitstream Vera Sans";
-//	static final String FONT_NAME = "Ubuntu";
+	// static final String FONT_NAME = "Ubuntu";
 	static Font basePlainFont;
 	static Font baseBoldFont;
 	static Map<Integer, Font> derivedPlainFonts;
@@ -32,49 +34,58 @@ public class RoboFont {
 	static {
 		derivedPlainFonts = new HashMap<Integer, Font>();
 		derivedBoldFonts = new HashMap<Integer, Font>();
+
 		// See if our font is available to us from the system
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		Set<String> fontNames = new HashSet<String>(Arrays.asList(ge.getAvailableFontFamilyNames()));
-		if(fontNames.contains(FONT_NAME)) {
-			// w00t
-			basePlainFont = new Font(FONT_NAME, Font.PLAIN, 12);
-			baseBoldFont = new Font(FONT_NAME, Font.BOLD, 12);
-			derivedPlainFonts.put(12, basePlainFont);
-			derivedBoldFonts.put(12, baseBoldFont);
-		} else {
-			// Not on the system - build this sucka from our ttf file
-			InputStream plainIs = RoboFont.class.getResourceAsStream(REG_FONT_PATH);
-			InputStream boldIs = RoboFont.class.getResourceAsStream(BOLD_FONT_PATH);
-			try {
-				Font onePoint = Font.createFont(Font.TRUETYPE_FONT, plainIs);
-				basePlainFont = onePoint.deriveFont(Font.PLAIN, 12);
-				derivedPlainFonts.put(12, basePlainFont);
-				onePoint = Font.createFont(Font.TRUETYPE_FONT, boldIs);
-				baseBoldFont = onePoint.deriveFont(Font.BOLD, 12);
-				derivedBoldFonts.put(12, baseBoldFont);
-			} catch (Exception e) {
-				throw new SeekInnerCalmException();
-			}
-			try {
-				plainIs.close();
-				boldIs.close();
-			} catch (IOException e) {
-				// Ignore
-			}
-		}
+		if (fontNames.contains(FONT_NAME))
+			getFontFromSystem();
+		else
+			getFontFromIncludedTtf();
 	}
 
 	private RoboFont() {
 		// Never instantiate this class
 	}
-	
+
+	private static void getFontFromSystem() {
+		basePlainFont = new Font(FONT_NAME, Font.PLAIN, 12);
+		baseBoldFont = new Font(FONT_NAME, Font.BOLD, 12);
+		derivedPlainFonts.put(12, basePlainFont);
+		derivedBoldFonts.put(12, baseBoldFont);
+	}
+
+	private static void getFontFromIncludedTtf() {
+		// There seems to be a weird bug in some versions of java 5 that throws a FontFormatException when we load
+		// direct from an inputstream, but works fine if we pass it a file... strange, but whatever, we just copy it out
+		try {
+			// DEBUGGIN
+			File plainTtfFile = new File("/tmp/vera.ttf");
+			File boldTtfFile = new File("/tmp/verab.ttf");
+//			File plainTtfFile = File.createTempFile("robofont", "ttf");
+//			plainTtfFile.deleteOnExit();
+//			File boldTtfFile = File.createTempFile("robofont", "ttf");
+//			boldTtfFile.deleteOnExit();
+//			streamDump(RoboFont.class.getResourceAsStream(REG_FONT_PATH), new FileOutputStream(plainTtfFile));
+//			streamDump(RoboFont.class.getResourceAsStream(BOLD_FONT_PATH), new FileOutputStream(boldTtfFile));
+			Font onePoint = Font.createFont(Font.TRUETYPE_FONT, plainTtfFile);
+			basePlainFont = onePoint.deriveFont(Font.PLAIN, 12);
+			derivedPlainFonts.put(12, basePlainFont);
+			onePoint = Font.createFont(Font.TRUETYPE_FONT, boldTtfFile);
+			baseBoldFont = onePoint.deriveFont(Font.BOLD, 12);
+			derivedBoldFonts.put(12, baseBoldFont);
+		} catch (Exception e) {
+			throw new SeekInnerCalmException(e);
+		}
+	}
+
 	public static Font getFont(int size, boolean bold) {
-		if(bold) {
-			if(!derivedBoldFonts.containsKey(size))
+		if (bold) {
+			if (!derivedBoldFonts.containsKey(size))
 				derivedBoldFonts.put(size, baseBoldFont.deriveFont(Font.BOLD, size));
 			return derivedBoldFonts.get(size);
 		} else {
-			if(!derivedPlainFonts.containsKey(size))
+			if (!derivedPlainFonts.containsKey(size))
 				derivedPlainFonts.put(size, basePlainFont.deriveFont(Font.PLAIN, size));
 			return derivedPlainFonts.get(size);
 		}

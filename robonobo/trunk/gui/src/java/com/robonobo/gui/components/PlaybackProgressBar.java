@@ -15,9 +15,9 @@ import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.frames.RobonoboFrame;
 
 /**
- * Maintains two 'progress' indicators. The first, 'availableData', displays how much data we have downloaded by means of a light blue bar, and is the limit to
- * how far we can seek by dragging the slider. The second, 'trackPosition', is our playback position within the track and displayed by means of the slider
- * position.
+ * Maintains two 'progress' indicators. The first, 'availableData', displays how much data we have downloaded by means
+ * of a light blue bar, and is the limit to how far we can seek by dragging the slider. The second, 'trackPosition', is
+ * our playback position within the track and displayed by means of the slider position.
  * 
  * @author macavity
  * 
@@ -52,7 +52,7 @@ public class PlaybackProgressBar extends JProgressBar {
 		setMinimum(0);
 		setMaximum(TOTAL_WIDTH);
 		setPreferredSize(new Dimension(325, 24));
-		
+
 		// Absolute positioning of elements
 		setLayout(null);
 
@@ -84,7 +84,7 @@ public class PlaybackProgressBar extends JProgressBar {
 				setTrackPosition(0);
 				// auto adjust the labels' position
 				startLabel.setLocation(0, ((getHeight() - startLabel.getHeight()) / 2));
-				endLabel.setLocation(getWidth() - endLabel.getWidth(), ((getHeight() - endLabel.getHeight()) / 2)+1);
+				endLabel.setLocation(getWidth() - endLabel.getWidth(), ((getHeight() - endLabel.getHeight()) / 2) + 1);
 			}
 		});
 
@@ -119,17 +119,17 @@ public class PlaybackProgressBar extends JProgressBar {
 				// thumbX >= maximum - thumbWidth, trackPosition = trackLength
 				int maxX = getMaximum() - SLIDER_TOTAL_WIDTH;
 				float relPos = (float) thumbX / maxX;
-				if(relPos > dataAvailable)
+				if (relPos > dataAvailable)
 					relPos = dataAvailable;
 				long trackPos = (long) (relPos * trackLengthMs);
-				if(trackPos < 0)
+				if (trackPos < 0)
 					trackPos = 0;
-				if(trackPos > trackLengthMs)
+				if (trackPos > trackLengthMs)
 					trackPos = trackLengthMs;
 				setTrackPosition(trackPos, true);
 			}
-		});		
-		
+		});
+
 		addListener(new Listener() {
 			@Override
 			public void sliderReleased(long trackPositionMs) {
@@ -151,7 +151,7 @@ public class PlaybackProgressBar extends JProgressBar {
 	}
 
 	public void play() {
-		if(pauseTimer != null)
+		if (pauseTimer != null)
 			pauseTimer.stop();
 		SwingUtilities.invokeLater(new CatchingRunnable() {
 			public void doRun() throws Exception {
@@ -160,11 +160,11 @@ public class PlaybackProgressBar extends JProgressBar {
 			}
 		});
 	}
-	
+
 	public void pause() {
 		pauseTimer = new Timer(500, new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if(sliderThumb.getForeground().equals(Color.BLACK))
+				if (sliderThumb.getForeground().equals(Color.BLACK))
 					sliderThumb.setForeground(Color.WHITE);
 				else
 					sliderThumb.setForeground(Color.BLACK);
@@ -177,7 +177,7 @@ public class PlaybackProgressBar extends JProgressBar {
 			}
 		});
 	}
-	
+
 	public void setOrientation(int newOrientation) {
 		if (newOrientation != JProgressBar.HORIZONTAL)
 			throw new RuntimeException("PlaybackProgressBar only support horizontal orientation");
@@ -201,9 +201,9 @@ public class PlaybackProgressBar extends JProgressBar {
 		setDataAvailable(0f);
 		doRepaint();
 	}
-	
+
 	public void setTrackDuration(long lengthMs) {
-		if(locked)
+		if (locked)
 			locked = false;
 		this.trackLengthMs = lengthMs;
 		setEndText(timeLblFromMs(lengthMs));
@@ -212,14 +212,14 @@ public class PlaybackProgressBar extends JProgressBar {
 	public void setTrackPosition(long positionMs) {
 		setTrackPosition(positionMs, false);
 	}
-	
+
 	private void setTrackPosition(long positionMs, boolean viaDrag) {
 		// Don't update if we're dragging
-		if(dragging && !viaDrag)
+		if (dragging && !viaDrag)
 			return;
 		trackPositionMs = positionMs;
 		String newSliderText = timeLblFromMs(positionMs);
-		if(newSliderText.equals(getSliderText()))
+		if (newSliderText.equals(getSliderText()))
 			return;
 		// pos = 0, trackPosition = 0
 		// pos = (maximum - thumbWidth), trackPosition = trackLength
@@ -227,30 +227,35 @@ public class PlaybackProgressBar extends JProgressBar {
 		int thumbPos = (int) ((getMaximum() - SLIDER_OPAQUE_WIDTH) * ((float) positionMs / trackLengthMs));
 		setSliderText(newSliderText);
 		long msLeft = trackLengthMs - trackPositionMs;
-		setStartText("-"+timeLblFromMs(msLeft));
+		setStartText("-" + timeLblFromMs(msLeft));
 		setThumbPosition(thumbPos);
 		doRepaint();
 	}
 
-	
 	public long getTrackPosition() {
 		return trackPositionMs;
 	}
-	
-	public void setDataAvailable(float available) {
+
+	public void setDataAvailable(final float available) {
 		// Colour in progress bar value to illustrate seek limit - take into account thumb width
-		this.dataAvailable = available;
-		int max = getMaximum() - SLIDER_OPAQUE_WIDTH;
-		int val = SLIDER_OPAQUE_WIDTH + (int) (available * max);
-		setValue(val);
-		doRepaint();
+		if (this.dataAvailable != available) {
+			this.dataAvailable = available;
+			SwingUtilities.invokeLater(new CatchingRunnable() {
+				public void doRun() throws Exception {
+					int max = getMaximum() - SLIDER_OPAQUE_WIDTH;
+					int val = SLIDER_OPAQUE_WIDTH + (int) (available * max);
+					setValue(val);
+					doRepaint();
+				}
+			});
+		}
 	}
 
 	private void setStartText(String text) {
 		startLabel.setText(text);
 		startLabel.setSize(startLabel.getPreferredSize());
 	}
-	
+
 	private void setEndText(String text) {
 		endLabel.setText(text);
 		endLabel.setSize(endLabel.getPreferredSize());
@@ -264,7 +269,7 @@ public class PlaybackProgressBar extends JProgressBar {
 	private String getSliderText() {
 		return sliderThumb.getText();
 	}
-	
+
 	private String timeLblFromMs(long ms) {
 		int totalSec = Math.round(ms / 1000f);
 		int hours = totalSec / 3600;
@@ -279,7 +284,7 @@ public class PlaybackProgressBar extends JProgressBar {
 	private void doRepaint() {
 		RepaintManager.currentManager(this).markCompletelyDirty(this);
 	}
-	
+
 	public interface Listener {
 		public void sliderReleased(long trackPositionMs);
 	}

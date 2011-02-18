@@ -1,6 +1,7 @@
 package com.robonobo.gui.components;
 
-import java.awt.Color;
+import info.clearthought.layout.TableLayout;
+
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -8,14 +9,11 @@ import java.text.NumberFormat;
 
 import javax.swing.*;
 
-import org.debian.tablelayout.TableLayout;
-
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.wang.WangListener;
 import com.robonobo.gui.RoboColor;
 import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.frames.RobonoboFrame;
-import com.robonobo.gui.panels.WangContentPanel;
 
 @SuppressWarnings("serial")
 public class BalanceLabel extends JPanel implements LeftSidebarComponent, WangListener {

@@ -1,6 +1,7 @@
 package com.robonobo.gui.panels;
 
 import static com.robonobo.common.util.TimeUtil.*;
+import info.clearthought.layout.TableLayout;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -13,7 +14,6 @@ import java.util.LinkedList;
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 
-import org.debian.tablelayout.TableLayout;
 import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
 import org.jdesktop.swingx.table.TableColumnModelExt;

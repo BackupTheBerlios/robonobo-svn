@@ -1,5 +1,7 @@
 package com.robonobo.gui.sheets;
 
+import info.clearthought.layout.TableLayout;
+
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -7,10 +9,7 @@ import java.io.File;
 
 import javax.swing.*;
 
-import org.debian.tablelayout.TableLayout;
-
 import com.robonobo.gui.RoboColor;
-import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 
@@ -123,7 +122,7 @@ public class WelcomeSheet extends Sheet {
 			setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 			tf = new RTextField();
 			tf.setMaximumSize(new Dimension(300, 30));
-			tf.setText(frame.getController().getConfig().getDownloadDirectory());
+			tf.setText(frame.getController().getConfig().getFinishedDownloadsDirectory());
 			tf.setEnabled(false);
 			add(tf);
 			add(Box.createHorizontalStrut(10));
@@ -136,7 +135,7 @@ public class WelcomeSheet extends Sheet {
 					if(retVal == JFileChooser.APPROVE_OPTION) {
 						File f = fc.getSelectedFile();
 						tf.setText(f.getAbsolutePath());
-						frame.getController().getConfig().setDownloadDirectory(f.getAbsolutePath());
+						frame.getController().getConfig().setFinishedDownloadsDirectory(f.getAbsolutePath());
 						frame.getController().saveConfig();
 					}
 				}

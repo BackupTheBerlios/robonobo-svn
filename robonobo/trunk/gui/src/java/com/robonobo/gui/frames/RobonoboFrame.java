@@ -2,6 +2,7 @@ package com.robonobo.gui.frames;
 
 import static com.robonobo.common.util.TextUtil.*;
 import static javax.swing.SwingUtilities.*;
+import info.clearthought.layout.TableLayout;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -15,7 +16,6 @@ import javax.swing.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.Robonobo;
 import com.robonobo.common.concurrent.CatchingRunnable;

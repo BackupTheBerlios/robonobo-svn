@@ -1,10 +1,11 @@
 package com.robonobo.gui.panels;
 
 import static com.robonobo.common.util.TextUtil.*;
+import info.clearthought.layout.TableLayout;
 
 import java.awt.ComponentOrientation;
-import java.awt.Toolkit;
-import java.awt.datatransfer.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
@@ -12,12 +13,9 @@ import java.util.*;
 
 import javax.swing.*;
 
-import org.debian.tablelayout.TableLayout;
-
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.common.util.FileUtil;
-import com.robonobo.common.util.NetUtil;
 import com.robonobo.core.Platform;
 import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.UserPlaylistListener;
@@ -28,7 +26,8 @@ import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.model.PlaylistTableModel;
 import com.robonobo.gui.model.StreamTransfer;
-import com.robonobo.gui.sheets.*;
+import com.robonobo.gui.sheets.DeletePlaylistSheet;
+import com.robonobo.gui.sheets.SharePlaylistSheet;
 import com.robonobo.gui.tasks.ImportFilesTask;
 
 @SuppressWarnings("serial")

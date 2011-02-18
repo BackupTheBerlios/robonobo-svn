@@ -1,18 +1,16 @@
 package com.robonobo.gui.frames;
 
+import info.clearthought.layout.TableLayout;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.*;
-import javax.swing.border.LineBorder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.debian.tablelayout.TableLayout;
 
-import com.robonobo.common.exceptions.SeekInnerCalmException;
-import com.robonobo.core.Platform;
 import com.robonobo.gui.RoboColor;
 import com.robonobo.gui.sheets.Sheet;
 

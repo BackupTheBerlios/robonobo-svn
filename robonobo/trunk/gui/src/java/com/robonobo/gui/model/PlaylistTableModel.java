@@ -166,11 +166,12 @@ public class PlaylistTableModel extends TrackListTableModel implements TrackList
 		SwingUtilities.invokeLater(new CatchingRunnable() {
 			@Override
 			public void doRun() throws Exception {
+				int rowIndex;
 				synchronized (PlaylistTableModel.this) {
-					final int rowIndex = (streamIndices.containsKey(streamId)) ? streamIndices.get(streamId) : -1;
-					if (rowIndex >= 0)
-						fireTableRowsUpdated(rowIndex, rowIndex);
+					rowIndex = (streamIndices.containsKey(streamId)) ? streamIndices.get(streamId) : -1;
 				}
+				if (rowIndex >= 0)
+					fireTableRowsUpdated(rowIndex, rowIndex);
 			}
 		});
 		Track t = controller.getTrack(streamId);

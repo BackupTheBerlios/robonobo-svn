@@ -1,5 +1,7 @@
 package com.robonobo.gui.frames;
 
+import info.clearthought.layout.TableLayout;
+
 import java.awt.Dimension;
 import java.awt.event.*;
 import java.io.IOException;
@@ -7,8 +9,6 @@ import java.io.InputStream;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.swing.*;
-
-import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.gui.RoboColor;

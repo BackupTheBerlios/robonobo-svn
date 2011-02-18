@@ -1,5 +1,7 @@
 package com.robonobo.gui.panels;
 
+import info.clearthought.layout.TableLayout;
+
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
@@ -11,7 +13,6 @@ import javax.swing.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.debian.tablelayout.TableLayout;
 
 import com.robonobo.gui.RoboColor;
 import com.robonobo.gui.RoboFont;

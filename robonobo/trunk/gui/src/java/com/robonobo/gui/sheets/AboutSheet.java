@@ -1,17 +1,17 @@
 package com.robonobo.gui.sheets;
 
+import info.clearthought.layout.TableLayout;
+
 import java.awt.Dimension;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.swing.*;
-
-import org.debian.tablelayout.TableLayout;
+import javax.swing.JButton;
+import javax.swing.JScrollPane;
 
 import com.robonobo.common.exceptions.SeekInnerCalmException;
-import com.robonobo.core.Platform;
-import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 
