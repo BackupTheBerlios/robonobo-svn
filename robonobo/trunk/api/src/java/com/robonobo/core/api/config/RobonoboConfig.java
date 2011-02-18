@@ -20,7 +20,7 @@ public class RobonoboConfig implements Serializable {
 	String bugReportUrl = "http://developer.berlios.de/bugs/?group_id=11593";
 	String helpUrl = "http://getsatisfaction.com/robonobo";
 	String wikiUrl = "http://openfacts2.berlios.de/wikien/index.php/BerliosProject:Robonobo";
-	String downloadDirectory = null;
+	String finishedDownloadsDirectory = null;
 	int bufferAutoSaveFreq = 60; // Secs
 	int maxRunningDownloads = 4;
 	String formatSupportProviders = "com.robonobo.plugin.mp3.Mp3FormatSupportProvider";
@@ -143,12 +143,12 @@ public class RobonoboConfig implements Serializable {
 		this.userUpdateFrequency = updateFrequency;
 	}
 
-	public String getDownloadDirectory() {
-		return downloadDirectory;
+	public String getFinishedDownloadsDirectory() {
+		return finishedDownloadsDirectory;
 	}
 
-	public void setDownloadDirectory(String downloadDirectory) {
-		this.downloadDirectory = downloadDirectory;
+	public void setFinishedDownloadsDirectory(String downloadDirectory) {
+		this.finishedDownloadsDirectory = downloadDirectory;
 	}
 
 	public String getExtraConfigs() {

@@ -50,21 +50,22 @@ public class StorageService extends AbstractService {
 		}
 	}
 
-	public PageBuffer createPageBufForReception(Stream s, File dataFile) throws IOException {
-		pim.init(s.getStreamId());
+	public PageBuffer createPageBufForDownload(Stream s, File dataFile) throws IOException {
 		PageBuffer pb = pim.createPageBuf(s, dataFile);
 		bufferCache.put(s.getStreamId(), pb);
 		return pb;
 	}
 
-	public PageBuffer createPageBufForBroadcast(Stream s, File dataFile) throws IOException {
-		return createPageBufForBroadcast(s, dataFile, false);
-	}
-
-	public PageBuffer createPageBufForBroadcast(Stream s, File dataFile, boolean alreadyHavePageInfo) throws IOException {
-		if (!alreadyHavePageInfo)
-			pim.init(s.getStreamId());
-		PageBuffer pb = pim.createPageBuf(s, dataFile);
+	/**
+	 * @param initPageInfo true if we should create params in the db for this pagebuf, false if they're already there
+	 * TODO should figure this out ourselves maybe?
+	 */
+	public PageBuffer createPageBufForShare(Stream s, File dataFile, boolean initPageInfo) throws IOException {
+		PageBuffer pb;
+		if (initPageInfo)
+			pb = pim.createPageBuf(s, dataFile);
+		else
+			pb = pim.updateAndReturnPageBuf(s, dataFile);
 		bufferCache.put(s.getStreamId(), pb);
 		return pb;
 	}

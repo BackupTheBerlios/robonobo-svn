@@ -1,5 +1,6 @@
 package com.robonobo.common.util;
 
+import java.io.*;
 import java.nio.ByteBuffer;
 
 public class ByteUtil {
@@ -34,5 +35,17 @@ public class ByteUtil {
 			}
 		}
 		sb.append("(").append(numTimes).append(" x ").append("0x").append(Integer.toHexString(lastb)).append(") ");
+	}
+	
+	/**
+	 * Dumps the contents of the input stream into the output stream, then closes both
+	 */
+	public static void streamDump(InputStream is, OutputStream os) throws IOException {
+		byte[] buf = new byte[1024];
+		int numRead;
+		while((numRead = is.read(buf)) > 0)
+			os.write(buf, 0, numRead);
+		is.close();
+		os.close();
 	}
 }

@@ -15,7 +15,7 @@ import com.robonobo.core.api.model.DownloadingTrack.DownloadStatus;
 
 public class download implements ConsoleCommand {
 	public void printHelp(PrintWriter out) {
-		out.println("'download' gives current downloads\n" + "'download add <streamId> <pathToFile>' adds download\n"
+		out.println("'download' gives current downloads\n" + "'download add <streamId>' adds download\n"
 				+ "'download del <stream id>' removes an download\n" + "'download start <stream id>' starts download\n"
 				+ "'download pause <stream id>' pauses download\n");
 	}
@@ -62,7 +62,7 @@ public class download implements ConsoleCommand {
 			}
 		} else {
 			if (args[0].equalsIgnoreCase("add")) {
-				if (args.length < 3) {
+				if (args.length < 2) {
 					printHelp(out);
 					return;
 				}
@@ -72,8 +72,7 @@ public class download implements ConsoleCommand {
 					return;
 				}
 				String streamId = args[1];
-				String pathToFile = args[2];
-				controller.addDownload(streamId, pathToFile);
+				controller.addDownload(streamId);
 				out.println("Download added for "+streamId);
 			} else if (args[0].equalsIgnoreCase("del")) {
 				if (args.length < 2) {

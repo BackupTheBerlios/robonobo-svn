@@ -17,9 +17,11 @@ import com.robonobo.core.api.model.Track.PlaybackStatus;
 import com.robonobo.mina.external.MinaControl;
 
 /**
- * First point of call to get information about a track, whether we're sharing it, downloading it or it just exists in the cloud.
+ * First point of call to get information about a track, whether we're sharing it, downloading it or it just exists in
+ * the cloud.
  * 
- * Get shares and downloads from here rather than Share/Download service as they will then include info on whether they're playing, and their transfer speeds
+ * Get shares and downloads from here rather than Share/Download service as they will then include info on whether
+ * they're playing, and their transfer speeds
  * 
  * @author macavity
  * 
@@ -57,7 +59,8 @@ public class TrackService extends AbstractService implements TransferSpeedListen
 		playback = rbnb.getPlaybackService();
 		event = rbnb.getEventService();
 		mina = rbnb.getMina();
-		// Fork off a thread to start shares, we might have a lot... do this here rather than in shareservice as we start after them and we need to be present
+		// Fork off a thread to start shares, we might have a lot... do this here rather than in shareservice as we
+		// start after them and we need to be present
 		// to fire allSharesStarted
 		log.debug("Spawning thread to start shares");
 		getRobonobo().getExecutor().execute(new CatchingRunnable() {
@@ -82,45 +85,46 @@ public class TrackService extends AbstractService implements TransferSpeedListen
 			transferSpeeds = speedsByStream;
 			changedStreamIds.addAll(transferSpeeds.keySet());
 		}
-		if(changedStreamIds.size() > 0)
+		if (changedStreamIds.size() > 0)
 			event.fireTracksUpdated(changedStreamIds);
 	}
-	
+
 	@Override
 	public void shutdown() throws Exception {
 	}
 
 	/**
-	 * Don't hang onto the object you get returned from here - implement TrackListener, and look it up every time instead. That way we keep ram usage down and
-	 * you always have the correct status (tracks start off as CloudTracks, then become DownloadingTracks, then SharedTracks)
+	 * Don't hang onto the object you get returned from here - implement TrackListener, and look it up every time
+	 * instead. That way we keep ram usage down and you always have the correct status (tracks start off as CloudTracks,
+	 * then become DownloadingTracks, then SharedTracks, plus they get played, then stopped, etc)
 	 */
 	public Track getTrack(String streamId) {
-		Track result;
+		Track t;
 		// Are we sharing this track?
-		result = share.getShare(streamId);
-		if (result == null) {
+		t = share.getShare(streamId);
+		if (t == null) {
 			// Are we downloading this track?
-			result = download.getDownload(streamId);
-			if (result == null) {
+			t = download.getDownload(streamId);
+			if (t == null) {
 				// Nope - it's in the cloud
 				Stream s = metadata.getStream(streamId);
 				if (s == null)
 					return null;
-				result = new CloudTrack(s, mina.numSources(streamId));
+				t = new CloudTrack(s, mina.numSources(streamId));
 			}
 		}
 		// Set playback status (might be already there if downloading, if necessary override it)
 		String playingSid = playback.getCurrentStreamId();
 		if (playingSid != null && playingSid.equals(streamId)) {
-			switch(playback.getStatus()) {
+			switch (playback.getStatus()) {
 			case Starting:
-				result.setPlaybackStatus(PlaybackStatus.Starting);
+				t.setPlaybackStatus(PlaybackStatus.Starting);
 				break;
 			case Playing:
-				result.setPlaybackStatus(PlaybackStatus.Playing);
+				t.setPlaybackStatus(PlaybackStatus.Playing);
 				break;
 			case Paused:
-				result.setPlaybackStatus(PlaybackStatus.Paused);
+				t.setPlaybackStatus(PlaybackStatus.Paused);
 				break;
 			}
 		}
@@ -128,10 +132,10 @@ public class TrackService extends AbstractService implements TransferSpeedListen
 		synchronized (this) {
 			if (transferSpeeds != null && transferSpeeds.containsKey(streamId)) {
 				TransferSpeed ts = transferSpeeds.get(streamId);
-				result.setRates(ts.getDownload(), ts.getUpload());
+				t.setRates(ts.getDownload(), ts.getUpload());
 			}
 		}
-		return result;
+		return t;
 	}
 
 	public void notifyPlayingTrackChange(String newPlayingStreamId) {
@@ -144,5 +148,5 @@ public class TrackService extends AbstractService implements TransferSpeedListen
 
 	public boolean haveAllSharesStarted() {
 		return allSharesStarted;
-	}	
+	}
 }

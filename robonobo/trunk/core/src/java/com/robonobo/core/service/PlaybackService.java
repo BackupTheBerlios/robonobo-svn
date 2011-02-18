@@ -19,9 +19,8 @@ public class PlaybackService extends AbstractService implements AudioPlayerListe
 	private AudioPlayer.Status status = Status.Stopped;
 
 	/**
-	 * If we're within this time (secs) after the start of a track, calling
-	 * prev() goes to the previous track (otherwise, returns to the start of the
-	 * current one)
+	 * If we're within this time (secs) after the start of a track, calling prev() goes to the previous track
+	 * (otherwise, returns to the start of the current one)
 	 */
 	public static final int PREV_TRACK_GRACE_PERIOD = 5;
 	/**
@@ -59,10 +58,10 @@ public class PlaybackService extends AbstractService implements AudioPlayerListe
 	}
 
 	/**
-	 * Passing streamId = null is the same as passing the currently playing stream 
+	 * Passing streamId = null is the same as passing the currently playing stream
 	 */
 	public synchronized void play(String streamId) {
-		if(streamId == null)
+		if (streamId == null)
 			streamId = currentStreamId;
 		// If we have an existent audio player (and we're being told to play the same stream), just set it playing
 		if (streamId.equals(currentStreamId) && player != null) {
@@ -77,7 +76,7 @@ public class PlaybackService extends AbstractService implements AudioPlayerListe
 			return;
 		}
 		// If we're currently playing something else, stop it
-		if(player != null) {
+		if (player != null) {
 			String stoppedStreamId = currentStreamId;
 			player.stop();
 			currentStreamId = null;
@@ -136,15 +135,16 @@ public class PlaybackService extends AbstractService implements AudioPlayerListe
 	}
 
 	/**
-	 * Called by the pagebuffer when it receives a page - check to see if we
-	 * have enough data, and start playing if so
+	 * Called by the pagebuffer when it receives a page - check to see if we have enough data, and start playing if so
 	 */
 	public void gotPage(final PageBuffer pb, long pageNum) {
 		Stream s = rbnb.getMetadataService().getStream(currentStreamId);
 		if (currentStreamId.equals(pb.getStreamId())) {
-			if (bufferedEnough(s, pb)) {
-				pb.removeListener(this);
-				startPlaying(s, pb);
+			if (status == Status.Starting) {
+				if (bufferedEnough(s, pb)) {
+					pb.removeListener(this);
+					startPlaying(s, pb);
+				}
 			}
 		} else {
 			// We're playing another stream now, i don't want to hear from this
@@ -174,7 +174,8 @@ public class PlaybackService extends AbstractService implements AudioPlayerListe
 	}
 
 	private AudioPlayer getAudioPlayer(Stream s, PageBuffer pb) {
-		return getRobonobo().getFormatService().getFormatSupportProvider(s.getMimeType()).getAudioPlayer(s, pb, getRobonobo().getExecutor());
+		return getRobonobo().getFormatService().getFormatSupportProvider(s.getMimeType())
+				.getAudioPlayer(s, pb, getRobonobo().getExecutor());
 	}
 
 	// Do we have enough buffered data to start playing?
@@ -224,7 +225,8 @@ public class PlaybackService extends AbstractService implements AudioPlayerListe
 	}
 
 	/**
-	 * @param ms Position to seek to, measured from the start of the stream
+	 * @param ms
+	 *            Position to seek to, measured from the start of the stream
 	 */
 	public synchronized void seek(long ms) {
 		if (player != null) {

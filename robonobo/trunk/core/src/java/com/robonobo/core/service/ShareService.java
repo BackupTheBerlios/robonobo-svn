@@ -1,5 +1,6 @@
 package com.robonobo.core.service;
 
+import static com.robonobo.common.util.FileUtil.*;
 import static com.robonobo.common.util.TimeUtil.*;
 
 import java.io.File;
@@ -17,6 +18,7 @@ import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.common.util.FileUtil;
 import com.robonobo.common.util.TimeUtil;
+import com.robonobo.core.RobonoboRuntime;
 import com.robonobo.core.api.RobonoboException;
 import com.robonobo.core.api.model.DownloadingTrack;
 import com.robonobo.core.api.model.SharedTrack;
@@ -69,7 +71,8 @@ public class ShareService extends AbstractService {
 		mina = rbnb.getMina();
 		// Keep track of our stream ids, everything else loaded on-demand from the db
 		shareStreamIds = db.getShares();
-		watchDirTask = getRobonobo().getExecutor().scheduleWithFixedDelay(new WatchDirChecker(), WATCHDIR_INITIAL_WAIT, WATCHDIR_CHECK_FREQ, TimeUnit.SECONDS);
+		watchDirTask = getRobonobo().getExecutor().scheduleWithFixedDelay(new WatchDirChecker(), WATCHDIR_INITIAL_WAIT,
+				WATCHDIR_CHECK_FREQ, TimeUnit.SECONDS);
 	}
 
 	@Override
@@ -83,13 +86,13 @@ public class ShareService extends AbstractService {
 		Stream s = metadata.getStream(streamId);
 		SharedTrack sh = db.getShare(streamId);
 		if (sh != null) {
-			log.info("Not adding share for id "+streamId+" - sharing already");
+			log.info("Not adding share for id " + streamId + " - sharing already");
 			return;
 		}
 		sh = new SharedTrack(s, dataFile, ShareStatus.Sharing);
 		PageBuffer pb;
 		try {
-			pb = storage.createPageBufForBroadcast(sh.getStream(), sh.getFile());
+			pb = storage.createPageBufForShare(sh.getStream(), sh.getFile(), true);
 			FormatSupportProvider fsp = rbnb.getFormatService().getFormatSupportProvider(s.getMimeType());
 			if (fsp == null)
 				throw new IOException("No FSP available for the mimeType " + s.getMimeType());
@@ -109,27 +112,69 @@ public class ShareService extends AbstractService {
 		users.checkPlaylistsForNewShare(sh);
 	}
 
+	private File fileForFinishedDownload(Stream s) {
+		String artist = s.getAttrValue("artist");
+		if (artist == null)
+			artist = "Unknown Artist";
+		String album = s.getAttrValue("album");
+		if (album == null)
+			album = "Unknown Album";
+		String sep = File.separator;
+		File targetDir = new File(rbnb.getConfig().getFinishedDownloadsDirectory() + sep + makeFileNameSafe(artist)
+				+ sep + makeFileNameSafe(album));
+		targetDir.mkdirs();
+		String fileExt = rbnb.getFormatService().getFormatSupportProvider(s.getMimeType()).getDefaultFileExtension();
+		return new File(targetDir, makeFileNameSafe(s.getTitle()) + "." + fileExt);
+	}
+
 	public void addShareFromCompletedDownload(DownloadingTrack d) throws RobonoboException {
-		log.debug("Adding share for completed download " + d.getStream().getStreamId());
+		Stream s = d.getStream();
+		log.debug("Adding share for completed download " + s.getStreamId());
 		if (d.getDownloadStatus() != DownloadStatus.Finished) {
 			throw new SeekInnerCalmException();
 		}
-		SharedTrack sh = new SharedTrack(d.getStream(), d.getFile(), ShareStatus.Sharing);
+		File curFile = d.getFile();
+		boolean delFile = false;
+		File shareFile = fileForFinishedDownload(s);
+		// If we are playing the file now, copy it rather than move, as windoze won't allow us to move it while we're
+		// accessing it (unix does it just fine *while* allowing us to keep reading from the file descriptor...)
+		if(s.getStreamId().equals(rbnb.getPlaybackService().getCurrentStreamId())) {
+			try {
+				FileUtil.copyFile(curFile, shareFile);
+			} catch (IOException e) {
+				throw new RobonoboException(e);
+			}
+			// Only actually delete the file at the end of this method, in case something goes wrong betwixt here and there
+			delFile = true;
+		} else {
+			boolean ok = d.getFile().renameTo(shareFile);
+			if(!ok)
+				throw new RobonoboException("Could not move file for completed download "+s.getStreamId()+" from "+curFile.getAbsolutePath()+" to "+shareFile.getAbsolutePath());
+		}
+		SharedTrack sh = new SharedTrack(s, shareFile, ShareStatus.Sharing);
 		sh.setDateAdded(now());
 		db.putShare(sh);
 		synchronized (this) {
-			shareStreamIds.add(d.getStream().getStreamId());
+			shareStreamIds.add(s.getStreamId());
 		}
-		startShare(d.getStream().getStreamId(), d.getPageBuf());
-		event.fireTrackUpdated(d.getStream().getStreamId());
+		PageBuffer pb;
+		try {
+			pb = rbnb.getStorageService().createPageBufForShare(s, shareFile, false);
+		} catch (IOException e) {
+			throw new RobonoboException(e);
+		}
+		startShare(s.getStreamId(), pb);
+		event.fireTrackUpdated(s.getStreamId());
 		users.checkPlaylistsForNewShare(sh);
+		if(delFile)
+			curFile.deleteOnExit();
 	}
 
 	public void deleteShare(String streamId) {
 		log.info("Deleting share for stream " + streamId);
 		playback.stopIfCurrentlyPlaying(streamId);
 		SharedTrack share = db.getShare(streamId);
-		if(share == null)
+		if (share == null)
 			return;
 		stopShare(streamId);
 		db.deleteShare(streamId);
@@ -162,12 +207,12 @@ public class ShareService extends AbstractService {
 
 	public SharedTrack getShare(String streamId) {
 		synchronized (this) {
-			if(!shareStreamIds.contains(streamId))
+			if (!shareStreamIds.contains(streamId))
 				return null;
 		}
 		return db.getShare(streamId);
 	}
-	
+
 	public Collection<SharedTrack> getSharesByPattern(String searchPattern) {
 		Collection<SharedTrack> shares = db.getSharesByPattern(searchPattern);
 		return shares;
@@ -215,25 +260,25 @@ public class ShareService extends AbstractService {
 
 	void startAllShares() throws IOException, RobonoboException {
 		log.debug("Start Share thread running");
-		int i=0;
+		int i = 0;
 		// Copy out our stream ids so we can iterate while adding new shares
 		String[] arr;
 		synchronized (this) {
 			arr = new String[shareStreamIds.size()];
 			shareStreamIds.toArray(arr);
 		}
-		for(String streamId : arr) {
+		for (String streamId : arr) {
 			PageBuffer pb = storage.loadPageBuf(streamId);
-			if(pb == null) {
+			if (pb == null) {
 				// Errot
-				log.error("Found null pagebuf when starting share for "+streamId+" - deleting share");
+				log.error("Found null pagebuf when starting share for " + streamId + " - deleting share");
 				db.deleteShare(streamId);
 				continue;
 			}
 			startShare(streamId, pb);
 			i++;
 		}
-		log.debug("Start Share thread finished: started "+i+" shares");
+		log.debug("Start Share thread finished: started " + i + " shares");
 	}
 
 	private class WatchDirChecker extends CatchingRunnable {

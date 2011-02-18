@@ -19,9 +19,7 @@ package com.robonobo.common.util;
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -98,6 +96,12 @@ public class FileUtil {
 		return result;
 	}
 
+	public static void copyFile(File currentFile, File destFile) throws IOException {
+		FileInputStream fis = new FileInputStream(currentFile);
+		FileOutputStream fos = new FileOutputStream(destFile);
+		ByteUtil.streamDump(fis, fos);
+	}
+	
 	private static void addChildFilesToList(File directory, List<File> list, String fileExtension) {
 		for (File f : directory.listFiles()) {
 			if (f.isDirectory())

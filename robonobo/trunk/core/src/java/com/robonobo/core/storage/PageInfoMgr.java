@@ -2,16 +2,8 @@ package com.robonobo.core.storage;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.*;
+import java.util.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,6 +18,7 @@ import com.twmacinta.util.MD5;
 public class PageInfoMgr implements PageInfoStore {
 	private static final String CREATE_PB_PARAMS_SQL = "CREATE CACHED TABLE PB_PARAMS (STREAM_ID VARCHAR(36) NOT NULL PRIMARY KEY, TOTAL_PAGES BIGINT, PAGES_RECVD BIGINT, BYTES_RECVD BIGINT, LAST_CONTIG_PAGE BIGINT, FILE_PATH VARCHAR(1024))";
 	private static final String INSERT_PB_PARAMS_SQL = "INSERT INTO PB_PARAMS (STREAM_ID, TOTAL_PAGES, PAGES_RECVD, BYTES_RECVD, LAST_CONTIG_PAGE, FILE_PATH) VALUES (?, ?, ?, ?, ?, ?)";
+	private static final String UPDATE_PB_FILE_SQL = "UPDATE PB_PARAMS SET FILE_PATH = ? WHERE STREAM_ID = ?";
 
 	private static final String GET_PB_PARAMS_SQL = "SELECT * FROM PB_PARAMS WHERE STREAM_ID = ?";
 	private static final String GET_TOTAL_PAGES_SQL = "SELECT TOTAL_PAGES FROM PB_PARAMS WHERE STREAM_ID = ?";
@@ -70,27 +63,18 @@ public class PageInfoMgr implements PageInfoStore {
 			log.info("Using pageDB with prefix " + dbPathPrefix);
 	}
 
-	public void init(String streamId) {
-		Connection conn = null;
-		try {
-			conn = getConnection();
-			PreparedStatement ps = conn.prepareStatement(getInitStreamSQL(streamId));
-			ps.executeUpdate();
-			ps.close();
-		} catch (SQLException e) {
-			log.error("Caught sqlexception creating table for stream " + streamId, e);
-		} finally {
-			if (conn != null)
-				returnConnection(conn);
-		}
-	}
-
 	public FilePageBuffer createPageBuf(Stream s, File f) throws IOException {
 		Connection conn = null;
+		String sid = s.getStreamId();
 		try {
 			conn = getConnection();
-			PreparedStatement ps = conn.prepareStatement(INSERT_PB_PARAMS_SQL);
-			ps.setString(1, s.getStreamId());
+			
+			PreparedStatement ps = conn.prepareStatement(getInitStreamSQL(sid));
+			ps.executeUpdate();
+			ps.close();
+
+			ps = conn.prepareStatement(INSERT_PB_PARAMS_SQL);
+			ps.setString(1, sid);
 			ps.setLong(2, -1);
 			ps.setLong(3, 0);
 			ps.setLong(4, 0);
@@ -98,10 +82,11 @@ public class PageInfoMgr implements PageInfoStore {
 			ps.setString(6, f.getAbsolutePath());
 			ps.executeUpdate();
 			ps.close();
-			FilePageBuffer pb = new FilePageBuffer(s.getStreamId(), f, this);
+			
+			FilePageBuffer pb = new FilePageBuffer(sid, f, this);
 			return pb;
 		} catch (SQLException e) {
-			log.error("Caught sqlexception creating pagebuf for stream " + s.getStreamId(), e);
+			log.error("Caught sqlexception creating pagebuf for stream " + sid, e);
 			throw new IOException("Error: " + e.getMessage());
 		} finally {
 			if (conn != null)
@@ -109,6 +94,27 @@ public class PageInfoMgr implements PageInfoStore {
 		}
 	}
 
+	public FilePageBuffer updateAndReturnPageBuf(Stream s, File f) throws IOException {
+		Connection conn = null;
+		String sid = s.getStreamId();
+		try {
+			conn = getConnection();
+			PreparedStatement ps = conn.prepareStatement(UPDATE_PB_FILE_SQL);
+			ps.setString(1, f.getAbsolutePath());
+			ps.setString(2, sid);
+			ps.executeUpdate();
+			ps.close();
+			FilePageBuffer pb = new FilePageBuffer(sid, f, this);
+			return pb;
+		} catch (SQLException e) {
+			log.error("Caught sqlexception creating pagebuf for stream " + sid, e);
+			throw new IOException("Error: " + e.getMessage());
+		} finally {
+			if (conn != null)
+				returnConnection(conn);
+		}		
+	}
+	
 	public FilePageBuffer getPageBuffer(String streamId) {
 		Connection conn = null;
 		try {

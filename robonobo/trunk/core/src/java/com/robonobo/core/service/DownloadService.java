@@ -25,6 +25,7 @@ import com.robonobo.mina.external.ConnectedNode;
 import com.robonobo.mina.external.MinaControl;
 import com.robonobo.mina.external.MinaListener;
 import com.robonobo.mina.external.buffer.PageBuffer;
+import com.robonobo.mina.external.buffer.PageBufferListener;
 
 /**
  * Responsible for translating mina Receptions to robonobo Downloads, and
@@ -34,7 +35,7 @@ import com.robonobo.mina.external.buffer.PageBuffer;
  * @author macavity
  */
 @SuppressWarnings("unchecked")
-public class DownloadService extends AbstractService implements MinaListener {
+public class DownloadService extends AbstractService implements MinaListener, PageBufferListener {
 	static final int PRIORITY_CURRENT = Integer.MAX_VALUE;
 	static final int PRIORITY_NEXT = Integer.MAX_VALUE - 1;
 	Log log = LogFactory.getLog(getClass());
@@ -60,6 +61,7 @@ public class DownloadService extends AbstractService implements MinaListener {
 	 * uniqueness
 	 */
 	long lastDlStartTime = 0;
+	private File downloadsDir;
 
 	public DownloadService() {
 		addHardDependency("core.mina");
@@ -81,6 +83,8 @@ public class DownloadService extends AbstractService implements MinaListener {
 		downloadStreamIds = new HashSet<String>();
 		downloadStreamIds.addAll(db.getDownloads());
 		preFetchStreamIds = new HashSet<String>();
+		downloadsDir = new File(rbnb.getHomeDir(), "in-progress");
+		downloadsDir.mkdir();
 		int numStarted = 0;
 		for (String streamId : downloadStreamIds) {
 			DownloadingTrack d = db.getDownload(streamId);
@@ -118,35 +122,10 @@ public class DownloadService extends AbstractService implements MinaListener {
 	}
 	
 	public void addDownload(String streamId) throws RobonoboException {
-		Stream s = metadata.getStream(streamId);
-		File downloadDir = new File(rbnb.getConfig().getDownloadDirectory());
-		String artist;
-		if (s.getAttrValue("artist") == null)
-			artist = "Unknown Artist";
-		else
-			artist = s.getAttrValue("artist");
-		String album;
-		if (s.getAttrValue("album") == null)
-			album = "Unknown Album";
-		else
-			album = s.getAttrValue("album");
-		String sep = File.separator;
-		File targetDir = new File(downloadDir.getAbsolutePath() + sep + makeFileNameSafe(artist) + sep
-				+ makeFileNameSafe(album));
-		targetDir.mkdirs();
-		String fileExt = rbnb.getFormatService().getFormatSupportProvider(s.getMimeType())
-				.getDefaultFileExtension();
-		File dataFile = new File(targetDir, makeFileNameSafe(s.getTitle()) + "." + fileExt);
-		addDownload(streamId, dataFile);
-	}
-
-	/**
-	 * Will start the download if we have < maxRunningDownloads
-	 */
-	public void addDownload(String streamId, File dataFile) throws RobonoboException {
+		File dataFile = new File(downloadsDir, makeFileNameSafe(streamId));
 		log.info("Adding download for " + streamId);
-		Stream s = metadata.getStream(streamId);
-		DownloadingTrack d = new DownloadingTrack(s, dataFile, DownloadStatus.Paused);
+		Stream s1 = metadata.getStream(streamId);
+		DownloadingTrack d = new DownloadingTrack(s1, dataFile, DownloadStatus.Paused);
 		long startTime = now().getTime();
 		synchronized (this) {
 			if (startTime == lastDlStartTime)
@@ -155,26 +134,26 @@ public class DownloadService extends AbstractService implements MinaListener {
 		}
 		d.setDateAdded(new Date(startTime));
 		try {
-			PageBuffer pb = storage.createPageBufForReception(s, dataFile);
+			PageBuffer pb = storage.createPageBufForDownload(s1, dataFile);
 			if (numRunningDownloads() < rbnb.getConfig().getMaxRunningDownloads())
 				startDownload(d, pb);
 		} catch (Exception e) {
-			log.error("Caught exception when starting download for " + s.getStreamId(), e);
+			log.error("Caught exception when starting download for " + s1.getStreamId(), e);
 			throw new RobonoboException(e);
 		} finally {
 			if (d != null)
 				db.putDownload(d);
 		}
 		synchronized (dPriority) {
-			dPriority.add(s.getStreamId());
+			dPriority.add(s1.getStreamId());
 		}
 		updatePriorities();
 		synchronized (this) {
-			downloadStreamIds.add(s.getStreamId());
+			downloadStreamIds.add(s1.getStreamId());
 		}
-		event.fireTrackUpdated(s.getStreamId());
+		event.fireTrackUpdated(s1.getStreamId());
 	}
-
+	
 	public void deleteDownload(String streamId) throws RobonoboException {
 		log.info("Deleting download for stream " + streamId);
 		playback.stopIfCurrentlyPlaying(streamId);
@@ -227,6 +206,7 @@ public class DownloadService extends AbstractService implements MinaListener {
 			throw new RobonoboException(e);
 		}
 		d.setPageBuf(pb);
+		pb.addListener(this);
 		startDownload(d, pb);
 		d.setDownloadStatus(DownloadStatus.Downloading);
 		db.putDownload(d);
@@ -304,7 +284,6 @@ public class DownloadService extends AbstractService implements MinaListener {
 
 	private void startMoreDownloads() {
 		int activeDls = 0;
-		// TODO Should we keep downloads in memory permanently?
 		List<DownloadingTrack> dls = new ArrayList<DownloadingTrack>();
 		synchronized (dPriority) {
 			for (String streamId : dPriority) {
@@ -402,4 +381,14 @@ public class DownloadService extends AbstractService implements MinaListener {
 
 	public void nodeDisconnected(ConnectedNode node) {
 	}
+
+	@Override
+	public void advisedOfTotalPages(PageBuffer pb) {
+	}
+
+	@Override
+	public void gotPage(PageBuffer pb, long pageNum) {
+		event.fireTrackUpdated(pb.getStreamId());
+	}
+
 }

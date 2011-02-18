@@ -137,10 +137,6 @@ public class RobonoboController {
 		inst.getDownloadService().preFetch(streamId);
 	}
 	
-	public void addDownload(String streamId, String pathToFile) throws RobonoboException {
-		inst.getDownloadService().addDownload(streamId, new File(pathToFile));
-	}
-
 	public void addDownload(String streamId) throws RobonoboException {
 		inst.getDownloadService().addDownload(streamId);
 	}

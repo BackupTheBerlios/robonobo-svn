@@ -179,11 +179,11 @@ public class RobonoboInstance implements Robonobo {
 		}
 
 		// First time through, set the default download dir
-		if (getConfig().getDownloadDirectory() == null) {
+		if (getConfig().getFinishedDownloadsDirectory() == null) {
 			File dd = Platform.getPlatform().getDefaultDownloadDirectory();
 			dd.mkdirs();
 			String ddPath = dd.getAbsolutePath();
-			getConfig().setDownloadDirectory(ddPath);
+			getConfig().setFinishedDownloadsDirectory(ddPath);
 		}
 
 		saveConfig();
