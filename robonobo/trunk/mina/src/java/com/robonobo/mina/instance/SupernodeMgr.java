@@ -24,14 +24,6 @@ public class SupernodeMgr {
 		searchers = new StreamNodeMap();
 	}
 	
-	public synchronized Node[] getSearchers(String streamId) {
-		return searchers.getNodes(streamId);
-	}
-	
-	public synchronized Node[] getSources(String streamId) {
-		return sources.getNodes(streamId);
-	}
-	
 	/**
 	 * Returns map<streamid, list<source-nodedesc>>
 	 */
@@ -40,7 +32,7 @@ public class SupernodeMgr {
 		Map<String, List<Node>> result = new HashMap<String, List<Node>>(); 
 		for (String streamId : ws.getStreamIdList()) {
 			searchers.addMapping(streamId, mh.getFromCC().getNodeDescriptor());
-			result.put(streamId, Arrays.asList(sources.getNodes(streamId)));
+			result.put(streamId, sources.getNodes(streamId));
 		}
 		return result;
 	}
@@ -62,7 +54,7 @@ public class SupernodeMgr {
 			// Don't pass on the local attr (if any)
 			Node sourceNode = Node.newBuilder().mergeFrom(mh.getFromCC().getNodeDescriptor()).setLocal(false).build();
 			sources.addMapping(streamId, sourceNode);
-			result.put(streamId, Arrays.asList(searchers.getNodes(streamId)));
+			result.put(streamId, searchers.getNodes(streamId));
 		}
 		return result;
 	}

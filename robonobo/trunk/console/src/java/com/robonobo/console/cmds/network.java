@@ -75,7 +75,7 @@ public class network implements ConsoleCommand {
 		out.println(rightPadOrTruncate(node.getNodeId(), 36) + " " + rightPadOrTruncate(node.getEndPointUrl(), 36)
 				+ " " + rightPadOrTruncate((node.isSupernode()) ? "Yes" : "No", 5) + " "
 				+ rightPad(padToMinWidth(node.getTheirBid(), 4), 9) + " "
-				+ rightPad(padToMinWidth(node.getTheirGamma(), 4), 7)
+				+ rightPad(padToMinWidth(node.getTheirGamma(), 4), 8)
 				+ rightPadOrTruncate(humanReadableSize(node.getUploadRate()) + "/s", 11) + " "
 				+ rightPad(padToMinWidth(node.getMyBid(), 4), 6) + " "
 				+ rightPad(padToMinWidth(node.getMyGamma(), 4), 5) + " "

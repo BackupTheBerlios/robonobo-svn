@@ -1,78 +1,84 @@
 package com.robonobo.mina.util;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
+import com.robonobo.core.api.proto.CoreApi;
 import com.robonobo.core.api.proto.CoreApi.Node;
 
 /**
  * Keeps a bidirectional mapping between streams and nodes
  */
 public class StreamNodeMap {
-	Map<String, Set<Node>> streamMap;
-	/** Map<NodeId, Set<StreamId>> */
-	Map<String, Set<String>> nodeMap;
+	Map<String, Node> nodesById = new HashMap<String, Node>();
+	Map<String, Set<String>> streamMap = new HashMap<String, Set<String>>();
+	Map<String, Set<String>> nodeMap = new HashMap<String, Set<String>>();
 
 	public StreamNodeMap() {
-		streamMap = new HashMap<String, Set<Node>>();
+		streamMap = new HashMap<String, Set<String>>();
 		nodeMap = new HashMap<String, Set<String>>();
 	}
 
 	public synchronized void addMapping(String streamId, Node node) {
-		Set<Node> nodesForThisStream = streamMap.get(streamId);
-		if (nodesForThisStream == null) {
-			nodesForThisStream = new HashSet<Node>();
-			streamMap.put(streamId, nodesForThisStream);
+		String nodeId = node.getId();
+		nodesById.put(nodeId, node);
+		Set<String> nodeIdsForThisStream = streamMap.get(streamId);
+		if (nodeIdsForThisStream == null) {
+			nodeIdsForThisStream = new HashSet<String>();
+			streamMap.put(streamId, nodeIdsForThisStream);
 		}
-		nodesForThisStream.add(node);
+		nodeIdsForThisStream.add(nodeId);
 
-		Set<String> streamsForThisNode = nodeMap.get(node.getId());
+		Set<String> streamsForThisNode = nodeMap.get(nodeId);
 		if (streamsForThisNode == null) {
 			streamsForThisNode = new HashSet<String>();
-			nodeMap.put(node.getId(), streamsForThisNode);
+			nodeMap.put(nodeId, streamsForThisNode);
 		}
 		streamsForThisNode.add(streamId);
 	}
 
 	public synchronized void removeMapping(String streamId, Node node) {
-		Set<Node> nodesForThisStream = streamMap.get(streamId);
-		if (nodesForThisStream != null) {
-			nodesForThisStream.remove(node);
-			if (nodesForThisStream.size() == 0)
+		String nodeId = node.getId();
+		Set<String> nodeIdsForThisStream = streamMap.get(streamId);
+		if (nodeIdsForThisStream != null) {
+			nodeIdsForThisStream.remove(nodeId);
+			if (nodeIdsForThisStream.size() == 0)
 				streamMap.remove(streamId);
 		}
 
-		Set<String> streamsForThisNode = nodeMap.get(node.getId());
+		Set<String> streamsForThisNode = nodeMap.get(nodeId);
 		if (streamsForThisNode != null) {
 			streamsForThisNode.remove(streamId);
 			if (streamsForThisNode.size() == 0)
-				nodeMap.remove(node.getId());
+				nodeMap.remove(nodeId);
 		}
 	}
 
 	public synchronized void removeNode(Node node) {
-		Set<String> streamsForThisNode = nodeMap.get(node.getId());
+		String nodeId = node.getId();
+		Set<String> streamsForThisNode = nodeMap.get(nodeId);
 		if (streamsForThisNode != null) {
 			for (String streamId : streamsForThisNode) {
-				Set<Node> nodesForThisStream = streamMap.get(streamId);
-				if (nodesForThisStream != null)
-					nodesForThisStream.remove(node);
+				Set<String> nodeIdsForThisStream = streamMap.get(streamId);
+				if (nodeIdsForThisStream != null) {
+					nodeIdsForThisStream.remove(nodeId);
+					if(nodeIdsForThisStream.size() == 0)
+						streamMap.remove(streamId);
+				}
 			}
-			nodeMap.remove(node.getId());
+			nodeMap.remove(nodeId);
 		}
+		nodesById.remove(nodeId);
 	}
 
-	public synchronized Node[] getNodes(String streamId) {
-		Set<Node> nodesForThisStream = streamMap.get(streamId);
-		if (nodesForThisStream == null)
-			return new Node[0];
-		else {
-			Node[] result = new Node[nodesForThisStream.size()];
-			nodesForThisStream.toArray(result);
-			return result;
+	public synchronized List<Node> getNodes(String streamId) {
+		Set<String> nodesForThisStream = streamMap.get(streamId);
+		List<Node> result = new ArrayList<Node>();
+		if (nodesForThisStream != null) {
+			for (String nodeId : nodesForThisStream) {
+				result.add(nodesById.get(nodeId));
+			}
 		}
+		return result;
 	}
 
 	public synchronized Set<String> getAllStreams() {
