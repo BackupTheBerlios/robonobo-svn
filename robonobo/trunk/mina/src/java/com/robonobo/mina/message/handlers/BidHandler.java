@@ -1,6 +1,6 @@
 package com.robonobo.mina.message.handlers;
 
-import static com.robonobo.common.util.NumberUtils.*;
+import static com.robonobo.common.util.NumberUtil.*;
 
 import java.io.IOException;
 import java.io.InputStream;

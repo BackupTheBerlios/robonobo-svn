@@ -22,8 +22,7 @@ import com.robonobo.mina.escrow.EscrowProvider;
 import com.robonobo.mina.external.*;
 import com.robonobo.mina.external.buffer.PageBuffer;
 import com.robonobo.mina.message.proto.MinaProtocol.Agorics;
-import com.robonobo.mina.network.EndPointMgr;
-import com.robonobo.mina.network.NetworkMgr;
+import com.robonobo.mina.network.*;
 import com.robonobo.mina.stream.StreamMgr;
 import com.robonobo.mina.util.BadNodeList;
 import com.robonobo.mina.util.Tagline;
@@ -359,15 +358,27 @@ public class MinaInstance implements MinaControl {
 	 */
 	public void setStreamVelocity(String streamId, StreamVelocity sv) {
 		StreamMgr sm = smRegister.getSM(streamId);
-		if (sm != null)
+		if (sm != null) {
 			sm.setStreamVelocity(sv);
+			for (LCPair lcp : sm.getStreamConns().getAllListenConns()) {
+				buyMgr.possiblyRebid(lcp.getCC().getNodeId());
+			}
+		}
 	}
 
 	public void setAllStreamVelocitiesExcept(String streamId, StreamVelocity sv) {
 		StreamMgr[] sms = smRegister.getSMs();
+		Set<String> rebidNodeIds = new HashSet<String>();
 		for (StreamMgr sm : sms) {
-			if (sm.isReceiving() && !sm.getStreamId().equals(streamId))
+			if (sm.isReceiving() && !sm.getStreamId().equals(streamId)) {
 				sm.setStreamVelocity(sv);
+				for (LCPair lcp : sm.getStreamConns().getAllListenConns()) {
+					rebidNodeIds.add(lcp.getCC().getNodeId());
+				}
+			}
+		}
+		for (String nodeId : rebidNodeIds) {
+			buyMgr.possiblyRebid(nodeId);
 		}
 	}
 

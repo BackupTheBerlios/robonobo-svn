@@ -1,9 +1,9 @@
 package com.robonobo.common.util;
 
-public class NumberUtils {
+public class NumberUtil {
 	/** Never instantiate this class
 	 */
-	private NumberUtils() {
+	private NumberUtil() {
 	}
 	
 	public static final boolean dblEq(double a, double b) {

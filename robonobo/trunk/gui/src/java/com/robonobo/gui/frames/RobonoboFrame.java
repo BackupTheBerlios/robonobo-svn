@@ -196,6 +196,10 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 		if(m.matches()) {
 			String objType = m.group(1);
 			String objId = m.group(2);
+			if(objType.equalsIgnoreCase("focus")) {
+				// Do nothing, arg handler will bring us to front anyway
+				return;
+			}
 			if(objType.equalsIgnoreCase("playlist")) {
 				long pId = Long.parseLong(objId, 16);
 				leftSidebar.showPlaylist(pId);

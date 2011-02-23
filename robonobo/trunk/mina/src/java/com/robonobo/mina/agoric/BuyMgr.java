@@ -1,5 +1,6 @@
 package com.robonobo.mina.agoric;
 
+import static com.robonobo.common.util.NumberUtil.*;
 import static com.robonobo.common.util.TextUtil.*;
 import static com.robonobo.common.util.TimeUtil.*;
 
@@ -12,6 +13,7 @@ import com.google.protobuf.ByteString;
 import com.robonobo.common.concurrent.Attempt;
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
+import com.robonobo.common.util.NumberUtil;
 import com.robonobo.core.api.CurrencyException;
 import com.robonobo.core.api.StreamVelocity;
 import com.robonobo.mina.external.buffer.PageBuffer;
@@ -287,32 +289,76 @@ public class BuyMgr {
 		}
 	}
 
-	private void openBidding(final String sellerNodeId) {
-		ControlConnection cc = mina.getCCM().getCCWithId(sellerNodeId);
+	public void possiblyRebid(final String nodeId) {
+		ControlConnection cc = mina.getCCM().getCCWithId(nodeId);
+		double lastBid;
+		long timeUntilBid;
 		if (cc == null) {
-			log.error("Not opening bidding to " + sellerNodeId + " - no connection");
+			log.error("Not rebidding to " + nodeId + " - no connection");
 			return;
 		}
 		synchronized (this) {
-			if(!accounts.containsKey(sellerNodeId)) {
-				log.error("Not opening bidding to "+sellerNodeId+" - no account");
+			if(!accounts.containsKey(nodeId)) {
+				log.error("Not rebidding to "+nodeId+" - no account");
+				return;
+			}
+			AuctionState as = asMap.get(nodeId);
+			if(as == null) {
+				log.debug("Not rebidding to "+nodeId+" - no auctionstate");
+				return;
+			}
+			lastBid = as.getLastSentBid();
+			timeUntilBid = as.getBidsOpen();
+		}
+		// Poll everyone interested in this guy, use the highest bid
+		double topBid = 0;
+		for (LCPair lcp : cc.getLCPairs()) {
+			double thisBid = lcp.getSM().getBidStrategy().getOpeningBid(nodeId);
+			if (thisBid > topBid)
+				topBid = thisBid;
+		}
+		if(dblEq(lastBid, topBid)) {
+			log.debug("Not rebidding to "+nodeId+" - happy with current bid");
+			return;
+		}
+		if (timeUntilBid <= 0)
+			openBidding(nodeId);
+		else {
+			log.debug("Waiting " + timeUntilBid + "ms to open bid to " + nodeId);
+			mina.getExecutor().schedule(new CatchingRunnable() {
+				public void doRun() throws Exception {
+					openBidding(nodeId);
+				}
+			}, timeUntilBid, TimeUnit.MILLISECONDS);
+		}
+	}
+	
+	private void openBidding(final String nodeId) {
+		ControlConnection cc = mina.getCCM().getCCWithId(nodeId);
+		if (cc == null) {
+			log.error("Not opening bidding to " + nodeId + " - no connection");
+			return;
+		}
+		synchronized (this) {
+			if(!accounts.containsKey(nodeId)) {
+				log.error("Not opening bidding to "+nodeId+" - no account");
 				return;
 			}
 		}
 		// Poll everyone interested in this guy, use the highest bid
 		double topBid = 0;
 		for (LCPair lcp : cc.getLCPairs()) {
-			double thisBid = lcp.getSM().getBidStrategy().getOpeningBid(sellerNodeId);
+			double thisBid = lcp.getSM().getBidStrategy().getOpeningBid(nodeId);
 			if (thisBid > topBid)
 				topBid = thisBid;
 		}
 		if (topBid == 0) {
-			log.error("Setup account with " + sellerNodeId + ", but now nobody wants to bid!");
+			log.error("Told to open bidding to " + nodeId + ", but now nobody wants to bid!");
 			return;
 		}
 		Bid bidMsg = Bid.newBuilder().setAmount(topBid).build();
 		cc.sendMessage("Bid", bidMsg);
-		sentBid(sellerNodeId, topBid);
+		sentBid(nodeId, topBid);
 	}
 
 	/**
