@@ -71,11 +71,7 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 	// Initial ssthresh of Integer.MAX_VALUE means that first time around, we
 	// slow-start until we hit pkt loss
 	static final int INITIAL_SSTHRESH = Integer.MAX_VALUE;
-	/**
-	 * Max pkts to be sent in response to a single ack, suggested value given in
-	 * http://citeseer.ist.psu.edu/fall96simulationbased.html
-	 */
-	static final int MAX_BURST_PKTS = 4;
+	static final int MAX_BURST_PKTS = 8;
 	static final float BPS_LIMIT_MULTIPLIER = 1.2f;
 	// /** If srtt > (minRtt + gamma(maxRtt - minRtt)), then we have
 	// congestion and we cut our window. See TCP-LP. */
@@ -103,8 +99,8 @@ public class SEONConnection extends EONConnection implements PullDataReceiver, P
 	int numDupAcks = 0;
 	/** multiple of MSS, not bytes */
 	int ssThresh = INITIAL_SSTHRESH;
-	/** multiple of MSS, not bytes */
-	int sendWindow = 2;
+	/** multiple of MSS, not bytes - NB have bumped this up to 8 in response to recent (late 2010) articles about popular websites setting initial window to 8 * mss */
+	int sendWindow = 8;
 	long bytesAckedSinceWindowInc = 0;
 	/**
 	 * Don't increase or decrease the window until sendUna is >= fastRecoveryUntil
