@@ -419,7 +419,6 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 			dataAvailable = (float) dt.getBytesDownloaded() / playingStream.getSize();
 		} else
 			dataAvailable = 0;
-		log.debug("PlaybackPanel got data available: "+dataAvailable);
 		playbackProgress.setDataAvailable(dataAvailable);
 	}
 

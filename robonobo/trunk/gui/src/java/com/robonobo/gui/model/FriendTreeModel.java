@@ -138,15 +138,17 @@ public class FriendTreeModel extends SortedTreeModel implements UserPlaylistList
 		SwingUtilities.invokeLater(new CatchingRunnable() {
 			public void doRun() throws Exception {
 				synchronized (FriendTreeModel.this) {
-					LibraryTreeNode ltn = libNodes.get(lib.getUserId());
+					long uid = lib.getUserId();
+					LibraryTreeNode ltn = libNodes.get(uid);
 					if(ltn == null) {
-						FriendTreeNode ftn = friendNodes.get(lib.getUserId());
+						FriendTreeNode ftn = friendNodes.get(uid);
 						if(ftn == null) {
-							log.error("ERROR: library updated for userId "+lib.getUserId()+", but there is no friend tree node");
+							log.error("ERROR: library updated for userId "+uid+", but there is no friend tree node");
 							return;
 						}
 						ltn = new LibraryTreeNode(frame, lib);
 						insertNodeSorted(ftn, ltn);
+						libNodes.put(uid, ltn);
 					} else
 						ltn.setLib(lib);
 					firePathToRootChanged(ltn);

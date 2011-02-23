@@ -70,6 +70,8 @@ public class PlaylistTreeNode extends SelectableTreeNode {
 
 	@Override
 	public int compareTo(SortableTreeNode o) {
+		if(o instanceof LibraryTreeNode)
+			return 1;
 		PlaylistTreeNode other = (PlaylistTreeNode) o;
 		return playlist.getTitle().compareTo(other.getPlaylist().getTitle());
 	}

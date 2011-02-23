@@ -21,6 +21,7 @@ public class FriendLibraryTableModel extends FreeformTrackListTableModel impleme
 		for (String sid : lib.getTracks().keySet()) {
 			add(control.getTrack(sid), false);
 		}
+		controller.addUserPlaylistListener(this);
 	}
 
 	@Override

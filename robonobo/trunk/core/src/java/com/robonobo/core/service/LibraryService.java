@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.robonobo.common.concurrent.Batcher;
 import com.robonobo.common.concurrent.CatchingRunnable;
+import com.robonobo.common.serialization.SerializationException;
 import com.robonobo.common.util.TimeUtil;
 import com.robonobo.core.api.UserPlaylistListener;
 import com.robonobo.core.api.config.MetadataServerConfig;
@@ -148,36 +149,44 @@ public class LibraryService extends AbstractService implements UserPlaylistListe
 		// Do nothing
 	}
 	
+	public void checkLibrariesUpdate() {
+		Long[] userIds;
+		synchronized (this) {
+			userIds = new Long[libs.size()];
+			libs.keySet().toArray(userIds);
+		}
+		for (Long userId : userIds) {
+			LibraryMsg.Builder b = LibraryMsg.newBuilder();
+			MetadataServerConfig msc = rbnb.getUsersService().getMsc();
+			try {
+				rbnb.getSerializationManager().getObjectFromUrl(b, msc.getLibraryUrl(userId, lastUpdated));
+			} catch (Exception e) {
+				log.error("Error getting library", e);
+			}
+			Library nLib = new Library(b.build());
+			if(log.isDebugEnabled()) {
+				User u = rbnb.getUsersService().getUser(userId);
+				log.debug("Received updated library for "+u.getEmail()+": "+nLib.getTracks().size()+" new tracks");
+			}
+			if (nLib.getTracks().size() > 0) {
+				Library cLib;
+				synchronized (LibraryService.this) {
+					cLib = libs.get(userId);
+					cLib.getTracks().putAll(nLib.getTracks());
+				}
+				// Make sure we have the streams
+				for (String sid : nLib.getTracks().keySet()) {
+					rbnb.getMetadataService().getStream(sid);
+				}
+				rbnb.getEventService().fireLibraryUpdated(userId, cLib);
+			}
+		}
+		lastUpdated = now();
+	}
+
 	class UpdateChecker extends CatchingRunnable {
 		public void doRun() throws Exception {
-			Long[] userIds;
-			synchronized (LibraryService.this) {
-				userIds = new Long[libs.size()];
-				libs.keySet().toArray(userIds);
-			}
-			for (Long userId : userIds) {
-				LibraryMsg.Builder b = LibraryMsg.newBuilder();
-				MetadataServerConfig msc = rbnb.getUsersService().getMsc();
-				try {
-					rbnb.getSerializationManager().getObjectFromUrl(b, msc.getLibraryUrl(userId, lastUpdated));
-				} catch (IOException e) {
-					log.error("Error getting library", e);
-				}
-				Library nLib = new Library(b.build());
-				if (nLib.getTracks().size() > 0) {
-					Library cLib;
-					synchronized (LibraryService.this) {
-						cLib = libs.get(userId);
-						cLib.getTracks().putAll(nLib.getTracks());
-					}
-					// Make sure we have the streams
-					for (String sid : nLib.getTracks().keySet()) {
-						rbnb.getMetadataService().getStream(sid);
-					}
-					rbnb.getEventService().fireLibraryUpdated(userId, cLib);
-				}
-			}
-			lastUpdated = now();
+			checkLibrariesUpdate();
 		}
 	}
 
