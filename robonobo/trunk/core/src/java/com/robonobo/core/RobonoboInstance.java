@@ -192,8 +192,14 @@ public class RobonoboInstance implements Robonobo {
 	private void setHomeDir() {
 		if (System.getenv().containsKey("ROBOHOME"))
 			homeDir = new File(System.getenv("ROBOHOME"));
-		else
+		else {
 			homeDir = Platform.getPlatform().getDefaultHomeDirectory();
+			// Use a different homedir for development versions, try to avoid fucking things up too badly
+			if(version.toLowerCase().startsWith("dev")) {
+				String dirName = homeDir.getName() + "-dev";
+				homeDir = new File(homeDir.getParentFile(), dirName);
+			}
+		}
 		homeDir.mkdirs();
 	}
 

@@ -72,7 +72,17 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 		guiConfig = (GuiConfig) control.getConfig("gui");
 		if (control.getStatus() != RobonoboStatus.Stopped)
 			setupPrefDialog();
+		addListeners();
+	}
+
+	private void addListeners() {
 		control.addTrackListener(this);
+		// There's a chance the control might have loaded all its tracks before we add ourselves as a tracklistener, so spawn a thread to check if this is so
+		control.getExecutor().execute(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				checkTracksLoaded();
+			}
+		});
 		control.addRobonoboStatusListener(this);
 		// Grab our events...
 		KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventHandler());
@@ -149,14 +159,21 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 			showWelcome(false);
 	}
 
+	private void checkTracksLoaded() {
+		if (tracksLoaded)
+			return;
+		if (control.haveAllSharesStarted())
+			allTracksLoaded();
+	}
+
 	private void handleArgs() {
 		// Handle everything that isn't the -console
 		for (String arg : cmdLineArgs) {
-			if(!"-console".equalsIgnoreCase(arg))
+			if (!"-console".equalsIgnoreCase(arg))
 				handleArg(arg);
 		}
 	}
-	
+
 	private void setupHandoverHandler() {
 		control.setHandoverHandler(new HandoverHandler() {
 			@Override
@@ -186,29 +203,29 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 			if (arg.startsWith("rbnb"))
 				openRbnbUri(arg);
 			else
-				log.error("Received erroneous robonobo argument: "+arg);
+				log.error("Received erroneous robonobo argument: " + arg);
 		}
 	}
-	
+
 	public void openRbnbUri(String uri) {
 		Pattern uriPat = Pattern.compile("^rbnb:(\\w+):(.*)$");
 		Matcher m = uriPat.matcher(uri);
-		if(m.matches()) {
+		if (m.matches()) {
 			String objType = m.group(1);
 			String objId = m.group(2);
-			if(objType.equalsIgnoreCase("focus")) {
+			if (objType.equalsIgnoreCase("focus")) {
 				// Do nothing, arg handler will bring us to front anyway
 				return;
 			}
-			if(objType.equalsIgnoreCase("playlist")) {
+			if (objType.equalsIgnoreCase("playlist")) {
 				long pId = Long.parseLong(objId, 16);
 				leftSidebar.showPlaylist(pId);
 				return;
 			}
 		}
-		log.error("Received invalid rbnb uri: "+uri);
+		log.error("Received invalid rbnb uri: " + uri);
 	}
-	
+
 	public void showWelcome(boolean forceShow) {
 		// If we have no shares (or we're forcing it), show the welcome dialog
 		final boolean gotShares = (control.getShares().size() > 0);
@@ -410,14 +427,14 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 			confirmThenShutdown();
 		}
 	}
-	
+
 	class KeyEventHandler implements KeyEventDispatcher {
 		@Override
 		public boolean dispatchKeyEvent(KeyEvent e) {
 			int code = e.getKeyCode();
 			int modifiers = e.getModifiers();
 			if (code == KeyEvent.VK_ESCAPE) {
-				if(isShowingSheet()) {
+				if (isShowingSheet()) {
 					undim();
 					return true;
 				}

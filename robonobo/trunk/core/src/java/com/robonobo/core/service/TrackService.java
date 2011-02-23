@@ -64,7 +64,6 @@ public class TrackService extends AbstractService implements TransferSpeedListen
 		// to fire allSharesStarted
 		log.debug("Spawning thread to start shares");
 		getRobonobo().getExecutor().execute(new CatchingRunnable() {
-			@Override
 			public void doRun() throws Exception {
 				share.startAllShares();
 				allSharesStarted = true;

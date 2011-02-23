@@ -301,7 +301,7 @@ public class RobonoboController {
 		inst.shutdown();
 	}
 
-	public boolean haveAllTransfersStarted() {
+	public boolean haveAllSharesStarted() {
 		return inst.getTrackService().haveAllSharesStarted();
 	}
 

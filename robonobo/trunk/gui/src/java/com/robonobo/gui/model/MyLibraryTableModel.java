@@ -14,7 +14,7 @@ public class MyLibraryTableModel extends FreeformTrackListTableModel  {
 	public MyLibraryTableModel(RobonoboController controller) {
 		super(controller);
 		// If everything's started already before we get here, load it now
-		if (controller.haveAllTransfersStarted())
+		if (controller.haveAllSharesStarted())
 			allTracksLoaded();
 	}
 

@@ -17,7 +17,6 @@ import com.robonobo.gui.frames.RobonoboFrame;
 
 public class AboutSheet extends Sheet {
 	private static final String CREDITS_PATH = "/credits.html";
-	RobonoboFrame frame;
 	Dimension sz = new Dimension(500, 400);
 	private RButton closeBtn;
 	
@@ -49,6 +48,7 @@ public class AboutSheet extends Sheet {
 
 	@Override
 	public void onShow() {
+		closeBtn.requestFocusInWindow();
 	}
 
 	@Override
