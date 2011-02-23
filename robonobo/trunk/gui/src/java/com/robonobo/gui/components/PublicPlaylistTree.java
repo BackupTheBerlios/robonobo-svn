@@ -3,8 +3,7 @@ package com.robonobo.gui.components;
 import static com.robonobo.gui.GUIUtils.*;
 import static com.robonobo.gui.RoboColor.*;
 
-import java.awt.Component;
-import java.awt.Font;
+import java.awt.*;
 
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
@@ -17,17 +16,15 @@ import com.robonobo.gui.model.*;
 import com.robonobo.gui.panels.LeftSidebar;
 
 @SuppressWarnings("serial")
-public class  PublicPlaylistTree extends ExpandoTree implements LeftSidebarComponent {
+public class  PublicPlaylistTree extends LeftSidebarTree {
 	private LeftSidebar sideBar;
-	private RobonoboFrame frame;
 	private ImageIcon rootIcon;
 	private ImageIcon playlistIcon;
 	private Font font;
 
 	public PublicPlaylistTree(LeftSidebar sb, RobonoboFrame frame) {
-		super(new PublicPlaylistTreeModel(frame));
+		super(new PublicPlaylistTreeModel(frame), frame);
 		this.sideBar = sb;
-		this.frame = frame;
 		setName("robonobo.playlist.tree");
 		setAlignmentX(0.0f);
 		setRootVisible(true);
@@ -60,11 +57,6 @@ public class  PublicPlaylistTree extends ExpandoTree implements LeftSidebarCompo
 		return (PublicPlaylistTreeModel) super.getModel();
 	}
 	
-	@Override
-	public void relinquishSelection() {
-		((SelectionModel) getSelectionModel()).reallyClearSelection();
-	}
-
 	public void selectForPlaylist(Long playlistId) {
 		setSelectionPath(getModel().getPlaylistTreePath(playlistId));
 	}
@@ -89,19 +81,9 @@ public class  PublicPlaylistTree extends ExpandoTree implements LeftSidebarCompo
 			lbl.setFont(font);
 			return lbl;
 		}
-	}
-	
-	/**
-	 * Stop Swing from deselecting us at its twisted whim
-	 */
-	class SelectionModel extends DefaultTreeSelectionModel {
-		@Override
-		public void clearSelection() {
-			// Do nothing
-		}
-
-		public void reallyClearSelection() {
-			super.clearSelection();
+		
+		public void paint(Graphics g) {
+			paintComponent(g);
 		}
 	}
 }

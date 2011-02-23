@@ -39,6 +39,7 @@ public class OpenURISheet extends Sheet {
 	
 	@Override
 	public void onShow() {
+		uriField.requestFocusInWindow();
 	}
 	
 	@Override

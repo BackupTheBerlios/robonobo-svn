@@ -8,9 +8,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JTree;
+import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.*;
@@ -22,19 +20,18 @@ import com.robonobo.gui.model.*;
 import com.robonobo.gui.panels.LeftSidebar;
 
 @SuppressWarnings("serial")
-public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
+public class FriendTree extends LeftSidebarTree implements LeftSidebarComponent {
+	static final Dimension MAX_LVL0_SZ = new Dimension(150, Integer.MAX_VALUE);
 	static final Dimension MAX_LVL1_SZ = new Dimension(145, Integer.MAX_VALUE);
 	static final Dimension MAX_LVL2_SZ = new Dimension(135, Integer.MAX_VALUE);
 
 	LeftSidebar sideBar;
-	RobonoboFrame frame;
 	ImageIcon rootIcon, friendIcon, playlistIcon, libraryIcon;
 	Font normalFont, boldFont;
 
-	public FriendTree(final LeftSidebar sideBar, RobonoboFrame frame) {
-		super(new FriendTreeModel(frame));
-		this.sideBar = sideBar;
-		this.frame = frame;
+	public FriendTree(LeftSidebar sb, RobonoboFrame frame) {
+		super(new FriendTreeModel(frame), frame);
+		this.sideBar = sb;
 
 		normalFont = RoboFont.getFont(11, false);
 		boldFont = RoboFont.getFont(11, true);
@@ -74,10 +71,6 @@ public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
 		return (FriendTreeModel) super.getModel();
 	}
 
-	public void relinquishSelection() {
-		((SelectionModel) getSelectionModel()).reallyClearSelection();
-	}
-
 	public void selectForPlaylist(Long playlistId) {
 		setSelectionPath(getModel().getPlaylistTreePath(playlistId));
 	}
@@ -85,13 +78,13 @@ public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
 	public void selectForLibrary(long userId) {
 		setSelectionPath(getModel().getLibraryTreePath(userId));
 	}
+	
 	private class CellRenderer extends DefaultTreeCellRenderer {
 		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded,
 				boolean leaf, int row, boolean hasFocus) {
+			final TreeNode node = (TreeNode) value;
 			final JLabel lbl = (JLabel) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row,
 					hasFocus);
-			final TreeNode node = (TreeNode) value;
-
 			if (node instanceof PlaylistTreeNode) {
 				lbl.setIcon(playlistIcon);
 				lbl.setMaximumSize(MAX_LVL2_SZ);
@@ -126,6 +119,8 @@ public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
 					lbl.setFont(normalFont);
 			} else if (node.getParent() == null) {
 				lbl.setIcon(rootIcon);
+				lbl.setMaximumSize(MAX_LVL0_SZ);
+				lbl.setPreferredSize(MAX_LVL0_SZ);
 				// Are there any unseen tracks at all?
 				int unseen = getTotalUnseen(node);
 				if (unseen > 0)
@@ -135,10 +130,13 @@ public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
 			} else
 				lbl.setFont(normalFont);
 
-			if (getSelectionPath() != null && node.equals(getSelectionPath().getLastPathComponent()))
+			if (sel) {
 				lbl.setForeground(BLUE_GRAY);
-			else
+				lbl.setBackground(LIGHT_GRAY);
+			} else {
 				lbl.setForeground(DARK_GRAY);
+				lbl.setBackground(MID_GRAY);
+			}
 			return lbl;
 		}
 
@@ -158,20 +156,6 @@ public class FriendTree extends ExpandoTree implements LeftSidebarComponent {
 					unseen += getTotalUnseen(child);
 			}
 			return unseen;
-		}
-	}
-
-	/**
-	 * Stop Swing from deselecting us at its twisted whim
-	 */
-	class SelectionModel extends DefaultTreeSelectionModel {
-		@Override
-		public void clearSelection() {
-			// Do nothing
-		}
-
-		public void reallyClearSelection() {
-			super.clearSelection();
 		}
 	}
 }
