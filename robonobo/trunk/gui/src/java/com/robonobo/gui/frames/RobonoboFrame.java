@@ -34,11 +34,10 @@ import com.robonobo.mina.external.ConnectedNode;
 import com.robonobo.mina.external.HandoverHandler;
 
 @SuppressWarnings("serial")
-public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListener, TrackListener {
+public class RobonoboFrame extends SheetableFrame implements TrackListener {
 	private RobonoboController control;
 	private String[] cmdLineArgs;
 	private JMenuBar menuBar;
-	PrefDialog prefDialog;
 	private MainPanel mainPanel;
 	private LeftSidebar leftSidebar;
 	private Log log = LogFactory.getLog(RobonoboFrame.class);
@@ -70,8 +69,6 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 		pack();
 		leftSidebar.selectMyMusic();
 		guiConfig = (GuiConfig) control.getConfig("gui");
-		if (control.getStatus() != RobonoboStatus.Stopped)
-			setupPrefDialog();
 		addListeners();
 	}
 
@@ -83,7 +80,6 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 				checkTracksLoaded();
 			}
 		});
-		control.addRobonoboStatusListener(this);
 		// Grab our events...
 		KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventHandler());
 	}
@@ -127,23 +123,6 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 
 	public MainPanel getMainPanel() {
 		return mainPanel;
-	}
-
-	@Override
-	public void roboStatusChanged() {
-		// The preference dialog depends on the controller's config being available
-		if (prefDialog == null)
-			setupPrefDialog();
-	}
-
-	@Override
-	public void connectionAdded(ConnectedNode node) {
-		// Do nothing
-	}
-
-	@Override
-	public void connectionLost(ConnectedNode node) {
-		// Do nothing
 	}
 
 	/**
@@ -248,10 +227,6 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 		// Do nothing
 	}
 
-	private void setupPrefDialog() {
-		prefDialog = new PrefDialog(this);
-	}
-
 	public void importFilesOrDirectories(final List<File> files) {
 		List<File> allFiles = new ArrayList<File>();
 		for (File selFile : files)
@@ -333,6 +308,8 @@ public class RobonoboFrame extends SheetableFrame implements RobonoboStatusListe
 	}
 
 	public void showPreferences() {
+//		showSheet(new PreferencesSheet(this));
+		PrefDialog prefDialog = new PrefDialog(this);
 		prefDialog.setVisible(true);
 	}
 

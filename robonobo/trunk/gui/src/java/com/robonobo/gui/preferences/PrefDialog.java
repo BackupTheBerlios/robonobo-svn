@@ -1,13 +1,14 @@
 package com.robonobo.gui.preferences;
 
+import static com.robonobo.gui.RoboColor.*;
 import info.clearthought.layout.TableLayout;
 
-import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.InetAddress;
 import java.util.*;
+import java.util.List;
 
 import javax.swing.*;
 
@@ -21,6 +22,7 @@ public class PrefDialog extends JDialog {
 	Dimension sz = new Dimension(500, 400);
 	List<PrefPanel> prefPanels = new ArrayList<PrefPanel>();
 	private RobonoboFrame frame;
+	RButton saveBtn, cancelBtn;
 
 	public PrefDialog(RobonoboFrame frame) {
 		super(frame, true);
@@ -28,37 +30,45 @@ public class PrefDialog extends JDialog {
 		setTitle("robonobo preferences");
 		setSize(sz);
 		setPreferredSize(sz);
-		double[][] cellSizen = { { 5, TableLayout.FILL, 80, 5, 80, 5 }, { 5, TableLayout.FILL, 5, 25, 5 } };
+		double[][] cellSizen = { { 5, TableLayout.FILL, 5 }, { 5, TableLayout.FILL, 5, 30, 5 } };
 		setLayout(new TableLayout(cellSizen));
 
 		JTabbedPane tabPane = new JTabbedPane();
 		tabPane.setFont(RoboFont.getFont(12, true));
+		tabPane.setBackground(MID_GRAY);
 		tabPane.addTab("Basic", new JScrollPane(createBasicPanel()));
 		tabPane.addTab("Advanced", new JScrollPane(createAdvancedPanel()));
 		tabPane.setSelectedIndex(0);
-		add(tabPane, "1,1,4,1");
+		add(tabPane, "1,1");
+		add(createButtonPanel(), "1,3");
+	}
 
-		RButton saveBtn = new RGlassButton("SAVE");
-		saveBtn.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				doSave();
-			}
-		});
-		add(saveBtn, "2,3");
-
-		RButton cancelBtn = new RRedGlassButton("CANCEL");
+	private JPanel createButtonPanel() {
+		JPanel p = new JPanel();
+		p.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+		p.setLayout(new BoxLayout(p, BoxLayout.LINE_AXIS));
+		cancelBtn = new RRedGlassButton("CANCEL");
 		cancelBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				doCancel();
 			}
 		});
-		add(cancelBtn, "4,3");
+		p.add(cancelBtn);
+		p.add(Box.createHorizontalStrut(10));
+		saveBtn = new RGlassButton("SAVE");
+		saveBtn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				doSave();
+			}
+		});
+		p.add(saveBtn);
+		return p;
 	}
-
+	
 	private JPanel createBasicPanel() {
 		JPanel bp = new JPanel();
 		bp.setLayout(new BoxLayout(bp, BoxLayout.Y_AXIS));
-
+		bp.setName("playback.background.panel");
 		FilePrefPanel dfPanel = new FilePrefPanel(frame, "robo.finishedDownloadsDirectory", "Downloads Folder", true);
 		prefPanels.add(dfPanel);
 		bp.add(dfPanel);
@@ -83,15 +93,20 @@ public class PrefDialog extends JDialog {
 		GatewayPrefPanel gPanel = new GatewayPrefPanel(frame);
 		prefPanels.add(gPanel);
 		bp.add(gPanel);
+		bp.add(vertSpacer());
+		
+		UploadLimitPrefPanel ulPanel = new UploadLimitPrefPanel(frame);
+		prefPanels.add(ulPanel);
+		bp.add(ulPanel);
+		
 		bp.add(Box.createVerticalGlue());
-
 		return bp;
 	}
 
 	private JPanel createAdvancedPanel() {
 		JPanel ap = new JPanel();
 		ap.setLayout(new BoxLayout(ap, BoxLayout.Y_AXIS));
-
+		ap.setName("playback.background.panel");
 		StringPrefPanel suPanel = new StringPrefPanel(frame, "robo.sonarServerUrl", "Node Locator URL");
 		prefPanels.add(suPanel);
 		ap.add(suPanel);

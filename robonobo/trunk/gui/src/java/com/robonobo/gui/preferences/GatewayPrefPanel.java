@@ -9,7 +9,6 @@ import java.awt.event.ActionListener;
 import javax.swing.ButtonGroup;
 import javax.swing.JTextField;
 
-import com.robonobo.common.swing.IntegerTextField;
 import com.robonobo.core.api.config.RobonoboConfig;
 import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
@@ -35,21 +34,21 @@ public class GatewayPrefPanel extends PrefPanel {
 			}
 		};
 		
-		autoBut = new RRadioButton("Automatically detect");
+		autoBut = new RRadioButton11B("Automatically detect");
 		autoBut.addActionListener(radLis);
 		butGr.add(autoBut);
 		add(autoBut, "3,0,5,0");
 		
-		neverBut = new RRadioButton("Disable (reduces performance)");
+		neverBut = new RRadioButton11B("Disable (reduces performance)");
 		neverBut.addActionListener(radLis);
 		butGr.add(neverBut);
 		add(neverBut, "3,2,5,2");
 		
-		manualBut = new RRadioButton("Manual: use router port");
+		manualBut = new RRadioButton11B("Manual: use router port");
 		manualBut.addActionListener(radLis);
 		butGr.add(manualBut);
 		add(manualBut, "3,4");
-		manualPort = new IntegerTextField(null, false);
+		manualPort = new RIntegerTextField(null, false);
 		add(manualPort, "5,4");
 		
 		resetValue();

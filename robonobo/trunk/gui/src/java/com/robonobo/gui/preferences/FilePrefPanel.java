@@ -21,7 +21,7 @@ public class FilePrefPanel extends PrefPanel {
 	
 	public FilePrefPanel(RobonoboFrame frame, String propName, String description, boolean selDirectory) {
 		super(frame);
-		double[][] cellSizen = { { 5, TableLayout.FILL, 5, 205, 5, 20, 5 }, { 25 } };
+		double[][] cellSizen = { { 5, TableLayout.FILL, 5, 205, 5, 30, 5 }, { 25 } };
 		setLayout(new TableLayout(cellSizen));
 		this.propName = propName;
 		RLabel descLbl = new RLabel12(description);

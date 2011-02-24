@@ -1,13 +1,13 @@
 /**
  * 
  */
-package com.robonobo.common.swing;
+package com.robonobo.gui.components.base;
 
-import javax.swing.JTextField;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.PlainDocument;
+import static com.robonobo.common.util.TextUtil.*;
+
+import javax.swing.text.*;
+
+import com.robonobo.common.util.TextUtil;
 
 /**
  * A textfield that only allows integers
@@ -15,10 +15,10 @@ import javax.swing.text.PlainDocument;
  * @author macavity
  */
 @SuppressWarnings("serial")
-public class IntegerTextField extends JTextField {
+public class RIntegerTextField extends RTextField {
 	private boolean allowNegative;
 
-	public IntegerTextField(Integer initialValue, boolean allowNegative) {
+	public RIntegerTextField(Integer initialValue, boolean allowNegative) {
 		super((initialValue == null) ? "" : String.valueOf(initialValue));
 		this.allowNegative = allowNegative;
 		if(initialValue != null)
@@ -51,4 +51,13 @@ public class IntegerTextField extends JTextField {
 		}
 	}
 
+	/**
+	 * May be null if text is empty
+	 */
+	public Integer getIntValue() {
+		String txt = getText();
+		if(isEmpty(txt))
+			return null;
+		return Integer.valueOf(txt);
+	}
 }
