@@ -121,6 +121,12 @@ public class FriendLibraryTableModel extends FreeformTrackListTableModel impleme
 	}
 
 	@Override
+	public void allUsersAndPlaylistsUpdated() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
 	public void playlistChanged(Playlist p) {
 		// Do nothing
 	}

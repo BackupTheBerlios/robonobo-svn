@@ -205,6 +205,12 @@ public class LeftSidebar extends JPanel implements UserPlaylistListener {
 	}
 
 	@Override
+	public void allUsersAndPlaylistsUpdated() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
 	public void userChanged(User u) {
 		// Do nothing
 		// TODO When we have a panel for friends, create it here

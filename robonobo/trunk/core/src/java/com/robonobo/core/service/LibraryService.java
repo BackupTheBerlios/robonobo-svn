@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.robonobo.common.concurrent.Batcher;
 import com.robonobo.common.concurrent.CatchingRunnable;
+import com.robonobo.core.api.Task;
 import com.robonobo.core.api.UserPlaylistListener;
 import com.robonobo.core.api.config.MetadataServerConfig;
 import com.robonobo.core.api.model.*;
@@ -20,8 +21,7 @@ public class LibraryService extends AbstractService implements UserPlaylistListe
 	private AddBatcher addB;
 	private DelBatcher delB;
 	private Map<Long, Library> libs = new HashMap<Long, Library>();
-	Date lastUpdated = now();
-	ScheduledFuture<?> updateTask;
+	Date lastUpdated = null;
 	boolean libsLoaded = false;
 
 	public LibraryService() {
@@ -43,19 +43,14 @@ public class LibraryService extends AbstractService implements UserPlaylistListe
 	public void startup() throws Exception {
 		addB = new AddBatcher();
 		delB = new DelBatcher();
-		int updateFreq = rbnb.getConfig().getUserUpdateFrequency();
-		updateTask = rbnb.getExecutor().scheduleAtFixedRate(new UpdateChecker(), updateFreq, updateFreq,
-				TimeUnit.SECONDS);
 		rbnb.getEventService().addUserPlaylistListener(this);
 	}
 
 	@Override
 	public void shutdown() throws Exception {
-		updateTask.cancel(true);
 		// We might have some pending library updates - do them now
 		addB.run();
-		delB.run();
-		
+		delB.run();		
 	}
 
 	public synchronized Library getLibrary(long userId) {
@@ -77,63 +72,18 @@ public class LibraryService extends AbstractService implements UserPlaylistListe
 	}
 
 	@Override
+	public void allUsersAndPlaylistsUpdated() {
+		rbnb.getTaskService().runTask(new LibrariesUpdateTask());
+	}
+	
+	@Override
 	public void userChanged(User u) {
-		checkAllPlaylistsLoaded();
+		// Do nothing
 	}
 
 	@Override
 	public void playlistChanged(Playlist p) {
-		checkAllPlaylistsLoaded();
-	}
-
-	/** We only load libraries after all playlists have been done, as library loading takes a while */
-	private void checkAllPlaylistsLoaded() {
-		if (libsLoaded)
-			return;
-		boolean gotEveryone = true;
-		final UserService usrs = rbnb.getUsersService();
-		nextFriend: for (long friendId : usrs.getMyUser().getFriendIds()) {
-			User friend = usrs.getUser(friendId);
-			if (friend == null) {
-				gotEveryone = false;
-				break nextFriend;
-			}
-			for (Long plId : friend.getPlaylistIds()) {
-				Playlist pl = usrs.getExistingPlaylist(plId);
-				if (pl == null) {
-					gotEveryone = false;
-					break nextFriend;
-				}
-			}
-		}
-		if (gotEveryone) {
-			libsLoaded = true;
-			rbnb.getExecutor().execute(new CatchingRunnable() {
-				public void doRun() throws Exception {
-					MetadataServerConfig msc = usrs.getMsc();
-					for (long friendId : usrs.getMyUser().getFriendIds()) {
-						LibraryMsg.Builder b = LibraryMsg.newBuilder();
-						try {
-							rbnb.getSerializationManager().getObjectFromUrl(b, msc.getLibraryUrl(friendId, null));
-						} catch (IOException e) {
-							log.error("Error getting library", e);
-						}
-						Library lib = new Library(b.build());
-						// They might not have a library, in which case it'll be returned with no tracks
-						if (lib.getTracks().size() > 0) {
-							synchronized (LibraryService.this) {
-								libs.put(friendId, lib);
-							}
-							// Check we have all streams
-							for (String sid : lib.getTracks().keySet()) {
-								rbnb.getMetadataService().getStream(sid);
-							}
-							rbnb.getEventService().fireLibraryUpdated(lib);
-						}
-					}
-				}
-			});
-		}
+		// Do nothing
 	}
 
 	@Override
@@ -146,47 +96,63 @@ public class LibraryService extends AbstractService implements UserPlaylistListe
 		// Do nothing
 	}
 	
-	public void checkLibrariesUpdate() {
-		Long[] userIds;
-		synchronized (this) {
-			userIds = new Long[libs.size()];
-			libs.keySet().toArray(userIds);
+	class LibrariesUpdateTask extends Task {
+		public LibrariesUpdateTask() {
+			title = "Updating friend libraries";
 		}
-		for (Long userId : userIds) {
-			LibraryMsg.Builder b = LibraryMsg.newBuilder();
-			MetadataServerConfig msc = rbnb.getUsersService().getMsc();
-			try {
-				rbnb.getSerializationManager().getObjectFromUrl(b, msc.getLibraryUrl(userId, lastUpdated));
-			} catch (Exception e) {
-				log.error("Error getting library", e);
-			}
-			Library nLib = new Library(b.build());
-			if(log.isDebugEnabled()) {
-				User u = rbnb.getUsersService().getUser(userId);
-				log.debug("Received updated library for "+u.getEmail()+": "+nLib.getTracks().size()+" new tracks");
-			}
-			if (nLib.getTracks().size() > 0) {
-				Library cLib;
-				synchronized (LibraryService.this) {
-					cLib = libs.get(userId);
-					cLib.getTracks().putAll(nLib.getTracks());
-				}
-				// Make sure we have the streams
-				for (String sid : nLib.getTracks().keySet()) {
-					rbnb.getMetadataService().getStream(sid);
-				}
-				rbnb.getEventService().fireLibraryUpdated(cLib);
-			}
-		}
-		lastUpdated = now();
-	}
-
-	class UpdateChecker extends CatchingRunnable {
+		
+		@Override
 		public void doRun() throws Exception {
-			checkLibrariesUpdate();
+			Set<Long> friendIds = new HashSet<Long>(rbnb.getUsersService().getMyUser().getFriendIds());
+			// Clean out any ex-friends - your tunes stank anyway! :-P
+			synchronized (LibraryService.this) {
+				Iterator<Long> it = libs.keySet().iterator();
+				while(it.hasNext()) {
+					long libUid = it.next();
+					if(!friendIds.contains(libUid))
+						it.remove();
+				}
+			}
+			int friendsDone = 0;
+			for (long friendId : friendIds) {
+				completion = (float) friendsDone / friendIds.size();
+				User u = rbnb.getUsersService().getUser(friendId);
+				statusText = "Fetching library for " + u.getEmail();
+				fireUpdated();
+
+				LibraryMsg.Builder b = LibraryMsg.newBuilder();
+				MetadataServerConfig msc = rbnb.getUsersService().getMsc();
+				try {
+					rbnb.getSerializationManager().getObjectFromUrl(b, msc.getLibraryUrl(friendId, lastUpdated));
+				} catch (Exception e) {
+					log.error("Error getting library", e);
+				}
+				Library nLib = new Library(b.build());
+				log.debug("Received updated library for "+u.getEmail()+": "+nLib.getTracks().size()+" new tracks");
+				if (nLib.getTracks().size() > 0) {
+					Library cLib;
+					synchronized (LibraryService.this) {
+						cLib = libs.get(friendId);
+						if(cLib == null) {
+							libs.put(friendId, nLib);
+							cLib = nLib;
+						} else
+							cLib.getTracks().putAll(nLib.getTracks());
+					}
+					// Make sure we have the streams
+					for (String sid : nLib.getTracks().keySet()) {
+						rbnb.getMetadataService().getStream(sid);
+					}
+					rbnb.getEventService().fireLibraryUpdated(cLib);
+				}
+			}
+			statusText = "Done.";
+			completion = 1f;
+			fireUpdated();
+			lastUpdated = now();
 		}
 	}
-
+	
 	class LibraryTrack {
 		String streamId;
 		Date dateAdded;

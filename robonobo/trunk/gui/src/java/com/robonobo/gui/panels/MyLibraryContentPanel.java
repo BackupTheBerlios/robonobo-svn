@@ -30,15 +30,15 @@ public class MyLibraryContentPanel extends ContentPanel implements UserPlaylistL
 		tabPane.insertTab("library", null, new MyLibraryTabPanel(), null, 0);
 		tabPane.setSelectedIndex(0);
 		frame.getController().addUserPlaylistListener(this);
-		
+
 		frame.getController().getExecutor().schedule(new CatchingRunnable() {
 			public void doRun() throws Exception {
 				final String updateMsg = frame.getController().getUpdateMessage();
-				if(isNonEmpty(updateMsg)) {
+				if (isNonEmpty(updateMsg)) {
 					final String title = "A new version is available";
 					SwingUtilities.invokeLater(new CatchingRunnable() {
 						public void doRun() throws Exception {
-							showMessage(title, updateMsg);						
+							showMessage(title, updateMsg);
 						}
 					});
 				}
@@ -73,26 +73,32 @@ public class MyLibraryContentPanel extends ContentPanel implements UserPlaylistL
 	public void libraryChanged(Library lib) {
 		// Do nothing
 	}
-	
+
 	@Override
 	public void loggedIn() {
 		// Do nothing
 	}
-	
+
 	@Override
 	public void playlistChanged(Playlist p) {
 		// Do nothing
 	}
-	
+
+	@Override
+	public void allUsersAndPlaylistsUpdated() {
+		// TODO Auto-generated method stub
+
+	}
+
 	@Override
 	public void userChanged(User u) {
 		// Do nothing
 	}
-	
+
 	@Override
 	public void userConfigChanged(UserConfig cfg) {
 		boolean libShared = true;
-		if(cfg.getItems().containsKey("sharelibrary"))
+		if (cfg.getItems().containsKey("sharelibrary"))
 			libShared = ("true".equalsIgnoreCase(cfg.getItems().get("sharelibrary")));
 		final boolean flarp = libShared;
 		SwingUtilities.invokeLater(new CatchingRunnable() {
@@ -107,10 +113,10 @@ public class MyLibraryContentPanel extends ContentPanel implements UserPlaylistL
 		public MyLibraryTabPanel() {
 			double[][] cellSizen = { { 10, 200, 200, TableLayout.FILL, 10 }, { 0, 25, 5, 30, 10, 30, TableLayout.FILL } };
 			setLayout(new TableLayout(cellSizen));
-			
+
 			RLabel addLbl = new RLabel16B("Add to library");
 			add(addLbl, "1,1");
-			
+
 			RButton shareFilesBtn = new RGlassButton("Add from files...");
 			shareFilesBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -130,18 +136,18 @@ public class MyLibraryContentPanel extends ContentPanel implements UserPlaylistL
 
 			RLabel optsLbl = new RLabel16B("Library options");
 			add(optsLbl, "3,1");
-			
+
 			shareLibCheckBox = new RCheckBox("Share library with friends");
 			shareLibCheckBox.addItemListener(new ItemListener() {
 				public void itemStateChanged(final ItemEvent e) {
 					frame.getController().getExecutor().execute(new CatchingRunnable() {
 						@Override
 						public void doRun() throws Exception {
-							if(e.getStateChange() == ItemEvent.SELECTED) {
+							if (e.getStateChange() == ItemEvent.SELECTED) {
 								frame.getController().saveUserConfigItem("sharelibrary", "true");
-							} else if(e.getStateChange() == ItemEvent.DESELECTED) {
+							} else if (e.getStateChange() == ItemEvent.DESELECTED) {
 								frame.getController().saveUserConfigItem("sharelibrary", "false");
-							}													
+							}
 						}
 					});
 				}

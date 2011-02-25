@@ -454,8 +454,10 @@ public class UserService extends AbstractService {
 				|| newU.getUpdated().after(u.getUpdated());
 		if (isUpdated) {
 			synchronized (this) {
-				if (newU.equals(me))
+				if (newU.equals(me)) {
 					newU.setPassword(me.getPassword());
+					me = newU;
+				}
 				usersByEmail.put(newU.getEmail(), newU);
 				usersById.put(newU.getUserId(), newU);
 			}
@@ -543,6 +545,7 @@ public class UserService extends AbstractService {
 			statusText = "Done.";
 			completion = 1f;
 			fireUpdated();
+			rbnb.getEventService().fireAllUsersAndPlaylistsUpdated();
 		}
 	}
 
@@ -581,6 +584,7 @@ public class UserService extends AbstractService {
 			statusText = "Done.";
 			completion = 1f;
 			fireUpdated();
+			rbnb.getEventService().fireAllUsersAndPlaylistsUpdated();
 		}
 	}
 }

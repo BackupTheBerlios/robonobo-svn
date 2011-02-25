@@ -157,6 +157,11 @@ public class WangContentPanel extends ContentPanel implements WangListener, User
 	}
 	
 	@Override
+	public void allUsersAndPlaylistsUpdated() {
+		// Do nothing
+	}
+	
+	@Override
 	public void userConfigChanged(UserConfig cfg) {
 		// Do nothing
 	}

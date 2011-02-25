@@ -114,6 +114,12 @@ public class MyPlaylistContentPanel extends PlaylistContentPanel implements User
 	}
 
 	@Override
+	public void allUsersAndPlaylistsUpdated() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
 	public void libraryChanged(Library lib) {
 		// Do nothing
 	}

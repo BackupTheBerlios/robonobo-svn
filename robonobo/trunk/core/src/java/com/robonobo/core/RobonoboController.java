@@ -429,7 +429,6 @@ public class RobonoboController {
 	
 	public void checkUsersUpdate() {
 		inst.getUsersService().checkAllUsersUpdate();
-		inst.getLibraryService().checkLibrariesUpdate();
 	}
 
 	/**

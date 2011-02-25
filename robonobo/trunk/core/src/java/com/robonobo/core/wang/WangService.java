@@ -34,6 +34,7 @@ public class WangService extends AbstractService implements CurrencyClient {
 
 	public WangService() {
 		addHardDependency("core.users");
+		addHardDependency("core.tasks");
 	}
 
 	public String getName() {
@@ -54,29 +55,35 @@ public class WangService extends AbstractService implements CurrencyClient {
 		getRobonobo().getEventService().addUserPlaylistListener(new LoginListener());
 	}
 
-	/** Called when we login */
-	public void startClient() {
-		try {
+	private class StartClientTask extends Task {
+		public StartClientTask() {
+			title = "Starting wang currency client";
+		}
+		
+		@Override
+		public void doRun() throws Exception {
 			if (client != null)
 				client.stop();
 
 			User me = getRobonobo().getUsersService().getMyUser();
 			config.setAccountEmail(me.getEmail());
 			config.setAccountPwd(me.getPassword());
+			statusText = "Initializing client";
+			fireUpdated();
 			client = new WangClient(config);
 			client.start();
 			clientStarted = true;
+			completion = 0.5f;
+			statusText = "Updating account balance";
+			fireUpdated();
 			updateBalanceIfNecessary(true);
-			getRobonobo().getExecutor().execute(new CatchingRunnable() {
-				public void doRun() throws Exception {
-					getRobonobo().getEventService().fireWangBalanceChanged(cachedBankBalance);
-				}
-			});			
-		} catch (WangException e) {
-			log.error("Caught exception starting wang client", e);
+			completion = 1f;
+			statusText = "Done.";
+			fireUpdated();
+			getRobonobo().getEventService().fireWangBalanceChanged(cachedBankBalance);
 		}
 	}
-
+	
 	@Override
 	public void shutdown() throws Exception {
 		clientStarted = false;
@@ -196,7 +203,7 @@ public class WangService extends AbstractService implements CurrencyClient {
 
 	class LoginListener implements UserPlaylistListener {
 		public void loggedIn() {
-			startClient();
+			getRobonobo().getTaskService().runTask(new StartClientTask());
 		}
 
 		public void playlistChanged(Playlist p) {
@@ -212,6 +219,11 @@ public class WangService extends AbstractService implements CurrencyClient {
 		}
 		
 		public void libraryChanged(Library lib) {
+			// Do nothing
+		}
+		
+		@Override
+		public void allUsersAndPlaylistsUpdated() {
 			// Do nothing
 		}
 		

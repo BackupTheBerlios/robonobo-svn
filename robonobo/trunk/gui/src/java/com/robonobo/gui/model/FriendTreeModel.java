@@ -158,6 +158,12 @@ public class FriendTreeModel extends SortedTreeModel implements UserPlaylistList
 	}
 	
 	@Override
+	public void allUsersAndPlaylistsUpdated() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
 	public void userConfigChanged(UserConfig cfg) {
 		// Do nothing
 	}

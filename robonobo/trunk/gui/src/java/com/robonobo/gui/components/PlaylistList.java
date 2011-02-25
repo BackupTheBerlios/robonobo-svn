@@ -66,6 +66,12 @@ public class PlaylistList extends LeftSidebarList implements UserPlaylistListene
 	}
 
 	@Override
+	public void allUsersAndPlaylistsUpdated() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
 	public void userChanged(final User u) {
 		invokeLater(new CatchingRunnable() {
 			public void doRun() throws Exception {

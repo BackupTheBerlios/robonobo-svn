@@ -41,6 +41,11 @@ public class OtherPlaylistContentPanel extends PlaylistContentPanel implements U
 	}
 
 	@Override
+	public void allUsersAndPlaylistsUpdated() {
+		// Do nothing
+	}
+	
+	@Override
 	public void userChanged(User u) {
 		// Do nothing
 	}
