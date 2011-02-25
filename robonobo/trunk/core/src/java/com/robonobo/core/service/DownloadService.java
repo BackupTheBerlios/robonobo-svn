@@ -289,7 +289,7 @@ public class DownloadService extends AbstractService implements MinaListener, Pa
 			for (String streamId : dPriority) {
 				DownloadingTrack d = getDownload(streamId);
 				dls.add(d);
-				if (d.getDownloadStatus() == DownloadStatus.Downloading && d.getNumSources() > 0)
+				if (d.getDownloadStatus() == DownloadStatus.Downloading && d.getDownloadRate() > 0)
 					activeDls++;
 			}
 		}
