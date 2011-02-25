@@ -230,7 +230,7 @@ public class EventService extends AbstractService implements MinaListener {
 		}
 	}
 
-	public void fireLibraryUpdated(long userId, Library lib) {
+	public void fireLibraryUpdated(Library lib) {
 		UserPlaylistListener[] arr;
 		synchronized (this) {
 			arr = getUpArr();

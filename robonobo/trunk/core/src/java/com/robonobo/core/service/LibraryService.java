@@ -128,7 +128,7 @@ public class LibraryService extends AbstractService implements UserPlaylistListe
 							for (String sid : lib.getTracks().keySet()) {
 								rbnb.getMetadataService().getStream(sid);
 							}
-							rbnb.getEventService().fireLibraryUpdated(friendId, lib);
+							rbnb.getEventService().fireLibraryUpdated(lib);
 						}
 					}
 				}
@@ -175,7 +175,7 @@ public class LibraryService extends AbstractService implements UserPlaylistListe
 				for (String sid : nLib.getTracks().keySet()) {
 					rbnb.getMetadataService().getStream(sid);
 				}
-				rbnb.getEventService().fireLibraryUpdated(userId, cLib);
+				rbnb.getEventService().fireLibraryUpdated(cLib);
 			}
 		}
 		lastUpdated = now();

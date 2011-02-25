@@ -34,6 +34,8 @@ public class FriendLibraryTableModel extends FreeformTrackListTableModel impleme
 	
 	@Override
 	public void libraryChanged(Library lib) {
+		if(lib.getUserId() != this.lib.getUserId())
+			return;
 		synchronized (this) {
 			streams.clear();
 			streamIndices.clear();
