@@ -10,13 +10,10 @@ import java.util.concurrent.TimeUnit;
 
 import com.robonobo.common.concurrent.Batcher;
 import com.robonobo.common.concurrent.CatchingRunnable;
-import com.robonobo.common.serialization.SerializationException;
-import com.robonobo.common.util.TimeUtil;
 import com.robonobo.core.api.UserPlaylistListener;
 import com.robonobo.core.api.config.MetadataServerConfig;
 import com.robonobo.core.api.model.*;
 import com.robonobo.core.api.proto.CoreApi.LibraryMsg;
-import com.robonobo.core.service.UserService.UpdateChecker;
 
 public class LibraryService extends AbstractService implements UserPlaylistListener {
 	static final int LIBRARY_UPDATE_DELAY = 30; // Secs

@@ -21,8 +21,7 @@ import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.common.serialization.SerializationException;
 import com.robonobo.common.serialization.SerializationManager;
-import com.robonobo.core.api.RobonoboException;
-import com.robonobo.core.api.RobonoboStatus;
+import com.robonobo.core.api.*;
 import com.robonobo.core.api.config.MetadataServerConfig;
 import com.robonobo.core.api.model.*;
 import com.robonobo.core.api.proto.CoreApi.PlaylistMsg;
@@ -47,7 +46,7 @@ public class UserService extends AbstractService {
 	private Map<Long, User> usersById = Collections.synchronizedMap(new HashMap<Long, User>());
 	private Map<Long, Playlist> playlists = Collections.synchronizedMap(new HashMap<Long, Playlist>());
 	private Map<String, Long> myPlaylistIdsByTitle = Collections.synchronizedMap(new HashMap<String, Long>());
-	private ScheduledFuture updateTask;
+	private ScheduledFuture updateScheduler;
 	private ReentrantLock userUpdateLock = new ReentrantLock();
 	private ReentrantLock startupLock = new ReentrantLock();
 	private Condition startupCondition = startupLock.newCondition();
@@ -56,13 +55,17 @@ public class UserService extends AbstractService {
 	public UserService() {
 		addHardDependency("core.metadata");
 		addHardDependency("core.storage");
+		addHardDependency("core.tasks");
 	}
 
 	@Override
 	public void startup() throws Exception {
 		int updateFreq = rbnb.getConfig().getUserUpdateFrequency();
-		updateTask = rbnb.getExecutor().scheduleAtFixedRate(new UpdateChecker(), updateFreq, updateFreq,
-				TimeUnit.SECONDS);
+		updateScheduler = rbnb.getExecutor().scheduleAtFixedRate(new CatchingRunnable() {
+			public void doRun() throws Exception {
+				rbnb.getTaskService().runTask(new UpdateTask());
+			}
+		}, updateFreq, updateFreq, TimeUnit.SECONDS);
 		started = true;
 		startupLock.lock();
 		try {
@@ -82,12 +85,12 @@ public class UserService extends AbstractService {
 
 	@Override
 	public void shutdown() throws Exception {
-		if (updateTask != null)
-			updateTask.cancel(true);
+		if (updateScheduler != null)
+			updateScheduler.cancel(true);
 	}
 
-	public void checkUsersUpdate() {
-		rbnb.getExecutor().execute(new UpdateChecker());
+	public void checkAllUsersUpdate() {
+		rbnb.getTaskService().runTask(new UpdateTask());
 	}
 
 	public void login(final String email, final String password) throws IOException, SerializationException {
@@ -131,9 +134,12 @@ public class UserService extends AbstractService {
 			rbnb.getExecutor().execute(new CatchingRunnable() {
 				public void doRun() throws Exception {
 					rbnb.getEventService().fireLoggedIn();
-					UserLookerUpper ulu = new UserLookerUpper(me);
-					ulu.doRun();
-					refreshMyUserConfig();
+					synchronized (UserService.this) {
+						usersByEmail.put(me.getEmail(), me);
+						usersById.put(me.getUserId(), me);
+					}
+					rbnb.getEventService().fireUserChanged(me);
+					rbnb.getTaskService().runTask(new InitialFetchTask());
 				}
 			});
 			if (rbnb.getMina() != null & rbnb.getMina().isConnectedToSupernode()) {
@@ -188,7 +194,7 @@ public class UserService extends AbstractService {
 	public UserConfig getMyUserConfig() {
 		return myUserCfg;
 	}
-	
+
 	public UserConfig refreshMyUserConfig() {
 		UserConfigMsg.Builder b = UserConfigMsg.newBuilder();
 		try {
@@ -304,12 +310,12 @@ public class UserService extends AbstractService {
 
 	public Playlist getOrFetchPlaylist(long plId) {
 		Playlist p = getExistingPlaylist(plId);
-		if(p != null)
+		if (p != null)
 			return p;
 		try {
 			p = getUpdatedPlaylist(plId);
 		} catch (Exception e) {
-			log.error("Error fetching playlist with pId "+plId, e);
+			log.error("Error fetching playlist with pId " + plId, e);
 			return null;
 		}
 		synchronized (this) {
@@ -317,7 +323,7 @@ public class UserService extends AbstractService {
 		}
 		return p;
 	}
-	
+
 	public synchronized Playlist getMyPlaylistByTitle(String title) {
 		Long plId = myPlaylistIdsByTitle.get(title);
 		if (plId == null)
@@ -411,14 +417,43 @@ public class UserService extends AbstractService {
 		});
 	}
 
+	private void lookupNewUser(long userId) throws RobonoboException, IOException {
+		User u;
+		try {
+			u = getUpdatedUser(userId);
+		} catch (Exception e) {
+			throw new RobonoboException(e);
+		}
+		if (u == null)
+			return;
+		synchronized (this) {
+			usersByEmail.put(u.getEmail(), u);
+			usersById.put(u.getUserId(), u);
+		}
+		rbnb.getEventService().fireUserChanged(u);
+		for (Long playlistId : u.getPlaylistIds()) {
+			// For shared playlists, don't hit the server again if we already have it - but fire the playlist
+			// changed event so it's added to the friend tree
+			// for this user
+			Playlist p = getExistingPlaylist(playlistId);
+			if (p == null)
+				checkPlaylistUpdate(playlistId);
+			else
+				rbnb.getEventService().firePlaylistChanged(p);
+		}
+		for (long friendId : u.getFriendIds()) {
+			if (!usersById.containsKey(friendId)) {
+				lookupNewUser(userId);
+			}
+		}
+	}
+
 	private void checkUserUpdate(User u, boolean cascade) throws IOException, RobonoboException {
 		User newU = getUpdatedUser(u.getUserId());
-		if ((newU.getUpdated() == null && u.getUpdated() == null) || newU.getUpdated().after(u.getUpdated())) {
-			for (long friendId : newU.getFriendIds()) {
-				if (!usersById.containsKey(friendId))
-					rbnb.getExecutor().execute(new UserLookerUpper(friendId));
-			}
-			synchronized (UserService.this) {
+		boolean isUpdated = (newU.getUpdated() == null && u.getUpdated() == null)
+				|| newU.getUpdated().after(u.getUpdated());
+		if (isUpdated) {
+			synchronized (this) {
 				if (newU.equals(me))
 					newU.setPassword(me.getPassword());
 				usersByEmail.put(newU.getEmail(), newU);
@@ -429,6 +464,12 @@ public class UserService extends AbstractService {
 		if (cascade) {
 			for (Long playlistId : newU.getPlaylistIds()) {
 				checkPlaylistUpdate(playlistId);
+			}
+		}
+		if (isUpdated) {
+			for (long friendId : newU.getFriendIds()) {
+				if (!usersById.containsKey(friendId))
+					lookupNewUser(friendId);
 			}
 		}
 	}
@@ -446,7 +487,7 @@ public class UserService extends AbstractService {
 			if ((newU.getUpdated() == null && u.getUpdated() == null) || newU.getUpdated().after(u.getUpdated())) {
 				for (long friendId : newU.getFriendIds()) {
 					if (!usersById.containsKey(friendId))
-						rbnb.getExecutor().execute(new UserLookerUpper(friendId));
+						lookupNewUser(friendId);
 				}
 				synchronized (UserService.this) {
 					usersByEmail.put(newU.getEmail(), newU);
@@ -463,57 +504,71 @@ public class UserService extends AbstractService {
 		}
 	}
 
-	class UserLookerUpper extends CatchingRunnable {
-		long userId;
-		User u;
-
-		public UserLookerUpper(User u) {
-			this.u = u;
+	class InitialFetchTask extends Task {
+		public InitialFetchTask() {
+			title = "Fetching friends and playlists";
 		}
 
-		public UserLookerUpper(long userId) {
-			this.userId = userId;
-		}
-
-		@Override
 		public void doRun() throws Exception {
-			// If we don't have a user, look it up
-			if (u == null) {
-				u = getUpdatedUser(userId);
-				synchronized (UserService.this) {
-					usersByEmail.put(u.getEmail(), u);
-					usersById.put(u.getUserId(), u);
-				}
+			log.info("Fetching initial user & playlist info");
+			Set<Long> playlistIds = me.getPlaylistIds();
+			Set<Long> friendIds = me.getFriendIds();
+			// Have to estimate a percentage for completion, so we assume that everyone has as many playlists as we do
+			int psPerU = playlistIds.size();
+			if (psPerU == 0)
+				psPerU = 1;
+			int totalSteps = ((friendIds.size() + 1) * psPerU) + 1;
+			int stepsDone = 0;
+			int playlistsDone = 0;
+			for (long pId : playlistIds) {
+				statusText = "Fetching playlist " + (playlistsDone + 1) + " of " + playlistIds.size();
+				fireUpdated();
+				checkPlaylistUpdate(pId);
+				stepsDone++;
+				playlistsDone++;
+				completion = (float) stepsDone / totalSteps;
 			}
-			for (long friendId : u.getFriendIds()) {
-				if (!usersById.containsKey(friendId)) {
-					rbnb.getExecutor().execute(new UserLookerUpper(friendId));
-				}
+			int friendsDone = 0;
+			for (long uId : friendIds) {
+				statusText = "Fetching friend " + (friendsDone + 1) + " of " + friendIds.size();
+				fireUpdated();
+				lookupNewUser(uId);
+				friendsDone++;
+				stepsDone += psPerU;
+				completion = (float) stepsDone / totalSteps;
 			}
-			rbnb.getEventService().fireUserChanged(u);
-			for (Long playlistId : u.getPlaylistIds()) {
-				// For shared playlists, don't hit the server again if we already have it - but fire the playlist
-				// changed event so it's added to the friend tree
-				// for this user
-				Playlist p = getExistingPlaylist(playlistId);
-				if (p == null)
-					checkPlaylistUpdate(playlistId);
-				else
-					rbnb.getEventService().firePlaylistChanged(p);
-			}
+			statusText = "Fetching my user config";
+			fireUpdated();
+			refreshMyUserConfig();
+			statusText = "Done.";
+			completion = 1f;
+			fireUpdated();
 		}
 	}
 
-	class UpdateChecker extends CatchingRunnable {
-		@Override
+	class UpdateTask extends Task {
+		public UpdateTask() {
+			title = "Updating friends and playlists";
+		}
+
 		public void doRun() throws Exception {
 			if (me == null) {
 				return;
 			}
+			log.info("Fetching updated info for all users & playlists");
 			// Copy out users so we can iterate over them safely
 			User[] uArr = new User[usersByEmail.size()];
 			usersByEmail.values().toArray(uArr);
-			for (User u : uArr) {
+			for (int i = 0; i < uArr.length; i++) {
+				if (cancelRequested) {
+					cancelled = true;
+					fireUpdated();
+					return;
+				}
+				User u = uArr[i];
+				completion = (float) i / uArr.length;
+				statusText = "Fetching user " + u.getEmail();
+				fireUpdated();
 				if (me.equals(u)) {
 					// This is me - check to see if we're currently updating my
 					// user, and if we are, don't bother to check for updates -
@@ -523,7 +578,9 @@ public class UserService extends AbstractService {
 				}
 				checkUserUpdate(u, true);
 			}
+			statusText = "Done.";
+			completion = 1f;
+			fireUpdated();
 		}
 	}
-
 }
