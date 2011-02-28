@@ -29,7 +29,7 @@ public class OtherPlaylistContentPanel extends PlaylistContentPanel implements U
 	protected Map<String, JCheckBox> options = new HashMap<String, JCheckBox>();
 
 	public OtherPlaylistContentPanel(RobonoboFrame frame, Playlist p, PlaylistConfig pc) {
-		super(frame, p, pc);
+		super(frame, p, pc, false);
 		tabPane.insertTab("playlist", null, new PlaylistDetailsPanel(), null, 0);
 		tabPane.setSelectedIndex(0);
 		frame.getController().addUserPlaylistListener(this);

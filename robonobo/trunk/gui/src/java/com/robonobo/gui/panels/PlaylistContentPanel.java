@@ -25,8 +25,8 @@ public abstract class PlaylistContentPanel extends ContentPanel implements Clipb
 	protected Playlist p;
 	protected PlaylistConfig pc;
 
-	public PlaylistContentPanel(RobonoboFrame frame, Playlist p, PlaylistConfig pc) {
-		super(frame, new PlaylistTableModel(frame.getController(), p, true));
+	public PlaylistContentPanel(RobonoboFrame frame, Playlist p, PlaylistConfig pc, boolean myPlaylist) {
+		super(frame, new PlaylistTableModel(frame.getController(), p, myPlaylist));
 		this.p = p;
 		this.pc = pc;
 		this.frame = frame;

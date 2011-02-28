@@ -44,7 +44,7 @@ public class MyPlaylistContentPanel extends PlaylistContentPanel implements User
 	protected Map<String, RCheckBox> options = new HashMap<String, RCheckBox>();
 
 	public MyPlaylistContentPanel(RobonoboFrame frame, Playlist p, PlaylistConfig pc) {
-		super(frame, p, pc);
+		super(frame, p, pc, true);
 		tabPane.insertTab("playlist", null, new PlaylistDetailsPanel(), null, 0);
 		tabPane.setSelectedIndex(0);
 		if (addAsListener())
