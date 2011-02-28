@@ -412,7 +412,7 @@ public class RobonoboFrame extends SheetableFrame implements TrackListener {
 			int modifiers = e.getModifiers();
 			if (code == KeyEvent.VK_ESCAPE) {
 				if (isShowingSheet()) {
-					undim();
+					discardTopSheet();
 					return true;
 				}
 			}

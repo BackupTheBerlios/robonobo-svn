@@ -1,14 +1,11 @@
 package com.robonobo.gui.sheets;
 
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
-import com.robonobo.core.Platform;
 import com.robonobo.gui.frames.RobonoboFrame;
 
+@SuppressWarnings("serial")
 public abstract class Sheet extends JPanel {
 	protected RobonoboFrame frame;
 
@@ -22,8 +19,8 @@ public abstract class Sheet extends JPanel {
 	/** This will be made the default button when the sheet is shown */
 	public abstract JButton defaultButton();
 	
-	/** Make sure to call super.onUndim() if you override this! */
-	public void onUndim() {
+	/** Called by the frame when we should go away. Make sure to call super.hideSheet() if you override this! */
+	public void hideSheet() {
 		super.setVisible(false);
 	}
 	
@@ -31,6 +28,6 @@ public abstract class Sheet extends JPanel {
 	public void setVisible(boolean visible) {
 		super.setVisible(visible);
 		if (!visible)
-			frame.undim();
+			frame.discardTopSheet();
 	}
 }
