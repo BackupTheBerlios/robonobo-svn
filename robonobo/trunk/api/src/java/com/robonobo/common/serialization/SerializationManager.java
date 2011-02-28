@@ -20,6 +20,7 @@ import com.google.protobuf.GeneratedMessage;
  * @author macavity
  */
 public class SerializationManager {
+	private static final int HTTP_TIMEOUT_MS = 30000;
 	public static final int MAX_HTTP_CONNECTIONS_PER_HOST = 4;
 
 	Map serializers = new HashMap();
@@ -32,6 +33,7 @@ public class SerializationManager {
 		// Use a multithreaded connection manager - keeps a set of connections
 		// open to the server and reuses them
 		HttpConnectionManagerParams httpParams = new HttpConnectionManagerParams();
+		httpParams.setSoTimeout(HTTP_TIMEOUT_MS);
 		httpParams.setDefaultMaxConnectionsPerHost(MAX_HTTP_CONNECTIONS_PER_HOST);
 		HttpConnectionManager connMgr = new MultiThreadedHttpConnectionManager();
 		connMgr.setParams(httpParams);

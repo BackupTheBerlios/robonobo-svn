@@ -24,6 +24,7 @@ import com.robonobo.wang.proto.WangProtocol.DenominationListMsg;
 import com.robonobo.wang.proto.WangProtocol.DepositStatusMsg;
 
 public class BankFacade {
+	private static final int HTTP_TIMEOUT_MS = 30000;
 	private String baseUrl;
 	private HttpClient client;
 
@@ -32,6 +33,7 @@ public class BankFacade {
 		if(!baseUrl.endsWith("/"))
 			baseUrl += "/";
 		client = new HttpClient(new MultiThreadedHttpConnectionManager());
+		client.getParams().setSoTimeout(HTTP_TIMEOUT_MS);
 		client.getState().setAuthenticationPreemptive(true);
 		client.getState().setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(userEmail, password));
 	}
