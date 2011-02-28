@@ -71,6 +71,6 @@ public class UploadLimitPrefPanel extends PrefPanel {
 	private int getUploadLim() {
 		if(unlimBtn.isSelected() || limField.getIntValue() == null)
 			return -1;
-		return limField.getIntValue();
+		return limField.getIntValue() * 1024;
 	}
 }

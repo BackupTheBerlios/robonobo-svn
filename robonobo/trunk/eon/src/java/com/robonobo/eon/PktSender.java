@@ -145,7 +145,9 @@ public class PktSender extends CatchingRunnable {
 				}
 				nowTime = currentTimeMillis();
 				if (maxBps >= 0) {
-					bytesCredit += (nowTime - lastCreditTime) * (float) (maxBps / 1000);
+					long elapsedMs = nowTime - lastCreditTime;
+					float creditPerMs = (float)maxBps / 1000;
+					bytesCredit += elapsedMs * creditPerMs;
 					if (bytesCredit > maxBytesCredit)
 						bytesCredit = maxBytesCredit;
 				}
@@ -228,7 +230,7 @@ public class PktSender extends CatchingRunnable {
 			if (maxBps >= 0) {
 				bytesCredit = (int) (maxBps * (float) (MAX_CREDIT_TIME / 1000));
 				lastCreditTime = currentTimeMillis();
-				maxBytesCredit = MAX_CREDIT_TIME * (maxBps / 1000);
+				maxBytesCredit = (int) (MAX_CREDIT_TIME * ((float)maxBps / 1000));
 			} else
 				bytesCredit = Integer.MAX_VALUE;
 		} finally {

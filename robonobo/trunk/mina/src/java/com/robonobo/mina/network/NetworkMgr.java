@@ -313,7 +313,7 @@ public class NetworkMgr {
 		private List<Node> remainingSupernodes;
 
 		public ConnectToSupernodeAttempt(List<Node> remainingSupernodes) {
-			super(mina.getExecutor(), mina.getConfig().getMessageTimeout(), "ConnectToSupernodeAttempt");
+			super(mina.getExecutor(), mina.getConfig().getMessageTimeout()*1000, "ConnectToSupernodeAttempt");
 			this.remainingSupernodes = remainingSupernodes;
 		}
 		
