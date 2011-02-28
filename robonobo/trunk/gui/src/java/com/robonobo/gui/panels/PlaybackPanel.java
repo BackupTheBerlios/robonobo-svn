@@ -43,11 +43,11 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 		Stopped, Playing, Paused
 	};
 
-	ImageIcon prevIcon = createImageIcon("/img/icon/play_back.png", PREV_TOOLTIP);
-	ImageIcon nextIcon = createImageIcon("/img/icon/play_next.png", NEXT_TOOLTIP);
-	ImageIcon dloadIcon = createImageIcon("/img/icon/play_download.png", DOWNLOAD_TOOLTIP);
-	ImageIcon playIcon = createImageIcon("/img/icon/play_play.png", PLAY_TOOLTIP);
-	ImageIcon pauseIcon = createImageIcon("/img/icon/play_pause.png", PAUSE_TOOLTIP);
+	ImageIcon prevIcon = createImageIcon("/icon/play_back.png", PREV_TOOLTIP);
+	ImageIcon nextIcon = createImageIcon("/icon/play_next.png", NEXT_TOOLTIP);
+	ImageIcon dloadIcon = createImageIcon("/icon/play_download.png", DOWNLOAD_TOOLTIP);
+	ImageIcon playIcon = createImageIcon("/icon/play_play.png", PLAY_TOOLTIP);
+	ImageIcon pauseIcon = createImageIcon("/icon/play_pause.png", PAUSE_TOOLTIP);
 
 	RobonoboFrame frame;
 	RobonoboController control;

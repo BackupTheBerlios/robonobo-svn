@@ -1,5 +1,6 @@
 package com.robonobo.gui.components;
 
+import static com.robonobo.gui.GUIUtils.*;
 import info.clearthought.layout.TableLayout;
 
 import java.awt.Dimension;
@@ -11,8 +12,7 @@ import javax.swing.*;
 
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.core.wang.WangListener;
-import com.robonobo.gui.RoboColor;
-import com.robonobo.gui.RoboFont;
+import com.robonobo.gui.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 
 @SuppressWarnings("serial")
@@ -25,7 +25,7 @@ public class BalanceLabel extends JPanel implements LeftSidebarComponent, WangLi
 		this.frame = frame;
 		double[][] cellSizen = { { TableLayout.FILL }, { TableLayout.FILL } };
 		setLayout(new TableLayout(cellSizen));
-		lbl = new JLabel(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/wang_symbol.png")));
+		lbl = new JLabel(createImageIcon("/icon/wang_symbol.png", null));
 		lbl.setForeground(RoboColor.ORANGE);
 		lbl.setFont(RoboFont.getFont(22, false));
 		add(lbl, "0,0,CENTER,CENTER");

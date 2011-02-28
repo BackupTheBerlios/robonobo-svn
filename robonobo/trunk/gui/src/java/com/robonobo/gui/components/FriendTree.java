@@ -40,10 +40,10 @@ public class FriendTree extends LeftSidebarTree implements LeftSidebarComponent 
 		setRootVisible(true);
 		collapseRow(0);
 
-		rootIcon = createImageIcon("/img/icon/friends.png", null);
-		friendIcon = createImageIcon("/img/icon/friend.png", null);
-		playlistIcon = createImageIcon("/img/icon/playlist.png", null);
-		libraryIcon = createImageIcon("/img/icon/home.png", null);
+		rootIcon = createImageIcon("/icon/friends.png", null);
+		friendIcon = createImageIcon("/icon/friend.png", null);
+		playlistIcon = createImageIcon("/icon/playlist.png", null);
+		libraryIcon = createImageIcon("/icon/home.png", null);
 
 		setCellRenderer(new CellRenderer());
 		setSelectionModel(new SelectionModel());

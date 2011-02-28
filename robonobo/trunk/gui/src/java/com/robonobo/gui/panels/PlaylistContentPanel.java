@@ -1,5 +1,6 @@
 package com.robonobo.gui.panels;
 
+import static com.robonobo.gui.GUIUtils.*;
 import info.clearthought.layout.TableLayout;
 
 import java.awt.Toolkit;
@@ -12,6 +13,7 @@ import javax.swing.*;
 import com.robonobo.common.concurrent.CatchingRunnable;
 import com.robonobo.common.util.NetUtil;
 import com.robonobo.core.api.model.*;
+import com.robonobo.gui.GUIUtils;
 import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
 import com.robonobo.gui.model.PlaylistTableModel;
@@ -49,8 +51,7 @@ public abstract class PlaylistContentPanel extends ContentPanel implements Clipb
 			final RTextField urlField = new RTextField(urlText);
 			urlField.setEnabled(false);
 			add(urlField, "2,0");
-			RButton fbBtn = new RSmallRoundButton(new ImageIcon(
-					RobonoboFrame.class.getResource("/img/icon/facebook.png")));
+			RButton fbBtn = new RSmallRoundButton(createImageIcon("/icon/facebook.png", null));
 			fbBtn.setToolTipText("Post playlist update to facebook");
 			fbBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -59,8 +60,7 @@ public abstract class PlaylistContentPanel extends ContentPanel implements Clipb
 			});
 			fbBtn.setEnabled(p.getPlaylistId() > 0);
 			add(fbBtn, "4,0");
-			RButton twitBtn = new RSmallRoundButton(new ImageIcon(
-					RobonoboFrame.class.getResource("/img/icon/twitter.png")));
+			RButton twitBtn = new RSmallRoundButton(createImageIcon("/icon/twitter.png", null));
 			twitBtn.setToolTipText("Post playlist update to twitter");
 			twitBtn.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {

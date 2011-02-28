@@ -1,5 +1,6 @@
 package com.robonobo.gui.panels;
 
+import static com.robonobo.gui.GUIUtils.*;
 import info.clearthought.layout.TableLayout;
 
 import java.awt.Color;
@@ -17,6 +18,7 @@ import com.robonobo.common.util.FileUtil;
 import com.robonobo.common.util.TextUtil;
 import com.robonobo.core.RobonoboController;
 import com.robonobo.core.api.*;
+import com.robonobo.gui.GUIUtils;
 import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.components.BalanceLabel;
 import com.robonobo.gui.components.base.*;
@@ -49,8 +51,8 @@ public class StatusPanel extends JPanel implements RobonoboStatusListener, Trans
 		balanceLbl = new BalanceLabel(frame);
 		add(balanceLbl, "1,1,6,1,CENTER,CENTER");
 
-		connOkImg = new ImageIcon(RobonoboFrame.class.getResource("/img/icon/connection_ok.png"));
-		connFailImg = new ImageIcon(RobonoboFrame.class.getResource("/img/icon/connection_fail.png"));
+		connOkImg = createImageIcon("/icon/connection_ok.png", null);
+		connFailImg = createImageIcon("/icon/connection_fail.png", null);
 		networkStatusIcon = new RIconLabel(connFailImg);
 		add(networkStatusIcon, "2,3,2,5");
 		

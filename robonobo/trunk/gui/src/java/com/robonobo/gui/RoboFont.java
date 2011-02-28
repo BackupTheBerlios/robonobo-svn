@@ -22,8 +22,8 @@ import com.robonobo.common.util.ByteUtil;
  * @author macavity
  */
 public class RoboFont {
-	private static final String BOLD_FONT_PATH = "/font/VeraBd.ttf";
-	private static final String REG_FONT_PATH = "/font/Vera.ttf";
+	private static final String BOLD_FONT_PATH = "/VeraBd.ttf";
+	private static final String REG_FONT_PATH = "/Vera.ttf";
 	static final String FONT_NAME = "Bitstream Vera Sans";
 	// static final String FONT_NAME = "Ubuntu";
 	static Font basePlainFont;
@@ -59,15 +59,14 @@ public class RoboFont {
 		// There seems to be a weird bug in some versions of java 5 that throws a FontFormatException when we load
 		// direct from an inputstream, but works fine if we pass it a file... strange, but whatever, we just copy it out
 		try {
-			// DEBUGGIN
-			File plainTtfFile = new File("/tmp/vera.ttf");
-			File boldTtfFile = new File("/tmp/verab.ttf");
-//			File plainTtfFile = File.createTempFile("robofont", "ttf");
-//			plainTtfFile.deleteOnExit();
-//			File boldTtfFile = File.createTempFile("robofont", "ttf");
-//			boldTtfFile.deleteOnExit();
-//			streamDump(RoboFont.class.getResourceAsStream(REG_FONT_PATH), new FileOutputStream(plainTtfFile));
-//			streamDump(RoboFont.class.getResourceAsStream(BOLD_FONT_PATH), new FileOutputStream(boldTtfFile));
+			File plainTtfFile = File.createTempFile("robofont", "ttf");
+			plainTtfFile.deleteOnExit();
+			File boldTtfFile = File.createTempFile("robofont", "ttf");
+			boldTtfFile.deleteOnExit();
+			InputStream ris = RoboFont.class.getResourceAsStream(REG_FONT_PATH);
+			streamDump(ris, new FileOutputStream(plainTtfFile));
+			InputStream bis = RoboFont.class.getResourceAsStream(BOLD_FONT_PATH);
+			streamDump(bis, new FileOutputStream(boldTtfFile));
 			Font onePoint = Font.createFont(Font.TRUETYPE_FONT, plainTtfFile);
 			basePlainFont = onePoint.deriveFont(Font.PLAIN, 12);
 			derivedPlainFonts.put(12, basePlainFont);

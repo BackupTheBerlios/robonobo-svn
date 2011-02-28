@@ -85,12 +85,12 @@ public class ActiveSearchList extends LeftSidebarList {
 		public CellRenderer() {
 			textLbl = new RLabel11();
 			textLbl.setOpaque(false);
-			textLbl.setIcon(new ImageIcon(ActiveSearchList.class.getResource("/img/icon/magnifier_small.png")));
+			textLbl.setIcon(new ImageIcon(ActiveSearchList.class.getResource("/icon/magnifier_small.png")));
 			textLbl.setMaximumSize(new Dimension(MAX_LBL_WIDTH, 65535));
 			textLbl.setPreferredSize(new Dimension(MAX_LBL_WIDTH, 65535));
 			textLbl.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
-			closeIconSel = new ImageIcon(ActiveSearchList.class.getResource("/img/icon/close_x_light_bg.png"));
-			closeIconUnsel = new ImageIcon(ActiveSearchList.class.getResource("/img/icon/close_x_mid_bg.png"));
+			closeIconSel = new ImageIcon(ActiveSearchList.class.getResource("/icon/close_x_light_bg.png"));
+			closeIconUnsel = new ImageIcon(ActiveSearchList.class.getResource("/icon/close_x_mid_bg.png"));
 			closeLbl = new RIconLabel(closeIconUnsel);
 			closeLbl.setOpaque(false);
 			closeLbl.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));

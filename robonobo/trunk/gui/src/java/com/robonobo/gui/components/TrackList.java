@@ -36,9 +36,9 @@ public class TrackList extends JPanel implements SearchExecutor {
 	JXTable table;
 	TrackListTableModel model;
 	Icon startingIcon = new SpinnerIcon(16, RoboColor.DARKISH_GRAY);
-	Icon playingIcon = GUIUtils.createImageIcon("/img/table/play.png", null);
-	Icon pausedIcon = GUIUtils.createImageIcon("/img/table/pause.png", null);
-	Icon downloadingIcon = GUIUtils.createImageIcon("/img/table/download.png", null);
+	Icon playingIcon = GUIUtils.createImageIcon("/table/play.png", null);
+	Icon pausedIcon = GUIUtils.createImageIcon("/table/pause.png", null);
+	Icon downloadingIcon = GUIUtils.createImageIcon("/table/download.png", null);
 	Log log;
 	RobonoboFrame frame;
 
@@ -83,8 +83,8 @@ public class TrackList extends JPanel implements SearchExecutor {
 
 		// Render table header as not bold
 		table.getTableHeader().setDefaultRenderer(new DefaultTableCellRenderer() {
-			ImageIcon ascSortIcon = GUIUtils.createImageIcon("/img/icon/arrow_up.png", null);
-			ImageIcon descSortIcon = GUIUtils.createImageIcon("/img/icon/arrow_down.png", null);
+			ImageIcon ascSortIcon = GUIUtils.createImageIcon("/icon/arrow_up.png", null);
+			ImageIcon descSortIcon = GUIUtils.createImageIcon("/icon/arrow_down.png", null);
 
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
 					boolean hasFocus, int row, int column) {

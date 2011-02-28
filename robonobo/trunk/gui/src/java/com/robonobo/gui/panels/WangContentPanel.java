@@ -1,6 +1,7 @@
 package com.robonobo.gui.panels;
 
 import static com.robonobo.common.util.TimeUtil.*;
+import static com.robonobo.gui.GUIUtils.*;
 import info.clearthought.layout.TableLayout;
 
 import java.awt.Color;
@@ -23,6 +24,7 @@ import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.core.api.UserPlaylistListener;
 import com.robonobo.core.api.model.*;
 import com.robonobo.core.wang.WangListener;
+import com.robonobo.gui.GUIUtils;
 import com.robonobo.gui.RoboFont;
 import com.robonobo.gui.components.base.*;
 import com.robonobo.gui.frames.RobonoboFrame;
@@ -47,7 +49,7 @@ public class WangContentPanel extends ContentPanel implements WangListener, User
 		RLabel balanceTitle = new RLabel22B("Current balance: ");
 		add(balanceTitle, "1,1");
 		
-		balanceLbl = new RLabel22(new ImageIcon(RobonoboFrame.class.getResource("/img/icon/wang_symbol.png")));
+		balanceLbl = new RLabel22(createImageIcon("/icon/wang_symbol.png", null));
 		add(balanceLbl, "2,1,LEFT,CENTER");
 		balanceFmt = NumberFormat.getInstance();
 		balanceFmt.setMinimumFractionDigits(4);
