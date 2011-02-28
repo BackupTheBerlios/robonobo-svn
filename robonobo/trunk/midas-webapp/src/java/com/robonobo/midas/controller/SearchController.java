@@ -24,14 +24,15 @@ public class SearchController extends BaseController {
 
 	@RequestMapping("/search")
 	public void runSearch(@RequestParam("type") String searchType, @RequestParam("q") String query,
-			@RequestParam(value = "first", required = false) int firstResult, HttpServletRequest req,
+			@RequestParam(value = "first", required = false) Integer firstResult, HttpServletRequest req,
 			HttpServletResponse resp) throws IOException {
 		User u = getAuthUser(req);
 		if (u == null) {
 			send401(req, resp);
 			return;
 		}
-		SearchResponse response = searchService.search(searchType, query, firstResult);
+		int fr = (firstResult == null) ? 0 : firstResult;
+		SearchResponse response = searchService.search(searchType, query, fr);
 		writeToOutput(response, resp);
 		log.info("Returning " + response.getObjectIdCount() + " results to " + u.getEmail() + " for search '"
 				+ query + "'");
