@@ -382,14 +382,20 @@ public class PlaybackPanel extends JPanel implements PlaybackListener, TrackList
 				tracksSelected = (selSids.size() > 0);
 				// Only allow download if at least one of the selected tracks is a cloud track
 				// Only allow delete if at least one of the selected tracks is a download/sharing track
+				boolean modelAllowsDelete = tl.getModel().allowDelete();
 				for (String sid : selSids) {
 					Track t = control.getTrack(sid);
-					if (t instanceof CloudTrack)
+					if (t instanceof CloudTrack) {
 						allowDownload = true;
-					if ((t instanceof DownloadingTrack) || (t instanceof SharedTrack))
+						if(allowDelete || !modelAllowsDelete)
+							break;
+					}
+					if (modelAllowsDelete && ((t instanceof DownloadingTrack) || (t instanceof SharedTrack))) {
 						allowDelete = true;
+						if(allowDownload)
+							break;
+					}
 				}
-				allowDelete = allowDelete && tl.getModel().allowDelete();
 			}
 		}
 		synchronized (this) {
