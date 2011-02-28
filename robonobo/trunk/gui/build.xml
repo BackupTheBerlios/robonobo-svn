@@ -49,7 +49,10 @@
 			</classpath>
 		</javac>
 		<copy todir="${classes.dir}">
-			<fileset dir="src/java" includes="**/*.properties,**/*.xml,**/*.png,**/*.js,**/*.wsf,**/*.html,**/*.txt,**/*.ttf,**/*.skel" />
+			<fileset dir="src/font"/>
+			<fileset dir="src/img"/>
+			<fileset dir="src/text"/>
+			<fileset dir="src/java" includes="**/*.js,**/*.wsf" />
 		</copy>
 
 		<!-- Make our build.properties -->
