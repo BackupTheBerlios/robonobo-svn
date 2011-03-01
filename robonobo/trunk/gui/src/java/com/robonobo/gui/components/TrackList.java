@@ -1,5 +1,7 @@
 package com.robonobo.gui.components;
 
+import static com.robonobo.common.util.CodeUtil.*;
+
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -22,6 +24,7 @@ import org.jdesktop.swingx.decorator.SortOrder;
 import org.jdesktop.swingx.table.TableColumnExt;
 import org.jdesktop.swingx.table.TableColumnModelExt;
 
+import com.robonobo.common.util.CodeUtil;
 import com.robonobo.core.api.SearchExecutor;
 import com.robonobo.core.api.model.*;
 import com.robonobo.core.api.model.DownloadingTrack.DownloadStatus;
@@ -81,29 +84,34 @@ public class TrackList extends JPanel implements SearchExecutor {
 		table.getColumn(11).setCellRenderer(tr);
 		table.getColumn(12).setCellRenderer(tr);
 
-		// Render table header as not bold
-		table.getTableHeader().setDefaultRenderer(new DefaultTableCellRenderer() {
-			ImageIcon ascSortIcon = GUIUtils.createImageIcon("/icon/arrow_up.png", null);
-			ImageIcon descSortIcon = GUIUtils.createImageIcon("/icon/arrow_down.png", null);
+		// Render table header as not bold and with sorting arrows
+		// NOTE massively irritating bug in java5 (maybe mac only, but they're the only ones stuck on j5 anyway) that
+		// renders the table header as white if we set a custom renderer here. So we only do it in java 6+ - means that
+		// java5 users don't see the sorting arrow, but it's better than a white header
+		if (javaMajorVersion() >= 6) {
+			table.getTableHeader().setDefaultRenderer(new DefaultTableCellRenderer() {
+				ImageIcon ascSortIcon = GUIUtils.createImageIcon("/icon/arrow_up.png", null);
+				ImageIcon descSortIcon = GUIUtils.createImageIcon("/icon/arrow_down.png", null);
 
-			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
-					boolean hasFocus, int row, int column) {
-				JLabel result = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row,
-						column);
-				result.setFont(RoboFont.getFont(12, false));
-				result.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 0));
-				SortOrder so = TrackList.this.table.getSortOrder(column);
-				if (so.isSorted()) {
-					if (so.isAscending())
-						setIcon(ascSortIcon);
-					else
-						setIcon(descSortIcon);
-				} else
-					result.setIcon(null);
-				result.setHorizontalTextPosition(SwingConstants.LEFT);
-				return result;
-			}
-		});
+				public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+						boolean hasFocus, int row, int column) {
+					JLabel result = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
+							row, column);
+					result.setFont(RoboFont.getFont(12, false));
+					result.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 0));
+					SortOrder so = TrackList.this.table.getSortOrder(column);
+					if (so.isSorted()) {
+						if (so.isAscending())
+							setIcon(ascSortIcon);
+						else
+							setIcon(descSortIcon);
+					} else
+						result.setIcon(null);
+					result.setHorizontalTextPosition(SwingConstants.LEFT);
+					return result;
+				}
+			});
+		}
 
 		TableColumnModelExt cm = (TableColumnModelExt) table.getColumnModel();
 		cm.getColumn(0).setPreferredWidth(22); // Status icon
@@ -126,10 +134,10 @@ public class TrackList extends JPanel implements SearchExecutor {
 			TableColumnExt colExt = (TableColumnExt) cols.get(hiddenCols[i]);
 			colExt.setVisible(false);
 		}
-		
+
 		table.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				if(e.getClickCount() == 2) {
+				if (e.getClickCount() == 2) {
 					frame.getPlaybackPanel().play();
 					e.consume();
 				}

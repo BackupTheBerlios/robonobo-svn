@@ -11,6 +11,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.robonobo.common.exceptions.SeekInnerCalmException;
 import com.robonobo.common.util.ByteUtil;
 
@@ -26,6 +29,7 @@ public class RoboFont {
 	private static final String REG_FONT_PATH = "/Vera.ttf";
 	static final String FONT_NAME = "Bitstream Vera Sans";
 	// static final String FONT_NAME = "Ubuntu";
+	static Log log = LogFactory.getLog(RoboFont.class);
 	static Font basePlainFont;
 	static Font baseBoldFont;
 	static Map<Integer, Font> derivedPlainFonts;
@@ -49,6 +53,7 @@ public class RoboFont {
 	}
 
 	private static void getFontFromSystem() {
+		log.info("Loading font '"+FONT_NAME+"' from system");
 		basePlainFont = new Font(FONT_NAME, Font.PLAIN, 12);
 		baseBoldFont = new Font(FONT_NAME, Font.BOLD, 12);
 		derivedPlainFonts.put(12, basePlainFont);
@@ -56,6 +61,7 @@ public class RoboFont {
 	}
 
 	private static void getFontFromIncludedTtf() {
+		log.info("Loading font '"+FONT_NAME+"' from bundled ttf file");
 		// There seems to be a weird bug in some versions of java 5 that throws a FontFormatException when we load
 		// direct from an inputstream, but works fine if we pass it a file... strange, but whatever, we just copy it out
 		try {
